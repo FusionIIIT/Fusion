@@ -5,6 +5,8 @@ from . import views
 app_name = "placement"
 
 urlpatterns = [
+    # Back-compat alias: legacy notifications/templates reverse 'placement:placement'.
+    url(r"^$", views.placement_api, name="placement"),
     url(r"^api/placement/$", views.placement_api, name="placement_api"),
     url(r"^api/placement/(?P<schedule_id>[0-9]+)/$", views.placement_detail_api, name="placement_detail_api"),
     url(r"^api/statistics/$", views.placement_statistics_api, name="placement_statistics_api"),

@@ -207,6 +207,7 @@ from django.core.files.storage import FileSystemStorage
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.core.validators import validate_email
+from django.db import transaction
 from django.db.models import Count, Max, Prefetch, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -1589,7 +1590,7 @@ def placement_detail_api(request, schedule_id):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def placement_statistics_api(request):
-    if request.method != 'GET' and not _is_tpo_user(request.user):
+    if not _is_tpo_user(request.user):
         return Response(
             {'detail': 'Only TPO users can access placement statistics.'},
             status=status.HTTP_403_FORBIDDEN,
@@ -2153,32 +2154,35 @@ def apply_for_placement_api(request):
         )
         return Response({'message': 'Invitation declined successfully.'}, status=status.HTTP_200_OK)
 
-    active_application_count = PlacementApplication.objects.filter(
-        student=student,
-    ).exclude(status='withdrawn').count()
     application_limit = _max_active_application_limit()
     warning_threshold = max(application_limit - 2, 1)
     warning_message = None
-    if active_application_count >= application_limit:
-        return Response(
-            {
-                'detail': 'You can only have {} active applications at a time.'.format(
-                    application_limit,
-                ),
-            },
-            status=status.HTTP_403_FORBIDDEN,
-        )
-    elif active_application_count >= warning_threshold:
-        warning_message = 'You have {} active applications. The limit is {}.'.format(
-            active_application_count,
-            application_limit,
-        )
+    with transaction.atomic():
+        # Lock this student's placement row so concurrent applies can't both pass the cap.
+        StudentPlacement.objects.select_for_update().filter(pk=student_placement.pk).first()
+        active_application_count = PlacementApplication.objects.filter(
+            student=student,
+        ).exclude(status='withdrawn').count()
+        if active_application_count >= application_limit:
+            return Response(
+                {
+                    'detail': 'You can only have {} active applications at a time.'.format(
+                        application_limit,
+                    ),
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        elif active_application_count >= warning_threshold:
+            warning_message = 'You have {} active applications. The limit is {}.'.format(
+                active_application_count,
+                application_limit,
+            )
 
-    application, created = PlacementApplication.objects.get_or_create(
-        schedule=schedule,
-        student=student,
-        defaults={'status': 'pending'},
-    )
+        application, created = PlacementApplication.objects.get_or_create(
+            schedule=schedule,
+            student=student,
+            defaults={'status': 'pending'},
+        )
     if not created:
         if application.status == 'withdrawn':
             return Response(
@@ -2534,41 +2538,42 @@ def next_round_api(request, schedule_id):
         else request.data.get('description') or ''
     )
 
-    round_obj = PlacementRound.objects.create(
-        schedule=schedule,
-        round_no=round_no,
-        test_date=start_datetime.date(),
-        start_datetime=start_datetime,
-        end_datetime=end_datetime,
-        mode=request.data.get('mode') or '',
-        location_link=request.data.get('location_link') or '',
-        description=description,
-        test_type=request.data.get('test_type') or '',
-    )
-    applications_to_update = []
-    for application in applications:
-        application.status = 'interview_scheduled'
-        application.remarks = description or application.remarks
-        applications_to_update.append(application)
-        PlacementInterviewSchedule.objects.create(
-            application=application,
+    with transaction.atomic():
+        round_obj = PlacementRound.objects.create(
+            schedule=schedule,
             round_no=round_no,
-            title=request.data.get('test_type') or 'Round {}'.format(round_no),
-            scheduled_at=start_datetime,
+            test_date=start_datetime.date(),
+            start_datetime=start_datetime,
             end_datetime=end_datetime,
             mode=request.data.get('mode') or '',
-            location=request.data.get('location_link') or '',
-            meeting_link=request.data.get('location_link') or '',
-            remarks=description,
-            created_by=request.user,
+            location_link=request.data.get('location_link') or '',
+            description=description,
+            test_type=request.data.get('test_type') or '',
         )
-        _create_application_timeline_entry(
-            application,
-            stage='Interview Scheduled',
-            remarks=description or 'Interview round scheduled.',
-            actor=request.user,
-        )
-    PlacementApplication.objects.bulk_update(applications_to_update, ['status', 'remarks'])
+        applications_to_update = []
+        for application in applications:
+            application.status = 'interview_scheduled'
+            application.remarks = description or application.remarks
+            applications_to_update.append(application)
+            PlacementInterviewSchedule.objects.create(
+                application=application,
+                round_no=round_no,
+                title=request.data.get('test_type') or 'Round {}'.format(round_no),
+                scheduled_at=start_datetime,
+                end_datetime=end_datetime,
+                mode=request.data.get('mode') or '',
+                location=request.data.get('location_link') or '',
+                meeting_link=request.data.get('location_link') or '',
+                remarks=description,
+                created_by=request.user,
+            )
+            _create_application_timeline_entry(
+                application,
+                stage='Interview Scheduled',
+                remarks=description or 'Interview round scheduled.',
+                actor=request.user,
+            )
+        PlacementApplication.objects.bulk_update(applications_to_update, ['status', 'remarks'])
 
     recipients = [application.student.id.user for application in applications]
     if recipients:
@@ -2753,8 +2758,8 @@ def application_detail_api(request, application_id):
     if not _is_tpo_user(request.user):
         return Response({'detail': 'Only TPO users can update applicants.'}, status=status.HTTP_403_FORBIDDEN)
 
-    if application.status in ['withdrawn']:
-        return Response({'detail': 'Withdrawn applications cannot be updated.'}, status=status.HTTP_409_CONFLICT)
+    if application.status in ['accept', 'reject', 'withdrawn']:
+        return Response({'detail': 'This application is already finalized and cannot be changed.'}, status=status.HTTP_409_CONFLICT)
 
     next_status = request.data.get('status') or application.status
     remarks = request.data.get('remarks') or ''
@@ -3618,6 +3623,11 @@ def alumni_session_detail_api(request, session_id):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def send_notification_api(request):
+    if not _is_tpo_user(request.user):
+        return Response(
+            {'detail': 'Only TPO users can send placement notifications.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
     send_to = request.data.get('sendTo')
     recipient = request.data.get('recipient')
     description = request.data.get('description') or request.data.get('type') or 'Placement Cell notification'

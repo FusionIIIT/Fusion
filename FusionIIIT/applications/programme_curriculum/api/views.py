@@ -34,7 +34,9 @@ import re
 from notification.views import prog_and_curr_notif
 # from applications.academic_information.models import Student
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
-from applications.globals.access import IsAcadAdminOrDean, require_designation, user_holds_role, _user_from_request
+from applications.globals.access import IsAcadAdminOrDean, require_designation, user_holds_role, _user_from_request, has_any_role
+# acadadmin-only guard for curriculum thesis/seminar/teaching-credit mutations
+IsAcadAdmin = has_any_role("acadadmin")
 # ------------module-functions---------------#
 
 @login_required(login_url='/accounts/login')
@@ -4474,7 +4476,7 @@ def admin_view_a_thesis(request, thesis_id):
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAcadAdmin])
 def add_thesis(request):
     """Add a new thesis"""
     
@@ -4518,7 +4520,7 @@ def add_thesis(request):
 
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAcadAdmin])
 def admin_delete_thesis(request, thesis_id):
     """Delete a thesis"""
     
@@ -4570,7 +4572,7 @@ def admin_view_all_seminars(request):
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAcadAdmin])
 def add_seminar(request):
     """Add a new seminar"""
 
@@ -4611,7 +4613,7 @@ def add_seminar(request):
 
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAcadAdmin])
 def admin_delete_seminar(request, seminar_id):
     """Delete a seminar"""
 
@@ -4636,7 +4638,7 @@ def admin_delete_seminar(request, seminar_id):
 @csrf_exempt
 @api_view(['GET', 'PUT'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAcadAdmin])
 def update_thesis(request, thesis_id):
     """Get thesis details for editing (GET) or update an existing thesis (PUT)."""
     thesis = get_object_or_404(Thesis, id=thesis_id)
@@ -4685,7 +4687,7 @@ def update_thesis(request, thesis_id):
 @csrf_exempt
 @api_view(['GET', 'PUT'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAcadAdmin])
 def update_seminar(request, seminar_id):
     """Get seminar details for editing (GET) or update an existing seminar (PUT)."""
     s = get_object_or_404(Seminar, id=seminar_id)
@@ -4734,7 +4736,7 @@ def update_seminar(request, seminar_id):
 @csrf_exempt
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAcadAdmin])
 def add_thesis_slot(request):
     """Add a new thesis slot to a semester."""
     try:
@@ -4769,7 +4771,7 @@ def add_thesis_slot(request):
 @csrf_exempt
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAcadAdmin])
 def add_seminar_slot(request):
     """Add a new seminar slot to a semester."""
     try:
@@ -4861,6 +4863,7 @@ def admin_view_a_seminar_slot(request, seminar_slot_id):
     })
 
 
+@require_designation("acadadmin")
 def delete_thesis_slot(request, thesis_slot_id):
     """Delete a thesis slot"""
     thesis_slot = get_object_or_404(ThesisSlot, id=thesis_slot_id)
@@ -4868,6 +4871,7 @@ def delete_thesis_slot(request, thesis_slot_id):
     return JsonResponse({'status': 'success', 'message': 'Thesis slot deleted successfully'})
 
 
+@require_designation("acadadmin")
 def delete_seminar_slot(request, seminar_slot_id):
     """Delete a seminar slot"""
     seminar_slot = get_object_or_404(SeminarSlot, id=seminar_slot_id)
@@ -4875,6 +4879,7 @@ def delete_seminar_slot(request, seminar_slot_id):
     return JsonResponse({'status': 'success', 'message': 'Seminar slot deleted successfully'})
 
 
+@require_designation("acadadmin")
 def edit_thesis_slot_form(request, thesis_slot_id):
     """GET returns existing thesis slot data; PUT updates it."""
     thesis_slot = get_object_or_404(ThesisSlot, id=thesis_slot_id)
@@ -4913,6 +4918,7 @@ def edit_thesis_slot_form(request, thesis_slot_id):
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
 
+@require_designation("acadadmin")
 def edit_seminar_slot_form(request, seminar_slot_id):
     """GET returns existing seminar slot data; PUT updates it."""
     seminar_slot = get_object_or_404(SeminarSlot, id=seminar_slot_id)
@@ -4980,7 +4986,7 @@ def admin_view_all_teaching_credits(request):
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAcadAdmin])
 def add_teaching_credit(request):
     """Add a new teaching credit"""
 
@@ -5021,7 +5027,7 @@ def add_teaching_credit(request):
 
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAcadAdmin])
 def admin_delete_teaching_credit(request, teaching_credit_id):
     """Delete a teaching credit"""
 
@@ -5046,7 +5052,7 @@ def admin_delete_teaching_credit(request, teaching_credit_id):
 @csrf_exempt
 @api_view(['GET', 'PUT'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAcadAdmin])
 def update_teaching_credit(request, teaching_credit_id):
     """Get teaching credit details for editing (GET) or update an existing teaching credit (PUT)."""
     tc = get_object_or_404(TeachingCredit, id=teaching_credit_id)
@@ -5095,7 +5101,7 @@ def update_teaching_credit(request, teaching_credit_id):
 @csrf_exempt
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAcadAdmin])
 def add_teaching_credit_slot(request):
     """Add a new teaching credit slot to a semester."""
     try:
@@ -5156,6 +5162,7 @@ def admin_view_a_teaching_credit_slot(request, tc_slot_id):
     })
 
 
+@require_designation("acadadmin")
 def delete_teaching_credit_slot(request, tc_slot_id):
     """Delete a teaching credit slot"""
     tc_slot = get_object_or_404(TeachingCreditSlot, id=tc_slot_id)
@@ -5163,6 +5170,7 @@ def delete_teaching_credit_slot(request, tc_slot_id):
     return JsonResponse({'status': 'success', 'message': 'Teaching credit slot deleted successfully'})
 
 
+@require_designation("acadadmin")
 def edit_teaching_credit_slot_form(request, tc_slot_id):
     """GET returns existing teaching credit slot data; PUT updates it."""
     tc_slot = get_object_or_404(TeachingCreditSlot, id=tc_slot_id)

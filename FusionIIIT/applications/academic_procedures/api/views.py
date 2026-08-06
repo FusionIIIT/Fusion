@@ -6207,10 +6207,14 @@ def student_thesis_api(request):
         )
 
     data = request.data
+    required = ['supervisor_id', 'category', 'broad_area', 'research_theme']
+    missing = [f for f in required if not data.get(f)]
+    if missing:
+        return JsonResponse({"error": f"Missing required field(s): {', '.join(missing)}"}, status=400)
     if not thesis:
         thesis = ThesisTopic(student=student)
 
-    supervisor_id = data['supervisor_id']
+    supervisor_id = data.get('supervisor_id')
     co_supervisor_id = data.get('co_supervisor_id')
 
     if co_supervisor_id and co_supervisor_id == supervisor_id:
@@ -6231,9 +6235,9 @@ def student_thesis_api(request):
         if not co_supervisor.id.user.is_active:
             return JsonResponse({"error": "Selected co-supervisor is not an active faculty member"}, status=400)
 
-    thesis.category            = data['category']
-    thesis.broad_area          = data['broad_area']
-    thesis.research_theme      = data['research_theme']
+    thesis.category            = data.get('category')
+    thesis.broad_area          = data.get('broad_area')
+    thesis.research_theme      = data.get('research_theme')
     thesis.supervisor_id       = supervisor_id
     thesis.co_supervisor_id    = co_supervisor_id
     thesis.external_name       = data.get('external_name', '')
@@ -6445,6 +6449,8 @@ def supervisor_review_api(request, pk):
     is_co     = (thesis.co_supervisor and thesis.co_supervisor_id == user_ex)
 
     if request.method == 'GET':
+        if not (is_sup or is_co):
+            return JsonResponse({"error": "Access denied."}, status=403)
         payload = thesis_to_dict(thesis)
         payload.update({"is_supervisor": is_sup, "is_co_supervisor": is_co})
         return JsonResponse(payload, status=200)
@@ -6710,6 +6716,8 @@ def hod_review_api(request, pk):
     is_hod = is_hod_of_discipline(user, student_discipline_acronym)
 
     if request.method == 'GET':
+        if not is_hod:
+            return JsonResponse({"error": "Access denied."}, status=403)
         data = thesis_to_dict(thesis)
         return JsonResponse(data, status=200)
 
@@ -7342,6 +7350,10 @@ def thesis_submit(request):
         return Response({'error': 'Missing fields'}, 400)
     if syn.size > 5*1024*1024 or rpt.size > 25*1024*1024:
         return Response({'error': 'File too large'}, 400)
+    if syn.content_type != 'application/pdf' or rpt.content_type != 'application/pdf':
+        return Response({'error': 'Both files must be PDFs'}, status=400)
+    if ThesisSubmission.objects.filter(thesis=thesis).exists():
+        return Response({'error': 'Thesis has already been submitted and cannot be changed.'}, status=400)
     sub = ThesisSubmission.objects.create(
         thesis = thesis,
         synopsis=syn,
@@ -7908,7 +7920,7 @@ def dean_send_invitations(request):
 
 # 8. Invitation accept/reject (external examiners have no Fusion account —
 #    the secret UUID token in the emailed link is the auth mechanism here)
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([AllowAny])
 def invitation_action(request, token, action):
     inv = get_object_or_404(ReviewInvitation, token=token)
@@ -8341,28 +8353,29 @@ def admin_verify_enrollments(request):
     now = _dt.datetime.now(_dt.timezone.utc)
     regs = ThesisRegistration.objects.filter(id__in=ids, status='pending').select_related('thesis_slot')
     count = 0
-    for reg in regs:
-        reg.status = 'verified'
-        reg.verified_on = now
-        reg.save(update_fields=['status', 'verified_on'])
-        if reg.thesis_slot.evaluation_type == 'decimal':
-            # Single overall score (PG's final thesis semester) -- no block
-            # split, average of supervisor_score/examiner_score lands in
-            # numeric_grade once ThesisEvaluationScore has both.
-            evaluation, _created = ThesisEvaluation.objects.get_or_create(
-                registration=reg,
-                block_number=1,
-            )
-            ThesisEvaluationScore.objects.get_or_create(evaluation=evaluation)
-        else:
-            # Block-wise S/X (PhD, or PG sem 2/3): one block per 3 credits.
-            total_blocks = reg.credits // 3
-            for blk in range(1, total_blocks + 1):
-                ThesisEvaluation.objects.get_or_create(
+    with transaction.atomic():
+        for reg in regs:
+            reg.status = 'verified'
+            reg.verified_on = now
+            reg.save(update_fields=['status', 'verified_on'])
+            if reg.thesis_slot.evaluation_type == 'decimal':
+                # Single overall score (PG's final thesis semester) -- no block
+                # split, average of supervisor_score/examiner_score lands in
+                # numeric_grade once ThesisEvaluationScore has both.
+                evaluation, _created = ThesisEvaluation.objects.get_or_create(
                     registration=reg,
-                    block_number=blk,
+                    block_number=1,
                 )
-        count += 1
+                ThesisEvaluationScore.objects.get_or_create(evaluation=evaluation)
+            else:
+                # Block-wise S/X (PhD, or PG sem 2/3): one block per 3 credits.
+                total_blocks = reg.credits // 3
+                for blk in range(1, total_blocks + 1):
+                    ThesisEvaluation.objects.get_or_create(
+                        registration=reg,
+                        block_number=blk,
+                    )
+            count += 1
     return JsonResponse({'verified_count': count}, status=200)
 
 
@@ -8873,7 +8886,7 @@ def dean_rank_and_invite_examiner_panel(request):
     return JsonResponse({'detail': 'Ranked and invitation sent'}, status=200)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([AllowAny])
 def examiner_panel_invitation_action(request, token, action):
     """GET, token-authenticated -- external examiner has no Fusion account."""
@@ -10339,6 +10352,10 @@ def supervisor_bulk_submit_all_thesis_grades(request):
                 errors.append({'index': idx, 'evaluation_id': eval_id, 'error': 'This is a decimal-mode thesis and cannot take an S/X grade'})
                 continue
 
+            if evaluation.verified or evaluation.announced:
+                errors.append({'index': idx, 'evaluation_id': eval_id, 'error': 'Grade already verified/announced; cannot be changed'})
+                continue
+
             # Update evaluation
             evaluation.grade = grade
             evaluation.remarks = remarks
@@ -10568,6 +10585,8 @@ def supervisor_student_academic_info(request, roll_no):
     Read-only credits-completed & CPI, computed from the student's own
     academic records -- never manually entered.
     """
+    if getattr(getattr(request.user, 'extrainfo', None), 'user_type', None) != 'faculty':
+        return JsonResponse({'error': 'Only faculty can view student academic info.'}, status=403)
     try:
         student = Student.objects.get(id=roll_no)
     except Student.DoesNotExist:
