@@ -503,6 +503,7 @@ def get_student_add_courses(request):
         session, sem_type = generate_current_session(cur_year, current_sem_no)
         working_year = parse_academic_year(academic_year=session, semester_type=sem_type)[0]
         student_section = student.section or ''
+        from applications.academic_information.models import resolve_offering
 
         courses_list = []
 
@@ -521,7 +522,6 @@ def get_student_add_courses(request):
                     course_id=course, year=working_year, semester_type=sem_type,
                 ).select_related('instructor_id__id__user')
                 sections = []
-                own_section_running = False
                 for o in offerings:
                     u = o.instructor_id.id.user
                     sections.append({
@@ -529,8 +529,8 @@ def get_student_add_courses(request):
                         'section': o.section_label or '',
                         'instructor': f"{u.first_name} {u.last_name}".strip(),
                     })
-                    if student_section and o.section_label == student_section:
-                        own_section_running = True
+                # Auto-resolvable (own section, or a single/unsectioned offering) -> no pick needed; only genuinely sectioned courses missing the student's section prompt one.
+                own_section_running = resolve_offering(student, course, working_year, sem_type) is not None
 
                 courses_list.append({
                     'id': course.id,
@@ -2130,6 +2130,7 @@ def allot_courses(request):
     sem_type = request.data.get('semester_type')
     academic_year = request.data.get('academic_year')
     working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=sem_type)
+    from applications.academic_information.models import resolve_offering
 
     if not all([batch_id, sem_no, sem_type, academic_year]):
         return Response({'error': 'Missing required fields.'},
@@ -2189,6 +2190,7 @@ def allot_courses(request):
                         semester_id=sem,
                         verified=True
                     ))
+                    offering = resolve_offering(student, course, working_year, sem_type)
                     course_regs.append(course_registration(
                         session=academic_year,
                         working_year = working_year,
@@ -2196,7 +2198,8 @@ def allot_courses(request):
                         semester_id=sem,
                         student_id=student,
                         course_slot_id=slot,
-                        semester_type = sem_type
+                        semester_type = sem_type,
+                        course_instructor = offering
                     ))
                 except Exception as e:
                     row_errors.append({
@@ -2345,75 +2348,49 @@ def course_registration_view(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def get_add_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
+def _calendar_window_bounds(event):
+    # Combine each date with its optional time (whole-day default) -> naive local datetimes.
+    start = datetime.datetime.combine(event.from_date, event.from_time or datetime.time.min)
+    end = datetime.datetime.combine(event.to_date, event.to_time or datetime.time.max)
+    return start, end
+
+def _fmt_window_dt(dt):
+    # Human window bound with AM/PM; drops the time part for whole-day (midnight) starts.
+    return dt.strftime('%Y-%m-%d') if dt.time() in (datetime.time.min, datetime.time.max) else dt.strftime('%Y-%m-%d %I:%M %p')
+
+def _check_registration_window(description, action_label):
+    # None if now is inside the event's window; else a JsonResponse(400). Honors from_time/to_time.
     try:
-        add_date = Calendar.objects.get(description=f"Add {user_sem} {year}")
-        add_start_date = add_date.from_date
-        add_end_date = add_date.to_date
-        if current_date<add_start_date:
-            return JsonResponse({f"error": f"Add course will start from {add_start_date} to {add_end_date}"}, status=400)
-        elif current_date > add_end_date:
-            return JsonResponse({f"error": "Add course period has ended"}, status=400)
+        event = Calendar.objects.get(description=description)
     except Calendar.DoesNotExist:
-        return JsonResponse({f"error": "Add course date is not yet decided"}, status=400)
-    except Exception as e:
-        return JsonResponse({f"error": str(e)}, status=400)
+        return JsonResponse({"error": f"{action_label} date is not yet decided"}, status=400)
+    start, end = _calendar_window_bounds(event)
+    now = datetime.datetime.now()
+    if now < start:
+        return JsonResponse({"error": f"{action_label} will start from {_fmt_window_dt(start)} to {_fmt_window_dt(end)}"}, status=400)
+    if now > end:
+        return JsonResponse({"error": f"{action_label} period has ended"}, status=400)
+    return None
+
+def get_add_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
+    return _check_registration_window(f"Add {user_sem} {year}", "Add course")
 
 def get_drop_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
-    try:
-        drop_date = Calendar.objects.get(description=f"Drop {user_sem} {year}")
-        drop_start_date = drop_date.from_date
-        drop_end_date = drop_date.to_date
-        if current_date<drop_start_date:
-            return JsonResponse({f"error": f"Drop course will start from {drop_start_date} to {drop_end_date}"}, status=400)
-        elif current_date > drop_end_date:
-            return JsonResponse({f"error": "Drop course period has ended"}, status=400)
-    except Calendar.DoesNotExist:
-        return JsonResponse({f"error": "Drop course date is not yet decided"}, status=400)
-    except Exception as e:
-        return JsonResponse({f"error": str(e)}, status=400)
+    return _check_registration_window(f"Drop {user_sem} {year}", "Drop course")
 
 def get_replace_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
-    try:
-        replace_date = Calendar.objects.get(description=f"Replace {user_sem} {year}")
-        replace_start_date = replace_date.from_date
-        replace_end_date = replace_date.to_date
-        if current_date<replace_start_date:
-            return JsonResponse({f"error": f"Replace course will start from {replace_start_date} to {replace_end_date}"}, status=400)
-        elif current_date > replace_end_date:
-            return JsonResponse({f"error": "Replace course period has ended"}, status=400)
-    except Calendar.DoesNotExist:
-        return JsonResponse({f"error": "Replace course date is not yet decided"}, status=400)
-    except Exception as e:
-        return JsonResponse({f"error": str(e)}, status=400)
+    return _check_registration_window(f"Replace {user_sem} {year}", "Replace course")
 
 def get_pre_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
-    try:
-        pre_registration_date = Calendar.objects.get(description=f"Pre Registration {user_sem} {year}")
-        prd_start_date = pre_registration_date.from_date
-        prd_end_date = pre_registration_date.to_date
-        if current_date<prd_start_date:
-            return JsonResponse({f"error": "Pre Registration will start from {prd_start_data} to {prd_end_date}"}, status=400)
-        elif current_date > prd_end_date:
-            return JsonResponse({f"error": "Pre Registration Registration has ended"}, status=400)
-    except Calendar.DoesNotExist:
-        return JsonResponse({f"error": "Pre Registration Date is not yet Decided"}, status=400)
-    except Exception as e:
-        pass
+    return _check_registration_window(f"Pre Registration {user_sem} {year}", "Pre Registration")
 
 def get_swayam_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
-    try:
-        swayam_add_date = Calendar.objects.get(description=f"Swayam {user_sem} {year}")
-        swayam_add_start_date = swayam_add_date.from_date
-        swayam_add_end_date = swayam_add_date.to_date
-        if current_date<swayam_add_start_date:
-            return JsonResponse({f"error": "Swayam Registration will start from {swayam_add_start_date} to {swayam_add_end_date}"}, status=400)
-        elif current_date > swayam_add_end_date:
-            return JsonResponse({f"error": "Swayam Registration has ended"}, status=400)
-    except Calendar.DoesNotExist:
-        return JsonResponse({f"error": "Swayam Registration Date is not yet Decided"}, status=400)
-    except Exception as e:
-        pass
+    return _check_registration_window(f"Swayam {user_sem} {year}", "Swayam Registration")
+
+def get_pg_phd_registration_eligibility(current_date, category, user_sem, year=datetime.datetime.now().year):
+    # PG and PhD have separate windows: "PG Registration {sem} {year}" / "PhD Registration {sem} {year}".
+    label = "PhD" if str(category).upper() == "PHD" else "PG"
+    return _check_registration_window(f"{label} Registration {user_sem} {year}", f"{label} registration")
 
 def get_student_registrtion_check(student, sem):
     return StudentRegistrationChecks.objects.filter(student_id=student, semester_id=sem).first()
@@ -4253,7 +4230,7 @@ def registered_slots(request):
                 "semester_type": reg.semester_type,
                 "old_course": {"id": reg.course_id.id, "code": reg.course_id.code, "name" : reg.course_id.name},
                 "new_courses": [
-                    {"id": c.id, "code": c.code, "name": c.name, "seats_available": max(c.max_seats - (course_registration.objects.filter(course_id=c, session = session, semester_type = semester_type).exclude(course_slot_id__name__startswith = 'BL').count()), 0)} for c in others
+                    {"id": c.id, "code": c.code, "name": c.name, "seats_available": max(c.max_seats - (course_registration.objects.filter(course_id=c, session = session, semester_type = semester_type).count()), 0)} for c in others
                 ],
             })
         return JsonResponse(payload, safe=False)   
@@ -4438,7 +4415,7 @@ def allocate_all(request):
     in_q  = set()
     for course, reqs in by_course.items():
         course = Courses.objects.select_for_update().get(pk=course.pk)
-        used   = course_registration.objects.filter(course_id=course, session = year, semester_type = sem).exclude(course_slot_id__name__startswith = 'BL').count()
+        used   = course_registration.objects.filter(course_id=course, session = year, semester_type = sem).count()
         free   = max(course.max_seats - used, 0)
         if free > 0:
             queue.append(course)
@@ -4450,7 +4427,7 @@ def allocate_all(request):
         in_q.discard(course)
 
         while True:
-            used = course_registration.objects.filter(course_id=course, session=year, semester_type=sem).exclude(course_slot_id__name__startswith='BL').count()
+            used = course_registration.objects.filter(course_id=course, session=year, semester_type=sem).count()
             free = max(course.max_seats - used, 0)
             reqs = by_course[course]
             if free <= 0 or not reqs:
@@ -4494,7 +4471,7 @@ def allocate_all(request):
             by_course[course].remove(cr)
 
             # cascade enqueue old_course if it now has free seats and pending requests
-            used_old = course_registration.objects.filter(course_id=old_course, session=year, semester_type=sem).exclude(course_slot_id__name__startswith='BL').count()
+            used_old = course_registration.objects.filter(course_id=old_course, session=year, semester_type=sem).count()
             free_old = max(old_course.max_seats - used_old, 0)
             if free_old > 0 and by_course.get(old_course) and by_course[old_course] and old_course not in in_q:
                 queue.append(old_course)
@@ -5871,6 +5848,23 @@ def apply_batch_changes(request):
                 errors.append({"index": idx, "detail": f"Batch {nid} not found."})
                 continue
 
+            # Section follows the target batch: reuse sections already present there (single -> it, multi -> emptiest).
+            in_batch = Student.objects.filter(batch_id=new_batch)
+            counts = {}
+            for s in (in_batch.exclude(section__isnull=True).exclude(section='')
+                      .values_list('section', flat=True)):
+                counts[s] = counts.get(s, 0) + 1
+            if counts:
+                new_section = next(iter(counts)) if len(counts) == 1 else min(counts, key=lambda s: (counts[s], s))
+            elif in_batch.exists():
+                new_section = None
+            else:
+                errors.append({
+                    "index": idx,
+                    "detail": f"{student.id_id}: target batch '{new_batch}' has no students yet, so its section layout is unknown. Set up its sections first, then move students in.",
+                })
+                continue
+
             BatchChangeHistory.objects.create(
                 student=student,
                 old_batch=old_batch,
@@ -5878,8 +5872,9 @@ def apply_batch_changes(request):
             )
             student.batch_id = new_batch
             student.batch = nyear
+            student.section = new_section
             student.save()
-            
+
             # Sync branch, department, and specialization
             try:
                 from applications.programme_curriculum.models_student_management import StudentBatchUpload
@@ -8175,6 +8170,13 @@ def student_thesis_enrollment_api(request):
     except Exception as e:
         return JsonResponse({'error': f'User setup error: {type(e).__name__}: {e}'}, status=400)
 
+    if request.method == 'POST':
+        _elig = get_pg_phd_registration_eligibility(
+            timezone.now().date(), _student_programme_category(student),
+            student.curr_semester_no, datetime.datetime.now().year)
+        if isinstance(_elig, JsonResponse):
+            return _elig
+
     try:
         # Resolve current semester
         if not student.batch_id or not student.batch_id.curriculum:
@@ -9059,6 +9061,13 @@ def student_progress_seminar_enrollment_api(request):
         except Semester.DoesNotExist:
             return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
 
+        if request.method == 'POST':
+            _elig = get_pg_phd_registration_eligibility(
+                timezone.now().date(), _student_programme_category(student),
+                student.curr_semester_no, datetime.datetime.now().year)
+            if isinstance(_elig, JsonResponse):
+                return _elig
+
         topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
         topic_approved = topic is not None and topic.status == 'dean_approved'
 
@@ -9301,6 +9310,13 @@ def student_teaching_credit_enrollment_api(request):
             )
         except Semester.DoesNotExist:
             return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
+
+        if request.method == 'POST':
+            _elig = get_pg_phd_registration_eligibility(
+                timezone.now().date(), _student_programme_category(student),
+                student.curr_semester_no, datetime.datetime.now().year)
+            if isinstance(_elig, JsonResponse):
+                return _elig
 
         comprehensive_exam_passed = ComprehensiveExam.objects.filter(
             student=student, status='passed'
@@ -9597,6 +9613,12 @@ def phd_submit_course_request(request):
     student, err = _resolve_phd_student(request)
     if err:
         return err
+
+    _elig = get_pg_phd_registration_eligibility(
+        timezone.now().date(), _student_programme_category(student) or 'PHD',
+        student.curr_semester_no, datetime.datetime.now().year)
+    if isinstance(_elig, JsonResponse):
+        return _elig
 
     slot_id = request.data.get('slot_id')
     course_id = request.data.get('course_id')

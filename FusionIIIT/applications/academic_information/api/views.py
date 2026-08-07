@@ -1249,7 +1249,7 @@ def generate_preregistration_report(request):
 @authentication_classes([TokenAuthentication])
 
 def list_calendar(request):
-    events = Calendar.objects.all().values('id', 'description', 'from_date', 'to_date')
+    events = Calendar.objects.all().values('id', 'description', 'from_date', 'to_date', 'from_time', 'to_time')
     return Response(list(events))
 
 @api_view(['POST'])
@@ -1262,6 +1262,8 @@ def add_calendar(request):
         description=request.data.get('description'),
         from_date=request.data.get('from_date'),
         to_date=request.data.get('to_date'),
+        from_time=request.data.get('from_time') or None,
+        to_time=request.data.get('to_time') or None,
         audience_type=audience_type,
         target_role_id=request.data.get('target_role'),
         target_department_id=request.data.get('target_department'),
@@ -1294,6 +1296,8 @@ def update_calendar(request):
     cal.description = request.data.get('description')
     cal.from_date = request.data.get('from_date')
     cal.to_date = request.data.get('to_date')
+    cal.from_time = request.data.get('from_time') or None
+    cal.to_time = request.data.get('to_time') or None
     cal.save()
     return Response({'message': 'Updated successfully!'})
 
