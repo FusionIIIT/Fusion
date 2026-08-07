@@ -294,6 +294,8 @@ class Calendar(models.Model):
 
     from_date = models.DateField()
     to_date = models.DateField()
+    from_time = models.TimeField(null=True, blank=True)
+    to_time = models.TimeField(null=True, blank=True)
     description = models.CharField(max_length=40)
     audience_type = models.CharField(max_length=20, choices=AUDIENCE_CHOICES, default='all')
     target_role = models.ForeignKey(Designation, null=True, blank=True, on_delete=models.SET_NULL)
