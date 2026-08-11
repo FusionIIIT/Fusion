@@ -909,7 +909,9 @@ def save_students_batch(request):
                             discipline_obj = get_or_create_discipline('Computer Science and Engineering')
                         elif specialization in ['Communication and Signal Processing', 'Nanoelectronics and VLSI Design', 'Power & Control']:
                             discipline_obj = get_or_create_discipline('Electronics and Communication Engineering')
-                        elif specialization in ['Design', 'CAD/CAM', 'Manufacturing and Automation']:
+                        elif specialization == 'Design':
+                            discipline_obj = get_or_create_discipline('Design')
+                        elif specialization in ['CAD/CAM', 'Manufacturing and Automation']:
                             discipline_obj = get_or_create_discipline('Mechanical Engineering')
                         elif specialization == 'Mechatronics':
                             discipline_obj = get_or_create_discipline('Mechatronics')
@@ -3326,12 +3328,10 @@ def get_or_create_discipline(discipline_name):
         'mechatronics': 'Mechatronics'
     }
 
-    database_discipline_name = None
-    for key, value in discipline_mapping.items():
-        if key in discipline_lower:
-            database_discipline_name = value
-            break
-    
+    # Pick the longest (most specific) matching key so short substrings like 'me' don't shadow 'mechatronics'/'mechanical engineering'.
+    _matches = [(k, v) for k, v in discipline_mapping.items() if k in discipline_lower]
+    database_discipline_name = max(_matches, key=lambda kv: len(kv[0]))[1] if _matches else None
+
     if not database_discipline_name:
         database_discipline_name = normalized_name
     
