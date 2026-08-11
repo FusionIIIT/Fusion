@@ -4328,7 +4328,7 @@ def batch_create_requests(request):
 @role_required(['acadadmin'])
 def admin_list_requests(request):
     qs = CourseReplacementRequest.objects.select_related(
-        'student', 'student__id__user', 'course_slot', 'old_course', 'new_course'
+        'student', 'student__id__user', 'course_slot', 'course_slot__semester', 'old_course', 'new_course'
     ).all().order_by('-created_at')
     
     year = request.GET.get('academic_year')
@@ -4345,6 +4345,7 @@ def admin_list_requests(request):
             'student': r.student.id.user.username,
             'student_name': r.student.id.user.get_full_name() or r.student.id.user.username,
             'slot': r.course_slot.name if r.course_slot else 'N/A',
+            'semester': (r.course_slot.semester.semester_no if r.course_slot and r.course_slot.semester_id else None),
             'old_course': r.old_course.code if r.old_course else 'N/A',
             'old_course_name': r.old_course.name if r.old_course else 'N/A',
             'new_course': r.new_course.code if r.new_course else 'N/A',
@@ -4401,12 +4402,16 @@ def allocate_all(request):
         body = json.loads(request.body)
         year = body.get('academic_year')
         sem  = body.get('semester_type')
+        request_ids = body.get('request_ids') or []
     except:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     pending = CourseReplacementRequest.objects.select_for_update().filter(
         status="Pending", academic_year=year, semester_type=sem
     )
+    # When specific requests are selected, allot only those.
+    if request_ids:
+        pending = pending.filter(id__in=request_ids)
     by_course = defaultdict(list)
     for cr in pending:
         by_course[cr.new_course].append(cr)
@@ -4435,26 +4440,25 @@ def allocate_all(request):
 
             # Always pick one request at a time (FIFO)
             cr = reqs[0]
+            # Find the existing registration to replace; if missing, skip without approving so the batch still runs.
+            old_reg = course_registration.objects.select_for_update().filter(
+                student_id=cr.student,
+                course_slot_id=cr.course_slot,
+                session=cr.academic_year,
+                semester_type=cr.semester_type,
+            ).first()
+            if old_reg is None:
+                by_course[course].remove(cr)
+                results.append({'id': cr.id, 'status': 'Skipped',
+                                'reason': 'No existing registration in this slot to replace.'})
+                continue
+
             cr.status = "Approved"
             cr.processed_at = timezone.now()
             cr.save(update_fields=['status', 'processed_at'])
             results.append({'id': cr.id, 'status': 'Approved'})
-            # print(
-            #     "Looking for old_reg with:",
-            #     "student_id=", cr.student,
-            #     "course_slot_id=", cr.course_slot,
-            #     "session=", cr.academic_year,
-            #     "semester_type=", cr.semester_type
-            # )
-            # swap registrations
-            old_reg = course_registration.objects.select_for_update().get(
-                student_id=cr.student,
-                course_slot_id=cr.course_slot,
-                session=cr.academic_year,
-                semester_type=cr.semester_type
-            )
+
             old_course = old_reg.course_id
-            # print(old_course)
             semester_id = old_reg.semester_id
             old_reg.delete()
 
@@ -4791,6 +4795,7 @@ def student_list_drop_requests(request):
             {
                 'id': r.id,
                 'slot': r.course_slot.name,
+                'semester': r.course_slot.semester.semester_no if r.course_slot and r.course_slot.semester_id else None,
                 'course': r.course.code,
                 'course_name': r.course.name,
                 'status': r.status,
@@ -4821,7 +4826,8 @@ def admin_list_drop_requests(request):
         qs = CourseDropRequest.objects.select_related(
             'student__id__user',
             'course',
-            'course_slot'
+            'course_slot',
+            'course_slot__semester'
         ).all().order_by('-created_at')
 
         year = request.GET.get('academic_year', '').strip()
@@ -4840,6 +4846,7 @@ def admin_list_drop_requests(request):
                 'student': r.student.id.user.username,
                 'student_name': f"{r.student.id.user.first_name} {r.student.id.user.last_name}".strip(),
                 'slot': r.course_slot.name,
+                'semester': r.course_slot.semester.semester_no if r.course_slot and r.course_slot.semester_id else None,
                 'course': r.course.code,
                 'course_name': r.course.name,
                 'status': r.status,
@@ -5040,6 +5047,7 @@ def student_list_add_requests(request):
             {
                 'id': r.id,
                 'slot': r.course_slot.name,
+                'semester': r.course_slot.semester.semester_no if r.course_slot and r.course_slot.semester_id else None,
                 'course': r.course.code,
                 'course_name': r.course.name,
                 'status': r.status,
@@ -5070,7 +5078,8 @@ def admin_list_add_requests(request):
         qs = CourseAddRequest.objects.select_related(
             'student__id__user',
             'course',
-            'course_slot'
+            'course_slot',
+            'course_slot__semester'
         ).all().order_by('-created_at')
 
         year = request.GET.get('academic_year', '').strip()
@@ -5089,6 +5098,7 @@ def admin_list_add_requests(request):
                 'student': r.student.id.user.username,
                 'student_name': f"{r.student.id.user.first_name} {r.student.id.user.last_name}".strip(),
                 'slot': r.course_slot.name,
+                'semester': r.course_slot.semester.semester_no if r.course_slot and r.course_slot.semester_id else None,
                 'course': r.course.code,
                 'course_name': r.course.name,
                 'status': r.status,
