@@ -63,6 +63,8 @@ def _decode_base64_image(data_url, name_prefix="image"):
         ext = (header.split("/")[-1].split(";")[0] or "png").lower()
     if ext == "jpeg":
         ext = "jpg"
+    if ext not in ("png", "jpg"):
+        return None
     return ContentFile(raw, name="{}.{}".format(name_prefix, ext))
 
 def parse_request_data(request, field_mappings=None):
