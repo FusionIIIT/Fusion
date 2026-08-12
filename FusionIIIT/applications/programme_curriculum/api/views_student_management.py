@@ -1,4 +1,5 @@
 import json
+import base64
 import pandas as pd
 import openpyxl
 import random
@@ -7,6 +8,7 @@ import string
 import sys
 import os
 from io import BytesIO
+from django.core.files.base import ContentFile
 from datetime import datetime, date
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -42,6 +44,26 @@ except ImportError:
     from django.db import models
     from django.contrib.auth.models import User
     pass
+
+def _decode_base64_image(data_url, name_prefix="image"):
+    """
+    Convert a base64 data URL (data:image/png;base64,...) to a ContentFile for an
+    ImageField. Returns None for empty/invalid input or an already-stored path, so
+    re-saving an unchanged edit form leaves the existing image untouched.
+    """
+    if not data_url or not isinstance(data_url, str) or ";base64," not in data_url:
+        return None
+    header, encoded = data_url.split(";base64,", 1)
+    try:
+        raw = base64.b64decode(encoded)
+    except Exception:
+        return None
+    ext = "png"
+    if "/" in header:
+        ext = (header.split("/")[-1].split(";")[0] or "png").lower()
+    if ext == "jpeg":
+        ext = "jpg"
+    return ContentFile(raw, name="{}.{}".format(name_prefix, ext))
 
 def parse_request_data(request, field_mappings=None):
     """
@@ -1315,8 +1337,13 @@ def add_single_student(request):
         dob = parse_date_flexible(data.get('date_of_birth'))
 
         # Build shared kwargs used by both PhD and UG/PG models
+        _roll_for_file = str(student_data.get('roll_number') or data.get('rollNumber') or data.get('roll_number') or 'student')
         _shared_kwargs = dict(
             name=student_data.get('name') or data.get('name', ''),
+            hindi_name=data.get('hindi_name', '') or data.get('hindiName', ''),
+            aadhar_number=(data.get('aadhar_number') or data.get('aadharNumber') or data.get('aadharNo') or ''),
+            photo=_decode_base64_image(data.get('photo'), "photo_" + _roll_for_file),
+            signature=_decode_base64_image(data.get('signature'), "sign_" + _roll_for_file),
             roll_number=student_data.get('roll_number') or data.get('rollNumber', '') or data.get('roll_number', ''),
             institute_email=student_data.get('institute_email') or data.get('instituteEmail', '') or data.get('institute_email', ''),
             father_name=data.get('father_name', ''),
@@ -3687,7 +3714,8 @@ def update_student(request, student_id):
                         pass
 
         direct_fields = [
-            'name', 'gender', 'category', 'pwd', 'minority', 'address', 'state', 'branch', 'specialization',
+            'name', 'hindi_name', 'aadhar_number',
+            'gender', 'category', 'pwd', 'minority', 'address', 'state', 'branch', 'specialization',
             'personal_email', 'parent_email', 'country', 'nationality',
             'blood_group', 'blood_group_remarks', 'pwd_category', 'pwd_category_remarks',
             'admission_mode', 'admission_mode_remarks', 'income_group', 'income'
@@ -3714,6 +3742,17 @@ def update_student(request, student_id):
                     setattr(student, actual_field, value)
                 except AttributeError:
                     pass
+
+        # Photo / signature: replace only when a new base64 image is sent; an
+        # unchanged edit form re-sends the existing file path, which is ignored.
+        for _img_field in ('photo', 'signature'):
+            if _img_field in data:
+                _decoded = _decode_base64_image(
+                    data[_img_field],
+                    "{}_{}".format(_img_field, student.roll_number or student_id),
+                )
+                if _decoded is not None:
+                    setattr(student, _img_field, _decoded)
 
         dob_value = data.get('dob') or data.get('dateOfBirth') or data.get('date_of_birth')
         if dob_value:
@@ -4434,6 +4473,13 @@ def get_batch_students(request, batch_id):
                 'mother_occupation': getattr(student, 'mother_occupation', ''),
                 'mother_mobile': getattr(student, 'mother_mobile', ''),
                 'aadhar_number': getattr(student, 'aadhar_number', ''),
+                'aadharNo': getattr(student, 'aadhar_number', ''),
+                'hindi_name': getattr(student, 'hindi_name', ''),
+                'hindiName': getattr(student, 'hindi_name', ''),
+                'photo': student.photo.url if getattr(student, 'photo', None) else '',
+                'signature': student.signature.url
+                if getattr(student, 'signature', None)
+                else '',
 
                 'allotted_category': getattr(student, 'allotted_category', ''),
                 'allotted_gender': getattr(student, 'allotted_gender', ''),
