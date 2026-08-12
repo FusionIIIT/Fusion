@@ -45,11 +45,12 @@ except ImportError:
     from django.contrib.auth.models import User
     pass
 
-def _decode_base64_image(data_url, name_prefix="image"):
+def _decode_base64_image(data_url, name_prefix="image", max_kb=None):
     """
     Convert a base64 data URL (data:image/png;base64,...) to a ContentFile for an
-    ImageField. Returns None for empty/invalid input or an already-stored path, so
-    re-saving an unchanged edit form leaves the existing image untouched.
+    ImageField. Returns None for empty/invalid input, an already-stored path (so
+    re-saving an unchanged edit form leaves the existing image untouched), a
+    non-PNG/JPG type, or a payload larger than max_kb (server-side size guard).
     """
     if not data_url or not isinstance(data_url, str) or ";base64," not in data_url:
         return None
@@ -57,6 +58,8 @@ def _decode_base64_image(data_url, name_prefix="image"):
     try:
         raw = base64.b64decode(encoded)
     except Exception:
+        return None
+    if max_kb is not None and len(raw) > max_kb * 1024:
         return None
     ext = "png"
     if "/" in header:
@@ -1344,8 +1347,8 @@ def add_single_student(request):
             name=student_data.get('name') or data.get('name', ''),
             hindi_name=data.get('hindi_name', '') or data.get('hindiName', ''),
             aadhar_number=(data.get('aadhar_number') or data.get('aadharNumber') or data.get('aadharNo') or ''),
-            photo=_decode_base64_image(data.get('photo'), _roll_for_file + "_photo"),
-            signature=_decode_base64_image(data.get('signature'), _roll_for_file + "_sign"),
+            photo=_decode_base64_image(data.get('photo'), _roll_for_file + "_photo", max_kb=200),
+            signature=_decode_base64_image(data.get('signature'), _roll_for_file + "_sign", max_kb=30),
             roll_number=student_data.get('roll_number') or data.get('rollNumber', '') or data.get('roll_number', ''),
             institute_email=student_data.get('institute_email') or data.get('instituteEmail', '') or data.get('institute_email', ''),
             father_name=data.get('father_name', ''),
@@ -3753,6 +3756,7 @@ def update_student(request, student_id):
                 _decoded = _decode_base64_image(
                     data[_img_field],
                     "{}_{}".format(student.roll_number or student_id, _suffix),
+                    max_kb=200 if _img_field == 'photo' else 30,
                 )
                 if _decoded is not None:
                     setattr(student, _img_field, _decoded)
