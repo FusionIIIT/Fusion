@@ -445,6 +445,42 @@ def delete_notification(request):
         )
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def clear_notifications(request):
+    """
+    Bulk-marks the requester's notifications as deleted for a single tab.
+    scope='announcement' clears announcement-flagged items; any other scope
+    clears the regular notifications. Honours the role-visibility rule so a
+    user only ever clears what they can actually see.
+    """
+    try:
+        scope = request.data.get('scope', 'notification')
+        qs = Notification.objects.filter(recipient=request.user, deleted=False)
+        target_ids = []
+        unread_cleared = 0
+        for n in _visible_notifications(request.user, qs):
+            data = n.data if isinstance(n.data, dict) else {}
+            is_announcement = data.get('flag') == 'announcement'
+            if (scope == 'announcement') == is_announcement:
+                target_ids.append(n.id)
+                if n.unread:
+                    unread_cleared += 1
+        Notification.objects.filter(id__in=target_ids).update(deleted=True)
+        return Response(
+            {'message': 'Notifications cleared.',
+             'cleared': len(target_ids),
+             'unread_cleared': unread_cleared},
+            status=status.HTTP_200_OK,
+        )
+    except Exception:
+        return Response(
+            {'error': 'Failed to clear notifications.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
 def resolve_audience_recipients(obj):
     """
     Resolves recipient Users for anything carrying the shared audience_type/
