@@ -3759,6 +3759,13 @@ def update_student(request, student_id):
                     max_kb=200 if _img_field == 'photo' else 30,
                 )
                 if _decoded is not None:
+                    # Remove the previous file so replacements don't orphan on disk.
+                    _old = getattr(student, _img_field, None)
+                    if _old:
+                        try:
+                            _old.delete(save=False)
+                        except Exception:
+                            pass
                     setattr(student, _img_field, _decoded)
 
         dob_value = data.get('dob') or data.get('dateOfBirth') or data.get('date_of_birth')
