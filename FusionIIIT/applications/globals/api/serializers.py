@@ -32,10 +32,24 @@ class AuthUserSerializer(serializers.ModelSerializer):
         return token.key
 
 class NotificationSerializer(serializers.ModelSerializer):
+    data = serializers.SerializerMethodField()
 
     class Meta:
         model=Notification
         fields=('__all__')
+
+    def get_data(self, obj):
+        import json, ast
+        payload = obj.data
+        if isinstance(payload, str):
+            try:
+                payload = json.loads(payload)
+            except Exception:
+                try:
+                    payload = ast.literal_eval(payload)
+                except Exception:
+                    payload = {}
+        return json.dumps(payload if isinstance(payload, dict) else {})
 
 class DepartmentInfoSerializer(serializers.ModelSerializer):
 

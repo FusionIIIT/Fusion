@@ -30,6 +30,7 @@ urlpatterns = [
     re_path(r'^notification/', views.notification, name='notification'),
     re_path(r'^notificationread', views.NotificationRead, name='notifications-read'),
     re_path(r'^notificationdelete', views.delete_notification, name='notifications-delete'),
+    re_path(r'^notificationclear', views.clear_notifications, name='notifications-clear'),
     re_path(r'^notificationunread', views.NotificationUnread, name='notifications-unread'),
 
     # Announcement endpoints
