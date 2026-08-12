@@ -1344,8 +1344,8 @@ def add_single_student(request):
             name=student_data.get('name') or data.get('name', ''),
             hindi_name=data.get('hindi_name', '') or data.get('hindiName', ''),
             aadhar_number=(data.get('aadhar_number') or data.get('aadharNumber') or data.get('aadharNo') or ''),
-            photo=_decode_base64_image(data.get('photo'), "photo_" + _roll_for_file),
-            signature=_decode_base64_image(data.get('signature'), "sign_" + _roll_for_file),
+            photo=_decode_base64_image(data.get('photo'), _roll_for_file + "_photo"),
+            signature=_decode_base64_image(data.get('signature'), _roll_for_file + "_sign"),
             roll_number=student_data.get('roll_number') or data.get('rollNumber', '') or data.get('roll_number', ''),
             institute_email=student_data.get('institute_email') or data.get('instituteEmail', '') or data.get('institute_email', ''),
             father_name=data.get('father_name', ''),
@@ -3749,9 +3749,10 @@ def update_student(request, student_id):
         # unchanged edit form re-sends the existing file path, which is ignored.
         for _img_field in ('photo', 'signature'):
             if _img_field in data:
+                _suffix = 'photo' if _img_field == 'photo' else 'sign'
                 _decoded = _decode_base64_image(
                     data[_img_field],
-                    "{}_{}".format(_img_field, student.roll_number or student_id),
+                    "{}_{}".format(student.roll_number or student_id, _suffix),
                 )
                 if _decoded is not None:
                     setattr(student, _img_field, _decoded)
