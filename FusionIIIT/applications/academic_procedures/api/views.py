@@ -2388,9 +2388,14 @@ def get_swayam_registration_eligibility(current_date, user_sem, year = datetime.
     return _check_registration_window(f"Swayam {user_sem} {year}", "Swayam Registration")
 
 def get_pg_phd_registration_eligibility(current_date, category, user_sem, year=datetime.datetime.now().year):
-    # PG and PhD have separate windows: "PG Registration {sem} {year}" / "PhD Registration {sem} {year}".
-    label = "PhD" if str(category).upper() == "PHD" else "PG"
-    return _check_registration_window(f"{label} Registration {user_sem} {year}", f"{label} registration")
+    # PhD runs Odd AND Even intakes, so the same sem number recurs across terms in one calendar year -> key by current term (from the date) + academic year. PG is single-intake, keyed by sem + year.
+    if str(category).upper() == "PHD":
+        if current_date.month >= 7:
+            term, ay = "Odd", f"{current_date.year}-{str(current_date.year + 1)[-2:]}"
+        else:
+            term, ay = "Even", f"{current_date.year - 1}-{str(current_date.year)[-2:]}"
+        return _check_registration_window(f"PhD Registration {term} {user_sem} {ay}", "PhD registration")
+    return _check_registration_window(f"PG Registration {user_sem} {year}", "PG registration")
 
 def get_student_registrtion_check(student, sem):
     return StudentRegistrationChecks.objects.filter(student_id=student, semester_id=sem).first()
@@ -9578,7 +9583,36 @@ def phd_course_slots(request):
         {'id': s.id, 'name': s.name, 'course_count': s.course_count}
         for s in slots if s.id not in taken_slot_ids
     ]
-    return JsonResponse({'semester_no': semester.semester_no, 'slots': data}, status=200)
+    # Registration window (same Calendar gate enforced at submit) so the form only renders when open.
+    import json as _json
+    _elig = get_pg_phd_registration_eligibility(
+        timezone.now().date(), _student_programme_category(student),
+        student.curr_semester_no, datetime.datetime.now().year)
+    registration_open = _elig is None
+    registration_message = '' if registration_open else _json.loads(_elig.content).get('error', 'Registration is not open.')
+    return JsonResponse({
+        'semester_no': semester.semester_no,
+        'slots': data,
+        'registration_open': registration_open,
+        'registration_message': registration_message,
+    }, status=200)
+
+
+# Same backlog-eligibility rule as the UG add-course flow (add_course): a BL
+# slot course may only be (re)registered if the student's latest grade in it is
+# below C+. PG/PhD have no sections, so only this grade gate carries over.
+_PHD_BL_ALLOWED_GRADES = ['F', 'X', 'CD', 'C', 'D+', 'D']
+
+
+def _phd_bl_grade_status(username, course):
+    """Returns (allowed, grade) for a BL course. grade is None when the student
+    has no recorded grade in the course (also treated as not allowed)."""
+    sg = Student_grades.objects.filter(
+        roll_no=username, course_id=course
+    ).order_by('-year', '-semester').first()
+    if not sg:
+        return False, None
+    return sg.grade in _PHD_BL_ALLOWED_GRADES, sg.grade
 
 
 @api_view(['GET'])
@@ -9606,8 +9640,21 @@ def phd_course_slot_courses(request):
     except (Semester.DoesNotExist, CourseSlot.DoesNotExist):
         return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
 
-    courses = slot.courses.all().values('id', 'code', 'name', 'credit')
-    return JsonResponse({'courses': list(courses)}, status=200)
+    # Like the UG add flow, the slot lists all its courses; the BL backlog grade
+    # rule is enforced at submit. BL courses also carry their eligibility so the
+    # form can warn the moment an ineligible one is picked, not only at submit.
+    is_bl = slot.name.startswith('BL')
+    username = student.id.user.username
+    courses = []
+    for c in slot.courses.all():
+        entry = {'id': c.id, 'code': c.code, 'name': c.name, 'credit': c.credit,
+                 'bl_eligible': True, 'bl_grade': None}
+        if is_bl:
+            allowed, grade = _phd_bl_grade_status(username, c)
+            entry['bl_eligible'] = allowed
+            entry['bl_grade'] = grade
+        courses.append(entry)
+    return JsonResponse({'courses': courses}, status=200)
 
 
 @api_view(['POST'])
@@ -9648,6 +9695,14 @@ def phd_submit_course_request(request):
         return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
     except Courses.DoesNotExist:
         return JsonResponse({'error': 'Course not found in this slot'}, status=404)
+
+    # BL (backlog) slots: enforce the UG add-course grade gate.
+    if slot.name.startswith('BL'):
+        allowed, grade = _phd_bl_grade_status(student.id.user.username, course)
+        if grade is None:
+            return JsonResponse({'error': 'You can only register for BL courses if you have a grade below C+ in this course. No grade record found.'}, status=400)
+        if not allowed:
+            return JsonResponse({'error': f'You can only register for BL courses with grades below C+. Your grade: {grade}'}, status=400)
 
     if PhDCourseRegistrationRequest.objects.filter(
         student=student, semester=semester, course_slot=slot, status__in=['Pending', 'Approved']
@@ -9736,7 +9791,7 @@ def phd_admin_list_requests(request):
     teaching-credit enrollment list endpoints (used by the merged admin view).
     """
     qs = PhDCourseRegistrationRequest.objects.select_related(
-        'student__id__user', 'course', 'course_slot', 'semester'
+        'student__id__user', 'student__batch_id__discipline', 'course', 'course_slot', 'semester'
     ).all().order_by('-requested_at')
 
     year = request.GET.get('academic_year', '').strip()
@@ -9759,6 +9814,8 @@ def phd_admin_list_requests(request):
         'id': r.id,
         'student': r.student.id.user.username,
         'student_name': f"{r.student.id.user.first_name} {r.student.id.user.last_name}".strip(),
+        'discipline': (r.student.batch_id.discipline.acronym if r.student.batch_id and r.student.batch_id.discipline_id else ''),
+        'specialization': r.student.specialization or '',
         'slot': r.course_slot.name,
         'course': r.course.code,
         'course_name': r.course.name,
@@ -9855,13 +9912,29 @@ def phd_admin_process_requests(request):
             results.append({'id': req_id, 'status': 'error', 'detail': 'Already registered'})
             continue
 
+        # Registration type from the prior grade (same rule as the UG add approval).
+        registration_type = 'Regular'
+        _sg = Student_grades.objects.filter(
+            roll_no=req.student.id.user.username, course_id=req.course,
+        ).order_by('-year', '-semester').first()
+        if _sg and _sg.grade:
+            if _sg.grade in ['F', 'X', 'CD']:
+                registration_type = 'Backlog'
+            elif _sg.grade in ['C', 'D+', 'D']:
+                registration_type = 'Improvement'
+
+        # The prior registration of this course (the failed/low attempt) is the one being replaced.
+        old_reg = course_registration.objects.filter(
+            student_id=req.student, course_id=req.course,
+        ).order_by('-working_year', '-semester_id__semester_no').first()
+
         try:
             # Nested atomic block (savepoint): a unique-constraint collision
             # here (e.g. two different course_slot requests for the same
             # actual course approved concurrently) must only roll back this
             # one item, not the whole batch's already-applied results.
             with transaction.atomic():
-                course_registration.objects.create(
+                new_reg = course_registration.objects.create(
                     student_id=req.student,
                     course_id=req.course,
                     course_slot_id=req.course_slot,
@@ -9869,8 +9942,14 @@ def phd_admin_process_requests(request):
                     session=req.academic_year,
                     semester_type=req.semester_type,
                     working_year=datetime.datetime.now().year,
-                    registration_type='Regular',
+                    registration_type=registration_type,
                 )
+                # Mirror UG: link the replaced (old) registration to the new one.
+                if old_reg:
+                    course_replacement.objects.create(
+                        old_course_registration=old_reg,
+                        new_course_registration=new_reg,
+                    )
         except IntegrityError:
             req.status = 'Rejected'
             req.remarks = 'Already registered for this course'
