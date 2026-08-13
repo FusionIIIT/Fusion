@@ -1,8 +1,9 @@
 from django.conf.urls import url
 from django.urls import path, include
 from django.contrib import admin
-from . import views 
+from . import views
 from . import views_student_management
+from . import views_student_profile
 from .. import views_password_email
 
 
@@ -176,6 +177,8 @@ urlpatterns = [
     path('batches/<str:batch_id>/delete/', views.delete_batch_invalid, name='delete_batch_invalid'),
     path('admin_delete_batch/<int:batch_id>/', views.delete_batch, name='admin_delete_batch'),
     path('batches/list/', views_student_management.list_batches_with_status, name='list_batches_with_status'),
+    path('student/profile_completion/', views_student_profile.student_profile_completion, name='student_profile_completion'),
+    path('student/profile_completion/submit/', views_student_profile.student_profile_completion_submit, name='student_profile_completion_submit'),
     path('batches/sync/', views_student_management.sync_batch_data, name='sync_batch_data'),
     path('batches/sync_to_configuration/', views_student_management.sync_batches_to_configuration, name='sync_batches_to_configuration'),
     path('batches/validate_prerequisites/', views_student_management.validate_batch_prerequisites, name='validate_batch_prerequisites'),

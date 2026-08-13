@@ -107,14 +107,29 @@ def auth_view(request):
             
             accessible_modules[designation] = filtered_modules
             
+    # A first-login student (has an incomplete batch-upload record) must finish
+    # the profile-completion popup before using the app.
+    must_complete_profile = False
+    try:
+        from applications.programme_curriculum.models_student_management import (
+            StudentBatchUpload, PhdStudentBatchUpload,
+        )
+        must_complete_profile = (
+            StudentBatchUpload.objects.filter(user=user, profile_completed=False).exists()
+            or PhdStudentBatchUpload.objects.filter(user=user, profile_completed=False).exists()
+        )
+    except Exception:
+        must_complete_profile = False
+
     resp={
         'designation_info' : designation_info,
         'name': name,
         'roll_no': roll_no,
         'accessible_modules': accessible_modules,
-        'last_selected_role': last_selected_role
+        'last_selected_role': last_selected_role,
+        'must_complete_profile': must_complete_profile,
     }
-    
+
     return Response(data=resp,status=status.HTTP_200_OK)
 
 def _notification_role_matches(notification, active_role):

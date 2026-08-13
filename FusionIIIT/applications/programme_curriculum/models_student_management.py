@@ -206,6 +206,7 @@ class StudentBatchUpload(models.Model):
     aadhar_number = models.CharField(max_length=12, blank=True, null=True)
     photo = models.ImageField(upload_to='programme_curriculum/student_photos', blank=True, null=True, help_text="Passport photo (max 200KB)")
     signature = models.ImageField(upload_to='programme_curriculum/student_signatures', blank=True, null=True, help_text="Signature image (max 30KB)")
+    profile_completed = models.BooleanField(default=False, help_text="True once the student submits the first-login profile-completion popup")
 
     # Allotment details
     allotted_category = models.CharField(max_length=50, blank=True, null=True)
@@ -734,6 +735,7 @@ class PhdStudentBatchUpload(models.Model):
     )
     photo = models.ImageField(upload_to='programme_curriculum/student_photos', blank=True, null=True, help_text="Passport photo (max 200KB)")
     signature = models.ImageField(upload_to='programme_curriculum/student_signatures', blank=True, null=True, help_text="Signature image (max 30KB)")
+    profile_completed = models.BooleanField(default=False, help_text="True once the student submits the first-login profile-completion popup")
 
     # ---- System / batch tracking fields ----
     admission_semester = models.CharField(

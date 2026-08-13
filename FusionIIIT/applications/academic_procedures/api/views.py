@@ -213,11 +213,31 @@ def get_all_courses(request):
 #         print(e)
 #         return Response(data = str(e) , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+def block_pg_phd(view_func):
+    """403 for PG/PhD students; these UG-only flows are hidden from them in the UI."""
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        try:
+            student = Student.objects.select_related('batch_id__curriculum').get(
+                id__user=request.user
+            )
+        except Student.DoesNotExist:
+            return JsonResponse({'error': 'Student record not found'}, status=404)
+        if _is_phd_student(student):
+            return JsonResponse(
+                {'error': 'This section is not available for PG/PhD students'},
+                status=403,
+            )
+        return view_func(request, *args, **kwargs)
+    return _wrapped
+
+
 # API for student to add BL courses
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 @role_required(['student'])
+@block_pg_phd
 def add_course(request):
     try:
         student = Student.objects.select_related('batch_id__curriculum').get(
@@ -357,6 +377,7 @@ def add_course(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 @role_required(['student'])
+@block_pg_phd
 def get_student_add_course_slots(request):
     try:
         current_user = request.user
@@ -448,6 +469,7 @@ def get_student_add_course_slots(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 @role_required(['student'])
+@block_pg_phd
 def get_student_add_courses(request):
     try:
         current_user = request.user
@@ -754,6 +776,7 @@ def student_view_registration(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def final_registration(request):
     try:
         with transaction.atomic():
@@ -1780,6 +1803,7 @@ def verify_course(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def final_registration_page(request):
     try:
         current_user = request.user
@@ -2420,6 +2444,7 @@ def get_student_registrations(student, semester):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def get_preregistration_data(request):
     """
     Returns the list of course slots available for the student's next semester,
@@ -2528,6 +2553,7 @@ def get_preregistration_data(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def submit_preregistration(request):
     """
     Expects a POST request with JSON data containing an array "registrations".
@@ -2610,6 +2636,7 @@ def submit_preregistration(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def get_swayam_registration_data(request):
     """
     Returns the list of course slots available for Swayam registration for the student's next semester,
@@ -2687,6 +2714,7 @@ def get_swayam_registration_data(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def submit_swayam_registration(request):
     """
     Accepts a POST request with JSON data for Swayam Extra Credits registration.
@@ -2792,6 +2820,7 @@ def submit_swayam_registration(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_replace_check(request):
     try:
         current_user = request.user
@@ -2944,6 +2973,7 @@ def swayam_replace_check(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_replace_slots(request):
     try:
         semester_no = request.GET.get('semester_no')
@@ -2982,6 +3012,7 @@ def swayam_replace_slots(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_target_slots(request):
     try:
         semester_no = request.GET.get('semester_no')
@@ -3020,6 +3051,7 @@ def swayam_target_slots(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_replace_courses(request):
     try:
         slot_id = request.GET.get('slot_id')
@@ -3080,6 +3112,7 @@ def swayam_replace_courses(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_target_courses(request):
     try:
         slot_id = request.GET.get('slot_id')
@@ -3130,6 +3163,7 @@ def swayam_target_courses(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_current_courses(request):
     try:
         slot_id = request.GET.get('slot_id')
@@ -3179,6 +3213,7 @@ def swayam_current_courses(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_replace_submit(request):
     try:
         current_user = request.user
@@ -3331,6 +3366,7 @@ def swayam_replace_submit(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def student_swayam_requests(request):
     try:
         current_user = request.user
@@ -4194,6 +4230,7 @@ def ta_stipends(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def registered_slots(request):
     try:
         current_user = request.user
@@ -4247,6 +4284,7 @@ def registered_slots(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def batch_create_requests(request):
     try:
         current_user = request.user
@@ -4368,6 +4406,7 @@ def admin_list_requests(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def student_list_requests(request):
     current_user = request.user
     user_details = current_user.extrainfo
@@ -4596,6 +4635,7 @@ def delete_replacement_requests(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def student_registrations_for_drop(request):
     """
     GET /api/student/registrations/
@@ -4652,6 +4692,7 @@ def student_registrations_for_drop(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def drop_course(request):
     """
     POST /api/student/drop-course/
@@ -4767,6 +4808,7 @@ def student_calendar_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def student_list_drop_requests(request):
     try:
         current_user = request.user
@@ -5019,6 +5061,7 @@ def delete_drop_requests(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def student_list_add_requests(request):
     try:
         current_user = request.user
