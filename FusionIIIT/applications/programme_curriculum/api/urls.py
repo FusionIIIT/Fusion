@@ -179,6 +179,7 @@ urlpatterns = [
     path('batches/list/', views_student_management.list_batches_with_status, name='list_batches_with_status'),
     path('student/profile_completion/', views_student_profile.student_profile_completion, name='student_profile_completion'),
     path('student/profile_completion/submit/', views_student_profile.student_profile_completion_submit, name='student_profile_completion_submit'),
+    path('student/image/<str:model>/<int:pk>/<str:kind>/', views_student_management.student_image, name='student_image'),
     path('batches/sync/', views_student_management.sync_batch_data, name='sync_batch_data'),
     path('batches/sync_to_configuration/', views_student_management.sync_batches_to_configuration, name='sync_batches_to_configuration'),
     path('batches/validate_prerequisites/', views_student_management.validate_batch_prerequisites, name='validate_batch_prerequisites'),

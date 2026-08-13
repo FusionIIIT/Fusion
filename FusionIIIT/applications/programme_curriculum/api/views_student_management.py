@@ -8,9 +8,9 @@ import string
 import sys
 import os
 from io import BytesIO
-from django.core.files.base import ContentFile
 from datetime import datetime, date
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, Http404
+from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
@@ -20,7 +20,7 @@ from django.db.models import Q, Count
 from django.conf import settings
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework import status
@@ -45,30 +45,66 @@ except ImportError:
     from django.contrib.auth.models import User
     pass
 
-def _decode_base64_image(data_url, name_prefix="image", max_kb=None):
-    """
-    Convert a base64 data URL (data:image/png;base64,...) to a ContentFile for an
-    ImageField. Returns None for empty/invalid input, an already-stored path (so
-    re-saving an unchanged edit form leaves the existing image untouched), a
-    non-PNG/JPG type, or a payload larger than max_kb (server-side size guard).
-    """
+def _decode_base64_blob(data_url, max_kb=None):
+    """Return (raw_bytes, mime) from a base64 data URL for DB storage, or
+    (None, None) for empty/invalid/existing-URL/wrong-type/oversized input
+    (caller then leaves the stored image unchanged)."""
     if not data_url or not isinstance(data_url, str) or ";base64," not in data_url:
-        return None
+        return None, None
     header, encoded = data_url.split(";base64,", 1)
     try:
         raw = base64.b64decode(encoded)
     except Exception:
-        return None
+        return None, None
     if max_kb is not None and len(raw) > max_kb * 1024:
-        return None
+        return None, None
     ext = "png"
     if "/" in header:
         ext = (header.split("/")[-1].split(";")[0] or "png").lower()
     if ext == "jpeg":
         ext = "jpg"
     if ext not in ("png", "jpg"):
-        return None
-    return ContentFile(raw, name="{}.{}".format(name_prefix, ext))
+        return None, None
+    return raw, ("image/png" if ext == "png" else "image/jpeg")
+
+
+def _student_image_url(rec, kind):
+    """API URL that serves rec's photo/signature from the DB, '' if none.
+    Falls back to a legacy on-disk file so pre-migration records still show."""
+    if getattr(rec, kind + "_blob", None):
+        model = "phd" if rec.__class__.__name__ == "PhdStudentBatchUpload" else "ug"
+        return "/programme_curriculum/api/student/image/{}/{}/{}/".format(model, rec.pk, kind)
+    stored = getattr(rec, kind, None)
+    try:
+        return stored.url if stored else ""
+    except Exception:
+        return ""
+
+
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def student_image(request, model, pk, kind):
+    """Stream a student's photo/signature bytes from the DB. Public because
+    <img> tags can't send an auth header (matches the previous /media/ serving)."""
+    if kind not in ("photo", "signature"):
+        raise Http404
+    from applications.programme_curriculum.models_student_management import (
+        StudentBatchUpload, PhdStudentBatchUpload,
+    )
+    Model = PhdStudentBatchUpload if model == "phd" else StudentBatchUpload
+    rec = get_object_or_404(Model, pk=pk)
+    blob = getattr(rec, kind + "_blob", None)
+    mime = getattr(rec, kind + "_mime", None) or "image/jpeg"
+    if blob:
+        return HttpResponse(bytes(blob), content_type=mime)
+    stored = getattr(rec, kind, None)
+    if stored:
+        try:
+            return HttpResponse(stored.read(), content_type=mime)
+        except Exception:
+            pass
+    raise Http404
 
 def parse_request_data(request, field_mappings=None):
     """
@@ -1343,12 +1379,14 @@ def add_single_student(request):
 
         # Build shared kwargs used by both PhD and UG/PG models
         _roll_for_file = str(student_data.get('roll_number') or data.get('rollNumber') or data.get('roll_number') or 'student')
+        _photo_blob, _photo_mime = _decode_base64_blob(data.get('photo'), max_kb=200)
+        _sign_blob, _sign_mime = _decode_base64_blob(data.get('signature'), max_kb=30)
         _shared_kwargs = dict(
             name=student_data.get('name') or data.get('name', ''),
             hindi_name=data.get('hindi_name', '') or data.get('hindiName', ''),
             aadhar_number=(data.get('aadhar_number') or data.get('aadharNumber') or data.get('aadharNo') or ''),
-            photo=_decode_base64_image(data.get('photo'), _roll_for_file + "_photo", max_kb=200),
-            signature=_decode_base64_image(data.get('signature'), _roll_for_file + "_sign", max_kb=30),
+            photo_blob=_photo_blob, photo_mime=_photo_mime,
+            signature_blob=_sign_blob, signature_mime=_sign_mime,
             roll_number=student_data.get('roll_number') or data.get('rollNumber', '') or data.get('roll_number', ''),
             institute_email=student_data.get('institute_email') or data.get('instituteEmail', '') or data.get('institute_email', ''),
             father_name=data.get('father_name', ''),
@@ -3749,24 +3787,16 @@ def update_student(request, student_id):
                     pass
 
         # Photo / signature: replace only when a new base64 image is sent; an
-        # unchanged edit form re-sends the existing file path, which is ignored.
+        # unchanged edit form re-sends the existing URL, which is ignored.
         for _img_field in ('photo', 'signature'):
             if _img_field in data:
-                _suffix = 'photo' if _img_field == 'photo' else 'sign'
-                _decoded = _decode_base64_image(
+                _blob, _mime = _decode_base64_blob(
                     data[_img_field],
-                    "{}_{}".format(student.roll_number or student_id, _suffix),
                     max_kb=200 if _img_field == 'photo' else 30,
                 )
-                if _decoded is not None:
-                    # Remove the previous file so replacements don't orphan on disk.
-                    _old = getattr(student, _img_field, None)
-                    if _old:
-                        try:
-                            _old.delete(save=False)
-                        except Exception:
-                            pass
-                    setattr(student, _img_field, _decoded)
+                if _blob is not None:
+                    setattr(student, _img_field + '_blob', _blob)
+                    setattr(student, _img_field + '_mime', _mime)
 
         dob_value = data.get('dob') or data.get('dateOfBirth') or data.get('date_of_birth')
         if dob_value:
@@ -4490,10 +4520,8 @@ def get_batch_students(request, batch_id):
                 'aadharNo': getattr(student, 'aadhar_number', ''),
                 'hindi_name': getattr(student, 'hindi_name', ''),
                 'hindiName': getattr(student, 'hindi_name', ''),
-                'photo': student.photo.url if getattr(student, 'photo', None) else '',
-                'signature': student.signature.url
-                if getattr(student, 'signature', None)
-                else '',
+                'photo': _student_image_url(student, 'photo'),
+                'signature': _student_image_url(student, 'signature'),
 
                 'allotted_category': getattr(student, 'allotted_category', ''),
                 'allotted_gender': getattr(student, 'allotted_gender', ''),

@@ -109,8 +109,10 @@ class StudentProfileCompletionTests(TestCase):
         self.assertTrue(self.student.profile_completed)
         self.assertEqual(self.student.aadhar_number, "123456789012")
         self.assertEqual(self.student.blood_group, "B+")
-        self.assertTrue(self.student.photo.name.endswith("_photo.png"))
-        self.assertTrue(self.student.signature.name.endswith("_sign.png"))
+        self.assertTrue(self.student.photo_blob)
+        self.assertEqual(self.student.photo_mime, "image/png")
+        self.assertTrue(self.student.signature_blob)
+        self.assertEqual(self.student.signature_mime, "image/png")
 
     # --- validation rules ---
     def test_missing_required_is_rejected(self):

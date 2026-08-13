@@ -16,7 +16,9 @@ from applications.programme_curriculum.models_student_management import (
     StudentBatchUpload,
     PhdStudentBatchUpload,
 )
-from .views_student_management import _decode_base64_image, _safe_decimal_conversion
+from .views_student_management import (
+    _decode_base64_blob, _student_image_url, _safe_decimal_conversion,
+)
 
 
 def _get_student_record(user):
@@ -51,8 +53,8 @@ def _serialize(rec):
         # Editable fields (prefilled from DB)
         "aadhar_number": rec.aadhar_number or "",
         "hindi_name": rec.hindi_name or "",
-        "photo": rec.photo.url if rec.photo else "",
-        "signature": rec.signature.url if rec.signature else "",
+        "photo": _student_image_url(rec, "photo"),
+        "signature": _student_image_url(rec, "signature"),
         "minority": rec.minority or "",
         "phone_number": rec.phone_number or "",
         "parent_email": rec.parent_email or "",
@@ -137,9 +139,9 @@ def student_profile_completion_submit(request):
 
     photo_val = data.get("photo") or ""
     signature_val = data.get("signature") or ""
-    if not (rec.photo or ";base64," in photo_val):
+    if not (rec.photo_blob or rec.photo or ";base64," in photo_val):
         errors["photo"] = "Passport photo is required"
-    if not (rec.signature or ";base64," in signature_val):
+    if not (rec.signature_blob or rec.signature or ";base64," in signature_val):
         errors["signature"] = "Signature is required"
 
     blood_group = text("blood_group")
@@ -171,23 +173,14 @@ def student_profile_completion_submit(request):
     rec.father_mobile = father_mobile
     rec.mother_mobile = mother_mobile
 
-    roll = str(rec.roll_number or user.username or "student")
-    new_photo = _decode_base64_image(photo_val, roll + "_photo", max_kb=200)
-    if new_photo is not None:
-        if rec.photo:
-            try:
-                rec.photo.delete(save=False)
-            except Exception:
-                pass
-        rec.photo = new_photo
-    new_signature = _decode_base64_image(signature_val, roll + "_sign", max_kb=30)
-    if new_signature is not None:
-        if rec.signature:
-            try:
-                rec.signature.delete(save=False)
-            except Exception:
-                pass
-        rec.signature = new_signature
+    _photo_blob, _photo_mime = _decode_base64_blob(photo_val, max_kb=200)
+    if _photo_blob is not None:
+        rec.photo_blob = _photo_blob
+        rec.photo_mime = _photo_mime
+    _sign_blob, _sign_mime = _decode_base64_blob(signature_val, max_kb=30)
+    if _sign_blob is not None:
+        rec.signature_blob = _sign_blob
+        rec.signature_mime = _sign_mime
 
     rec.profile_completed = True
     rec.save()

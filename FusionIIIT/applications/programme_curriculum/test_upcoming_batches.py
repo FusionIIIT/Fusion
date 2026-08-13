@@ -1,16 +1,14 @@
 """
 Regression tests for the Admin "Upcoming Batches" student-image feature:
 hindi_name / aadhar_number text fields and base64 photo/signature uploads
-persisted through the model and the update_student endpoint.
+stored as DB blobs (so pg_dump captures them) and served via the image endpoint.
 
 Run: python manage.py test applications.programme_curriculum.test_upcoming_batches
 """
 import base64
 import json
-import shutil
-import tempfile
 
-from django.test import TestCase, Client, override_settings
+from django.test import TestCase, Client
 from django.utils import timezone
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
@@ -21,7 +19,7 @@ from applications.programme_curriculum.models_student_management import (
     PhdStudentBatchUpload,
 )
 from applications.programme_curriculum.api.views_student_management import (
-    _decode_base64_image,
+    _decode_base64_blob,
 )
 
 # 1x1 pixel PNG as a data URL.
@@ -40,36 +38,35 @@ def _oversized_png(kb):
     return "data:image/png;base64," + raw
 
 
-class DecodeBase64ImageTests(TestCase):
-    def test_valid_png_returns_named_contentfile(self):
-        cf = _decode_base64_image(PNG_1x1, "26MCSA01_photo", max_kb=200)
-        self.assertIsNotNone(cf)
-        self.assertEqual(cf.name, "26MCSA01_photo.png")
-        self.assertGreater(cf.size, 0)
+class DecodeBase64BlobTests(TestCase):
+    def test_valid_png_returns_bytes_and_mime(self):
+        raw, mime = _decode_base64_blob(PNG_1x1, max_kb=200)
+        self.assertIsNotNone(raw)
+        self.assertGreater(len(raw), 0)
+        self.assertEqual(mime, "image/png")
 
-    def test_jpeg_is_named_jpg(self):
-        cf = _decode_base64_image(JPG_1x1, "x_sign", max_kb=30)
-        self.assertIsNotNone(cf)
-        self.assertEqual(cf.name, "x_sign.jpg")
+    def test_jpeg_mime(self):
+        raw, mime = _decode_base64_blob(JPG_1x1, max_kb=30)
+        self.assertIsNotNone(raw)
+        self.assertEqual(mime, "image/jpeg")
 
     def test_oversized_is_rejected(self):
-        self.assertIsNone(_decode_base64_image(_oversized_png(210), "x", max_kb=200))
+        self.assertEqual(_decode_base64_blob(_oversized_png(210), max_kb=200), (None, None))
 
     def test_non_png_jpg_type_is_rejected(self):
-        self.assertIsNone(_decode_base64_image(GIF_1x1, "x", max_kb=200))
+        self.assertEqual(_decode_base64_blob(GIF_1x1, max_kb=200), (None, None))
 
-    def test_existing_media_path_is_ignored(self):
-        self.assertIsNone(_decode_base64_image("/media/x/y_photo.png", "x"))
+    def test_existing_url_is_ignored(self):
+        self.assertEqual(_decode_base64_blob("/programme_curriculum/api/student/image/ug/1/photo/"), (None, None))
 
     def test_empty_or_none_is_ignored(self):
-        self.assertIsNone(_decode_base64_image("", "x"))
-        self.assertIsNone(_decode_base64_image(None, "x"))
+        self.assertEqual(_decode_base64_blob(""), (None, None))
+        self.assertEqual(_decode_base64_blob(None), (None, None))
 
 
-@override_settings(MEDIA_ROOT=tempfile.mkdtemp(prefix="fusion_test_media_"))
 class StudentImageModelTests(TestCase):
     def test_new_fields_and_image_persist(self):
-        cf = _decode_base64_image(PNG_1x1, "R1_photo", max_kb=200)
+        raw, mime = _decode_base64_blob(PNG_1x1, max_kb=200)
         student = StudentBatchUpload.objects.create(
             name="Test Student",
             father_name="Father",
@@ -81,21 +78,24 @@ class StudentImageModelTests(TestCase):
             programme_type="pg",
             hindi_name="टेस्ट नाम",
             aadhar_number="123456789012",
-            photo=cf,
+            photo_blob=raw,
+            photo_mime=mime,
         )
         student.refresh_from_db()
         self.assertEqual(student.hindi_name, "टेस्ट नाम")
         self.assertEqual(student.aadhar_number, "123456789012")
-        self.assertTrue(student.photo)
-        self.assertIn("R1_photo", student.photo.name)
+        self.assertTrue(student.photo_blob)
+        self.assertEqual(student.photo_mime, "image/png")
 
     def test_phd_model_has_the_new_fields(self):
-        for field in ("hindi_name", "photo", "signature", "aadhar_number"):
+        for field in (
+            "hindi_name", "aadhar_number",
+            "photo_blob", "photo_mime", "signature_blob", "signature_mime",
+        ):
             # Raises FieldDoesNotExist if a field is missing.
             PhdStudentBatchUpload._meta.get_field(field)
 
 
-@override_settings(MEDIA_ROOT=tempfile.mkdtemp(prefix="fusion_test_media_"))
 class UpdateStudentImageEndpointTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -119,15 +119,6 @@ class UpdateStudentImageEndpointTests(TestCase):
             programme_type="pg",
             roll_number="26MCSA99",
         )
-
-    def tearDown(self):
-        # Isolate tests: clear uploaded files so filenames don't collide/dedup.
-        import os
-        from django.conf import settings
-
-        for root, _dirs, files in os.walk(settings.MEDIA_ROOT):
-            for name in files:
-                os.remove(os.path.join(root, name))
 
     def _put(self, payload):
         return self.client.put(
@@ -159,37 +150,39 @@ class UpdateStudentImageEndpointTests(TestCase):
         self.student.refresh_from_db()
         self.assertEqual(self.student.hindi_name, "हिंदी नाम")
         self.assertEqual(self.student.aadhar_number, "111122223333")
-        import os
-
-        photo_name = os.path.basename(self.student.photo.name)
-        sign_name = os.path.basename(self.student.signature.name)
-        self.assertTrue(photo_name.startswith("26MCSA99_photo"))
-        self.assertTrue(photo_name.endswith(".png"))
-        self.assertTrue(sign_name.startswith("26MCSA99_sign"))
-        self.assertTrue(sign_name.endswith(".jpg"))
+        self.assertTrue(self.student.photo_blob)
+        self.assertEqual(self.student.photo_mime, "image/png")
+        self.assertTrue(self.student.signature_blob)
+        self.assertEqual(self.student.signature_mime, "image/jpeg")
 
     def test_oversized_image_is_not_saved(self):
         resp = self._put({"programmeType": "pg", "photo": _oversized_png(210)})
         self.assertEqual(resp.status_code, 200)
         self.student.refresh_from_db()
-        self.assertFalse(self.student.photo)
+        self.assertFalse(self.student.photo_blob)
 
-    def test_replacing_image_deletes_old_file(self):
+    def test_replacing_image_updates_blob(self):
         self._put({"programmeType": "pg", "photo": PNG_1x1})
         self.student.refresh_from_db()
-        old_path = self.student.photo.path
-        import os
-
-        self.assertTrue(os.path.exists(old_path))
+        self.assertEqual(self.student.photo_mime, "image/png")
         self._put({"programmeType": "pg", "photo": JPG_1x1})
         self.student.refresh_from_db()
-        self.assertFalse(os.path.exists(old_path))
+        self.assertEqual(self.student.photo_mime, "image/jpeg")
 
-    def test_unchanged_image_path_is_preserved(self):
+    def test_unchanged_image_is_preserved(self):
         self._put({"programmeType": "pg", "photo": PNG_1x1})
         self.student.refresh_from_db()
-        saved_name = self.student.photo.name
-        # Re-sending the stored path (as the edit form does) must not wipe it.
-        self._put({"programmeType": "pg", "photo": "/media/" + saved_name})
+        saved = bytes(self.student.photo_blob)
+        # Re-sending the stored URL (as the edit form does) must not wipe it.
+        self._put({"programmeType": "pg", "photo": "/programme_curriculum/api/student/image/ug/%d/photo/" % self.student.id})
         self.student.refresh_from_db()
-        self.assertEqual(self.student.photo.name, saved_name)
+        self.assertEqual(bytes(self.student.photo_blob), saved)
+
+    def test_served_image_returns_bytes(self):
+        self._put({"programmeType": "pg", "photo": PNG_1x1})
+        resp = self.client.get(
+            "/programme_curriculum/api/student/image/ug/%d/photo/" % self.student.id
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "image/png")
+        self.assertGreater(len(resp.content), 0)

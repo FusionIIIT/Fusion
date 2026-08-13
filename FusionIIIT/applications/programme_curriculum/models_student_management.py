@@ -206,6 +206,11 @@ class StudentBatchUpload(models.Model):
     aadhar_number = models.CharField(max_length=12, blank=True, null=True)
     photo = models.ImageField(upload_to='programme_curriculum/student_photos', blank=True, null=True, help_text="Passport photo (max 200KB)")
     signature = models.ImageField(upload_to='programme_curriculum/student_signatures', blank=True, null=True, help_text="Signature image (max 30KB)")
+    # Images are stored in the DB (not on disk) so a plain pg_dump backs them up and restores them with the data.
+    photo_blob = models.BinaryField(null=True, blank=True, editable=False)
+    photo_mime = models.CharField(max_length=50, blank=True, null=True)
+    signature_blob = models.BinaryField(null=True, blank=True, editable=False)
+    signature_mime = models.CharField(max_length=50, blank=True, null=True)
     profile_completed = models.BooleanField(default=False, help_text="True once the student submits the first-login profile-completion popup")
 
     # Allotment details
@@ -735,6 +740,11 @@ class PhdStudentBatchUpload(models.Model):
     )
     photo = models.ImageField(upload_to='programme_curriculum/student_photos', blank=True, null=True, help_text="Passport photo (max 200KB)")
     signature = models.ImageField(upload_to='programme_curriculum/student_signatures', blank=True, null=True, help_text="Signature image (max 30KB)")
+    # Images are stored in the DB (not on disk) so a plain pg_dump backs them up and restores them with the data.
+    photo_blob = models.BinaryField(null=True, blank=True, editable=False)
+    photo_mime = models.CharField(max_length=50, blank=True, null=True)
+    signature_blob = models.BinaryField(null=True, blank=True, editable=False)
+    signature_mime = models.CharField(max_length=50, blank=True, null=True)
     profile_completed = models.BooleanField(default=False, help_text="True once the student submits the first-login profile-completion popup")
 
     # ---- System / batch tracking fields ----
