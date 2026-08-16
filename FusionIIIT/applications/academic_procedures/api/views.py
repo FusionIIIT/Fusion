@@ -1268,6 +1268,7 @@ def verify_course(request):
         "roll_no": roll_no,
         "firstname": user_obj.first_name or "",
         "lastname": user_obj.last_name or "",
+        "programme_category": _student_programme_category(student),
     }
 
     # current curriculum & semester - handle None batch_id case
@@ -2037,6 +2038,220 @@ def acad_add_course(request):
 
     return Response({ "message": "Course added successfully" }, status=status.HTTP_200_OK)
 
+
+# ===========================================================================
+# Admin manual "Add Thesis / Progress Seminar / Teaching Credit" for one
+# student -- the same manual-override spirit as acad_add_course above, and
+# following the exact same Slot -> Course two-step shape (get_add_course_slots
+# / get_add_course_courses / acad_add_course), just against the three
+# slot-based PhD/PG registration models instead of CourseSlot/Courses. Each
+# of these skips the eligibility gate the student self-registration flow
+# enforces (dean-approved topic for Thesis/Seminar, comprehensive exam passed
+# for Teaching Credit) since admin is trusted to only use this when
+# appropriate, and lands the registration as already 'verified' -- same as
+# acad_add_course creating a course_registration directly rather than a
+# pending request.
+# ===========================================================================
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def get_thesis_slots(request):
+    sem_id = request.query_params.get('semester_id')
+    if not sem_id:
+        return Response({'error': 'semester_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    get_object_or_404(Semester, id=sem_id)
+    slots = ThesisSlot.objects.filter(semester_id=sem_id).values('id', 'name', 'evaluation_type')
+    return Response(list(slots), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def get_thesis_courses(request):
+    slot_id = request.query_params.get('slot_id')
+    if not slot_id:
+        return Response({'error': 'slot_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    slot = get_object_or_404(ThesisSlot, id=slot_id)
+    return Response(list(slot.theses.all().values('id', 'code', 'name', 'credit')), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def get_progress_seminar_slots(request):
+    sem_id = request.query_params.get('semester_id')
+    if not sem_id:
+        return Response({'error': 'semester_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    get_object_or_404(Semester, id=sem_id)
+    slots = ProgressSeminarSlot.objects.filter(semester_id=sem_id).values('id', 'name')
+    return Response(list(slots), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def get_progress_seminar_courses(request):
+    slot_id = request.query_params.get('slot_id')
+    if not slot_id:
+        return Response({'error': 'slot_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    slot = get_object_or_404(ProgressSeminarSlot, id=slot_id)
+    return Response(list(slot.seminars.all().values('id', 'code', 'name', 'credit')), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def get_teaching_credit_slots(request):
+    sem_id = request.query_params.get('semester_id')
+    if not sem_id:
+        return Response({'error': 'semester_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    get_object_or_404(Semester, id=sem_id)
+    slots = TeachingCreditSlot.objects.filter(semester_id=sem_id).values('id', 'name')
+    return Response(list(slots), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def get_teaching_credit_courses(request):
+    slot_id = request.query_params.get('slot_id')
+    if not slot_id:
+        return Response({'error': 'slot_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    slot = get_object_or_404(TeachingCreditSlot, id=slot_id)
+    return Response(list(slot.teaching_credits.all().values('id', 'code', 'name', 'credit')), status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_add_thesis(request):
+    roll_no = request.data.get('roll_no')
+    semester_id = request.data.get('semester_id')
+    thesis_slot_id = request.data.get('thesis_slot_id')
+    thesis_id = request.data.get('thesis_id')
+    if not roll_no or not semester_id or not thesis_slot_id or not thesis_id:
+        return Response({'error': 'roll_no, semester_id, thesis_slot_id and thesis_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    student = get_object_or_404(Student, id=roll_no.upper())
+    semester = get_object_or_404(Semester, id=semester_id)
+    thesis_slot = get_object_or_404(ThesisSlot, id=thesis_slot_id)
+    thesis = get_object_or_404(thesis_slot.theses, id=thesis_id)
+
+    if ThesisRegistration.objects.filter(student=student, semester=semester).exists():
+        return Response({'error': 'Student is already registered for this semester'}, status=status.HTTP_400_BAD_REQUEST)
+
+    ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
+    try:
+        credits = int(request.data.get('credits', 6))
+    except (TypeError, ValueError):
+        credits = 6
+    if credits not in ALLOWED_THESIS_CREDITS:
+        return Response({'error': f'Invalid credit value. Choose from {ALLOWED_THESIS_CREDITS}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # PG students have a fixed credit value per evaluation_type -- no free
+    # choice: 3 for a block-graded (S/X) semester, 12 for the decimal-graded
+    # semester. Enforced here too (not just in the frontend's locked Select)
+    # since this endpoint is reachable directly.
+    if _student_programme_category(student) == 'PG':
+        expected = 3 if thesis_slot.evaluation_type == 'blocks_sx' else 12
+        if credits != expected:
+            return Response({'error': f'PG students in a {thesis_slot.evaluation_type} slot must register for {expected} credits'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = _dt.datetime.now()
+    session = f"{now.year}-{str(now.year + 1)[2:]}" if now.month >= 7 else f"{now.year - 1}-{str(now.year)[2:]}"
+    topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+
+    with transaction.atomic():
+        reg = ThesisRegistration.objects.create(
+            student=student, thesis_slot=thesis_slot, thesis=thesis, thesis_topic=topic,
+            semester=semester, credits=credits, working_year=now.year,
+            academic_session=session, status='verified', verified_on=now,
+        )
+        # Mirrors admin_verify_enrollments' side-effect -- see that function.
+        if thesis_slot.evaluation_type == 'decimal':
+            evaluation, _created = ThesisEvaluation.objects.get_or_create(registration=reg, block_number=1)
+            ThesisEvaluationScore.objects.get_or_create(evaluation=evaluation)
+        else:
+            for blk in range(1, credits // 3 + 1):
+                ThesisEvaluation.objects.get_or_create(registration=reg, block_number=blk)
+
+    return Response({
+        'id': reg.id, 'student': roll_no.upper(), 'semester_no': semester.semester_no,
+        'thesis': thesis.code, 'credits': credits, 'status': reg.status,
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_add_progress_seminar(request):
+    roll_no = request.data.get('roll_no')
+    semester_id = request.data.get('semester_id')
+    seminar_slot_id = request.data.get('seminar_slot_id')
+    seminar_id = request.data.get('seminar_id')
+    if not roll_no or not semester_id or not seminar_slot_id or not seminar_id:
+        return Response({'error': 'roll_no, semester_id, seminar_slot_id and seminar_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    student = get_object_or_404(Student, id=roll_no.upper())
+    semester = get_object_or_404(Semester, id=semester_id)
+    slot = get_object_or_404(ProgressSeminarSlot, id=seminar_slot_id)
+    seminar = get_object_or_404(slot.seminars, id=seminar_id)
+
+    if ProgressSeminarRegistration.objects.filter(student=student, semester=semester).exists():
+        return Response({'error': 'Student is already registered for this semester'}, status=status.HTTP_400_BAD_REQUEST)
+
+    reg = ProgressSeminarRegistration.objects.create(
+        student=student, progress_seminar_slot=slot, seminar=seminar, semester=semester,
+        working_year=_dt.datetime.now().year, status='verified',
+    )
+    return Response({
+        'id': reg.id, 'student': roll_no.upper(), 'semester_no': semester.semester_no,
+        'seminar': seminar.code, 'status': reg.status,
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_add_teaching_credit(request):
+    roll_no = request.data.get('roll_no')
+    semester_id = request.data.get('semester_id')
+    teaching_credit_slot_id = request.data.get('teaching_credit_slot_id')
+    teaching_credit_id = request.data.get('teaching_credit_id')
+    if not roll_no or not semester_id or not teaching_credit_slot_id or not teaching_credit_id:
+        return Response({'error': 'roll_no, semester_id, teaching_credit_slot_id and teaching_credit_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    student = get_object_or_404(Student, id=roll_no.upper())
+    semester = get_object_or_404(Semester, id=semester_id)
+    slot = get_object_or_404(TeachingCreditSlot, id=teaching_credit_slot_id)
+    teaching_credit = get_object_or_404(slot.teaching_credits, id=teaching_credit_id)
+
+    if TeachingCreditRegistration.objects.filter(student=student, semester=semester).exists():
+        return Response({'error': 'Student is already registered for this semester'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = _dt.datetime.now()
+    session = f"{now.year}-{str(now.year + 1)[2:]}" if now.month >= 7 else f"{now.year - 1}-{str(now.year)[2:]}"
+
+    reg = TeachingCreditRegistration.objects.create(
+        student=student, teaching_credit_slot=slot, teaching_credit=teaching_credit, semester=semester,
+        working_year=now.year, academic_session=session, status='verified',
+    )
+    return Response({
+        'id': reg.id, 'student': roll_no.upper(), 'semester_no': semester.semester_no,
+        'teaching_credit': teaching_credit.code, 'status': reg.status,
+    }, status=status.HTTP_201_CREATED)
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def academic_procedures_faculty_api(request):
@@ -2263,6 +2478,257 @@ def allot_courses(request):
         return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
     except Semester.DoesNotExist:
         return Response({'error': 'Invalid semester or type.'}, status=status.HTTP_400_BAD_REQUEST)
+    except xlrd.XLRDError:
+        return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': f'Processing error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ===========================================================================
+# Bulk "Allot Thesis / Progress Seminar / Teaching Credit" -- same manual-
+# override spirit as allot_courses above (one Excel row per student, lands
+# directly as 'verified'), for the three slot-based PhD/PG registration
+# models. Same 4-column row shape as allot_courses (RollNo | Slot | Code |
+# Name), just against ThesisSlot/SeminarSlot/TeachingCreditSlot + their
+# catalog entries instead of CourseSlot/Courses.
+# ===========================================================================
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def allot_thesis(request):
+    if 'allotedThesis' not in request.FILES:
+        return Response({'error': 'Excel file not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    batch_id = request.data.get('batch')
+    sem_no = request.data.get('semester')
+    if not batch_id or not sem_no:
+        return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        sem_no = int(sem_no)
+    except ValueError:
+        return Response({'error': 'Semester must be integer.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = _dt.datetime.now()
+    session = f"{now.year}-{str(now.year + 1)[2:]}" if now.month >= 7 else f"{now.year - 1}-{str(now.year)[2:]}"
+    ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
+
+    try:
+        with transaction.atomic():
+            batch = Batch.objects.get(id=batch_id)
+            semester = Semester.objects.get(curriculum=batch.curriculum, semester_no=sem_no)
+
+            book = xlrd.open_workbook(file_contents=request.FILES['allotedThesis'].read())
+            sheet = book.sheet_by_index(0)
+
+            inserted = 0
+            row_errors = []
+            for i in range(1, sheet.nrows):
+                roll_no = str(sheet.cell_value(i, 0)).split('.')[0].strip()
+                if not roll_no:
+                    continue
+                try:
+                    slot_name = sheet.cell_value(i, 1).strip()
+                    code = sheet.cell_value(i, 2).strip()
+
+                    student = Student.objects.get(id__user__username=roll_no)
+                    thesis_slot = ThesisSlot.objects.get(name=slot_name, semester=semester)
+                    thesis = thesis_slot.theses.get(code=code)
+
+                    if ThesisRegistration.objects.filter(student=student, semester=semester).exists():
+                        raise ValueError('Already registered for this semester')
+
+                    raw = sheet.cell_value(i, 4) if sheet.ncols > 4 else ''
+                    credits = int(raw) if raw != '' else 6
+                    if credits not in ALLOWED_THESIS_CREDITS:
+                        raise ValueError(f'Invalid credits {credits}; choose from {ALLOWED_THESIS_CREDITS}')
+
+                    if _student_programme_category(student) == 'PG':
+                        expected = 3 if thesis_slot.evaluation_type == 'blocks_sx' else 12
+                        if credits != expected:
+                            raise ValueError(f'PG students in a {thesis_slot.evaluation_type} slot must register for {expected} credits')
+
+                    topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+                    reg = ThesisRegistration.objects.create(
+                        student=student, thesis_slot=thesis_slot, thesis=thesis, thesis_topic=topic,
+                        semester=semester, credits=credits, working_year=now.year,
+                        academic_session=session, status='verified', verified_on=now,
+                    )
+                    if thesis_slot.evaluation_type == 'decimal':
+                        evaluation, _created = ThesisEvaluation.objects.get_or_create(registration=reg, block_number=1)
+                        ThesisEvaluationScore.objects.get_or_create(evaluation=evaluation)
+                    else:
+                        for blk in range(1, credits // 3 + 1):
+                            ThesisEvaluation.objects.get_or_create(registration=reg, block_number=blk)
+                    inserted += 1
+                except Exception as e:
+                    row_errors.append({'row': i + 1, 'roll_no': roll_no, 'error': str(e)})
+
+            if inserted == 0:
+                return Response({
+                    'error': 'No valid rows were found in the uploaded file.',
+                    'failed_rows': row_errors[:25], 'failed_rows_count': len(row_errors),
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        if row_errors:
+            return Response({
+                'message': 'Upload completed with partial success.',
+                'inserted_rows': inserted, 'failed_rows_count': len(row_errors),
+                'failed_rows': row_errors[:25],
+            }, status=status.HTTP_207_MULTI_STATUS)
+        return Response({'message': 'Successfully uploaded!', 'inserted_rows': inserted})
+    except Batch.DoesNotExist:
+        return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Semester.DoesNotExist:
+        return Response({'error': 'Invalid semester.'}, status=status.HTTP_400_BAD_REQUEST)
+    except xlrd.XLRDError:
+        return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': f'Processing error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def allot_progress_seminar(request):
+    if 'allotedSeminar' not in request.FILES:
+        return Response({'error': 'Excel file not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    batch_id = request.data.get('batch')
+    sem_no = request.data.get('semester')
+    if not batch_id or not sem_no:
+        return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        sem_no = int(sem_no)
+    except ValueError:
+        return Response({'error': 'Semester must be integer.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        with transaction.atomic():
+            batch = Batch.objects.get(id=batch_id)
+            semester = Semester.objects.get(curriculum=batch.curriculum, semester_no=sem_no)
+
+            book = xlrd.open_workbook(file_contents=request.FILES['allotedSeminar'].read())
+            sheet = book.sheet_by_index(0)
+
+            inserted = 0
+            row_errors = []
+            for i in range(1, sheet.nrows):
+                roll_no = str(sheet.cell_value(i, 0)).split('.')[0].strip()
+                if not roll_no:
+                    continue
+                try:
+                    slot_name = sheet.cell_value(i, 1).strip()
+                    code = sheet.cell_value(i, 2).strip()
+
+                    student = Student.objects.get(id__user__username=roll_no)
+                    slot = ProgressSeminarSlot.objects.get(name=slot_name, semester=semester)
+                    seminar = slot.seminars.get(code=code)
+
+                    if ProgressSeminarRegistration.objects.filter(student=student, semester=semester).exists():
+                        raise ValueError('Already registered for this semester')
+                    ProgressSeminarRegistration.objects.create(
+                        student=student, progress_seminar_slot=slot, seminar=seminar, semester=semester,
+                        working_year=_dt.datetime.now().year, status='verified',
+                    )
+                    inserted += 1
+                except Exception as e:
+                    row_errors.append({'row': i + 1, 'roll_no': roll_no, 'error': str(e)})
+
+            if inserted == 0:
+                return Response({
+                    'error': 'No valid rows were found in the uploaded file.',
+                    'failed_rows': row_errors[:25], 'failed_rows_count': len(row_errors),
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        if row_errors:
+            return Response({
+                'message': 'Upload completed with partial success.',
+                'inserted_rows': inserted, 'failed_rows_count': len(row_errors),
+                'failed_rows': row_errors[:25],
+            }, status=status.HTTP_207_MULTI_STATUS)
+        return Response({'message': 'Successfully uploaded!', 'inserted_rows': inserted})
+    except Batch.DoesNotExist:
+        return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Semester.DoesNotExist:
+        return Response({'error': 'Invalid semester.'}, status=status.HTTP_400_BAD_REQUEST)
+    except xlrd.XLRDError:
+        return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': f'Processing error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def allot_teaching_credit(request):
+    if 'allotedTeachingCredit' not in request.FILES:
+        return Response({'error': 'Excel file not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    batch_id = request.data.get('batch')
+    sem_no = request.data.get('semester')
+    if not batch_id or not sem_no:
+        return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        sem_no = int(sem_no)
+    except ValueError:
+        return Response({'error': 'Semester must be integer.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = _dt.datetime.now()
+    session = f"{now.year}-{str(now.year + 1)[2:]}" if now.month >= 7 else f"{now.year - 1}-{str(now.year)[2:]}"
+
+    try:
+        with transaction.atomic():
+            batch = Batch.objects.get(id=batch_id)
+            semester = Semester.objects.get(curriculum=batch.curriculum, semester_no=sem_no)
+
+            book = xlrd.open_workbook(file_contents=request.FILES['allotedTeachingCredit'].read())
+            sheet = book.sheet_by_index(0)
+
+            inserted = 0
+            row_errors = []
+            for i in range(1, sheet.nrows):
+                roll_no = str(sheet.cell_value(i, 0)).split('.')[0].strip()
+                if not roll_no:
+                    continue
+                try:
+                    slot_name = sheet.cell_value(i, 1).strip()
+                    code = sheet.cell_value(i, 2).strip()
+
+                    student = Student.objects.get(id__user__username=roll_no)
+                    slot = TeachingCreditSlot.objects.get(name=slot_name, semester=semester)
+                    teaching_credit = slot.teaching_credits.get(code=code)
+
+                    if TeachingCreditRegistration.objects.filter(student=student, semester=semester).exists():
+                        raise ValueError('Already registered for this semester')
+                    TeachingCreditRegistration.objects.create(
+                        student=student, teaching_credit_slot=slot, teaching_credit=teaching_credit, semester=semester,
+                        working_year=now.year, academic_session=session, status='verified',
+                    )
+                    inserted += 1
+                except Exception as e:
+                    row_errors.append({'row': i + 1, 'roll_no': roll_no, 'error': str(e)})
+
+            if inserted == 0:
+                return Response({
+                    'error': 'No valid rows were found in the uploaded file.',
+                    'failed_rows': row_errors[:25], 'failed_rows_count': len(row_errors),
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        if row_errors:
+            return Response({
+                'message': 'Upload completed with partial success.',
+                'inserted_rows': inserted, 'failed_rows_count': len(row_errors),
+                'failed_rows': row_errors[:25],
+            }, status=status.HTTP_207_MULTI_STATUS)
+        return Response({'message': 'Successfully uploaded!', 'inserted_rows': inserted})
+    except Batch.DoesNotExist:
+        return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Semester.DoesNotExist:
+        return Response({'error': 'Invalid semester.'}, status=status.HTTP_400_BAD_REQUEST)
     except xlrd.XLRDError:
         return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
@@ -8271,6 +8737,7 @@ def student_thesis_enrollment_api(request):
                     'name': thesis_slot.name,
                     'info': thesis_slot.thesis_slot_info or '',
                     'duration': thesis_slot.duration,
+                    'evaluation_type': thesis_slot.evaluation_type,
                     'theses': [
                         {'id': t.id, 'code': t.code, 'name': t.name, 'credit': t.credit}
                         for t in thesis_slot.theses.all()
@@ -8297,6 +8764,7 @@ def student_thesis_enrollment_api(request):
                 'thesis_slot': slot_data,
                 'registration': reg_data,
                 'evaluations': eval_blocks,
+                'programme_category': _student_programme_category(student),
             }, status=200)
 
     except Exception as e:
@@ -8321,17 +8789,24 @@ def student_thesis_enrollment_api(request):
             status=400,
         )
 
-    # Validate chosen credits
-    ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
-    try:
-        chosen_credits = int(request.data.get('credits', 6))
-    except (TypeError, ValueError):
-        chosen_credits = 6
-    if chosen_credits not in ALLOWED_THESIS_CREDITS:
-        return JsonResponse(
-            {'error': f'Invalid credit value. Choose from {ALLOWED_THESIS_CREDITS}'},
-            status=400,
-        )
+    # PG students have a fixed credit value per evaluation_type -- no free
+    # choice: 3 for a block-graded (S/X) semester, 12 for the decimal-graded
+    # semester. The 12 is fixed regardless of any earlier block-graded
+    # semesters; those are additional thesis credit, not a substitute for
+    # any part of it (PG's total can range from 12 up to 18).
+    if _student_programme_category(student) == 'PG':
+        chosen_credits = 3 if thesis_slot.evaluation_type == 'blocks_sx' else 12
+    else:
+        ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
+        try:
+            chosen_credits = int(request.data.get('credits', 6))
+        except (TypeError, ValueError):
+            chosen_credits = 6
+        if chosen_credits not in ALLOWED_THESIS_CREDITS:
+            return JsonResponse(
+                {'error': f'Invalid credit value. Choose from {ALLOWED_THESIS_CREDITS}'},
+                status=400,
+            )
 
     # Check max registration limit
     current_count = ThesisRegistration.objects.filter(
