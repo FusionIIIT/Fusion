@@ -3595,18 +3595,34 @@ class StudentCreditSummaryView(APIView):
 
         _, semesters_data = _build_grade_validation_semesters(student)
 
-        published = {
-            (ann.semester, ann.semester_type)
-            for ann in ResultAnnouncement.objects.filter(
+        announcements = [
+            ann for ann in ResultAnnouncement.objects.filter(
                 batch=student.batch_id, announced=True
             )
             if _is_result_published_for(ann, roll_number)
+        ]
+        published = {
+            (ann.semester, ann.semester_type)
+            for ann in announcements
+            if ann.semester_type != "Summer Semester"
         }
+        # A summer announcement stores the summer's sequence number doubled, not
+        # the academic semester its courses belong to, so it is matched on that
+        # sequence instead of the (semester_no, type) pair the others use.
+        published_summers = {
+            ann.semester // 2
+            for ann in announcements
+            if ann.semester_type == "Summer Semester"
+        }
+
+        def is_published(sem):
+            if sem.get("is_summer"):
+                return sem.get("summer_index") in published_summers
+            return (sem.get("semester_no"), sem.get("semester_type")) in published
 
         announced = [
             sem for sem in semesters_data
-            if not sem.get("is_registered_only")
-            and (sem.get("semester_no"), sem.get("semester_type")) in published
+            if not sem.get("is_registered_only") and is_published(sem)
         ]
 
         return Response(
@@ -4634,6 +4650,9 @@ def _build_grade_validation_semesters(student):
                 "semester_no": s_no,
                 "semester_type": s_type,
                 "is_summer": is_summer,
+                # Which summer term this is (1, 2, ...), matching the label and
+                # ResultAnnouncement's own "Summer {semester // 2}" numbering.
+                "summer_index": summer_counter if is_summer else None,
                 "label": label,
                 "courses": courses,
                 "semester_credits": float(sem_credits_earned),
