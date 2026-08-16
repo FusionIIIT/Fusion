@@ -451,6 +451,12 @@ def is_valid_grade(grade: str, course_code: str) -> bool:
     return grade in ALLOWED_GRADES
 
 
+# Remark shown next to a grade once a course has more than one linked attempt:
+# BL = backlog after a fail, CD = the earlier attempt was dropped, IM = improvement
+# on an already-cleared course.
+REMARK_KIND_BY_GRADE = {'F': 'BL', 'X': 'BL', 'CD': 'CD'}
+
+
 def gather_related_registrations(initial_reg, max_semester):
     """
     Using BFS, collect all course_registration objects related by replacements
@@ -1527,10 +1533,9 @@ class GenerateResultAPI(APIView):
                                     reverse=True
                                 )
                                 first_code, first_grade = scored[0]
-                                if first_grade == 'F' or first_grade == 'X':
-                                    remark = 'R(BL)' if first_code == course.code else 'S(BL)'
-                                else:
-                                    remark = 'R(IM)' if first_code == course.code else 'S(IM)'
+                                kind = REMARK_KIND_BY_GRADE.get(first_grade, 'IM')
+                                prefix = 'R' if first_code == course.code else 'S'
+                                remark = f'{prefix}({kind})'
                     ws.cell(row=row_idx, column=col_ptr).value = grade_val
                     ws.cell(row=row_idx, column=col_ptr+1).value = remark
                     for c in [col_ptr, col_ptr+1]:
