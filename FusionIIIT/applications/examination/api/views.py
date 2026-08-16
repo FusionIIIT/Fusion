@@ -262,13 +262,15 @@ def _phd_extra_grade_items(student, semester_no, require_announced=False):
     return items
 
 
-# An F carries its 0.2 factor and its credit into CPI, but earns no credit until
-# the course is cleared. X/I/AU/CD are absent from grade_conversion, so they reach
-# neither. S is the reverse: credit earned, no CPI weight.
+# An F carries its 0.2 factor and its credit into SPI/CPI either way. Whether its
+# credit is also banked depends on the caller: SU is a semester-wise attempted
+# figure and has counted an F since the feature was written, while TU is the degree
+# figure and counts a course only once it is cleared. X/I/AU/CD are absent from
+# grade_conversion, so they reach neither. S is the reverse: credit, no CPI weight.
 NON_EARNING_GRADES = {"F"}
 
 
-def _apply_grade_factor(grade, credit, totals):
+def _apply_grade_factor(grade, credit, totals, include_failed=False):
     """totals: {'points': Decimal, 'credits': Decimal, 'earned': Decimal}, mutated in place."""
     grade = (grade or "").strip()
     factor = grade_conversion.get(grade, -1)
@@ -276,7 +278,7 @@ def _apply_grade_factor(grade, credit, totals):
         if factor != 0:
             totals['points'] += Decimal(str(factor)) * credit
             totals['credits'] += credit
-        if grade not in NON_EARNING_GRADES:
+        if include_failed or grade not in NON_EARNING_GRADES:
             totals['earned'] += credit
 
 
@@ -302,11 +304,12 @@ def calculate_spi_for_student(student, selected_semester, semester_type, require
             .order_by('semester', 'semester_type_order')
     )
     totals = {'points': Decimal('0'), 'credits': Decimal('0'), 'earned': Decimal('0')}
+    # SU counts what was taken that semester, an uncleared F included.
     for g in grades:
         credit = Decimal(str(g.course_id.credit))
-        _apply_grade_factor(g.grade, credit, totals)
+        _apply_grade_factor(g.grade, credit, totals, include_failed=True)
     for credit, grade in _phd_extra_grade_items(student, selected_semester, require_announced):
-        _apply_grade_factor(grade, credit, totals)
+        _apply_grade_factor(grade, credit, totals, include_failed=True)
     total_points, total_credits, semester_unit = totals['points'], totals['credits'], totals['earned']
     return round_from_last_decimal(Decimal('10') * (total_points / total_credits)) if total_credits else 0, semester_unit, (total_points*10)
 
