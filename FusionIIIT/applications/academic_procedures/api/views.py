@@ -3380,8 +3380,11 @@ def student_swayam_requests(request):
         student = Student.objects.get(id=user_details)
 
         request_type = request.GET.get('request_type')
-        requests_query = SwayamReplacementRequest.objects.filter(student=student)
-        
+        requests_query = SwayamReplacementRequest.objects.filter(
+            student=student,
+            semester__semester_no=student.curr_semester_no
+        )
+
         if request_type:
             requests_query = requests_query.filter(request_type=request_type)
         
