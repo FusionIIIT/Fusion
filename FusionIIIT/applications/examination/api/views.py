@@ -4500,10 +4500,11 @@ def _build_grade_validation_semesters(student):
     for g in all_grades:
         semesters_map[(g.semester, g.semester_type)].append(g)
 
+    # Every graded code, whatever the grade: an X/I/AU/CD attempt still routes
+    # through replacement, exactly as the CPI helper does with best_by_code.
     superseded = superseded_course_codes(
         student,
-        {(g.course_id.code or '').strip() for g in all_grades
-         if grade_conversion.get((g.grade or '').strip(), -1) >= 0},
+        {(g.course_id.code or '').strip() for g in all_grades},
     )
 
     all_regs = (
