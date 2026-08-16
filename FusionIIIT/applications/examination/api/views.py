@@ -5017,24 +5017,37 @@ class GradeValidationView(APIView):
                         rem = c.get("remark", "Regular")
                         g   = (c.get("grade") or "").strip()
                         is_sw = str(c.get("code", "")).upper().startswith("SW")
-                        if g in NON_EARN or c.get("superseded"):
+                        if g in NON_EARN:
                             continue
-                        code_key = str(c.get("code", "")).strip().upper()
-                        if code_key in credited_codes:
-                            continue
-                        credited_codes.add(code_key)
-                        earned += cr
                         if is_sw:
-                            swayam += cr
+                            bucket = "swayam"
                         elif rem in ("Backlog", "Improvement"):
+                            bucket = "backlog_imp"
+                        else:
+                            bucket = "regular"
+
+                        # The semester row records what was graded in it, so an
+                        # improvement lands under Backlog / Improvement here.
+                        earned += cr
+                        if bucket == "swayam":
+                            swayam += cr
+                        elif bucket == "backlog_imp":
                             backlog_imp += cr
                         else:
                             regular += cr
 
-                    tot_earned      += earned
-                    tot_regular     += regular
-                    tot_backlog_imp += backlog_imp
-                    tot_swayam      += swayam
+                        # The degree total counts a course once, a replaced one never.
+                        code_key = str(c.get("code", "")).strip().upper()
+                        if c.get("superseded") or code_key in credited_codes:
+                            continue
+                        credited_codes.add(code_key)
+                        tot_earned += cr
+                        if bucket == "swayam":
+                            tot_swayam += cr
+                        elif bucket == "backlog_imp":
+                            tot_backlog_imp += cr
+                        else:
+                            tot_regular += cr
 
                     def _fmt(v): return str(int(v)) if v == int(v) else f"{v:.1f}"
                     cd_rows.append([
