@@ -309,6 +309,34 @@ def trace_registration(reg_id, mapping):
         reg_id = mapping[reg_id]
     return reg_id
 
+def superseded_course_codes(student, graded_codes):
+    """Elective codes a graded replacement/swayam course has superseded.
+
+    A replaced elective stops counting once its replacement is graded; each
+    distinct replacement counts on its own. Shared by the CPI helper and the
+    semester-history builder so both apply one rule.
+    """
+    replacements = course_replacement.objects.filter(
+        Q(old_course_registration__student_id=student) |
+        Q(new_course_registration__student_id=student)
+    ).select_related('old_course_registration__course_id',
+                     'new_course_registration__course_id')
+    code_replacement_map = {}   # replacement/swayam course code -> replaced elective code
+    for rep in replacements:
+        old_code = (rep.old_course_registration.course_id.code or '').strip()
+        new_code = (rep.new_course_registration.course_id.code or '').strip()
+        if new_code and old_code and new_code != old_code:
+            code_replacement_map[new_code] = old_code
+
+    superseded = set()
+    for graded_code in graded_codes:
+        old = code_replacement_map.get(graded_code)
+        while old and old not in superseded:
+            superseded.add(old)
+            old = code_replacement_map.get(old)
+    return superseded
+
+
 def calculate_cpi_for_student(student, selected_semester, semester_type, require_announced=False):
     total_unit = Decimal('0')
     if selected_semester % 2 == 0 and semester_type == 'Summer Semester':
@@ -331,18 +359,6 @@ def calculate_cpi_for_student(student, selected_semester, semester_type, require
         grades = Student_grades.objects.filter(
             roll_no=student.id_id, semester__lte=selected_semester,
         ).exclude(semester_type='Summer Semester', semester=selected_semester).select_related('course_id')
-    replacements = course_replacement.objects.filter(
-        Q(old_course_registration__student_id=student) |
-        Q(new_course_registration__student_id=student)
-    ).select_related('old_course_registration__course_id',
-                     'new_course_registration__course_id')
-    code_replacement_map = {}   # replacement/swayam course code -> replaced elective code
-    for rep in replacements:
-        old_code = (rep.old_course_registration.course_id.code or '').strip()
-        new_code = (rep.new_course_registration.course_id.code or '').strip()
-        if new_code and old_code and new_code != old_code:
-            code_replacement_map[new_code] = old_code
-
     # Best-graded attempt per distinct course code (dedups backlog/improvement retakes; keeps distinct courses separate).
     best_by_code = {}
     for g in grades:
@@ -354,13 +370,7 @@ def calculate_cpi_for_student(student, selected_semester, semester_type, require
                             > grade_conversion.get((prev.grade or '').strip(), -1)):
             best_by_code[code] = g
 
-    # A replaced elective is superseded once a replacement is graded; each distinct replacement counts on its own.
-    superseded_codes = set()
-    for graded_code in best_by_code:
-        old = code_replacement_map.get(graded_code)
-        while old and old not in superseded_codes:
-            superseded_codes.add(old)
-            old = code_replacement_map.get(old)
+    superseded_codes = superseded_course_codes(student, best_by_code.keys())
 
     totals = {'points': Decimal('0'), 'credits': Decimal('0'), 'earned': Decimal('0')}
     for code, best_record in best_by_code.items():
@@ -3548,6 +3558,50 @@ class StudentSemesterListView(APIView):
         return JsonResponse({"success": True, "semesters": semesters})
 
 
+class StudentCreditSummaryView(APIView):
+    """Credits Details for the signed-in student only.
+
+    Semesters are filtered to those whose result is announced and published for
+    this student -- the same gate CheckResultView applies. Without it the
+    underlying helper would expose unannounced grades.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        roll_number = request.user.username
+
+        try:
+            student = Student.objects.select_related(
+                "id__user", "id__department", "batch_id__discipline"
+            ).get(id_id=roll_number)
+        except Student.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Student record not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        _, semesters_data = _build_grade_validation_semesters(student)
+
+        published = {
+            (ann.semester, ann.semester_type)
+            for ann in ResultAnnouncement.objects.filter(
+                batch=student.batch_id, announced=True
+            )
+            if _is_result_published_for(ann, roll_number)
+        }
+
+        announced = [
+            sem for sem in semesters_data
+            if not sem.get("is_registered_only")
+            and (sem.get("semester_no"), sem.get("semester_type")) in published
+        ]
+
+        return Response(
+            {"success": True, "semesters": announced},
+            status=status.HTTP_200_OK,
+        )
+
+
 class GradeStatusAPI(APIView):
     """
     API to get grade status for all courses in a given academic year and semester type.
@@ -4438,6 +4492,12 @@ def _build_grade_validation_semesters(student):
     for g in all_grades:
         semesters_map[(g.semester, g.semester_type)].append(g)
 
+    superseded = superseded_course_codes(
+        student,
+        {(g.course_id.code or '').strip() for g in all_grades
+         if grade_conversion.get((g.grade or '').strip(), -1) >= 0},
+    )
+
     all_regs = (
         course_registration.objects.filter(student_id=student)
         .select_related("course_id", "semester_id")
@@ -4539,6 +4599,7 @@ def _build_grade_validation_semesters(student):
             courses.append({
                 "code": course.code or "", "name": course.name or "",
                 "credits": float(credit), "grade": grade, "remark": remark,
+                "superseded": (course.code or "").strip() in superseded,
             })
 
         for phd_row in key_to_phd_rows.get(key, []):
@@ -4913,6 +4974,8 @@ class GradeValidationView(APIView):
 
                 cd_rows = []
                 tot_earned = tot_regular = tot_backlog_imp = tot_swayam = 0.0
+                # A course credits the degree once, and a replaced elective not at all.
+                credited_codes = set()
 
                 for gs in graded_sems:
                     earned = regular = backlog_imp = swayam = 0.0
@@ -4921,8 +4984,12 @@ class GradeValidationView(APIView):
                         rem = c.get("remark", "Regular")
                         g   = (c.get("grade") or "").strip()
                         is_sw = str(c.get("code", "")).upper().startswith("SW")
-                        if g in NON_EARN:
+                        if g in NON_EARN or c.get("superseded"):
                             continue
+                        code_key = str(c.get("code", "")).strip().upper()
+                        if code_key in credited_codes:
+                            continue
+                        credited_codes.add(code_key)
                         earned += cr
                         if is_sw:
                             swayam += cr
