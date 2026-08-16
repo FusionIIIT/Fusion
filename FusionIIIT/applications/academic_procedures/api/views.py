@@ -526,47 +526,50 @@ def get_student_add_courses(request):
         session, sem_type = generate_current_session(cur_year, current_sem_no)
         working_year = parse_academic_year(academic_year=session, semester_type=sem_type)[0]
         student_section = student.section or ''
-        from applications.academic_information.models import resolve_offering
+        from applications.academic_information.models import offerings_by_course, pick_offering
 
         courses_list = []
 
-        for slot in bl_slots:
-            courses = slot.courses.all()
+        # One query each for slots+courses, registrations and offerings, instead of
+        # three per course: the BL slots of a big semester hold hundreds of electives.
+        slot_courses = [
+            (slot, course)
+            for slot in bl_slots.prefetch_related('courses')
+            for course in slot.courses.all()
+        ]
+        course_ids = [course.id for _, course in slot_courses]
+        registered_ids = set(course_registration.objects.filter(
+            student_id=student, course_id__in=course_ids,
+        ).values_list('course_id', flat=True))
+        offerings_of = offerings_by_course(course_ids, working_year, sem_type)
 
-            for course in courses:
-                already_registered = course_registration.objects.filter(
-                    course_id=course,
-                    student_id=student
-                ).exists()
-
-                # Sections where this course is running this term. If the student's
-                # own section isn't among them, they pick one of these (backlog/improvement).
-                offerings = CourseInstructor.objects.filter(
-                    course_id=course, year=working_year, semester_type=sem_type,
-                ).select_related('instructor_id__id__user')
-                sections = []
-                for o in offerings:
-                    u = o.instructor_id.id.user
-                    sections.append({
-                        'course_instructor_id': o.id,
-                        'section': o.section_label or '',
-                        'instructor': f"{u.first_name} {u.last_name}".strip(),
-                    })
-                # Auto-resolvable (own section, or a single/unsectioned offering) -> no pick needed; only genuinely sectioned courses missing the student's section prompt one.
-                own_section_running = resolve_offering(student, course, working_year, sem_type) is not None
-
-                courses_list.append({
-                    'id': course.id,
-                    'code': course.code,
-                    'name': course.name,
-                    'credit': course.credit,
-                    'slot': slot.name,
-                    'slot_id': slot.id,
-                    'already_registered': already_registered,
-                    'sections': sections,
-                    'own_section_running': own_section_running,
-                    'student_section': student_section,
+        for slot, course in slot_courses:
+            # Sections where this course is running this term. If the student's
+            # own section isn't among them, they pick one of these (backlog/improvement).
+            offerings = offerings_of.get(course.id, [])
+            sections = []
+            for o in offerings:
+                u = o.instructor_id.id.user
+                sections.append({
+                    'course_instructor_id': o.id,
+                    'section': o.section_label or '',
+                    'instructor': f"{u.first_name} {u.last_name}".strip(),
                 })
+            # Auto-resolvable (own section, or a single/unsectioned offering) -> no pick needed; only genuinely sectioned courses missing the student's section prompt one.
+            own_section_running = pick_offering(student, offerings) is not None
+
+            courses_list.append({
+                'id': course.id,
+                'code': course.code,
+                'name': course.name,
+                'credit': course.credit,
+                'slot': slot.name,
+                'slot_id': slot.id,
+                'already_registered': course.id in registered_ids,
+                'sections': sections,
+                'own_section_running': own_section_running,
+                'student_section': student_section,
+            })
 
         return Response(courses_list, status=status.HTTP_200_OK)
         

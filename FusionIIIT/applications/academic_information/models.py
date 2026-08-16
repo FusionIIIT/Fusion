@@ -136,23 +136,39 @@ def resolve_offering(student, course, year, semester_type):
     working_year for both Odd and Even semesters).
     """
     from applications.programme_curriculum.models import CourseInstructor
-    qs = CourseInstructor.objects.filter(
+    return pick_offering(student, list(CourseInstructor.objects.filter(
         course_id=course, year=year, semester_type=semester_type,
-    )
+    )))
+
+
+def pick_offering(student, offerings):
+    """Apply resolve_offering's rules to offerings already loaded for one course."""
     section = getattr(student, 'section', None)
     if section:
-        match = qs.filter(section_label=section).first()
-        if match:
-            return match
+        for offering in offerings:
+            if offering.section_label == section:
+                return offering
     # Elective / single-offering: exactly one no-section offering. If more than
     # one exists (legacy team-taught rows), it is ambiguous -> return None rather
     # than guess an instructor, so it can be relabelled deliberately.
-    nulls = list(qs.filter(section_label__isnull=True)[:2])
+    nulls = [o for o in offerings if o.section_label is None]
     if len(nulls) == 1:
         return nulls[0]
-    if not nulls and qs.count() == 1:
-        return qs.first()
+    if not nulls and len(offerings) == 1:
+        return offerings[0]
     return None
+
+
+def offerings_by_course(course_ids, year, semester_type):
+    """One query for many courses, grouped by course id, for pick_offering."""
+    from applications.programme_curriculum.models import CourseInstructor
+    grouped = {}
+    offerings = CourseInstructor.objects.filter(
+        course_id__in=course_ids, year=year, semester_type=semester_type,
+    ).select_related('instructor_id__id__user')
+    for offering in offerings:
+        grouped.setdefault(offering.course_id_id, []).append(offering)
+    return grouped
 
 
 class Student(models.Model):
