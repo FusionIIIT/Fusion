@@ -262,14 +262,22 @@ def _phd_extra_grade_items(student, semester_no, require_announced=False):
     return items
 
 
+# An F carries its 0.2 factor and its credit into CPI, but earns no credit until
+# the course is cleared. X/I/AU/CD are absent from grade_conversion, so they reach
+# neither. S is the reverse: credit earned, no CPI weight.
+NON_EARNING_GRADES = {"F"}
+
+
 def _apply_grade_factor(grade, credit, totals):
     """totals: {'points': Decimal, 'credits': Decimal, 'earned': Decimal}, mutated in place."""
-    factor = grade_conversion.get((grade or "").strip(), -1)
+    grade = (grade or "").strip()
+    factor = grade_conversion.get(grade, -1)
     if factor >= 0:
         if factor != 0:
             totals['points'] += Decimal(str(factor)) * credit
             totals['credits'] += credit
-        totals['earned'] += credit
+        if grade not in NON_EARNING_GRADES:
+            totals['earned'] += credit
 
 
 def calculate_spi_for_student(student, selected_semester, semester_type, require_announced=False):
