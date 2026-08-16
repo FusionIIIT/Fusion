@@ -3415,7 +3415,8 @@ def student_swayam_requests(request):
                 'submitted_at': req.submitted_at.isoformat() if req.submitted_at else None,
                 'processed_at': req.processed_at.isoformat() if req.processed_at else None,
                 'academic_year': req.academic_year,
-                'semester_type': req.semester_type
+                'semester_type': req.semester_type,
+                'semester_no': req.semester.semester_no if req.semester else None
             })
         
         return JsonResponse({'requests': requests_data}, status=200)
