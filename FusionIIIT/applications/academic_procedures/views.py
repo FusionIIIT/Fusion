@@ -1458,6 +1458,11 @@ def get_pre_registration_eligibility(current_date, user_sem, year):
     except Exception as e:
         return False, None
 
+def get_final_registration_window():
+    return Calendar.objects.all().filter(
+        description="Physical Reporting at the Institute"
+    ).first()
+
 def get_final_registration_eligibility(current_date):
     try:
         frd = Calendar.objects.all().filter(description="Physical Reporting at the Institute").first()

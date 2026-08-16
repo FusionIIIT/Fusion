@@ -54,6 +54,7 @@ from applications.academic_procedures.views import (get_user_semester, get_acad_
                                                     Constants, get_faculty_list,
                                                     get_registration_courses, get_add_course_options,
                                                     get_final_registration_eligibility,
+                                                    get_final_registration_window,
                                                     get_add_or_drop_course_date_eligibility,
                                                     get_detailed_sem_courses,
                                                     InitialRegistration)
@@ -1825,8 +1826,12 @@ def final_registration_page(request):
             final_registration = serializers.FinalRegistrationSerializer(final_registration, many=True).data
         else:
             final_registration = None
+        frd_window = get_final_registration_window()
         resp = {
             'frd': final_registration_date_flag,
+            'frd_configured': frd_window is not None,
+            'frd_from': frd_window.from_date if frd_window else None,
+            'frd_to': frd_window.to_date if frd_window else None,
             'final_registration_flag': final_registration_flag,
             'final_registration': final_registration,
         }
@@ -2842,10 +2847,11 @@ def swayam_replace_check(request):
 
         existing_request = SwayamReplacementRequest.objects.filter(
             student=student,
+            semester=current_semester,
             request_type='Swayam_Replace',
             status__in=['Pending', 'Approved']
         ).first()
-        
+
         if existing_request:
             return JsonResponse({
                 "has_existing": False,
@@ -4795,8 +4801,11 @@ def student_calendar_view(request):
 
     result = [
         {
+            "id": entry.id,
             "from_date": entry.from_date,
             "to_date": entry.to_date,
+            "from_time": entry.from_time,
+            "to_time": entry.to_time,
             "description": entry.description,
         }
         for entry in calendar_entries
