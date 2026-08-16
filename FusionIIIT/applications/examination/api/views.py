@@ -5036,18 +5036,21 @@ class GradeValidationView(APIView):
                         else:
                             regular += cr
 
-                        # The degree total counts a course once, a replaced one never.
-                        code_key = str(c.get("code", "")).strip().upper()
-                        if c.get("superseded") or code_key in credited_codes:
-                            continue
-                        credited_codes.add(code_key)
-                        tot_earned += cr
+                        # Regular / Backlog / Swayam total down their own column.
                         if bucket == "swayam":
                             tot_swayam += cr
                         elif bucket == "backlog_imp":
                             tot_backlog_imp += cr
                         else:
                             tot_regular += cr
+
+                        # Credits Earned is the degree figure: a course once,
+                        # a replaced one never.
+                        code_key = str(c.get("code", "")).strip().upper()
+                        if c.get("superseded") or code_key in credited_codes:
+                            continue
+                        credited_codes.add(code_key)
+                        tot_earned += cr
 
                     def _fmt(v): return str(int(v)) if v == int(v) else f"{v:.1f}"
                     cd_rows.append([
