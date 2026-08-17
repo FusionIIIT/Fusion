@@ -3448,6 +3448,7 @@ def admin_swayam_list_requests(request):
         queryset = SwayamReplacementRequest.objects.select_related(
             'student',
             'student__id__user',
+            'student__batch_id',
             'old_course',
             'new_course',
             'new_course_slot',
@@ -4389,10 +4390,13 @@ def admin_list_requests(request):
     
     year = request.GET.get('academic_year')
     sem  = request.GET.get('semester_type')
+    status_filter = request.GET.get('status')
     if year:
         qs = qs.filter(academic_year=year)
     if sem:
         qs = qs.filter(semester_type=sem)
+    if status_filter:
+        qs = qs.filter(status__iexact=status_filter)
 
     out = []
     for r in qs:
@@ -4880,6 +4884,24 @@ def student_list_drop_requests(request):
         logger.error(f"Error listing drop requests for {request.user.username}: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'An error occurred while fetching requests'}, status=500)
 
+# Counts the queues the acadadmin home page reports, without serialising rows.
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_pending_counts(request):
+    pending = lambda model: model.objects.filter(status__iexact='pending').count()
+    return JsonResponse({'counts': {
+        'swayam': pending(SwayamReplacementRequest),
+        'add': pending(CourseAddRequest),
+        'drop': pending(CourseDropRequest),
+        'replacement': pending(CourseReplacementRequest),
+        'phdCourses': pending(PhDCourseRegistrationRequest),
+        'thesisEnrolments': pending(ThesisRegistration),
+        'progressSeminars': pending(ProgressSeminarRegistration),
+        'teachingCredits': pending(TeachingCreditRegistration),
+    }}, status=200)
+
+
  # Lists all course drop requests with optional filtering
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -4895,11 +4917,22 @@ def admin_list_drop_requests(request):
 
         year = request.GET.get('academic_year', '').strip()
         sem = request.GET.get('semester_type', '').strip()
-        
+        status_filter = request.GET.get('status', '').strip()
+
         if year:
             qs = qs.filter(academic_year=year)
         if sem:
             qs = qs.filter(semester_type=sem)
+        # Filter before the cap, so a status query cannot be truncated away.
+        if status_filter:
+            qs = qs.filter(status__iexact=status_filter)
+
+        # Pending first, so the rows needing action survive the cap below.
+        qs = qs.order_by(
+            Case(When(status__iexact='pending', then=0), default=1,
+                 output_field=IntegerField()),
+            '-created_at',
+        )
 
         qs = qs[:500]
 
@@ -5148,11 +5181,22 @@ def admin_list_add_requests(request):
 
         year = request.GET.get('academic_year', '').strip()
         sem = request.GET.get('semester_type', '').strip()
-        
+        status_filter = request.GET.get('status', '').strip()
+
         if year:
             qs = qs.filter(academic_year=year)
         if sem:
             qs = qs.filter(semester_type=sem)
+        # Filter before the cap, so a status query cannot be truncated away.
+        if status_filter:
+            qs = qs.filter(status__iexact=status_filter)
+
+        # Pending first, so the rows needing action survive the cap below.
+        qs = qs.order_by(
+            Case(When(status__iexact='pending', then=0), default=1,
+                 output_field=IntegerField()),
+            '-created_at',
+        )
 
         qs = qs[:500]
 
@@ -5978,12 +6022,18 @@ def list_students_in_batch_semester_promotion(request):
     batch_id = request.query_params.get("batch_id")
     if not batch_id:
         return Response({"detail": "batch_id required."}, status=status.HTTP_400_BAD_REQUEST)
-    students = Student.objects.filter(batch_id__id=batch_id).order_by('id_id')
+    students = Student.objects.filter(batch_id__id=batch_id).select_related(
+        'id__user', 'batch_id__discipline'
+    ).order_by('id_id')
     result = []
     for st in students:
+        user = st.id.user
         result.append({
             "id": st.id_id,
             "username": str(st.id_id),
+            "name": f"{user.first_name} {user.last_name}".strip(),
+            "discipline": (st.batch_id.discipline.acronym
+                           if st.batch_id and st.batch_id.discipline_id else ''),
             "current_semester_no": st.curr_semester_no,
         })
     return Response(result)
@@ -8401,7 +8451,7 @@ def admin_thesis_enrollment_list(request):
 
     status_filter = request.GET.get('status')
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
 
     data = []
     for reg in qs:
@@ -9240,7 +9290,7 @@ def admin_progress_seminar_enrollment_list(request):
 
     status_filter = request.GET.get('status')
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
 
     data = []
     for reg in qs:
@@ -9492,7 +9542,7 @@ def admin_teaching_credit_enrollment_list(request):
 
     status_filter = request.GET.get('status')
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
 
     data = [_teaching_credit_enrollment_to_dict(reg) for reg in qs]
     return JsonResponse({'registrations': data}, status=200)
@@ -9663,6 +9713,9 @@ def phd_course_slots(request):
 _PHD_BL_ALLOWED_GRADES = ['F', 'X', 'CD', 'C', 'D+', 'D']
 
 
+_PHD_BL_BACKLOG_GRADES = {'F', 'X', 'CD'}
+
+
 def _phd_bl_grade_status(username, course):
     """Returns (allowed, grade) for a BL course. grade is None when the student
     has no recorded grade in the course (also treated as not allowed)."""
@@ -9672,6 +9725,39 @@ def _phd_bl_grade_status(username, course):
     if not sg:
         return False, None
     return sg.grade in _PHD_BL_ALLOWED_GRADES, sg.grade
+
+
+def _phd_bl_source_courses(student):
+    """The student's own courses eligible to be cleared through a BL slot: the
+    latest grade in each is below C+. A course taken in an OE slot may be
+    swapped for a different one; anything else has to be retaken as it is."""
+    username = student.id.user.username
+    latest = {}
+    for sg in Student_grades.objects.filter(
+        roll_no=username, grade__in=_PHD_BL_ALLOWED_GRADES
+    ).select_related('course_id').order_by('year', 'semester'):
+        latest[sg.course_id_id] = sg
+
+    oe_course_ids = set(course_registration.objects.filter(
+        student_id=student, course_id__in=latest.keys(),
+        course_slot_id__name__istartswith='OE',
+    ).values_list('course_id', flat=True))
+
+    out = []
+    for course_id, sg in latest.items():
+        course = sg.course_id
+        out.append({
+            'id': course.id,
+            'code': course.code,
+            'name': course.name,
+            'credit': course.credit,
+            'grade': sg.grade,
+            'registration_type': ('Backlog' if sg.grade in _PHD_BL_BACKLOG_GRADES
+                                  else 'Improvement'),
+            'replaceable': course_id in oe_course_ids,
+        })
+    out.sort(key=lambda c: c['code'])
+    return out
 
 
 @api_view(['GET'])
@@ -9699,9 +9785,9 @@ def phd_course_slot_courses(request):
     except (Semester.DoesNotExist, CourseSlot.DoesNotExist):
         return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
 
-    # Like the UG add flow, the slot lists all its courses; the BL backlog grade
-    # rule is enforced at submit. BL courses also carry their eligibility so the
-    # form can warn the moment an ineligible one is picked, not only at submit.
+    # A BL slot clears a past course, so it is driven by the student's own
+    # below-C+ grades rather than the slot list; the slot list is only the pool
+    # a replaceable (OE) course can be swapped for.
     is_bl = slot.name.startswith('BL')
     username = student.id.user.username
     courses = []
@@ -9713,7 +9799,11 @@ def phd_course_slot_courses(request):
             entry['bl_eligible'] = allowed
             entry['bl_grade'] = grade
         courses.append(entry)
-    return JsonResponse({'courses': courses}, status=200)
+
+    payload = {'courses': courses}
+    if is_bl:
+        payload['source_courses'] = _phd_bl_source_courses(student)
+    return JsonResponse(payload, status=200)
 
 
 @api_view(['POST'])
@@ -9738,6 +9828,7 @@ def phd_submit_course_request(request):
 
     slot_id = request.data.get('slot_id')
     course_id = request.data.get('course_id')
+    source_course_id = request.data.get('source_course_id')
     if not slot_id or not course_id:
         return JsonResponse({'error': 'slot_id and course_id are required'}, status=400)
 
@@ -9747,21 +9838,40 @@ def phd_submit_course_request(request):
             semester_no=student.curr_semester_no,
         )
         slot = CourseSlot.objects.get(id=slot_id, semester=semester)
-        course = slot.courses.get(id=course_id)
     except Semester.DoesNotExist:
         return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
     except CourseSlot.DoesNotExist:
         return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
-    except Courses.DoesNotExist:
-        return JsonResponse({'error': 'Course not found in this slot'}, status=404)
 
-    # BL (backlog) slots: enforce the UG add-course grade gate.
-    if slot.name.startswith('BL'):
-        allowed, grade = _phd_bl_grade_status(student.id.user.username, course)
-        if grade is None:
-            return JsonResponse({'error': 'You can only register for BL courses if you have a grade below C+ in this course. No grade record found.'}, status=400)
-        if not allowed:
-            return JsonResponse({'error': f'You can only register for BL courses with grades below C+. Your grade: {grade}'}, status=400)
+    is_bl = slot.name.startswith('BL')
+    source_course = None
+    registration_type = ''
+
+    if is_bl:
+        if not source_course_id:
+            return JsonResponse({'error': 'source_course_id is required for a BL slot'}, status=400)
+        eligible = {c['id']: c for c in _phd_bl_source_courses(student)}
+        source = eligible.get(int(source_course_id))
+        if not source:
+            return JsonResponse({'error': 'That course is not one you can clear: a BL slot needs a course you scored below C+ in.'}, status=400)
+        registration_type = source['registration_type']
+        # An OE course can be cleared by a different course from this slot;
+        # anything else has to be the same course taken again.
+        if source['replaceable']:
+            try:
+                course = slot.courses.get(id=course_id)
+            except Courses.DoesNotExist:
+                return JsonResponse({'error': 'Course not found in this slot'}, status=404)
+        elif int(course_id) != source['id']:
+            return JsonResponse({'error': f"{source['code']} was not taken in an open elective slot, so it has to be cleared by retaking the same course."}, status=400)
+        else:
+            course = Courses.objects.get(id=source['id'])
+        source_course = Courses.objects.get(id=source['id'])
+    else:
+        try:
+            course = slot.courses.get(id=course_id)
+        except Courses.DoesNotExist:
+            return JsonResponse({'error': 'Course not found in this slot'}, status=404)
 
     if PhDCourseRegistrationRequest.objects.filter(
         student=student, semester=semester, course_slot=slot, status__in=['Pending', 'Approved']
@@ -9780,6 +9890,8 @@ def phd_submit_course_request(request):
             'academic_year': academic_year,
             'semester_type': semester_type,
             'course': course,
+            'source_course': source_course,
+            'registration_type': registration_type,
             'status': 'Pending',
             'remarks': '',
             'requested_at': timezone.now(),
@@ -9818,7 +9930,8 @@ def phd_my_course_requests(request):
         return err
 
     qs = PhDCourseRegistrationRequest.objects.filter(student=student) \
-        .select_related('course', 'course_slot', 'semester').order_by('-requested_at')
+        .select_related('course', 'source_course', 'course_slot', 'semester') \
+        .order_by('-requested_at')
 
     data = [{
         'id': r.id,
@@ -9826,6 +9939,8 @@ def phd_my_course_requests(request):
         'course': r.course.code,
         'course_name': r.course.name,
         'credit': r.course.credit,
+        'source_course': r.source_course.code if r.source_course_id else None,
+        'registration_type': r.registration_type or None,
         'semester_no': r.semester.semester_no,
         'academic_year': r.academic_year,
         'semester_type': r.semester_type,
@@ -9850,7 +9965,8 @@ def phd_admin_list_requests(request):
     teaching-credit enrollment list endpoints (used by the merged admin view).
     """
     qs = PhDCourseRegistrationRequest.objects.select_related(
-        'student__id__user', 'student__batch_id__discipline', 'course', 'course_slot', 'semester'
+        'student__id__user', 'student__batch_id__discipline', 'course', 'source_course',
+        'course_slot', 'semester'
     ).all().order_by('-requested_at')
 
     year = request.GET.get('academic_year', '').strip()
@@ -9865,7 +9981,14 @@ def phd_admin_list_requests(request):
     if sem_no:
         qs = qs.filter(semester__semester_no=sem_no)
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
+
+    # Pending first, so the rows needing action survive the cap below.
+    qs = qs.order_by(
+        Case(When(status__iexact='pending', then=0), default=1,
+             output_field=IntegerField()),
+        '-requested_at',
+    )
 
     qs = qs[:500]
 
@@ -9879,6 +10002,8 @@ def phd_admin_list_requests(request):
         'course': r.course.code,
         'course_name': r.course.name,
         'credit': r.course.credit,
+        'source_course': r.source_course.code if r.source_course_id else None,
+        'registration_type': r.registration_type or None,
         'semester_no': r.semester.semester_no,
         'academic_year': r.academic_year,
         'semester_type': r.semester_type,
