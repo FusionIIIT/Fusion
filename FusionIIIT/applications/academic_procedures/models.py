@@ -5,7 +5,7 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 from applications.academic_information.models import Course, Student, Curriculum
-from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot, Batch, ThesisSlot, SeminarSlot as ProgressSeminarSlot, TeachingCreditSlot
+from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot, Batch, ThesisSlot, SeminarSlot as ProgressSeminarSlot, TeachingCreditSlot, Thesis as ThesisCatalogEntry, Seminar, TeachingCredit
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 from django.utils import timezone
 
@@ -1519,6 +1519,10 @@ class ThesisRegistration(models.Model):
                                          related_name='thesis_registrations')
     thesis_slot      = models.ForeignKey(ThesisSlot, on_delete=models.CASCADE,
                                          related_name='registrations')
+    thesis           = models.ForeignKey(ThesisCatalogEntry, on_delete=models.SET_NULL,
+                                         null=True, blank=True,
+                                         help_text='Catalog entry chosen within thesis_slot (admin manual add/allot only -- '
+                                                    'the student self-registration flow does not set this)')
     thesis_topic     = models.ForeignKey('ThesisTopic', on_delete=models.SET_NULL,
                                          null=True, blank=True,
                                          related_name='thesis_registrations')
@@ -1558,6 +1562,10 @@ class ProgressSeminarRegistration(models.Model):
                                               related_name='progress_seminar_registrations')
     progress_seminar_slot = models.ForeignKey(ProgressSeminarSlot, on_delete=models.CASCADE,
                                               related_name='registrations')
+    seminar               = models.ForeignKey(Seminar, on_delete=models.SET_NULL,
+                                              null=True, blank=True,
+                                              help_text='Catalog entry chosen within progress_seminar_slot '
+                                                         '(admin manual add/allot only)')
     semester              = models.ForeignKey(Semester, on_delete=models.CASCADE)
     working_year          = models.IntegerField(null=True, blank=True)
     status                = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -1590,6 +1598,10 @@ class TeachingCreditRegistration(models.Model):
                                               related_name='teaching_credit_registrations')
     teaching_credit_slot  = models.ForeignKey(TeachingCreditSlot, on_delete=models.CASCADE,
                                               related_name='registrations')
+    teaching_credit       = models.ForeignKey(TeachingCredit, on_delete=models.SET_NULL,
+                                              null=True, blank=True,
+                                              help_text='Catalog entry chosen within teaching_credit_slot '
+                                                         '(admin manual add/allot only)')
     semester              = models.ForeignKey(Semester, on_delete=models.CASCADE)
     working_year          = models.IntegerField(null=True, blank=True)
     academic_session      = models.CharField(max_length=9, null=True, blank=True)  # e.g. "2025-26"
@@ -1936,6 +1948,16 @@ class PhDCourseRegistrationRequest(models.Model):
     course_slot = models.ForeignKey(CourseSlot, on_delete=models.CASCADE)
     course = models.ForeignKey(Courses, on_delete=models.CASCADE,
                                 related_name='phd_course_requests')
+    # BL slots clear a past course. source_course is the one being cleared; it
+    # differs from course only when the past course sat in an OE slot and the
+    # student picked a different course to replace it with.
+    source_course = models.ForeignKey(Courses, null=True, blank=True,
+                                       on_delete=models.SET_NULL,
+                                       related_name='phd_source_course_requests')
+    registration_type = models.CharField(max_length=20, blank=True, choices=[
+        ("Backlog", "Backlog"),
+        ("Improvement", "Improvement"),
+    ])
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
     remarks = models.CharField(max_length=500, blank=True)
     requested_at = models.DateTimeField(default=timezone.now)

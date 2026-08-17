@@ -1,7 +1,7 @@
 from django.db.models.query_utils import Q
 from django.http import request
 from django.shortcuts import get_object_or_404, render, HttpResponse,redirect
-from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect,JsonResponse, Http404
 from django.views.decorators.http import require_http_methods
 import datetime
 # import itertools
@@ -1766,7 +1766,9 @@ def add_courseslot_form(request):
 @require_designation("acadadmin", "Dean Academic")
 def edit_courseslot_form(request, courseslot_id):
     
-    courseslot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
+    courseslot = CourseSlot.objects.filter(id=courseslot_id).first()
+    if courseslot is None:
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
     curriculum_id = courseslot.semester.curriculum.id
     
     if request.method == 'GET':
@@ -1795,6 +1797,8 @@ def edit_courseslot_form(request, courseslot_id):
                 return JsonResponse({'status': 'success', 'message': 'Course slot updated successfully', 'redirect_url': f'/programme_curriculum/admin_curriculum_semesters/{curriculum_id}/'})
             else:
                 return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+        except Http404:
+            return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
@@ -1837,6 +1841,8 @@ def delete_courseslot(request, courseslot_id):
         courseslot.delete()
         
         return JsonResponse({'message': f"Deleted {courseslotname} successfully"}, status=200)
+    except Http404:
+        return JsonResponse({'error': 'Not found'}, status=404)
     except Exception as e:
         # Return a generic error message without logging
         return JsonResponse({'error': 'Internal server error'}, status=500)
@@ -1887,7 +1893,9 @@ def edit_batch_form(request, batch_id):
     #     return HttpResponseRedirect('/programme_curriculum/programmes/')
     
     # Fetch the course slot
-    batch = get_object_or_404(Batch, Q(id=batch_id))
+    batch = Batch.objects.filter(id=batch_id).first()
+    if batch is None:
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
     if request.method == 'GET':
         # Prepare the course slot data for the frontend
         batch_data = {
@@ -2000,6 +2008,8 @@ def edit_batch_form(request, batch_id):
             batch.save()
             
             return JsonResponse({'status': 'success', 'message': 'Batch updated successfully'})
+        except Http404:
+            return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid request method'}, status=405)
@@ -2199,6 +2209,7 @@ def faculty_view_a_course(request, course_id):
     notifs = request.user.notifications.all()
     return render(request, 'programme_curriculum/faculty/faculty_view_a_course.html', {'course': course,'notifications': notifs,})
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def view_a_course_proposal_form(request,CourseProposal_id):
@@ -2221,6 +2232,7 @@ def view_a_course_proposal_form(request,CourseProposal_id):
     return render(request, 'programme_curriculum/faculty/view_a_course_proposal.html', {'proposal': proposalform,'notifications': notifs,})
 
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @permission_classes([IsAuthenticated])
 @csrf_exempt  # Only for development, remove in production with proper CSRF handling
 def new_course_proposal_file(request):
@@ -2316,6 +2328,7 @@ def new_course_proposal_file(request):
         'message': 'Only POST requests are allowed'
     }, status=405)
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @permission_classes([IsAuthenticated])
 @csrf_exempt  # Remove in production and use proper CSRF handling
 def filetracking(request, proposal_id):
@@ -2393,6 +2406,8 @@ def filetracking(request, proposal_id):
                 'status': 'error',
                 'message': 'Invalid JSON data'
             }, status=400)
+        except Http404:
+            return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
         except Exception as e:
             return JsonResponse({
                 'status': 'error',
@@ -2405,6 +2420,7 @@ def filetracking(request, proposal_id):
     }, status=405)
 
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @permission_classes([IsAuthenticated])
 @csrf_exempt
 def inward_files(request):
@@ -2464,6 +2480,7 @@ def inward_files(request):
             'message': str(e)
         }, status=500)
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @permission_classes([IsAuthenticated])
 @csrf_exempt
 def outward_files(request):
@@ -2967,6 +2984,8 @@ def forward_course_forms(request, ProposalId):
             'status': 'error',
             'message': 'Invalid JSON data'
         }, status=400)
+    except Http404:
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
     except Exception as e:
         return JsonResponse({
             'status': 'error',
@@ -2974,6 +2993,7 @@ def forward_course_forms(request, ProposalId):
         }, status=500)
     
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def forward_course_forms_II(request):
@@ -3022,6 +3042,8 @@ def forward_course_forms_II(request):
             'status': 'success',
             'data': response_data
         })
+    except Http404:
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
     except Exception as e:
         return JsonResponse({
             'status': 'error',
@@ -3029,6 +3051,7 @@ def forward_course_forms_II(request):
         }, status=500)
    
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def view_inward_files(request,ProposalId):
@@ -3125,6 +3148,8 @@ def view_inward_files(request,ProposalId):
             'data': response_data
         })
         
+    except Http404:
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
     except Exception as e:
         return JsonResponse({
             'status': 'error',
@@ -3133,18 +3158,16 @@ def view_inward_files(request,ProposalId):
 
 @csrf_exempt
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([has_any_role(
+    "acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor",
+)])
 def reject_form(request, ProposalId):
     try:
-        # Get query parameters
-        username = request.GET.get('username', '')
+        # Who rejected is taken from the authenticated user, not from the query
+        # string: the caller used to be able to name anyone in the notification
+        # the uploader receives.
+        username = request.user.username
         designation = request.GET.get('des', '')
-        
-        if not username or not designation:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Missing username or designation parameters'
-            }, status=400)
 
         # Get the tracking and file objects
         try:
@@ -3202,6 +3225,7 @@ def reject_form(request, ProposalId):
 
 
     
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def tracking_unarchive(request,ProposalId):
@@ -3246,12 +3270,15 @@ def tracking_unarchive(request,ProposalId):
             'status': 'error',
             'message': 'Invalid JSON data'
         }, status=400)
+    except Http404:
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
     except Exception as e:
         return JsonResponse({
             'status': 'error',
             'message': str(e)
         }, status=500)
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def tracking_archive(request,ProposalId):
@@ -3296,12 +3323,15 @@ def tracking_archive(request,ProposalId):
             'status': 'error',
             'message': 'Invalid JSON data'
         }, status=400)
+    except Http404:
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
     except Exception as e:
         return JsonResponse({
             'status': 'error',
             'message': str(e)
         }, status=500)
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 @permission_classes([IsAuthenticated])
 def file_archive(request,FileId):
@@ -3320,6 +3350,7 @@ def file_archive(request,FileId):
             'message': str(e)
         }, status=400)
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 @permission_classes([IsAuthenticated])
 def file_unarchive(request,FileId):
@@ -3668,6 +3699,7 @@ def update_course_instructor_form(request, instructor_id):
     # Handle unsupported HTTP methods
     return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 @permission_classes([IsAuthenticated])
 def get_superior_data(request):
@@ -4512,6 +4544,8 @@ def add_thesis(request):
         return JsonResponse({
             'error': 'A thesis with this code already exists for this discipline'
         }, status=400)
+    except Http404:
+        return JsonResponse({'error': 'Not found'}, status=404)
     except Exception as e:
         return JsonResponse({
             'error': str(e)
@@ -4536,6 +4570,8 @@ def admin_delete_thesis(request, thesis_id):
             'message': f'Thesis {thesis_code} - {thesis_name} deleted successfully'
         }, status=200)
         
+    except Http404:
+        return JsonResponse({'error': 'Not found'}, status=404)
     except Exception as e:
         return JsonResponse({
             'error': str(e)
@@ -4605,6 +4641,8 @@ def add_seminar(request):
         return JsonResponse({
             'error': 'A seminar with this code already exists for this discipline'
         }, status=400)
+    except Http404:
+        return JsonResponse({'error': 'Not found'}, status=404)
     except Exception as e:
         return JsonResponse({
             'error': str(e)
@@ -4629,6 +4667,8 @@ def admin_delete_seminar(request, seminar_id):
             'message': f'Seminar {s_code} - {s_name} deleted successfully'
         }, status=200)
 
+    except Http404:
+        return JsonResponse({'error': 'Not found'}, status=404)
     except Exception as e:
         return JsonResponse({
             'error': str(e)
@@ -4678,6 +4718,8 @@ def update_thesis(request, thesis_id):
             return JsonResponse({
                 'error': 'A thesis with this code already exists for this discipline'
             }, status=400)
+        except Http404:
+            return JsonResponse({'error': 'Not found'}, status=404)
         except Exception as e:
             return JsonResponse({
                 'error': str(e)
@@ -4727,6 +4769,8 @@ def update_seminar(request, seminar_id):
             return JsonResponse({
                 'error': 'A seminar with this code already exists for this discipline'
             }, status=400)
+        except Http404:
+            return JsonResponse({'error': 'Not found'}, status=404)
         except Exception as e:
             return JsonResponse({
                 'error': str(e)
@@ -4882,7 +4926,9 @@ def delete_seminar_slot(request, seminar_slot_id):
 @require_designation("acadadmin")
 def edit_thesis_slot_form(request, thesis_slot_id):
     """GET returns existing thesis slot data; PUT updates it."""
-    thesis_slot = get_object_or_404(ThesisSlot, id=thesis_slot_id)
+    thesis_slot = ThesisSlot.objects.filter(id=thesis_slot_id).first()
+    if thesis_slot is None:
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
     curriculum_id = thesis_slot.semester.curriculum.id
 
     if request.method == 'GET':
@@ -4912,6 +4958,8 @@ def edit_thesis_slot_form(request, thesis_slot_id):
                 })
             else:
                 return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+        except Http404:
+            return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
@@ -4921,7 +4969,9 @@ def edit_thesis_slot_form(request, thesis_slot_id):
 @require_designation("acadadmin")
 def edit_seminar_slot_form(request, seminar_slot_id):
     """GET returns existing seminar slot data; PUT updates it."""
-    seminar_slot = get_object_or_404(SeminarSlot, id=seminar_slot_id)
+    seminar_slot = SeminarSlot.objects.filter(id=seminar_slot_id).first()
+    if seminar_slot is None:
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
     curriculum_id = seminar_slot.semester.curriculum.id
 
     if request.method == 'GET':
@@ -4950,6 +5000,8 @@ def edit_seminar_slot_form(request, seminar_slot_id):
                 })
             else:
                 return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+        except Http404:
+            return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
@@ -5019,6 +5071,8 @@ def add_teaching_credit(request):
         return JsonResponse({
             'error': 'A teaching credit with this code already exists for this discipline'
         }, status=400)
+    except Http404:
+        return JsonResponse({'error': 'Not found'}, status=404)
     except Exception as e:
         return JsonResponse({
             'error': str(e)
@@ -5043,6 +5097,8 @@ def admin_delete_teaching_credit(request, teaching_credit_id):
             'message': f'Teaching Credit {tc_code} - {tc_name} deleted successfully'
         }, status=200)
 
+    except Http404:
+        return JsonResponse({'error': 'Not found'}, status=404)
     except Exception as e:
         return JsonResponse({
             'error': str(e)
@@ -5092,6 +5148,8 @@ def update_teaching_credit(request, teaching_credit_id):
             return JsonResponse({
                 'error': 'A teaching credit with this code already exists for this discipline'
             }, status=400)
+        except Http404:
+            return JsonResponse({'error': 'Not found'}, status=404)
         except Exception as e:
             return JsonResponse({
                 'error': str(e)
@@ -5173,7 +5231,9 @@ def delete_teaching_credit_slot(request, tc_slot_id):
 @require_designation("acadadmin")
 def edit_teaching_credit_slot_form(request, tc_slot_id):
     """GET returns existing teaching credit slot data; PUT updates it."""
-    tc_slot = get_object_or_404(TeachingCreditSlot, id=tc_slot_id)
+    tc_slot = TeachingCreditSlot.objects.filter(id=tc_slot_id).first()
+    if tc_slot is None:
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
     curriculum_id = tc_slot.semester.curriculum.id
 
     if request.method == 'GET':
@@ -5202,6 +5262,8 @@ def edit_teaching_credit_slot_form(request, tc_slot_id):
                 })
             else:
                 return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+        except Http404:
+            return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 

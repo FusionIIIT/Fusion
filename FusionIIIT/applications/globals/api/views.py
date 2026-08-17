@@ -82,7 +82,7 @@ def logout(request):
 @authentication_classes([TokenAuthentication])
 def auth_view(request):
     user=request.user
-    name = request.user.first_name +"_"+ request.user.last_name
+    name = " ".join(filter(None, [request.user.first_name, request.user.last_name])).strip()
     roll_no = request.user.username
 
     extra_info = get_object_or_404(ExtraInfo, user=user)

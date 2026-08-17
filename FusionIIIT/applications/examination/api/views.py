@@ -2,13 +2,15 @@ from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.utils import timezone
 from decimal import Decimal, ROUND_HALF_UP
 from applications.academic_procedures.models import(
     course_registration, course_replacement,
-    ThesisRegistration, ProgressSeminarRegistration, ProgressSeminarEntry, TeachingCreditAllocation,
+    ThesisRegistration, ThesisEvaluation, ThesisTopic,
+    ProgressSeminarRegistration, ProgressSeminarEntry, TeachingCreditAllocation,
     resolve_progress_seminar_catalog_entry, DEFAULT_PROGRESS_SEMINAR_CREDIT,
 )
-from applications.programme_curriculum.models import Course as Courses ,  Batch, CourseInstructor
+from applications.programme_curriculum.models import Course as Courses ,  Batch, CourseInstructor, Semester
 from applications.examination.models import(hidden_grades , ResultAnnouncement, authentication, PublishedResultStudent)
 from applications.globals.access import user_holds_role, user_holds_any_role
 from applications.academic_information.models import(Student)
@@ -23,7 +25,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from django.db.models import IntegerField, Sum, Case, When
 from django.db.models.functions import Cast
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
@@ -262,14 +264,24 @@ def _phd_extra_grade_items(student, semester_no, require_announced=False):
     return items
 
 
-def _apply_grade_factor(grade, credit, totals):
+# An F carries its 0.2 factor and its credit into SPI/CPI either way. Whether its
+# credit is also banked depends on the caller: SU is a semester-wise attempted
+# figure and has counted an F since the feature was written, while TU is the degree
+# figure and counts a course only once it is cleared. X/I/AU/CD are absent from
+# grade_conversion, so they reach neither. S is the reverse: credit, no CPI weight.
+NON_EARNING_GRADES = {"F"}
+
+
+def _apply_grade_factor(grade, credit, totals, include_failed=False):
     """totals: {'points': Decimal, 'credits': Decimal, 'earned': Decimal}, mutated in place."""
-    factor = grade_conversion.get((grade or "").strip(), -1)
+    grade = (grade or "").strip()
+    factor = grade_conversion.get(grade, -1)
     if factor >= 0:
         if factor != 0:
             totals['points'] += Decimal(str(factor)) * credit
             totals['credits'] += credit
-        totals['earned'] += credit
+        if include_failed or grade not in NON_EARNING_GRADES:
+            totals['earned'] += credit
 
 
 def calculate_spi_for_student(student, selected_semester, semester_type, require_announced=False):
@@ -294,11 +306,12 @@ def calculate_spi_for_student(student, selected_semester, semester_type, require
             .order_by('semester', 'semester_type_order')
     )
     totals = {'points': Decimal('0'), 'credits': Decimal('0'), 'earned': Decimal('0')}
+    # SU counts what was taken that semester, an uncleared F included.
     for g in grades:
         credit = Decimal(str(g.course_id.credit))
-        _apply_grade_factor(g.grade, credit, totals)
+        _apply_grade_factor(g.grade, credit, totals, include_failed=True)
     for credit, grade in _phd_extra_grade_items(student, selected_semester, require_announced):
-        _apply_grade_factor(grade, credit, totals)
+        _apply_grade_factor(grade, credit, totals, include_failed=True)
     total_points, total_credits, semester_unit = totals['points'], totals['credits'], totals['earned']
     return round_from_last_decimal(Decimal('10') * (total_points / total_credits)) if total_credits else 0, semester_unit, (total_points*10)
 
@@ -308,6 +321,34 @@ def trace_registration(reg_id, mapping):
         seen.add(reg_id)
         reg_id = mapping[reg_id]
     return reg_id
+
+def superseded_course_codes(student, graded_codes):
+    """Elective codes a graded replacement/swayam course has superseded.
+
+    A replaced elective stops counting once its replacement is graded; each
+    distinct replacement counts on its own. Shared by the CPI helper and the
+    semester-history builder so both apply one rule.
+    """
+    replacements = course_replacement.objects.filter(
+        Q(old_course_registration__student_id=student) |
+        Q(new_course_registration__student_id=student)
+    ).select_related('old_course_registration__course_id',
+                     'new_course_registration__course_id')
+    code_replacement_map = {}   # replacement/swayam course code -> replaced elective code
+    for rep in replacements:
+        old_code = (rep.old_course_registration.course_id.code or '').strip()
+        new_code = (rep.new_course_registration.course_id.code or '').strip()
+        if new_code and old_code and new_code != old_code:
+            code_replacement_map[new_code] = old_code
+
+    superseded = set()
+    for graded_code in graded_codes:
+        old = code_replacement_map.get(graded_code)
+        while old and old not in superseded:
+            superseded.add(old)
+            old = code_replacement_map.get(old)
+    return superseded
+
 
 def calculate_cpi_for_student(student, selected_semester, semester_type, require_announced=False):
     total_unit = Decimal('0')
@@ -331,18 +372,6 @@ def calculate_cpi_for_student(student, selected_semester, semester_type, require
         grades = Student_grades.objects.filter(
             roll_no=student.id_id, semester__lte=selected_semester,
         ).exclude(semester_type='Summer Semester', semester=selected_semester).select_related('course_id')
-    replacements = course_replacement.objects.filter(
-        Q(old_course_registration__student_id=student) |
-        Q(new_course_registration__student_id=student)
-    ).select_related('old_course_registration__course_id',
-                     'new_course_registration__course_id')
-    code_replacement_map = {}   # replacement/swayam course code -> replaced elective code
-    for rep in replacements:
-        old_code = (rep.old_course_registration.course_id.code or '').strip()
-        new_code = (rep.new_course_registration.course_id.code or '').strip()
-        if new_code and old_code and new_code != old_code:
-            code_replacement_map[new_code] = old_code
-
     # Best-graded attempt per distinct course code (dedups backlog/improvement retakes; keeps distinct courses separate).
     best_by_code = {}
     for g in grades:
@@ -354,13 +383,7 @@ def calculate_cpi_for_student(student, selected_semester, semester_type, require
                             > grade_conversion.get((prev.grade or '').strip(), -1)):
             best_by_code[code] = g
 
-    # A replaced elective is superseded once a replacement is graded; each distinct replacement counts on its own.
-    superseded_codes = set()
-    for graded_code in best_by_code:
-        old = code_replacement_map.get(graded_code)
-        while old and old not in superseded_codes:
-            superseded_codes.add(old)
-            old = code_replacement_map.get(old)
+    superseded_codes = superseded_course_codes(student, best_by_code.keys())
 
     totals = {'points': Decimal('0'), 'credits': Decimal('0'), 'earned': Decimal('0')}
     for code, best_record in best_by_code.items():
@@ -431,6 +454,12 @@ def is_valid_grade(grade: str, course_code: str) -> bool:
     if code in {"PR4001","PR4002", "BTP4001"}:
         return grade in PBI_AND_BTP_ALLOWED_GRADES
     return grade in ALLOWED_GRADES
+
+
+# Remark shown next to a grade once a course has more than one linked attempt:
+# BL = backlog after a fail, CD = the earlier attempt was dropped, IM = improvement
+# on an already-cleared course.
+REMARK_KIND_BY_GRADE = {'F': 'BL', 'X': 'BL', 'CD': 'CD'}
 
 
 def gather_related_registrations(initial_reg, max_semester):
@@ -1509,10 +1538,9 @@ class GenerateResultAPI(APIView):
                                     reverse=True
                                 )
                                 first_code, first_grade = scored[0]
-                                if first_grade == 'F' or first_grade == 'X':
-                                    remark = 'R(BL)' if first_code == course.code else 'S(BL)'
-                                else:
-                                    remark = 'R(IM)' if first_code == course.code else 'S(IM)'
+                                kind = REMARK_KIND_BY_GRADE.get(first_grade, 'IM')
+                                prefix = 'R' if first_code == course.code else 'S'
+                                remark = f'{prefix}({kind})'
                     ws.cell(row=row_idx, column=col_ptr).value = grade_val
                     ws.cell(row=row_idx, column=col_ptr+1).value = remark
                     for c in [col_ptr, col_ptr+1]:
@@ -3548,6 +3576,52 @@ class StudentSemesterListView(APIView):
         return JsonResponse({"success": True, "semesters": semesters})
 
 
+class StudentCreditSummaryView(APIView):
+    """Credits Details for the signed-in student only.
+
+    Semesters are filtered to those whose result is announced and published for
+    this student -- the same gate CheckResultView applies. Without it the
+    underlying helper would expose unannounced grades.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        roll_number = request.user.username
+
+        try:
+            student = Student.objects.select_related(
+                "id__user", "id__department", "batch_id__discipline"
+            ).get(id_id=roll_number)
+        except Student.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Student record not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        _, semesters_data = _build_grade_validation_semesters(student)
+
+        # A summer announcement records the academic semester its courses belong
+        # to, same as every other term, so one (semester_no, type) match serves all.
+        published = {
+            (ann.semester, ann.semester_type)
+            for ann in ResultAnnouncement.objects.filter(
+                batch=student.batch_id, announced=True
+            )
+            if _is_result_published_for(ann, roll_number)
+        }
+
+        announced = [
+            sem for sem in semesters_data
+            if not sem.get("is_registered_only")
+            and (sem.get("semester_no"), sem.get("semester_type")) in published
+        ]
+
+        return Response(
+            {"success": True, "semesters": announced},
+            status=status.HTTP_200_OK,
+        )
+
+
 class GradeStatusAPI(APIView):
     """
     API to get grade status for all courses in a given academic year and semester type.
@@ -4438,6 +4512,13 @@ def _build_grade_validation_semesters(student):
     for g in all_grades:
         semesters_map[(g.semester, g.semester_type)].append(g)
 
+    # Every graded code, whatever the grade: an X/I/AU/CD attempt still routes
+    # through replacement, exactly as the CPI helper does with best_by_code.
+    superseded = superseded_course_codes(
+        student,
+        {(g.course_id.code or '').strip() for g in all_grades},
+    )
+
     all_regs = (
         course_registration.objects.filter(student_id=student)
         .select_related("course_id", "semester_id")
@@ -4473,7 +4554,7 @@ def _build_grade_validation_semesters(student):
             mapped_rows = [{
                 "code": row["course_code"], "name": row["course_name"],
                 "credits": float(row["credit"]), "grade": row["grade"],
-                "remark": "PhD",
+                "remark": "Milestone",
             } for _, row in rows]
 
             graded_candidates = [k for k in semesters_map if k[0] == s_no]
@@ -4539,6 +4620,7 @@ def _build_grade_validation_semesters(student):
             courses.append({
                 "code": course.code or "", "name": course.name or "",
                 "credits": float(credit), "grade": grade, "remark": remark,
+                "superseded": (course.code or "").strip() in superseded,
             })
 
         for phd_row in key_to_phd_rows.get(key, []):
@@ -4913,6 +4995,8 @@ class GradeValidationView(APIView):
 
                 cd_rows = []
                 tot_earned = tot_regular = tot_backlog_imp = tot_swayam = 0.0
+                # A course credits the degree once, and a replaced elective not at all.
+                credited_codes = set()
 
                 for gs in graded_sems:
                     earned = regular = backlog_imp = swayam = 0.0
@@ -4923,18 +5007,38 @@ class GradeValidationView(APIView):
                         is_sw = str(c.get("code", "")).upper().startswith("SW")
                         if g in NON_EARN:
                             continue
-                        earned += cr
                         if is_sw:
-                            swayam += cr
+                            bucket = "swayam"
                         elif rem in ("Backlog", "Improvement"):
+                            bucket = "backlog_imp"
+                        else:
+                            bucket = "regular"
+
+                        # The semester row records what was graded in it, so an
+                        # improvement lands under Backlog / Improvement here.
+                        earned += cr
+                        if bucket == "swayam":
+                            swayam += cr
+                        elif bucket == "backlog_imp":
                             backlog_imp += cr
                         else:
                             regular += cr
 
-                    tot_earned      += earned
-                    tot_regular     += regular
-                    tot_backlog_imp += backlog_imp
-                    tot_swayam      += swayam
+                        # Regular / Backlog / Swayam total down their own column.
+                        if bucket == "swayam":
+                            tot_swayam += cr
+                        elif bucket == "backlog_imp":
+                            tot_backlog_imp += cr
+                        else:
+                            tot_regular += cr
+
+                        # Credits Earned is the degree figure: a course once,
+                        # a replaced one never.
+                        code_key = str(c.get("code", "")).strip().upper()
+                        if c.get("superseded") or code_key in credited_codes:
+                            continue
+                        credited_codes.add(code_key)
+                        tot_earned += cr
 
                     def _fmt(v): return str(int(v)) if v == int(v) else f"{v:.1f}"
                     cd_rows.append([
@@ -5025,3 +5129,395 @@ class GradeValidationView(APIView):
             return resp
 
         return Response({"error": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+PHD_MILESTONE_CATEGORIES = {'thesis', 'progress_seminar', 'teaching_credit'}
+
+
+def _phd_milestone_grade_from_input(raw):
+    """Normalize a CSV/manual grade cell to 'S'/'X'. Returns None if not recognized."""
+    v = (raw or '').strip().upper()
+    if v in ('S', 'SATISFACTORY'):
+        return 'S'
+    if v in ('X', 'NOT_SATISFACTORY', 'NOT SATISFACTORY', 'UNSATISFACTORY'):
+        return 'X'
+    return None
+
+
+class SubmitPhDMilestoneGradesAPI(APIView):
+    """
+    Fallback bulk data-entry for Thesis / Progress Seminar / Teaching Credit grades
+    (PG and PhD -- both programme categories use these three, per the
+    programme_curriculum.Thesis/Seminar/TeachingCredit catalog models' own
+    programme_type choices) that were assessed offline (on paper), outside the
+    normal digital procedure (supervisor bulk-submit for Thesis, RPC committee
+    consensus for Progress Seminar, HOD decision for Teaching Credit). This
+    endpoint deliberately bypasses all three of those procedures -- it is acadadmin
+    directly feeding a result into the system, exactly like the existing
+    course-grade CSV upload does for Student_grades. Writes are immediately final
+    (no separate verify/announce step, unlike courses) and are rejected if the
+    target already has a grade.
+
+    Actions (all via POST, dispatched on `action` in the body):
+      - list_batches:      {} -> PG/PhD batches (curriculum required) for the picker
+      - list_students:    {category, batch_id, semester_no, semester_type} -> eligible roster
+      - download_template: {category, batch_id, semester_no, semester_type} -> CSV attachment
+      - preview_upload:   multipart {category, batch_id, semester_no, semester_type, csv_file}
+                           -> {valid_rows, invalid_rows} (no DB writes)
+      - bulk_submit:      {category, batch_id, semester_no, semester_type, submissions: [...]}
+                           -> {success_count, error_count, errors}
+    """
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def _check_access(self, request):
+        return user_holds_role(request.user, "acadadmin")
+
+    # ------------------------------------------------------------------ #
+    # Eligibility / already-graded resolution, shared by every action.
+    # ------------------------------------------------------------------ #
+
+    def _thesis_targets(self, curriculum, semester_no):
+        """One entry per (registration, block_number) -- Thesis grading is
+        block-granular, unlike the other two categories."""
+        targets = []
+        regs = ThesisRegistration.objects.filter(
+            semester__curriculum=curriculum, semester__semester_no=semester_no
+        ).select_related('student__id__user')
+        for reg in regs:
+            total_blocks = reg.credits // 3
+            existing_grades = {
+                ev.block_number: ev.grade
+                for ev in ThesisEvaluation.objects.filter(registration=reg)
+                if ev.grade
+            }
+            for block_number in range(1, total_blocks + 1):
+                targets.append({
+                    "roll_no": reg.student.id_id,
+                    "name": f"{reg.student.id.user.first_name} {reg.student.id.user.last_name}".strip(),
+                    "block_number": block_number,
+                    "already_graded": block_number in existing_grades,
+                    "current_grade": existing_grades.get(block_number),
+                })
+        return targets
+
+    def _progress_seminar_targets(self, curriculum, semester_no):
+        targets = []
+        regs = ProgressSeminarRegistration.objects.filter(
+            semester__curriculum=curriculum, semester__semester_no=semester_no
+        ).select_related('student__id__user')
+        for reg in regs:
+            student = reg.student
+            topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+            existing = None
+            if topic:
+                existing = ProgressSeminarEntry.objects.filter(
+                    thesis=topic, semester__curriculum=curriculum, semester__semester_no=semester_no
+                ).exclude(overall_grade='').order_by('-version').first()
+            targets.append({
+                "roll_no": student.id_id,
+                "name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+                "already_graded": bool(existing),
+                "current_grade": existing.overall_grade if existing else None,
+                "has_thesis_topic": bool(topic),
+            })
+        return targets
+
+    def _teaching_credit_targets(self, curriculum, semester_no):
+        targets = []
+        allocs = TeachingCreditAllocation.objects.filter(
+            semester__curriculum=curriculum, semester__semester_no=semester_no, allocated_course__isnull=False
+        ).select_related('student__id__user', 'allocated_course')
+        for alloc in allocs:
+            student = alloc.student
+            targets.append({
+                "roll_no": student.id_id,
+                "name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+                "already_graded": bool(alloc.result),
+                "current_grade": 'S' if alloc.result == 'satisfactory' else ('X' if alloc.result else None),
+                "course_code": alloc.allocated_course.code,
+            })
+        return targets
+
+    def _targets_for(self, category, curriculum, semester_no):
+        if category == 'thesis':
+            return self._thesis_targets(curriculum, semester_no)
+        if category == 'progress_seminar':
+            return self._progress_seminar_targets(curriculum, semester_no)
+        if category == 'teaching_credit':
+            return self._teaching_credit_targets(curriculum, semester_no)
+        return []
+
+    # ------------------------------------------------------------------ #
+    # Dispatch
+    # ------------------------------------------------------------------ #
+
+    def post(self, request):
+        if not self._check_access(request):
+            return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+
+        action = request.data.get("action")
+
+        if action == "list_batches":
+            return self._action_list_batches()
+
+        category = request.data.get("category")
+        if category not in PHD_MILESTONE_CATEGORIES:
+            return Response(
+                {"error": "category must be one of: thesis, progress_seminar, teaching_credit."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            batch_id = int(request.data.get("batch_id"))
+        except (TypeError, ValueError):
+            return Response({"error": "batch_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+        batch = Batch.objects.select_related('curriculum').filter(id=batch_id).first()
+        if not batch or not batch.curriculum_id:
+            return Response({"error": "Invalid batch, or batch has no curriculum configured."}, status=status.HTTP_400_BAD_REQUEST)
+        curriculum = batch.curriculum
+
+        try:
+            semester_no = int(request.data.get("semester_no"))
+        except (TypeError, ValueError):
+            return Response({"error": "semester_no must be a number."}, status=status.HTTP_400_BAD_REQUEST)
+        semester_type = request.data.get("semester_type") or ""
+
+        if action == "list_students":
+            return self._action_list_students(category, curriculum, semester_no)
+        elif action == "download_template":
+            return self._action_download_template(category, curriculum, semester_no, semester_type)
+        elif action == "preview_upload":
+            return self._action_preview_upload(request, category, curriculum, semester_no)
+        elif action == "bulk_submit":
+            return self._action_bulk_submit(request, category, curriculum, semester_no)
+        return Response({"error": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # ------------------------------------------------------------------ #
+    # list_batches
+    # ------------------------------------------------------------------ #
+
+    def _action_list_batches(self):
+        # Thesis/Progress Seminar/Teaching Credit are PG-and-PhD activities (see the
+        # programme_curriculum.Thesis/Seminar/TeachingCredit catalog models' own
+        # programme_type choices: PG or PHD, never UG) -- so list batches from either
+        # category, not just ones with "phd" in the name.
+        batches = (
+            Batch.objects.filter(curriculum__programme__category__in=['PG', 'PHD'], curriculum__isnull=False)
+            .select_related('discipline', 'curriculum')
+            .order_by('-year', 'name')
+        )
+        return Response(
+            {"batches": [{"id": b.id, "label": f"{b.name} - {b.discipline} {b.year}"} for b in batches]},
+            status=status.HTTP_200_OK,
+        )
+
+    # ------------------------------------------------------------------ #
+    # list_students
+    # ------------------------------------------------------------------ #
+
+    def _action_list_students(self, category, curriculum, semester_no):
+        return Response({"students": self._targets_for(category, curriculum, semester_no)}, status=status.HTTP_200_OK)
+
+    # ------------------------------------------------------------------ #
+    # download_template
+    # ------------------------------------------------------------------ #
+
+    def _action_download_template(self, category, curriculum, semester_no, semester_type):
+        targets = [t for t in self._targets_for(category, curriculum, semester_no) if not t["already_graded"]]
+
+        response = HttpResponse(content_type="text/csv")
+        filename = _safe_filename(f"{category}_grades_template_sem{semester_no}", extension=".csv")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        writer = csv.writer(response)
+
+        if category == 'thesis':
+            max_block = max([t["block_number"] for t in targets], default=1)
+            grade_cols = [f"Grade {i}" for i in range(1, max_block + 1)]
+            writer.writerow(["roll_no", "name"] + grade_cols + ["remarks"])
+            by_student = defaultdict(dict)
+            names = {}
+            for t in targets:
+                by_student[t["roll_no"]][t["block_number"]] = ""
+                names[t["roll_no"]] = t["name"]
+            for roll_no, blocks in by_student.items():
+                row = [roll_no, names[roll_no]] + [
+                    "" for _ in range(1, max_block + 1)
+                ] + [""]
+                writer.writerow(row)
+        else:
+            writer.writerow(["roll_no", "name", "grade", "remarks"])
+            for t in targets:
+                writer.writerow([t["roll_no"], t["name"], "", ""])
+
+        return response
+
+    # ------------------------------------------------------------------ #
+    # preview_upload (no DB writes)
+    # ------------------------------------------------------------------ #
+
+    def _action_preview_upload(self, request, category, curriculum, semester_no):
+        csv_file = request.FILES.get("csv_file")
+        if not csv_file:
+            return Response({"error": "No file provided. Please upload a CSV file."}, status=status.HTTP_400_BAD_REQUEST)
+        if not csv_file.name.lower().endswith(".csv"):
+            return Response({"error": "Invalid file format. Please upload a CSV file."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            decoded = csv_file.read().decode("utf-8").splitlines()
+        except UnicodeDecodeError:
+            return Response({"error": "Could not read the CSV file (encoding)."}, status=status.HTTP_400_BAD_REQUEST)
+        reader = csv.DictReader(decoded)
+        if not reader.fieldnames or "roll_no" not in [f.strip().lower() for f in reader.fieldnames]:
+            return Response({"error": "CSV file must contain a roll_no column."}, status=status.HTTP_400_BAD_REQUEST)
+
+        targets_by_roll = {}
+        for t in self._targets_for(category, curriculum, semester_no):
+            targets_by_roll.setdefault(t["roll_no"], []).append(t)
+
+        valid_rows = []
+        invalid_rows = []
+
+        if category == 'thesis':
+            grade_cols = [
+                (h, int(m.group(1)))
+                for h in reader.fieldnames
+                for m in [re.match(r'^\s*grade\s*(\d+)\s*$', h.strip(), re.IGNORECASE)]
+                if m
+            ]
+            for idx, row in enumerate(reader, start=1):
+                roll_no = (row.get("roll_no") or "").strip()
+                remarks = (row.get("remarks") or "").strip()
+                blocks = {t["block_number"]: t for t in targets_by_roll.get(roll_no, [])}
+                if not blocks:
+                    invalid_rows.append({"row_num": idx, "roll_no": roll_no, "reason": "No Thesis registration found for this student/semester."})
+                    continue
+                for header, block_number in grade_cols:
+                    raw = (row.get(header) or "").strip()
+                    if not raw:
+                        continue
+                    target = blocks.get(block_number)
+                    if not target:
+                        invalid_rows.append({"row_num": idx, "roll_no": roll_no, "reason": f"No block {block_number} registered for this student."})
+                        continue
+                    if target["already_graded"]:
+                        invalid_rows.append({"row_num": idx, "roll_no": roll_no, "reason": f"Block {block_number} already graded ({target['current_grade']}) — resubmission not allowed."})
+                        continue
+                    grade = _phd_milestone_grade_from_input(raw)
+                    if not grade:
+                        invalid_rows.append({"row_num": idx, "roll_no": roll_no, "reason": f"Invalid grade '{raw}' for block {block_number}. Must be S or X."})
+                        continue
+                    valid_rows.append({
+                        "roll_no": roll_no, "name": target["name"],
+                        "block_number": block_number, "grade": grade, "remarks": remarks,
+                    })
+        else:
+            for idx, row in enumerate(reader, start=1):
+                roll_no = (row.get("roll_no") or "").strip()
+                raw_grade = (row.get("grade") or "").strip()
+                remarks = (row.get("remarks") or "").strip()
+                candidates = targets_by_roll.get(roll_no)
+                if not candidates:
+                    reason = "No Teaching Credit allocation found for this student/semester." if category == 'teaching_credit' \
+                        else "No Progress Seminar registration found for this student/semester."
+                    invalid_rows.append({"row_num": idx, "roll_no": roll_no, "reason": reason})
+                    continue
+                target = candidates[0]
+                if target["already_graded"]:
+                    invalid_rows.append({"row_num": idx, "roll_no": roll_no, "reason": f"Already graded ({target['current_grade']}) — resubmission not allowed."})
+                    continue
+                if category == 'progress_seminar' and not target.get("has_thesis_topic"):
+                    invalid_rows.append({"row_num": idx, "roll_no": roll_no, "reason": "No thesis topic on file for this student."})
+                    continue
+                grade = _phd_milestone_grade_from_input(raw_grade)
+                if not grade:
+                    invalid_rows.append({"row_num": idx, "roll_no": roll_no, "reason": f"Invalid grade '{raw_grade}'. Must be S or X."})
+                    continue
+                valid_rows.append({"roll_no": roll_no, "name": target["name"], "grade": grade, "remarks": remarks})
+
+        return Response({"valid_rows": valid_rows, "invalid_rows": invalid_rows}, status=status.HTTP_200_OK)
+
+    # ------------------------------------------------------------------ #
+    # bulk_submit (writes, immediately final)
+    # ------------------------------------------------------------------ #
+
+    def _action_bulk_submit(self, request, category, curriculum, semester_no):
+        submissions = request.data.get("submissions")
+        if not isinstance(submissions, list) or not submissions:
+            return Response({"error": "submissions must be a non-empty list."}, status=status.HTTP_400_BAD_REQUEST)
+
+        now = timezone.now()
+        success_count = 0
+        errors = []
+
+        for i, sub in enumerate(submissions):
+            roll_no = (sub.get("roll_no") or "").strip()
+            grade = _phd_milestone_grade_from_input(sub.get("grade"))
+            remarks = (sub.get("remarks") or "").strip()
+            try:
+                if not roll_no or not grade:
+                    raise ValueError("roll_no and a valid grade (S/X) are required.")
+                student = Student.objects.get(id_id=roll_no)
+
+                if category == 'thesis':
+                    block_number = int(sub.get("block_number"))
+                    reg = ThesisRegistration.objects.filter(
+                        student=student, semester__curriculum=curriculum, semester__semester_no=semester_no
+                    ).first()
+                    if not reg or block_number > reg.credits // 3:
+                        raise ValueError(f"No block {block_number} registered for this student.")
+                    ev, _ = ThesisEvaluation.objects.get_or_create(registration=reg, block_number=block_number)
+                    if ev.grade:
+                        raise ValueError(f"Block {block_number} already graded ({ev.grade}).")
+                    ev.grade = grade
+                    ev.remarks = remarks
+                    ev.submitted_at = now
+                    ev.verified = True
+                    ev.verified_by = request.user
+                    ev.verified_at = now
+                    ev.announced = True
+                    ev.announced_at = now
+                    ev.save()
+
+                elif category == 'progress_seminar':
+                    topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+                    if not topic:
+                        raise ValueError("No thesis topic on file for this student.")
+                    existing = ProgressSeminarEntry.objects.filter(
+                        thesis=topic, semester__curriculum=curriculum, semester__semester_no=semester_no
+                    ).exclude(overall_grade='').first()
+                    if existing:
+                        raise ValueError(f"Already graded ({existing.overall_grade}).")
+                    semester_obj = Semester.objects.filter(curriculum=curriculum, semester_no=semester_no).first()
+                    last_version = ProgressSeminarEntry.objects.filter(thesis=topic).order_by('-version').first()
+                    next_version = (last_version.version + 1) if last_version else 1
+                    ProgressSeminarEntry.objects.create(
+                        thesis=topic, version=next_version, semester=semester_obj,
+                        status='rpc_approved', overall_grade=grade,
+                    )
+
+                elif category == 'teaching_credit':
+                    alloc = TeachingCreditAllocation.objects.filter(
+                        student=student, semester__curriculum=curriculum, semester__semester_no=semester_no,
+                        allocated_course__isnull=False,
+                    ).first()
+                    if not alloc:
+                        raise ValueError("No allocated Teaching Credit course on file for this semester.")
+                    if alloc.result:
+                        raise ValueError(f"Already graded ({alloc.result}).")
+                    alloc.result = 'satisfactory' if grade == 'S' else 'not_satisfactory'
+                    alloc.status = 'completed'
+                    alloc.completed_by = request.user
+                    alloc.completed_at = now
+                    alloc.save()
+
+                success_count += 1
+            except Student.DoesNotExist:
+                errors.append({"index": i, "roll_no": roll_no, "error": "Student not found."})
+            except Exception as e:
+                errors.append({"index": i, "roll_no": roll_no, "error": str(e)})
+
+        return Response(
+            {"success_count": success_count, "error_count": len(errors), "errors": errors},
+            status=status.HTTP_200_OK,
+        )

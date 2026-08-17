@@ -4660,11 +4660,11 @@ def admin_batches_unified(request):
     try:
         from applications.programme_curriculum.models import Batch
 
-        from applications.globals.models import ExtraInfo, HoldsDesignation
-        user_details = ExtraInfo.objects.get(user=request.user)
-        des = HoldsDesignation.objects.all().filter(user=request.user).first()
+        from applications.globals.access import user_holds_any_role
 
-        if des and des.designation.name not in ['acadadmin', 'studentacadadmin']:
+        # Was reading only the first designation, so an acadadmin who also holds
+        # a teaching post was denied or allowed depending on row order.
+        if not user_holds_any_role(request.user, ('acadadmin', 'studentacadadmin')):
             return JsonResponse({
                 'success': False,
                 'message': 'Access denied. Only academic admins can view batch data.',
@@ -4729,10 +4729,12 @@ def admin_batches_unified(request):
                 except Exception as e:
                     students_data = []
 
+            available_curriculums = get_available_curriculums_for_batch(batch)
+
             unified_batch = {
                 'id': batch.id,
-                'name': batch.name,  
-                'programme': batch.name, 
+                'name': batch.name,
+                'programme': batch.name,
 
                 'discipline': batch.discipline.acronym,  
                 'disciplineName': batch.discipline.name, 
@@ -4747,10 +4749,14 @@ def admin_batches_unified(request):
                 'curriculum_id': batch.curriculum.id if batch.curriculum else None,
                 'curriculumVersion': batch.curriculum.version if batch.curriculum else None,
                 'curriculum_display': get_batch_curriculum_display(batch),
+                # get_available_curriculums_for_batch returns dicts; reading .id
+                # off them raised on every request, so this endpoint always 500d.
                 'available_curriculums': [
-                    {'id': c.id, 'name': c.name} for c in get_available_curriculums_for_batch(batch)
+                    {'id': c['id'], 'name': c['name']} if isinstance(c, dict)
+                    else {'id': c.id, 'name': c.name}
+                    for c in available_curriculums
                 ],
-                'hasCurriculum': True if (batch.curriculum or len(get_available_curriculums_for_batch(batch)) > 0) else False,
+                'hasCurriculum': bool(batch.curriculum or available_curriculums),
 
                 'totalSeats': total_seats,
                 'total_seats': total_seats,

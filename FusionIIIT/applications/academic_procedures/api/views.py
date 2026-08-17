@@ -54,6 +54,7 @@ from applications.academic_procedures.views import (get_user_semester, get_acad_
                                                     Constants, get_faculty_list,
                                                     get_registration_courses, get_add_course_options,
                                                     get_final_registration_eligibility,
+                                                    get_final_registration_window,
                                                     get_add_or_drop_course_date_eligibility,
                                                     get_detailed_sem_courses,
                                                     InitialRegistration)
@@ -525,47 +526,50 @@ def get_student_add_courses(request):
         session, sem_type = generate_current_session(cur_year, current_sem_no)
         working_year = parse_academic_year(academic_year=session, semester_type=sem_type)[0]
         student_section = student.section or ''
-        from applications.academic_information.models import resolve_offering
+        from applications.academic_information.models import offerings_by_course, pick_offering
 
         courses_list = []
 
-        for slot in bl_slots:
-            courses = slot.courses.all()
+        # One query each for slots+courses, registrations and offerings, instead of
+        # three per course: the BL slots of a big semester hold hundreds of electives.
+        slot_courses = [
+            (slot, course)
+            for slot in bl_slots.prefetch_related('courses')
+            for course in slot.courses.all()
+        ]
+        course_ids = [course.id for _, course in slot_courses]
+        registered_ids = set(course_registration.objects.filter(
+            student_id=student, course_id__in=course_ids,
+        ).values_list('course_id', flat=True))
+        offerings_of = offerings_by_course(course_ids, working_year, sem_type)
 
-            for course in courses:
-                already_registered = course_registration.objects.filter(
-                    course_id=course,
-                    student_id=student
-                ).exists()
-
-                # Sections where this course is running this term. If the student's
-                # own section isn't among them, they pick one of these (backlog/improvement).
-                offerings = CourseInstructor.objects.filter(
-                    course_id=course, year=working_year, semester_type=sem_type,
-                ).select_related('instructor_id__id__user')
-                sections = []
-                for o in offerings:
-                    u = o.instructor_id.id.user
-                    sections.append({
-                        'course_instructor_id': o.id,
-                        'section': o.section_label or '',
-                        'instructor': f"{u.first_name} {u.last_name}".strip(),
-                    })
-                # Auto-resolvable (own section, or a single/unsectioned offering) -> no pick needed; only genuinely sectioned courses missing the student's section prompt one.
-                own_section_running = resolve_offering(student, course, working_year, sem_type) is not None
-
-                courses_list.append({
-                    'id': course.id,
-                    'code': course.code,
-                    'name': course.name,
-                    'credit': course.credit,
-                    'slot': slot.name,
-                    'slot_id': slot.id,
-                    'already_registered': already_registered,
-                    'sections': sections,
-                    'own_section_running': own_section_running,
-                    'student_section': student_section,
+        for slot, course in slot_courses:
+            # Sections where this course is running this term. If the student's
+            # own section isn't among them, they pick one of these (backlog/improvement).
+            offerings = offerings_of.get(course.id, [])
+            sections = []
+            for o in offerings:
+                u = o.instructor_id.id.user
+                sections.append({
+                    'course_instructor_id': o.id,
+                    'section': o.section_label or '',
+                    'instructor': f"{u.first_name} {u.last_name}".strip(),
                 })
+            # Auto-resolvable (own section, or a single/unsectioned offering) -> no pick needed; only genuinely sectioned courses missing the student's section prompt one.
+            own_section_running = pick_offering(student, offerings) is not None
+
+            courses_list.append({
+                'id': course.id,
+                'code': course.code,
+                'name': course.name,
+                'credit': course.credit,
+                'slot': slot.name,
+                'slot_id': slot.id,
+                'already_registered': course.id in registered_ids,
+                'sections': sections,
+                'own_section_running': own_section_running,
+                'student_section': student_section,
+            })
 
         return Response(courses_list, status=status.HTTP_200_OK)
         
@@ -1268,6 +1272,7 @@ def verify_course(request):
         "roll_no": roll_no,
         "firstname": user_obj.first_name or "",
         "lastname": user_obj.last_name or "",
+        "programme_category": _student_programme_category(student),
     }
 
     # current curriculum & semester - handle None batch_id case
@@ -1825,8 +1830,12 @@ def final_registration_page(request):
             final_registration = serializers.FinalRegistrationSerializer(final_registration, many=True).data
         else:
             final_registration = None
+        frd_window = get_final_registration_window()
         resp = {
             'frd': final_registration_date_flag,
+            'frd_configured': frd_window is not None,
+            'frd_from': frd_window.from_date if frd_window else None,
+            'frd_to': frd_window.to_date if frd_window else None,
             'final_registration_flag': final_registration_flag,
             'final_registration': final_registration,
         }
@@ -2036,6 +2045,220 @@ def acad_add_course(request):
                 )
 
     return Response({ "message": "Course added successfully" }, status=status.HTTP_200_OK)
+
+
+# ===========================================================================
+# Admin manual "Add Thesis / Progress Seminar / Teaching Credit" for one
+# student -- the same manual-override spirit as acad_add_course above, and
+# following the exact same Slot -> Course two-step shape (get_add_course_slots
+# / get_add_course_courses / acad_add_course), just against the three
+# slot-based PhD/PG registration models instead of CourseSlot/Courses. Each
+# of these skips the eligibility gate the student self-registration flow
+# enforces (dean-approved topic for Thesis/Seminar, comprehensive exam passed
+# for Teaching Credit) since admin is trusted to only use this when
+# appropriate, and lands the registration as already 'verified' -- same as
+# acad_add_course creating a course_registration directly rather than a
+# pending request.
+# ===========================================================================
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def get_thesis_slots(request):
+    sem_id = request.query_params.get('semester_id')
+    if not sem_id:
+        return Response({'error': 'semester_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    get_object_or_404(Semester, id=sem_id)
+    slots = ThesisSlot.objects.filter(semester_id=sem_id).values('id', 'name', 'evaluation_type')
+    return Response(list(slots), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def get_thesis_courses(request):
+    slot_id = request.query_params.get('slot_id')
+    if not slot_id:
+        return Response({'error': 'slot_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    slot = get_object_or_404(ThesisSlot, id=slot_id)
+    return Response(list(slot.theses.all().values('id', 'code', 'name', 'credit')), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def get_progress_seminar_slots(request):
+    sem_id = request.query_params.get('semester_id')
+    if not sem_id:
+        return Response({'error': 'semester_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    get_object_or_404(Semester, id=sem_id)
+    slots = ProgressSeminarSlot.objects.filter(semester_id=sem_id).values('id', 'name')
+    return Response(list(slots), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def get_progress_seminar_courses(request):
+    slot_id = request.query_params.get('slot_id')
+    if not slot_id:
+        return Response({'error': 'slot_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    slot = get_object_or_404(ProgressSeminarSlot, id=slot_id)
+    return Response(list(slot.seminars.all().values('id', 'code', 'name', 'credit')), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def get_teaching_credit_slots(request):
+    sem_id = request.query_params.get('semester_id')
+    if not sem_id:
+        return Response({'error': 'semester_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    get_object_or_404(Semester, id=sem_id)
+    slots = TeachingCreditSlot.objects.filter(semester_id=sem_id).values('id', 'name')
+    return Response(list(slots), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def get_teaching_credit_courses(request):
+    slot_id = request.query_params.get('slot_id')
+    if not slot_id:
+        return Response({'error': 'slot_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    slot = get_object_or_404(TeachingCreditSlot, id=slot_id)
+    return Response(list(slot.teaching_credits.all().values('id', 'code', 'name', 'credit')), status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_add_thesis(request):
+    roll_no = request.data.get('roll_no')
+    semester_id = request.data.get('semester_id')
+    thesis_slot_id = request.data.get('thesis_slot_id')
+    thesis_id = request.data.get('thesis_id')
+    if not roll_no or not semester_id or not thesis_slot_id or not thesis_id:
+        return Response({'error': 'roll_no, semester_id, thesis_slot_id and thesis_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    student = get_object_or_404(Student, id=roll_no.upper())
+    semester = get_object_or_404(Semester, id=semester_id)
+    thesis_slot = get_object_or_404(ThesisSlot, id=thesis_slot_id)
+    thesis = get_object_or_404(thesis_slot.theses, id=thesis_id)
+
+    if ThesisRegistration.objects.filter(student=student, semester=semester).exists():
+        return Response({'error': 'Student is already registered for this semester'}, status=status.HTTP_400_BAD_REQUEST)
+
+    ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
+    try:
+        credits = int(request.data.get('credits', 6))
+    except (TypeError, ValueError):
+        credits = 6
+    if credits not in ALLOWED_THESIS_CREDITS:
+        return Response({'error': f'Invalid credit value. Choose from {ALLOWED_THESIS_CREDITS}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # PG students have a fixed credit value per evaluation_type -- no free
+    # choice: 3 for a block-graded (S/X) semester, 12 for the decimal-graded
+    # semester. Enforced here too (not just in the frontend's locked Select)
+    # since this endpoint is reachable directly.
+    if _student_programme_category(student) == 'PG':
+        expected = 3 if thesis_slot.evaluation_type == 'blocks_sx' else 12
+        if credits != expected:
+            return Response({'error': f'PG students in a {thesis_slot.evaluation_type} slot must register for {expected} credits'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = _dt.datetime.now()
+    session = f"{now.year}-{str(now.year + 1)[2:]}" if now.month >= 7 else f"{now.year - 1}-{str(now.year)[2:]}"
+    topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+
+    with transaction.atomic():
+        reg = ThesisRegistration.objects.create(
+            student=student, thesis_slot=thesis_slot, thesis=thesis, thesis_topic=topic,
+            semester=semester, credits=credits, working_year=now.year,
+            academic_session=session, status='verified', verified_on=now,
+        )
+        # Mirrors admin_verify_enrollments' side-effect -- see that function.
+        if thesis_slot.evaluation_type == 'decimal':
+            evaluation, _created = ThesisEvaluation.objects.get_or_create(registration=reg, block_number=1)
+            ThesisEvaluationScore.objects.get_or_create(evaluation=evaluation)
+        else:
+            for blk in range(1, credits // 3 + 1):
+                ThesisEvaluation.objects.get_or_create(registration=reg, block_number=blk)
+
+    return Response({
+        'id': reg.id, 'student': roll_no.upper(), 'semester_no': semester.semester_no,
+        'thesis': thesis.code, 'credits': credits, 'status': reg.status,
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_add_progress_seminar(request):
+    roll_no = request.data.get('roll_no')
+    semester_id = request.data.get('semester_id')
+    seminar_slot_id = request.data.get('seminar_slot_id')
+    seminar_id = request.data.get('seminar_id')
+    if not roll_no or not semester_id or not seminar_slot_id or not seminar_id:
+        return Response({'error': 'roll_no, semester_id, seminar_slot_id and seminar_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    student = get_object_or_404(Student, id=roll_no.upper())
+    semester = get_object_or_404(Semester, id=semester_id)
+    slot = get_object_or_404(ProgressSeminarSlot, id=seminar_slot_id)
+    seminar = get_object_or_404(slot.seminars, id=seminar_id)
+
+    if ProgressSeminarRegistration.objects.filter(student=student, semester=semester).exists():
+        return Response({'error': 'Student is already registered for this semester'}, status=status.HTTP_400_BAD_REQUEST)
+
+    reg = ProgressSeminarRegistration.objects.create(
+        student=student, progress_seminar_slot=slot, seminar=seminar, semester=semester,
+        working_year=_dt.datetime.now().year, status='verified',
+    )
+    return Response({
+        'id': reg.id, 'student': roll_no.upper(), 'semester_no': semester.semester_no,
+        'seminar': seminar.code, 'status': reg.status,
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_add_teaching_credit(request):
+    roll_no = request.data.get('roll_no')
+    semester_id = request.data.get('semester_id')
+    teaching_credit_slot_id = request.data.get('teaching_credit_slot_id')
+    teaching_credit_id = request.data.get('teaching_credit_id')
+    if not roll_no or not semester_id or not teaching_credit_slot_id or not teaching_credit_id:
+        return Response({'error': 'roll_no, semester_id, teaching_credit_slot_id and teaching_credit_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    student = get_object_or_404(Student, id=roll_no.upper())
+    semester = get_object_or_404(Semester, id=semester_id)
+    slot = get_object_or_404(TeachingCreditSlot, id=teaching_credit_slot_id)
+    teaching_credit = get_object_or_404(slot.teaching_credits, id=teaching_credit_id)
+
+    if TeachingCreditRegistration.objects.filter(student=student, semester=semester).exists():
+        return Response({'error': 'Student is already registered for this semester'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = _dt.datetime.now()
+    session = f"{now.year}-{str(now.year + 1)[2:]}" if now.month >= 7 else f"{now.year - 1}-{str(now.year)[2:]}"
+
+    reg = TeachingCreditRegistration.objects.create(
+        student=student, teaching_credit_slot=slot, teaching_credit=teaching_credit, semester=semester,
+        working_year=now.year, academic_session=session, status='verified',
+    )
+    return Response({
+        'id': reg.id, 'student': roll_no.upper(), 'semester_no': semester.semester_no,
+        'teaching_credit': teaching_credit.code, 'status': reg.status,
+    }, status=status.HTTP_201_CREATED)
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -2263,6 +2486,257 @@ def allot_courses(request):
         return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
     except Semester.DoesNotExist:
         return Response({'error': 'Invalid semester or type.'}, status=status.HTTP_400_BAD_REQUEST)
+    except xlrd.XLRDError:
+        return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': f'Processing error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ===========================================================================
+# Bulk "Allot Thesis / Progress Seminar / Teaching Credit" -- same manual-
+# override spirit as allot_courses above (one Excel row per student, lands
+# directly as 'verified'), for the three slot-based PhD/PG registration
+# models. Same 4-column row shape as allot_courses (RollNo | Slot | Code |
+# Name), just against ThesisSlot/SeminarSlot/TeachingCreditSlot + their
+# catalog entries instead of CourseSlot/Courses.
+# ===========================================================================
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def allot_thesis(request):
+    if 'allotedThesis' not in request.FILES:
+        return Response({'error': 'Excel file not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    batch_id = request.data.get('batch')
+    sem_no = request.data.get('semester')
+    if not batch_id or not sem_no:
+        return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        sem_no = int(sem_no)
+    except ValueError:
+        return Response({'error': 'Semester must be integer.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = _dt.datetime.now()
+    session = f"{now.year}-{str(now.year + 1)[2:]}" if now.month >= 7 else f"{now.year - 1}-{str(now.year)[2:]}"
+    ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
+
+    try:
+        with transaction.atomic():
+            batch = Batch.objects.get(id=batch_id)
+            semester = Semester.objects.get(curriculum=batch.curriculum, semester_no=sem_no)
+
+            book = xlrd.open_workbook(file_contents=request.FILES['allotedThesis'].read())
+            sheet = book.sheet_by_index(0)
+
+            inserted = 0
+            row_errors = []
+            for i in range(1, sheet.nrows):
+                roll_no = str(sheet.cell_value(i, 0)).split('.')[0].strip()
+                if not roll_no:
+                    continue
+                try:
+                    slot_name = sheet.cell_value(i, 1).strip()
+                    code = sheet.cell_value(i, 2).strip()
+
+                    student = Student.objects.get(id__user__username=roll_no)
+                    thesis_slot = ThesisSlot.objects.get(name=slot_name, semester=semester)
+                    thesis = thesis_slot.theses.get(code=code)
+
+                    if ThesisRegistration.objects.filter(student=student, semester=semester).exists():
+                        raise ValueError('Already registered for this semester')
+
+                    raw = sheet.cell_value(i, 4) if sheet.ncols > 4 else ''
+                    credits = int(raw) if raw != '' else 6
+                    if credits not in ALLOWED_THESIS_CREDITS:
+                        raise ValueError(f'Invalid credits {credits}; choose from {ALLOWED_THESIS_CREDITS}')
+
+                    if _student_programme_category(student) == 'PG':
+                        expected = 3 if thesis_slot.evaluation_type == 'blocks_sx' else 12
+                        if credits != expected:
+                            raise ValueError(f'PG students in a {thesis_slot.evaluation_type} slot must register for {expected} credits')
+
+                    topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+                    reg = ThesisRegistration.objects.create(
+                        student=student, thesis_slot=thesis_slot, thesis=thesis, thesis_topic=topic,
+                        semester=semester, credits=credits, working_year=now.year,
+                        academic_session=session, status='verified', verified_on=now,
+                    )
+                    if thesis_slot.evaluation_type == 'decimal':
+                        evaluation, _created = ThesisEvaluation.objects.get_or_create(registration=reg, block_number=1)
+                        ThesisEvaluationScore.objects.get_or_create(evaluation=evaluation)
+                    else:
+                        for blk in range(1, credits // 3 + 1):
+                            ThesisEvaluation.objects.get_or_create(registration=reg, block_number=blk)
+                    inserted += 1
+                except Exception as e:
+                    row_errors.append({'row': i + 1, 'roll_no': roll_no, 'error': str(e)})
+
+            if inserted == 0:
+                return Response({
+                    'error': 'No valid rows were found in the uploaded file.',
+                    'failed_rows': row_errors[:25], 'failed_rows_count': len(row_errors),
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        if row_errors:
+            return Response({
+                'message': 'Upload completed with partial success.',
+                'inserted_rows': inserted, 'failed_rows_count': len(row_errors),
+                'failed_rows': row_errors[:25],
+            }, status=status.HTTP_207_MULTI_STATUS)
+        return Response({'message': 'Successfully uploaded!', 'inserted_rows': inserted})
+    except Batch.DoesNotExist:
+        return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Semester.DoesNotExist:
+        return Response({'error': 'Invalid semester.'}, status=status.HTTP_400_BAD_REQUEST)
+    except xlrd.XLRDError:
+        return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': f'Processing error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def allot_progress_seminar(request):
+    if 'allotedSeminar' not in request.FILES:
+        return Response({'error': 'Excel file not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    batch_id = request.data.get('batch')
+    sem_no = request.data.get('semester')
+    if not batch_id or not sem_no:
+        return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        sem_no = int(sem_no)
+    except ValueError:
+        return Response({'error': 'Semester must be integer.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        with transaction.atomic():
+            batch = Batch.objects.get(id=batch_id)
+            semester = Semester.objects.get(curriculum=batch.curriculum, semester_no=sem_no)
+
+            book = xlrd.open_workbook(file_contents=request.FILES['allotedSeminar'].read())
+            sheet = book.sheet_by_index(0)
+
+            inserted = 0
+            row_errors = []
+            for i in range(1, sheet.nrows):
+                roll_no = str(sheet.cell_value(i, 0)).split('.')[0].strip()
+                if not roll_no:
+                    continue
+                try:
+                    slot_name = sheet.cell_value(i, 1).strip()
+                    code = sheet.cell_value(i, 2).strip()
+
+                    student = Student.objects.get(id__user__username=roll_no)
+                    slot = ProgressSeminarSlot.objects.get(name=slot_name, semester=semester)
+                    seminar = slot.seminars.get(code=code)
+
+                    if ProgressSeminarRegistration.objects.filter(student=student, semester=semester).exists():
+                        raise ValueError('Already registered for this semester')
+                    ProgressSeminarRegistration.objects.create(
+                        student=student, progress_seminar_slot=slot, seminar=seminar, semester=semester,
+                        working_year=_dt.datetime.now().year, status='verified',
+                    )
+                    inserted += 1
+                except Exception as e:
+                    row_errors.append({'row': i + 1, 'roll_no': roll_no, 'error': str(e)})
+
+            if inserted == 0:
+                return Response({
+                    'error': 'No valid rows were found in the uploaded file.',
+                    'failed_rows': row_errors[:25], 'failed_rows_count': len(row_errors),
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        if row_errors:
+            return Response({
+                'message': 'Upload completed with partial success.',
+                'inserted_rows': inserted, 'failed_rows_count': len(row_errors),
+                'failed_rows': row_errors[:25],
+            }, status=status.HTTP_207_MULTI_STATUS)
+        return Response({'message': 'Successfully uploaded!', 'inserted_rows': inserted})
+    except Batch.DoesNotExist:
+        return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Semester.DoesNotExist:
+        return Response({'error': 'Invalid semester.'}, status=status.HTTP_400_BAD_REQUEST)
+    except xlrd.XLRDError:
+        return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': f'Processing error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def allot_teaching_credit(request):
+    if 'allotedTeachingCredit' not in request.FILES:
+        return Response({'error': 'Excel file not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    batch_id = request.data.get('batch')
+    sem_no = request.data.get('semester')
+    if not batch_id or not sem_no:
+        return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        sem_no = int(sem_no)
+    except ValueError:
+        return Response({'error': 'Semester must be integer.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = _dt.datetime.now()
+    session = f"{now.year}-{str(now.year + 1)[2:]}" if now.month >= 7 else f"{now.year - 1}-{str(now.year)[2:]}"
+
+    try:
+        with transaction.atomic():
+            batch = Batch.objects.get(id=batch_id)
+            semester = Semester.objects.get(curriculum=batch.curriculum, semester_no=sem_no)
+
+            book = xlrd.open_workbook(file_contents=request.FILES['allotedTeachingCredit'].read())
+            sheet = book.sheet_by_index(0)
+
+            inserted = 0
+            row_errors = []
+            for i in range(1, sheet.nrows):
+                roll_no = str(sheet.cell_value(i, 0)).split('.')[0].strip()
+                if not roll_no:
+                    continue
+                try:
+                    slot_name = sheet.cell_value(i, 1).strip()
+                    code = sheet.cell_value(i, 2).strip()
+
+                    student = Student.objects.get(id__user__username=roll_no)
+                    slot = TeachingCreditSlot.objects.get(name=slot_name, semester=semester)
+                    teaching_credit = slot.teaching_credits.get(code=code)
+
+                    if TeachingCreditRegistration.objects.filter(student=student, semester=semester).exists():
+                        raise ValueError('Already registered for this semester')
+                    TeachingCreditRegistration.objects.create(
+                        student=student, teaching_credit_slot=slot, teaching_credit=teaching_credit, semester=semester,
+                        working_year=now.year, academic_session=session, status='verified',
+                    )
+                    inserted += 1
+                except Exception as e:
+                    row_errors.append({'row': i + 1, 'roll_no': roll_no, 'error': str(e)})
+
+            if inserted == 0:
+                return Response({
+                    'error': 'No valid rows were found in the uploaded file.',
+                    'failed_rows': row_errors[:25], 'failed_rows_count': len(row_errors),
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        if row_errors:
+            return Response({
+                'message': 'Upload completed with partial success.',
+                'inserted_rows': inserted, 'failed_rows_count': len(row_errors),
+                'failed_rows': row_errors[:25],
+            }, status=status.HTTP_207_MULTI_STATUS)
+        return Response({'message': 'Successfully uploaded!', 'inserted_rows': inserted})
+    except Batch.DoesNotExist:
+        return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Semester.DoesNotExist:
+        return Response({'error': 'Invalid semester.'}, status=status.HTTP_400_BAD_REQUEST)
     except xlrd.XLRDError:
         return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
@@ -2842,10 +3316,11 @@ def swayam_replace_check(request):
 
         existing_request = SwayamReplacementRequest.objects.filter(
             student=student,
+            semester=current_semester,
             request_type='Swayam_Replace',
             status__in=['Pending', 'Approved']
         ).first()
-        
+
         if existing_request:
             return JsonResponse({
                 "has_existing": False,
@@ -3374,8 +3849,11 @@ def student_swayam_requests(request):
         student = Student.objects.get(id=user_details)
 
         request_type = request.GET.get('request_type')
-        requests_query = SwayamReplacementRequest.objects.filter(student=student)
-        
+        requests_query = SwayamReplacementRequest.objects.filter(
+            student=student,
+            semester__semester_no=student.curr_semester_no
+        )
+
         if request_type:
             requests_query = requests_query.filter(request_type=request_type)
         
@@ -3409,7 +3887,8 @@ def student_swayam_requests(request):
                 'submitted_at': req.submitted_at.isoformat() if req.submitted_at else None,
                 'processed_at': req.processed_at.isoformat() if req.processed_at else None,
                 'academic_year': req.academic_year,
-                'semester_type': req.semester_type
+                'semester_type': req.semester_type,
+                'semester_no': req.semester.semester_no if req.semester else None
             })
         
         return JsonResponse({'requests': requests_data}, status=200)
@@ -3435,6 +3914,7 @@ def admin_swayam_list_requests(request):
         queryset = SwayamReplacementRequest.objects.select_related(
             'student',
             'student__id__user',
+            'student__batch_id',
             'old_course',
             'new_course',
             'new_course_slot',
@@ -4376,10 +4856,13 @@ def admin_list_requests(request):
     
     year = request.GET.get('academic_year')
     sem  = request.GET.get('semester_type')
+    status_filter = request.GET.get('status')
     if year:
         qs = qs.filter(academic_year=year)
     if sem:
         qs = qs.filter(semester_type=sem)
+    if status_filter:
+        qs = qs.filter(status__iexact=status_filter)
 
     out = []
     for r in qs:
@@ -4795,8 +5278,11 @@ def student_calendar_view(request):
 
     result = [
         {
+            "id": entry.id,
             "from_date": entry.from_date,
             "to_date": entry.to_date,
+            "from_time": entry.from_time,
+            "to_time": entry.to_time,
             "description": entry.description,
         }
         for entry in calendar_entries
@@ -4864,6 +5350,24 @@ def student_list_drop_requests(request):
         logger.error(f"Error listing drop requests for {request.user.username}: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'An error occurred while fetching requests'}, status=500)
 
+# Counts the queues the acadadmin home page reports, without serialising rows.
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_pending_counts(request):
+    pending = lambda model: model.objects.filter(status__iexact='pending').count()
+    return JsonResponse({'counts': {
+        'swayam': pending(SwayamReplacementRequest),
+        'add': pending(CourseAddRequest),
+        'drop': pending(CourseDropRequest),
+        'replacement': pending(CourseReplacementRequest),
+        'phdCourses': pending(PhDCourseRegistrationRequest),
+        'thesisEnrolments': pending(ThesisRegistration),
+        'progressSeminars': pending(ProgressSeminarRegistration),
+        'teachingCredits': pending(TeachingCreditRegistration),
+    }}, status=200)
+
+
  # Lists all course drop requests with optional filtering
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -4879,11 +5383,22 @@ def admin_list_drop_requests(request):
 
         year = request.GET.get('academic_year', '').strip()
         sem = request.GET.get('semester_type', '').strip()
-        
+        status_filter = request.GET.get('status', '').strip()
+
         if year:
             qs = qs.filter(academic_year=year)
         if sem:
             qs = qs.filter(semester_type=sem)
+        # Filter before the cap, so a status query cannot be truncated away.
+        if status_filter:
+            qs = qs.filter(status__iexact=status_filter)
+
+        # Pending first, so the rows needing action survive the cap below.
+        qs = qs.order_by(
+            Case(When(status__iexact='pending', then=0), default=1,
+                 output_field=IntegerField()),
+            '-created_at',
+        )
 
         qs = qs[:500]
 
@@ -5132,11 +5647,22 @@ def admin_list_add_requests(request):
 
         year = request.GET.get('academic_year', '').strip()
         sem = request.GET.get('semester_type', '').strip()
-        
+        status_filter = request.GET.get('status', '').strip()
+
         if year:
             qs = qs.filter(academic_year=year)
         if sem:
             qs = qs.filter(semester_type=sem)
+        # Filter before the cap, so a status query cannot be truncated away.
+        if status_filter:
+            qs = qs.filter(status__iexact=status_filter)
+
+        # Pending first, so the rows needing action survive the cap below.
+        qs = qs.order_by(
+            Case(When(status__iexact='pending', then=0), default=1,
+                 output_field=IntegerField()),
+            '-created_at',
+        )
 
         qs = qs[:500]
 
@@ -5962,12 +6488,18 @@ def list_students_in_batch_semester_promotion(request):
     batch_id = request.query_params.get("batch_id")
     if not batch_id:
         return Response({"detail": "batch_id required."}, status=status.HTTP_400_BAD_REQUEST)
-    students = Student.objects.filter(batch_id__id=batch_id).order_by('id_id')
+    students = Student.objects.filter(batch_id__id=batch_id).select_related(
+        'id__user', 'batch_id__discipline'
+    ).order_by('id_id')
     result = []
     for st in students:
+        user = st.id.user
         result.append({
             "id": st.id_id,
             "username": str(st.id_id),
+            "name": f"{user.first_name} {user.last_name}".strip(),
+            "discipline": (st.batch_id.discipline.acronym
+                           if st.batch_id and st.batch_id.discipline_id else ''),
             "current_semester_no": st.curr_semester_no,
         })
     return Response(result)
@@ -8271,6 +8803,7 @@ def student_thesis_enrollment_api(request):
                     'name': thesis_slot.name,
                     'info': thesis_slot.thesis_slot_info or '',
                     'duration': thesis_slot.duration,
+                    'evaluation_type': thesis_slot.evaluation_type,
                     'theses': [
                         {'id': t.id, 'code': t.code, 'name': t.name, 'credit': t.credit}
                         for t in thesis_slot.theses.all()
@@ -8297,6 +8830,7 @@ def student_thesis_enrollment_api(request):
                 'thesis_slot': slot_data,
                 'registration': reg_data,
                 'evaluations': eval_blocks,
+                'programme_category': _student_programme_category(student),
             }, status=200)
 
     except Exception as e:
@@ -8321,17 +8855,24 @@ def student_thesis_enrollment_api(request):
             status=400,
         )
 
-    # Validate chosen credits
-    ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
-    try:
-        chosen_credits = int(request.data.get('credits', 6))
-    except (TypeError, ValueError):
-        chosen_credits = 6
-    if chosen_credits not in ALLOWED_THESIS_CREDITS:
-        return JsonResponse(
-            {'error': f'Invalid credit value. Choose from {ALLOWED_THESIS_CREDITS}'},
-            status=400,
-        )
+    # PG students have a fixed credit value per evaluation_type -- no free
+    # choice: 3 for a block-graded (S/X) semester, 12 for the decimal-graded
+    # semester. The 12 is fixed regardless of any earlier block-graded
+    # semesters; those are additional thesis credit, not a substitute for
+    # any part of it (PG's total can range from 12 up to 18).
+    if _student_programme_category(student) == 'PG':
+        chosen_credits = 3 if thesis_slot.evaluation_type == 'blocks_sx' else 12
+    else:
+        ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
+        try:
+            chosen_credits = int(request.data.get('credits', 6))
+        except (TypeError, ValueError):
+            chosen_credits = 6
+        if chosen_credits not in ALLOWED_THESIS_CREDITS:
+            return JsonResponse(
+                {'error': f'Invalid credit value. Choose from {ALLOWED_THESIS_CREDITS}'},
+                status=400,
+            )
 
     # Check max registration limit
     current_count = ThesisRegistration.objects.filter(
@@ -8385,7 +8926,7 @@ def admin_thesis_enrollment_list(request):
 
     status_filter = request.GET.get('status')
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
 
     data = []
     for reg in qs:
@@ -9224,7 +9765,7 @@ def admin_progress_seminar_enrollment_list(request):
 
     status_filter = request.GET.get('status')
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
 
     data = []
     for reg in qs:
@@ -9476,7 +10017,7 @@ def admin_teaching_credit_enrollment_list(request):
 
     status_filter = request.GET.get('status')
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
 
     data = [_teaching_credit_enrollment_to_dict(reg) for reg in qs]
     return JsonResponse({'registrations': data}, status=200)
@@ -9647,6 +10188,9 @@ def phd_course_slots(request):
 _PHD_BL_ALLOWED_GRADES = ['F', 'X', 'CD', 'C', 'D+', 'D']
 
 
+_PHD_BL_BACKLOG_GRADES = {'F', 'X', 'CD'}
+
+
 def _phd_bl_grade_status(username, course):
     """Returns (allowed, grade) for a BL course. grade is None when the student
     has no recorded grade in the course (also treated as not allowed)."""
@@ -9656,6 +10200,39 @@ def _phd_bl_grade_status(username, course):
     if not sg:
         return False, None
     return sg.grade in _PHD_BL_ALLOWED_GRADES, sg.grade
+
+
+def _phd_bl_source_courses(student):
+    """The student's own courses eligible to be cleared through a BL slot: the
+    latest grade in each is below C+. A course taken in an OE slot may be
+    swapped for a different one; anything else has to be retaken as it is."""
+    username = student.id.user.username
+    latest = {}
+    for sg in Student_grades.objects.filter(
+        roll_no=username, grade__in=_PHD_BL_ALLOWED_GRADES
+    ).select_related('course_id').order_by('year', 'semester'):
+        latest[sg.course_id_id] = sg
+
+    oe_course_ids = set(course_registration.objects.filter(
+        student_id=student, course_id__in=latest.keys(),
+        course_slot_id__name__istartswith='OE',
+    ).values_list('course_id', flat=True))
+
+    out = []
+    for course_id, sg in latest.items():
+        course = sg.course_id
+        out.append({
+            'id': course.id,
+            'code': course.code,
+            'name': course.name,
+            'credit': course.credit,
+            'grade': sg.grade,
+            'registration_type': ('Backlog' if sg.grade in _PHD_BL_BACKLOG_GRADES
+                                  else 'Improvement'),
+            'replaceable': course_id in oe_course_ids,
+        })
+    out.sort(key=lambda c: c['code'])
+    return out
 
 
 @api_view(['GET'])
@@ -9683,9 +10260,9 @@ def phd_course_slot_courses(request):
     except (Semester.DoesNotExist, CourseSlot.DoesNotExist):
         return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
 
-    # Like the UG add flow, the slot lists all its courses; the BL backlog grade
-    # rule is enforced at submit. BL courses also carry their eligibility so the
-    # form can warn the moment an ineligible one is picked, not only at submit.
+    # A BL slot clears a past course, so it is driven by the student's own
+    # below-C+ grades rather than the slot list; the slot list is only the pool
+    # a replaceable (OE) course can be swapped for.
     is_bl = slot.name.startswith('BL')
     username = student.id.user.username
     courses = []
@@ -9697,7 +10274,11 @@ def phd_course_slot_courses(request):
             entry['bl_eligible'] = allowed
             entry['bl_grade'] = grade
         courses.append(entry)
-    return JsonResponse({'courses': courses}, status=200)
+
+    payload = {'courses': courses}
+    if is_bl:
+        payload['source_courses'] = _phd_bl_source_courses(student)
+    return JsonResponse(payload, status=200)
 
 
 @api_view(['POST'])
@@ -9722,6 +10303,7 @@ def phd_submit_course_request(request):
 
     slot_id = request.data.get('slot_id')
     course_id = request.data.get('course_id')
+    source_course_id = request.data.get('source_course_id')
     if not slot_id or not course_id:
         return JsonResponse({'error': 'slot_id and course_id are required'}, status=400)
 
@@ -9731,21 +10313,40 @@ def phd_submit_course_request(request):
             semester_no=student.curr_semester_no,
         )
         slot = CourseSlot.objects.get(id=slot_id, semester=semester)
-        course = slot.courses.get(id=course_id)
     except Semester.DoesNotExist:
         return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
     except CourseSlot.DoesNotExist:
         return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
-    except Courses.DoesNotExist:
-        return JsonResponse({'error': 'Course not found in this slot'}, status=404)
 
-    # BL (backlog) slots: enforce the UG add-course grade gate.
-    if slot.name.startswith('BL'):
-        allowed, grade = _phd_bl_grade_status(student.id.user.username, course)
-        if grade is None:
-            return JsonResponse({'error': 'You can only register for BL courses if you have a grade below C+ in this course. No grade record found.'}, status=400)
-        if not allowed:
-            return JsonResponse({'error': f'You can only register for BL courses with grades below C+. Your grade: {grade}'}, status=400)
+    is_bl = slot.name.startswith('BL')
+    source_course = None
+    registration_type = ''
+
+    if is_bl:
+        if not source_course_id:
+            return JsonResponse({'error': 'source_course_id is required for a BL slot'}, status=400)
+        eligible = {c['id']: c for c in _phd_bl_source_courses(student)}
+        source = eligible.get(int(source_course_id))
+        if not source:
+            return JsonResponse({'error': 'That course is not one you can clear: a BL slot needs a course you scored below C+ in.'}, status=400)
+        registration_type = source['registration_type']
+        # An OE course can be cleared by a different course from this slot;
+        # anything else has to be the same course taken again.
+        if source['replaceable']:
+            try:
+                course = slot.courses.get(id=course_id)
+            except Courses.DoesNotExist:
+                return JsonResponse({'error': 'Course not found in this slot'}, status=404)
+        elif int(course_id) != source['id']:
+            return JsonResponse({'error': f"{source['code']} was not taken in an open elective slot, so it has to be cleared by retaking the same course."}, status=400)
+        else:
+            course = Courses.objects.get(id=source['id'])
+        source_course = Courses.objects.get(id=source['id'])
+    else:
+        try:
+            course = slot.courses.get(id=course_id)
+        except Courses.DoesNotExist:
+            return JsonResponse({'error': 'Course not found in this slot'}, status=404)
 
     if PhDCourseRegistrationRequest.objects.filter(
         student=student, semester=semester, course_slot=slot, status__in=['Pending', 'Approved']
@@ -9764,6 +10365,8 @@ def phd_submit_course_request(request):
             'academic_year': academic_year,
             'semester_type': semester_type,
             'course': course,
+            'source_course': source_course,
+            'registration_type': registration_type,
             'status': 'Pending',
             'remarks': '',
             'requested_at': timezone.now(),
@@ -9802,7 +10405,8 @@ def phd_my_course_requests(request):
         return err
 
     qs = PhDCourseRegistrationRequest.objects.filter(student=student) \
-        .select_related('course', 'course_slot', 'semester').order_by('-requested_at')
+        .select_related('course', 'source_course', 'course_slot', 'semester') \
+        .order_by('-requested_at')
 
     data = [{
         'id': r.id,
@@ -9810,6 +10414,8 @@ def phd_my_course_requests(request):
         'course': r.course.code,
         'course_name': r.course.name,
         'credit': r.course.credit,
+        'source_course': r.source_course.code if r.source_course_id else None,
+        'registration_type': r.registration_type or None,
         'semester_no': r.semester.semester_no,
         'academic_year': r.academic_year,
         'semester_type': r.semester_type,
@@ -9834,7 +10440,8 @@ def phd_admin_list_requests(request):
     teaching-credit enrollment list endpoints (used by the merged admin view).
     """
     qs = PhDCourseRegistrationRequest.objects.select_related(
-        'student__id__user', 'student__batch_id__discipline', 'course', 'course_slot', 'semester'
+        'student__id__user', 'student__batch_id__discipline', 'course', 'source_course',
+        'course_slot', 'semester'
     ).all().order_by('-requested_at')
 
     year = request.GET.get('academic_year', '').strip()
@@ -9849,7 +10456,14 @@ def phd_admin_list_requests(request):
     if sem_no:
         qs = qs.filter(semester__semester_no=sem_no)
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
+
+    # Pending first, so the rows needing action survive the cap below.
+    qs = qs.order_by(
+        Case(When(status__iexact='pending', then=0), default=1,
+             output_field=IntegerField()),
+        '-requested_at',
+    )
 
     qs = qs[:500]
 
@@ -9863,6 +10477,8 @@ def phd_admin_list_requests(request):
         'course': r.course.code,
         'course_name': r.course.name,
         'credit': r.course.credit,
+        'source_course': r.source_course.code if r.source_course_id else None,
+        'registration_type': r.registration_type or None,
         'semester_no': r.semester.semester_no,
         'academic_year': r.academic_year,
         'semester_type': r.semester_type,
