@@ -2199,6 +2199,7 @@ def faculty_view_a_course(request, course_id):
     notifs = request.user.notifications.all()
     return render(request, 'programme_curriculum/faculty/faculty_view_a_course.html', {'course': course,'notifications': notifs,})
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def view_a_course_proposal_form(request,CourseProposal_id):
@@ -2221,6 +2222,7 @@ def view_a_course_proposal_form(request,CourseProposal_id):
     return render(request, 'programme_curriculum/faculty/view_a_course_proposal.html', {'proposal': proposalform,'notifications': notifs,})
 
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @permission_classes([IsAuthenticated])
 @csrf_exempt  # Only for development, remove in production with proper CSRF handling
 def new_course_proposal_file(request):
@@ -2316,6 +2318,7 @@ def new_course_proposal_file(request):
         'message': 'Only POST requests are allowed'
     }, status=405)
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @permission_classes([IsAuthenticated])
 @csrf_exempt  # Remove in production and use proper CSRF handling
 def filetracking(request, proposal_id):
@@ -2405,6 +2408,7 @@ def filetracking(request, proposal_id):
     }, status=405)
 
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @permission_classes([IsAuthenticated])
 @csrf_exempt
 def inward_files(request):
@@ -2464,6 +2468,7 @@ def inward_files(request):
             'message': str(e)
         }, status=500)
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @permission_classes([IsAuthenticated])
 @csrf_exempt
 def outward_files(request):
@@ -2974,6 +2979,7 @@ def forward_course_forms(request, ProposalId):
         }, status=500)
     
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def forward_course_forms_II(request):
@@ -3029,6 +3035,7 @@ def forward_course_forms_II(request):
         }, status=500)
    
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def view_inward_files(request,ProposalId):
@@ -3133,18 +3140,16 @@ def view_inward_files(request,ProposalId):
 
 @csrf_exempt
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([has_any_role(
+    "acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor",
+)])
 def reject_form(request, ProposalId):
     try:
-        # Get query parameters
-        username = request.GET.get('username', '')
+        # Who rejected is taken from the authenticated user, not from the query
+        # string: the caller used to be able to name anyone in the notification
+        # the uploader receives.
+        username = request.user.username
         designation = request.GET.get('des', '')
-        
-        if not username or not designation:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Missing username or designation parameters'
-            }, status=400)
 
         # Get the tracking and file objects
         try:
@@ -3202,6 +3207,7 @@ def reject_form(request, ProposalId):
 
 
     
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def tracking_unarchive(request,ProposalId):
@@ -3252,6 +3258,7 @@ def tracking_unarchive(request,ProposalId):
             'message': str(e)
         }, status=500)
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def tracking_archive(request,ProposalId):
@@ -3302,6 +3309,7 @@ def tracking_archive(request,ProposalId):
             'message': str(e)
         }, status=500)
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 @permission_classes([IsAuthenticated])
 def file_archive(request,FileId):
@@ -3320,6 +3328,7 @@ def file_archive(request,FileId):
             'message': str(e)
         }, status=400)
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 @permission_classes([IsAuthenticated])
 def file_unarchive(request,FileId):
@@ -3668,6 +3677,7 @@ def update_course_instructor_form(request, instructor_id):
     # Handle unsupported HTTP methods
     return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
 
+@require_designation("acadadmin", "Dean Academic", "Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 @permission_classes([IsAuthenticated])
 def get_superior_data(request):
