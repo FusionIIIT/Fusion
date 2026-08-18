@@ -19,6 +19,7 @@ from applications.programme_curriculum.models_student_management import (
 from .views_student_management import (
     _decode_base64_blob, _student_image_url, _safe_decimal_conversion,
 )
+from .account_sync import sync_account_from_admission
 
 
 def _get_student_record(user):
@@ -184,4 +185,5 @@ def student_profile_completion_submit(request):
 
     rec.profile_completed = True
     rec.save()
+    sync_account_from_admission(rec)
     return JsonResponse({"success": True, "message": "Profile completed successfully"})

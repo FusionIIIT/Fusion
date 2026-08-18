@@ -247,39 +247,19 @@ def _safe_decimal_conversion(value):
         return None
 
 def normalize_category(value, is_phd=False):
-    """Normalize Excel/frontend category values to DB codes.
-    UG/PG model uses 'GEN-EWS' and 'OBC-NCL'; PhD model uses 'EWS' and 'OBC'.
+    """Normalize Excel/frontend category values to the codes both admission
+    models declare: GEN, OBC, SC, ST, EWS.
     """
     if not value:
         return ''
-    v = str(value).strip()
-    # Base mapping (UG/PG codes)
-    mapping = {
-        'general': 'GEN',
-        'general ews': 'GEN-EWS',
-        'general-ews': 'GEN-EWS',
-        'gen-ews': 'GEN-EWS',
-        'economically weaker section': 'GEN-EWS',
-        'ews': 'GEN-EWS',
-        'obc-ncl': 'OBC-NCL',
-        'other backward class': 'OBC-NCL',
-        'other backward class (non-creamy layer)': 'OBC-NCL',
-        'obc': 'OBC-NCL',
-        'sc': 'SC',
-        'scheduled caste': 'SC',
-        'st': 'ST',
-        'scheduled tribe': 'ST',
-        'gen': 'GEN',
-    }
-    normalized = mapping.get(v.lower(), v)
-    # PhD choices only have 'GEN', 'OBC', 'SC', 'ST', 'EWS' — re-map the compound codes
-    if is_phd:
-        phd_remap = {
-            'GEN-EWS': 'EWS',
-            'OBC-NCL': 'OBC',
-        }
-        normalized = phd_remap.get(normalized, normalized)
-    return normalized[:10]  # safety truncation to respect max_length=10
+    return admission_category(value) or str(value).strip()[:10]
+
+
+from .account_sync import (
+    admission_category,
+    reservation_category,
+    sync_account_from_admission,
+)
 
 
 def normalize_gender(value):
@@ -309,12 +289,9 @@ def normalize_yes_no(value, default='NO'):
 def to_academic_category(value):
     """Map any raw/batch-model category value to the narrower AcademicStudent choices.
     AcademicStudent.category only accepts: GEN, SC, ST, OBC
-    Batch models may hold: GEN-EWS, OBC-NCL, EWS — these must be remapped.
+    Batch models may hold: GEN-EWS, OBC-NCL, EWS and older JoSAA codes.
     """
-    normalized = normalize_category(value or '')
-    remap = {'GEN-EWS': 'GEN', 'OBC-NCL': 'OBC', 'EWS': 'GEN'}
-    result = remap.get(normalized, normalized)
-    return result or 'GEN'
+    return reservation_category(value) or 'GEN'
 
 
 def parse_date_flexible(date_value):
@@ -3861,7 +3838,8 @@ def update_student(request, student_id):
             student.updated_at = timezone.now()
         
         student.save()
-        
+        sync_account_from_admission(student)
+
         # Handle discipline change using existing batch change API logic if discipline was changed
         if discipline_changed and student.reported_status == 'REPORTED':
             try:
