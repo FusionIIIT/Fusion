@@ -185,6 +185,8 @@ class Student(models.Model):
         batch_id(programme_curriculum.Batch) - reference to the Batch collective details(foreign key, can be null)
         cpi(Float) - to store the current CPI of the student
         category - to store the details about category of a sutdent (General/OBC etc)[not nullable]
+        is_ews(bool) - whether the student holds EWS status, which category alone cannot express
+        is_pwd(bool) - whether the student is a person with disability, orthogonal to category
         father_name(char) - father's name
         mother_name(char) - mother's name
         hall_no(integer) - the hostel number in which the student has been alloted a room
@@ -199,6 +201,8 @@ class Student(models.Model):
     batch_id = models.ForeignKey(Batch, null=True, blank=True, on_delete=models.CASCADE)
     cpi = models.FloatField(default=0)
     category = models.CharField(max_length=10, choices=Constants.CATEGORY, null=False)
+    is_ews = models.BooleanField(default=False)
+    is_pwd = models.BooleanField(default=False)
     father_name = models.CharField(max_length=40, default='',null=True)
     mother_name = models.CharField(max_length=40, default='',null=True)
     hall_no = models.IntegerField(default=0)
