@@ -398,9 +398,16 @@ class Announcement(models.Model):
     AUDIENCE_CHOICES = (
         ('all', 'Everyone'),
         ('role', 'Specific Role'),
+        ('programme', 'Specific Programme Level'),
         ('batch', 'Specific Batch'),
         ('department', 'Specific Department'),
         ('individual', 'Specific Individuals'),
+    )
+
+    PROGRAMME_CHOICES = (
+        ('UG', 'Undergraduate'),
+        ('PG', 'Postgraduate'),
+        ('PHD', 'Doctoral'),
     )
 
     created_by = models.ForeignKey(
@@ -410,6 +417,8 @@ class Announcement(models.Model):
     audience_type = models.CharField(max_length=20, choices=AUDIENCE_CHOICES)
     target_role = models.ForeignKey(
         Designation, null=True, blank=True, on_delete=models.SET_NULL)
+    target_programme = models.CharField(
+        max_length=3, choices=PROGRAMME_CHOICES, null=True, blank=True)
     target_department = models.ForeignKey(
         DepartmentInfo, null=True, blank=True, on_delete=models.SET_NULL)
     target_batch = models.ForeignKey(

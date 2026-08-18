@@ -1194,7 +1194,8 @@ def acad_add_course(request):
                 course_slot_id=courseslot, course_id=course, student_id=student, semester_id=semester , working_year = working_year, registration_type=registration_type)
             cr.save()
             if old_course_id:
-                old_course_obj = course_registration.objects.filter(id=old_course_id).first()
+                old_course_obj = course_registration.objects.filter(
+                    id=old_course_id, student_id=student).first()
                 if old_course_obj:
                     course_replacement.objects.create(
                         old_course_registration=old_course_obj, 

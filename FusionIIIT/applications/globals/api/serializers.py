@@ -89,9 +89,11 @@ class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Announcement
         fields = ('id', 'title', 'message', 'audience_type', 'target_role',
-                'target_department', 'target_batch', 'target_users', 'created_at')
+                'target_programme', 'target_department', 'target_batch',
+                'target_users', 'created_at')
         extra_kwargs = {
             'target_role': {'required': False, 'allow_null': True},
+            'target_programme': {'required': False, 'allow_null': True},
             'target_department': {'required': False, 'allow_null': True},
             'target_batch': {'required': False, 'allow_null': True},
             'target_users': {'required': False},
@@ -101,6 +103,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         audience_type = attrs.get('audience_type')
         required_field = {
             'role': 'target_role',
+            'programme': 'target_programme',
             'department': 'target_department',
             'batch': 'target_batch',
         }.get(audience_type)
