@@ -4995,8 +4995,12 @@ class GradeValidationView(APIView):
 
                 cd_rows = []
                 tot_earned = tot_regular = tot_backlog_imp = tot_swayam = 0.0
-                # A course credits the degree once, and a replaced elective not at all.
-                credited_codes = set()
+                # A course credits the degree once, at its best-graded attempt --
+                # the same rule calculate_cpi_for_student uses for the transcript
+                # total. Taking whichever attempt came first instead understated
+                # anyone whose repeated course changed credit between curriculum
+                # versions. A replaced elective credits nothing.
+                credited_by_code = {}
 
                 for gs in graded_sems:
                     earned = regular = backlog_imp = swayam = 0.0
@@ -5032,13 +5036,15 @@ class GradeValidationView(APIView):
                         else:
                             tot_regular += cr
 
-                        # Credits Earned is the degree figure: a course once,
-                        # a replaced one never.
+                        # Credits Earned is the degree figure: a course once, at its
+                        # best-graded attempt, and a replaced one never.
                         code_key = str(c.get("code", "")).strip().upper()
-                        if c.get("superseded") or code_key in credited_codes:
+                        if c.get("superseded"):
                             continue
-                        credited_codes.add(code_key)
-                        tot_earned += cr
+                        kept = credited_by_code.get(code_key)
+                        if kept is None or (grade_conversion.get(g, -1)
+                                            > grade_conversion.get(kept[0], -1)):
+                            credited_by_code[code_key] = (g, cr)
 
                     def _fmt(v): return str(int(v)) if v == int(v) else f"{v:.1f}"
                     cd_rows.append([
@@ -5048,6 +5054,8 @@ class GradeValidationView(APIView):
                         Paragraph(_fmt(backlog_imp), small),
                         Paragraph(_fmt(swayam),      small),
                     ])
+
+                tot_earned = sum(cr for _, cr in credited_by_code.values())
 
                 def _fmt(v): return str(int(v)) if v == int(v) else f"{v:.1f}"
 
