@@ -36,6 +36,11 @@ from .utils import get_and_authenticate_user
 from notifications.models import Notification
 from notifications.signals import notify
 from applications.globals.decorators import role_required
+from applications.globals.programme_scope import (
+    ALL_ACAD_ROLES,
+    STUDENT_CATEGORY_PATH,
+    scopes_for,
+)
 _security_log = logging.getLogger("fusion.security")
 
 User = get_user_model()
@@ -509,6 +514,9 @@ def resolve_audience_recipients(obj):
             current_designation__designation=obj.target_role).distinct()
     if obj.audience_type == 'department':
         return User.objects.filter(extrainfo__department=obj.target_department)
+    if obj.audience_type == 'programme':
+        return User.objects.filter(**{
+            'extrainfo__student__' + STUDENT_CATEGORY_PATH: obj.target_programme})
     if obj.audience_type == 'batch':
         return User.objects.filter(extrainfo__student__batch_id=obj.target_batch)
     if obj.audience_type == 'individual':
@@ -519,15 +527,27 @@ def resolve_audience_recipients(obj):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def create_announcement(request):
     serializer = serializers.AnnouncementSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    scopes = scopes_for(request.user)
+    if scopes is not None:
+        chosen = (request.data.get('target_programme') or '').upper()
+        if request.data.get('audience_type') == 'programme' and chosen not in scopes:
+            return Response(
+                {'error': 'You may only announce to %s.' % ', '.join(sorted(scopes))},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
     announcement = serializer.save(created_by=request.user.extrainfo)
 
     recipients = resolve_audience_recipients(announcement)
+    if scopes is not None:
+        recipients = recipients.filter(**{
+            'extrainfo__student__' + STUDENT_CATEGORY_PATH + '__in': scopes})
     notify.send(
         sender=request.user,
         recipient=recipients,

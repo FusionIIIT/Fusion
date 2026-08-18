@@ -28,6 +28,7 @@ from rest_framework import status
 from applications.academic_information.models import Student as AcademicStudent
 from applications.globals.models import ExtraInfo, Designation, HoldsDesignation
 from applications.globals.access import IsAcadAdminOrDean, require_designation
+from applications.globals.access import IsProgrammeAcadAdmin
 from django.contrib.auth.models import User
 from applications.programme_curriculum.models import (
     Programme, Curriculum, Batch, Discipline
@@ -255,6 +256,14 @@ def normalize_category(value, is_phd=False):
     return admission_category(value) or str(value).strip()[:10]
 
 
+from applications.globals.programme_scope import (
+    ALL_ACAD_ROLES,
+    admission_record_in_scope,
+    batch_in_scope,
+    scope_batches,
+    scope_students,
+    scopes_for,
+)
 from .account_sync import (
     admission_category,
     reservation_category,
@@ -3598,7 +3607,7 @@ def get_student(request, student_id):
         }, status=500)
 
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation("Dean Academic", *ALL_ACAD_ROLES)
 @csrf_exempt
 @require_http_methods(["PUT", "POST"])
 def update_student(request, student_id):
@@ -3628,6 +3637,10 @@ def update_student(request, student_id):
                 except PhdStudentBatchUpload.DoesNotExist:
                     return JsonResponse({'success': False,
                         'message': f'Student with ID {student_id} not found'}, status=404)
+
+        if not admission_record_in_scope(student, scopes_for(request.user)):
+            return JsonResponse({'success': False,
+                'message': f'Student with ID {student_id} not found'}, status=404)
 
         old_discipline = student.discipline if is_phd else student.branch
         discipline_changed = False
@@ -4364,7 +4377,7 @@ def check_transfer_status(request):
 
 @csrf_exempt
 @require_http_methods(["GET"])
-@require_designation("acadadmin", "Dean Academic")
+@require_designation("Dean Academic", *ALL_ACAD_ROLES)
 def get_batch_students(request, batch_id):
     """
     Get students for a specific batch - ONLY from StudentBatchUpload table
@@ -4377,6 +4390,11 @@ def get_batch_students(request, batch_id):
 
         try:
             batch = Batch.objects.get(id=batch_id)
+            if not batch_in_scope(batch, scopes_for(request.user)):
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Batch with ID {batch_id} not found'
+                }, status=404)
         except Batch.DoesNotExist:
             return JsonResponse({
                 'success': False,
@@ -4628,7 +4646,7 @@ def get_batch_students(request, batch_id):
 # =============================================================================
 
 @api_view(['GET'])
-@permission_classes([IsAcadAdminOrDean])
+@permission_classes([IsProgrammeAcadAdmin])
 def admin_batches_unified(request):
     """
     UNIFIED API for both 'Batches' tab and 'Upcoming Batches' tab
@@ -4642,14 +4660,16 @@ def admin_batches_unified(request):
 
         # Was reading only the first designation, so an acadadmin who also holds
         # a teaching post was denied or allowed depending on row order.
-        if not user_holds_any_role(request.user, ('acadadmin', 'studentacadadmin')):
+        if not user_holds_any_role(request.user, ALL_ACAD_ROLES):
             return JsonResponse({
                 'success': False,
                 'message': 'Access denied. Only academic admins can view batch data.',
                 'batches': []
             }, status=403)
 
-        all_batches = Batch.objects.filter(running_batch=True).select_related(
+        all_batches = scope_batches(
+            Batch.objects.filter(running_batch=True), scopes_for(request.user)
+        ).select_related(
             'discipline', 'curriculum'
         ).order_by('-year', 'discipline__name')
         

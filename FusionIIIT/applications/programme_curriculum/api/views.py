@@ -35,6 +35,13 @@ from notification.views import prog_and_curr_notif
 # from applications.academic_information.models import Student
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
 from applications.globals.access import IsAcadAdminOrDean, require_designation, user_holds_role, _user_from_request, has_any_role
+from applications.globals.programme_scope import (
+    ALL_ACAD_ROLES,
+    scope_allows,
+    scope_curriculums,
+    scope_programmes,
+    scopes_for,
+)
 # acadadmin-only guard for curriculum thesis/seminar/teaching-credit mutations
 IsAcadAdmin = has_any_role("acadadmin")
 # ------------module-functions---------------#
@@ -199,7 +206,8 @@ def view_all_working_curriculums(request):
     
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         url+='faculty/'
-    curriculums = Curriculum.objects.filter(working_curriculum=1)
+    curriculums = scope_curriculums(
+        Curriculum.objects.filter(working_curriculum=1), scopes_for(request.user))
     notifs = request.user.notifications.all()
     curriculumfilter = CurriculumFilter(request.GET, queryset=curriculums)
 
@@ -471,7 +479,7 @@ def view_all_batches(request):
 
 # @api_view(['GET'])
 # @login_required(login_url='/accounts/login')
-@require_designation("acadadmin", "Dean Academic", "student", "Professor", "Associate Professor", "Assistant Professor")
+@require_designation("Dean Academic", "student", "Professor", "Associate Professor", "Assistant Professor", *ALL_ACAD_ROLES)
 def admin_view_all_programmes(request):
     """
     API to return all programmes (UG, PG, PhD) for an admin user.
@@ -487,11 +495,11 @@ def admin_view_all_programmes(request):
         'id', 'name', 'category', 'programme_begin_year', 'discipline__name'
     )
     
-    # Prepare the JSON response data
+    scopes = scopes_for(request.user)
     response_data = {
-        'ug_programmes': list(ug),
-        'pg_programmes': list(pg),
-        'phd_programmes': list(phd)
+        'ug_programmes': list(ug) if scope_allows(scopes, 'UG') else [],
+        'pg_programmes': list(pg) if scope_allows(scopes, 'PG') else [],
+        'phd_programmes': list(phd) if scope_allows(scopes, 'PHD') else [],
     }
 
     # Return a JsonResponse
@@ -534,7 +542,8 @@ def Admin_view_all_working_curriculums(request):
     #     return JsonResponse({'error': 'Access denied'}, status=403)
 
     # Fetch all working curriculums
-    curriculums = Curriculum.objects.filter(working_curriculum=1)
+    curriculums = scope_curriculums(
+        Curriculum.objects.filter(working_curriculum=1), scopes_for(request.user))
 
     # Filter based on GET parameters if any (curriculum filter)
     curriculumfilter = CurriculumFilter(request.GET, queryset=curriculums)
@@ -3486,7 +3495,7 @@ def get_unused_curriculam(request):
     return JsonResponse(unused_curricula_data, safe=False)
 @csrf_exempt
 @permission_classes([IsAuthenticated])
-@require_designation("acadadmin", "Dean Academic")
+@require_designation("Dean Academic", *ALL_ACAD_ROLES)
 def admin_view_all_course_instructor(request):
     # Fetch all records from the CourseInstructor table
     course_instructors = CourseInstructor.objects.select_related(
