@@ -39,6 +39,7 @@ from applications.globals.decorators import role_required
 from applications.globals.programme_scope import (
     ALL_ACAD_ROLES,
     STUDENT_CATEGORY_PATH,
+    scope_recipients,
     scopes_for,
 )
 _security_log = logging.getLogger("fusion.security")
@@ -544,10 +545,7 @@ def create_announcement(request):
 
     announcement = serializer.save(created_by=request.user.extrainfo)
 
-    recipients = resolve_audience_recipients(announcement)
-    if scopes is not None:
-        recipients = recipients.filter(**{
-            'extrainfo__student__' + STUDENT_CATEGORY_PATH + '__in': scopes})
+    recipients = scope_recipients(resolve_audience_recipients(announcement), scopes)
     notify.send(
         sender=request.user,
         recipient=recipients,
@@ -565,7 +563,7 @@ def create_announcement(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def announcement_audience_options(request):
     roles = serializers.DesignationSerializer(Designation.objects.all(), many=True).data
     departments = serializers.DepartmentInfoSerializer(DepartmentInfo.objects.all(), many=True).data
@@ -575,17 +573,22 @@ def announcement_audience_options(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def search_users(request):
     query = request.query_params.get('q', '').strip()
     if not query:
         return Response([], status=status.HTTP_200_OK)
 
-    users = User.objects.filter(
-        Q(username__icontains=query)
-        | Q(first_name__icontains=query)
-        | Q(last_name__icontains=query)
-        | Q(extrainfo__id__icontains=query)
+    # scoped before the slice, so a programme admin cannot pick a student whose
+    # notification would then be dropped on send
+    users = scope_recipients(
+        User.objects.filter(
+            Q(username__icontains=query)
+            | Q(first_name__icontains=query)
+            | Q(last_name__icontains=query)
+            | Q(extrainfo__id__icontains=query)
+        ),
+        scopes_for(request.user),
     ).distinct()[:20]
 
     results = [
