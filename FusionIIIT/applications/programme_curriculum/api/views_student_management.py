@@ -258,12 +258,29 @@ def normalize_category(value, is_phd=False):
 
 from applications.globals.programme_scope import (
     ALL_ACAD_ROLES,
+    SCOPED_ACAD_ROLES,
     admission_record_in_scope,
+    admission_type_in_scope,
     batch_in_scope,
+    programme_name_in_scope,
+    scope_admission_records,
     scope_batches,
+    scope_by_programme_name,
+    scope_curriculums,
     scope_students,
     scopes_for,
 )
+
+# The programme roles administer these student/admission screens for their own
+# level; every view below narrows its rows to that level.
+STUDENT_ADMIN_ROLES = ("acadadmin", "Dean Academic") + SCOPED_ACAD_ROLES
+
+
+def _out_of_scope(what="record"):
+    return JsonResponse(
+        {'success': False, 'message': 'You do not administer this %s.' % what},
+        status=403,
+    )
 from .account_sync import (
     admission_category,
     reservation_category,
@@ -534,7 +551,7 @@ def get_display_branch_name(discipline):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 def process_excel_upload(request):
     try:
         if 'file' not in request.FILES:
@@ -545,6 +562,8 @@ def process_excel_upload(request):
         
         file = request.FILES['file']
         programme_type = request.POST.get('programme_type', 'ug')
+        if not admission_type_in_scope(programme_type, scopes_for(request.user)):
+            return _out_of_scope('programme')
         
         year_result = validate_and_normalize_year(request.POST.get('academic_year'))
         if isinstance(year_result, JsonResponse):
@@ -841,12 +860,14 @@ def check_student_duplicate(student, duplicate_check_fields, programme_type='ug'
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 def save_students_batch(request):
     try:
         data = json.loads(request.body)
         students = data.get('students', [])
         programme_type = data.get('programme_type', 'ug')
+        if not admission_type_in_scope(programme_type, scopes_for(request.user)):
+            return _out_of_scope('programme')
         phd_semester = data.get('phd_semester', None)  # Get PhD semester (odd/even)
         year_result = validate_and_normalize_year(data.get('academic_year'))
         if isinstance(year_result, JsonResponse):
@@ -1272,11 +1293,13 @@ def get_allocation_summary(students, programme_type):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 def add_single_student(request):
     try:
         data = json.loads(request.body)
         programme_type = data.get('programme_type', 'ug')
+        if not admission_type_in_scope(programme_type, scopes_for(request.user)):
+            return _out_of_scope('programme')
         phd_semester = data.get('phd_semester', None)  # Get PhD semester (odd/even)
         
         year_result = validate_and_normalize_year(data.get('academic_year'))
@@ -1515,7 +1538,7 @@ def add_single_student(request):
 
 @csrf_exempt
 @require_http_methods(["PUT"])
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 def set_total_seats(request):
     try:
         data = json.loads(request.body)
@@ -1530,6 +1553,9 @@ def set_total_seats(request):
                 'success': False,
                 'message': 'Missing required fields: programme, discipline, year, total_seats'
             }, status=400)
+
+        if not programme_name_in_scope(programme, scopes_for(request.user)):
+            return _out_of_scope('programme')
 
         batch_config, created = BatchConfiguration.objects.update_or_create(
             programme=programme,
@@ -1563,7 +1589,7 @@ def set_total_seats(request):
 # STUDENT STATUS MANAGEMENT
 # =============================================================================
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["PUT", "POST", "OPTIONS"])
 def update_student_status(request):
@@ -1624,6 +1650,8 @@ def update_student_status(request):
                     }, status=404)
         
         old_status = student.reported_status
+        if not admission_record_in_scope(student, scopes_for(request.user)):
+            return _out_of_scope('student')
         student.reported_status = reported_status
         student.save()
         
@@ -2407,7 +2435,7 @@ def update_student_status(request):
 # EXPORT FUNCTIONALITY
 # =============================================================================
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["GET"])
 def export_students(request, programme_type):
@@ -2415,7 +2443,11 @@ def export_students(request, programme_type):
     Export student data to Excel
     """
     try:
-        students = StudentBatchUpload.objects.filter(programme_type=programme_type).order_by('roll_number')
+        if not admission_type_in_scope(programme_type, scopes_for(request.user)):
+            return _out_of_scope('programme')
+        students = scope_admission_records(
+            StudentBatchUpload.objects.filter(programme_type=programme_type),
+            scopes_for(request.user)).order_by('roll_number')
         
         if not students.exists():
             return JsonResponse({
@@ -2496,7 +2528,7 @@ def export_students(request, programme_type):
 # UPLOAD HISTORY
 # =============================================================================
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["GET"])
 def upload_history(request):
@@ -2506,7 +2538,9 @@ def upload_history(request):
     try:
         from django.db.models import Count
         
-        history = StudentBatchUpload.objects.values('created_at__date', 'programme_type').annotate(
+        history = scope_admission_records(
+            StudentBatchUpload.objects.all(), scopes_for(request.user)
+        ).values('created_at__date', 'programme_type').annotate(
             count=Count('id')
         ).order_by('-created_at__date')
         
@@ -2526,7 +2560,7 @@ def upload_history(request):
 # STUDENT LISTING
 # =============================================================================
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["GET"])
 def list_students(request):
@@ -2540,7 +2574,8 @@ def list_students(request):
         discipline = request.GET.get('discipline')
         specialization = request.GET.get('specialization')
         
-        students = StudentBatchUpload.objects.all()
+        students = scope_admission_records(
+            StudentBatchUpload.objects.all(), scopes_for(request.user))
         
         if programme_type:
             students = students.filter(programme_type=programme_type)
@@ -2644,7 +2679,7 @@ def list_students(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 def create_batch(request):
     """
     Create new batch
@@ -2680,6 +2715,9 @@ def create_batch(request):
                 'success': False,
                 'message': f'Missing required fields: {", ".join(missing_fields)}'
             }, status=400)
+
+        if not programme_name_in_scope(programme, scopes_for(request.user)):
+            return _out_of_scope('programme')
 
         from applications.programme_curriculum.models import Curriculum
 
@@ -2796,7 +2834,7 @@ def create_batch(request):
             'message': f'Failed to create batch: {str(e)}'
         }, status=500)
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["PUT"])
 def update_batch(request, batch_id):
@@ -2830,6 +2868,13 @@ def update_batch(request, batch_id):
                     'success': False,
                     'message': f'Batch with ID {batch_id} not found in any model'
                 }, status=404)
+
+        scopes = scopes_for(request.user)
+        # both the batch as it stands and the programme it is being moved to
+        if not programme_name_in_scope(batch.programme, scopes):
+            return _out_of_scope('batch')
+        if 'programme' in data and not programme_name_in_scope(data['programme'], scopes):
+            return _out_of_scope('programme')
 
         # Update fields
         if 'programme' in data:
@@ -2866,7 +2911,7 @@ def update_batch(request, batch_id):
         }, status=500)
 
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["GET"])
 def list_batches_with_status(request):
@@ -2874,7 +2919,9 @@ def list_batches_with_status(request):
     List all batches with status
     """
     try:
-        batches = BatchConfiguration.objects.all().order_by('programme', 'discipline', 'year')
+        batches = scope_by_programme_name(
+            BatchConfiguration.objects.all(), scopes_for(request.user)
+        ).order_by('programme', 'discipline', 'year')
         
         batch_list = []
         for batch in batches:
@@ -2904,7 +2951,7 @@ def list_batches_with_status(request):
 # STUDENT STATUS CRUD
 # =============================================================================
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["PUT"])
 def update_student_status_crud(request, student_id):
@@ -2923,6 +2970,8 @@ def update_student_status_crud(request, student_id):
         
         try:
             student = StudentBatchUpload.objects.get(id=student_id)
+            if not admission_record_in_scope(student, scopes_for(request.user)):
+                return _out_of_scope('student')
         except StudentBatchUpload.DoesNotExist:
             return JsonResponse({
                 'success': False,
@@ -2976,7 +3025,7 @@ def update_student_status_crud(request, student_id):
 # PASSWORD MANAGEMENT
 # =============================================================================
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["POST"])
 def auto_generate_passwords_for_batch(request):
@@ -3001,10 +3050,14 @@ def auto_generate_passwords_for_batch(request):
                 'message': 'Batch not found'
             }, status=404)
         
-        students = StudentBatchUpload.objects.filter(
+        scopes = scopes_for(request.user)
+        if not programme_name_in_scope(batch.programme, scopes):
+            return _out_of_scope('batch')
+
+        students = scope_admission_records(StudentBatchUpload.objects.filter(
             branch__icontains=batch.discipline,
             year=batch.year
-        )
+        ), scopes)
         
         updated_count = 0
         for student in students:
@@ -3490,7 +3543,7 @@ def create_or_update_main_student_record(student_data, batch_obj, batch_year):
 # INDIVIDUAL STUDENT CRUD OPERATIONS
 # =============================================================================
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["GET"])
 def get_student(request, student_id):
@@ -3499,6 +3552,8 @@ def get_student(request, student_id):
     """
     try:
         student = StudentBatchUpload.objects.get(id=student_id)
+        if not admission_record_in_scope(student, scopes_for(request.user)):
+            return _out_of_scope('student')
 
         student_data = {
             # Core identification
@@ -3939,7 +3994,7 @@ def update_student(request, student_id):
         }, status=500)
 
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["DELETE", "POST"])
 def delete_student(request, student_id):
@@ -3980,6 +4035,8 @@ def delete_student(request, student_id):
                     return JsonResponse({'success': False,
                         'message': f'Student with ID {student_id} not found'}, status=404)
         student_name = student.name
+        if not admission_record_in_scope(student, scopes_for(request.user)):
+            return _out_of_scope('student')
         student_roll = student.roll_number
 
         deletion_info = {
@@ -4097,7 +4154,7 @@ def delete_student(request, student_id):
 # BULK STATUS UPDATE FUNCTIONALITY  
 # =============================================================================
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["POST"])
 def bulk_update_student_status(request):
@@ -4131,7 +4188,29 @@ def bulk_update_student_status(request):
         success_count = 0
         error_count = 0
         curriculum_assignments = {}
-        
+
+        # Each id is delegated to update_student_status, which guards its own
+        # scope; naming the out-of-scope ones here keeps the summary honest.
+        scopes = scopes_for(request.user)
+        if scopes is not None:
+            # PhD records live in their own table with their own ids, so only
+            # ids known to be UG/PG are judged here; the rest are left to the
+            # per-student call, which guards itself.
+            known = StudentBatchUpload.objects.filter(id__in=student_ids)
+            known_ids = set(known.values_list('id', flat=True))
+            allowed = set(scope_admission_records(known, scopes)
+                          .values_list('id', flat=True))
+            refused = [sid for sid in student_ids
+                       if sid in known_ids and sid not in allowed]
+            for sid in refused:
+                error_count += 1
+                results.append({
+                    'student_id': sid,
+                    'status': 'error',
+                    'message': 'You do not administer this student.',
+                })
+            student_ids = [sid for sid in student_ids if sid not in refused]
+
         for student_id in student_ids:
             try:
                 # USE DATABASE TRANSACTION ISOLATION FOR EACH STUDENT
@@ -4813,7 +4892,7 @@ def admin_batches_unified(request):
         }, status=500)
 
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["GET"])
 def sync_batch_data(request):
@@ -4825,7 +4904,9 @@ def sync_batch_data(request):
         from applications.programme_curriculum.models import Batch
         from applications.academic_information.models import Student
 
-        all_batches = Batch.objects.filter(running_batch=True).select_related(
+        all_batches = scope_batches(
+            Batch.objects.filter(running_batch=True), scopes_for(request.user)
+        ).select_related(
             'discipline', 'curriculum'
         ).order_by('year', 'discipline__name')
         
@@ -4891,7 +4972,7 @@ def sync_batch_data(request):
         }, status=500)
 
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["POST"])
 def validate_batch_prerequisites(request):
@@ -4934,11 +5015,11 @@ def validate_batch_prerequisites(request):
             try:
                 discipline = Discipline.objects.filter(name__iexact=discipline_name).first()
                 if discipline:
-                    batch = Batch.objects.filter(
+                    batch = scope_batches(Batch.objects.filter(
                         year=academic_year,
                         discipline=discipline,
                         running_batch=True
-                    ).first()
+                    ), scopes_for(request.user)).first()
                     
                     if batch:
                         existing_batches.append({
@@ -4987,7 +5068,7 @@ def validate_batch_prerequisites(request):
 # BATCH CURRICULUM STATUS CHECK
 # =============================================================================
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["GET"])
 def check_batches_curriculum_status(request):
@@ -4999,7 +5080,9 @@ def check_batches_curriculum_status(request):
     try:
         from applications.programme_curriculum.models import Batch
 
-        batches = Batch.objects.filter(running_batch=True).select_related(
+        batches = scope_batches(
+            Batch.objects.filter(running_batch=True), scopes_for(request.user)
+        ).select_related(
             'discipline', 'curriculum'
         ).order_by('-year', 'discipline__name')
         
@@ -5059,7 +5142,7 @@ def check_batches_curriculum_status(request):
         }, status=500)
 
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["GET"])
 def validate_student_upload_prerequisites(request):
@@ -5082,7 +5165,8 @@ def validate_student_upload_prerequisites(request):
         
         from applications.programme_curriculum.models import Curriculum, Batch
 
-        available_curriculums = Curriculum.objects.filter(working_curriculum=True)
+        available_curriculums = scope_curriculums(
+            Curriculum.objects.filter(working_curriculum=True), scopes_for(request.user))
         curriculum_check = {
             'exists': available_curriculums.exists(),
             'count': available_curriculums.count(),
@@ -5091,7 +5175,9 @@ def validate_student_upload_prerequisites(request):
                       else 'No working curriculums found - please create curriculums first'
         }
 
-        existing_batches = Batch.objects.filter(year=batch_year, running_batch=True)
+        existing_batches = scope_batches(
+            Batch.objects.filter(year=batch_year, running_batch=True),
+            scopes_for(request.user))
         batch_check = {
             'exists': existing_batches.exists(),
             'count': existing_batches.count(),
@@ -5153,7 +5239,7 @@ def validate_student_upload_prerequisites(request):
 # CURRICULUM REDUNDANCY CLEANUP UTILITIES
 # =============================================================================
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["GET"])
 def find_duplicate_curriculums(request):
@@ -5165,7 +5251,7 @@ def find_duplicate_curriculums(request):
         from applications.programme_curriculum.models import Curriculum
         from django.db.models import Count
 
-        duplicates = (Curriculum.objects
+        duplicates = (scope_curriculums(Curriculum.objects.all(), scopes_for(request.user))
                      .values('name', 'programme__name', 'programme__id')
                      .annotate(count=Count('id'))
                      .filter(count__gt=1, working_curriculum=True)
@@ -5178,11 +5264,11 @@ def find_duplicate_curriculums(request):
             programme_id = dup['programme__id']
             count = dup['count']
 
-            curricula = Curriculum.objects.filter(
+            curricula = scope_curriculums(Curriculum.objects.filter(
                 name=curriculum_name,
                 programme__id=programme_id,
                 working_curriculum=True
-            ).order_by('version')
+            ), scopes_for(request.user)).order_by('version')
             
             curriculum_list = []
             for curr in curricula:
@@ -5216,7 +5302,7 @@ def find_duplicate_curriculums(request):
         }, status=500)
 
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["POST"])
 def consolidate_duplicate_curriculums(request):
@@ -5246,11 +5332,16 @@ def consolidate_duplicate_curriculums(request):
                 'message': f'Curriculum with ID {keep_curriculum_id} not found'
             }, status=400)
 
-        duplicate_curriculums = Curriculum.objects.filter(
+        scopes = scopes_for(request.user)
+        if not scope_curriculums(
+                Curriculum.objects.filter(id=keep_curriculum.id), scopes).exists():
+            return _out_of_scope('curriculum')
+
+        duplicate_curriculums = scope_curriculums(Curriculum.objects.filter(
             name=curriculum_name,
             programme__id=programme_id,
             working_curriculum=True
-        ).exclude(id=keep_curriculum_id)
+        ), scopes).exclude(id=keep_curriculum_id)
 
         reassigned_batches = 0
         for dup_curriculum in duplicate_curriculums:
@@ -5289,7 +5380,7 @@ def consolidate_duplicate_curriculums(request):
 # BATCH REDUNDANCY CLEANUP UTILITIES
 # =============================================================================
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["GET"])
 def find_duplicate_batches(request):
@@ -5301,7 +5392,7 @@ def find_duplicate_batches(request):
         from applications.programme_curriculum.models import Batch
         from django.db.models import Count
 
-        duplicates = (Batch.objects
+        duplicates = (scope_batches(Batch.objects.all(), scopes_for(request.user))
                      .values('name', 'discipline__name', 'discipline__acronym', 'discipline__id', 'year')
                      .annotate(count=Count('id'))
                      .filter(count__gt=1, running_batch=True)
@@ -5365,7 +5456,7 @@ def find_duplicate_batches(request):
         }, status=500)
 
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["POST"])
 def consolidate_duplicate_batches(request):
@@ -5396,12 +5487,16 @@ def consolidate_duplicate_batches(request):
                 'message': f'Batch with ID {keep_batch_id} not found'
             }, status=400)
 
-        duplicate_batches = Batch.objects.filter(
+        scopes = scopes_for(request.user)
+        if not batch_in_scope(keep_batch, scopes):
+            return _out_of_scope('batch')
+
+        duplicate_batches = scope_batches(Batch.objects.filter(
             name=programme_name,
             discipline__id=discipline_id,
             year=year,
             running_batch=True
-        ).exclude(id=keep_batch_id)
+        ), scopes).exclude(id=keep_batch_id)
 
         reassigned_students = 0
         total_seats_added = 0
@@ -5452,7 +5547,7 @@ def consolidate_duplicate_batches(request):
         }, status=500)
 
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["POST"])
 def fix_stuck_reported_students(request):
@@ -5460,7 +5555,8 @@ def fix_stuck_reported_students(request):
     Fix students that are stuck in REPORTED status and should be transferred to academic system
     """
     try:
-        stuck_students = StudentBatchUpload.objects.filter(
+        stuck_students = scope_admission_records(
+            StudentBatchUpload.objects.all(), scopes_for(request.user)).filter(
             reported_status='REPORTED'
         ).exclude(
             Q(first_name__isnull=True) | Q(first_name='') |
@@ -5612,7 +5708,7 @@ def transfer_student_to_academic_system(student):
         }
 
 
-@require_designation("acadadmin", "Dean Academic")
+@require_designation(*STUDENT_ADMIN_ROLES)
 @csrf_exempt
 @require_http_methods(["POST"])
 def sync_batches_to_configuration(request):
@@ -5627,7 +5723,7 @@ def sync_batches_to_configuration(request):
         created_count = 0
         updated_count = 0
         
-        for batch in Batch.objects.all():
+        for batch in scope_batches(Batch.objects.all(), scopes_for(request.user)):
             # Check if BatchConfiguration already exists with this ID
             try:
                 batch_config = BatchConfiguration.objects.get(id=batch.id)

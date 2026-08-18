@@ -6,6 +6,8 @@ reach must narrow its data to that category. A view that is not scoped yet stays
 closed to them, which costs them the feature but never leaks another
 programme's students.
 """
+from django.db.models import Q
+
 from applications.globals.models import HoldsDesignation
 
 SCOPE_BY_ROLE = {
@@ -21,6 +23,18 @@ SCOPED_ACAD_ROLES = tuple(SCOPE_BY_ROLE)
 ALL_ACAD_ROLES = UNSCOPED_ACAD_ROLES + SCOPED_ACAD_ROLES
 
 STUDENT_CATEGORY_PATH = "batch_id__curriculum__programme__category"
+
+# Programme names as they are stored on Student.programme and on
+# BatchConfiguration.programme. The PhD promotion flow writes 'Ph.D' while
+# academic_information.Constants declares 'PhD', so both spellings count.
+PROGRAMME_NAMES_BY_SCOPE = {
+    "UG": ("B.Tech", "B.Des"),
+    "PG": ("M.Tech", "M.Des"),
+    "PHD": ("PhD", "Ph.D"),
+}
+
+# 'ug' / 'pg' / 'phd' as the admission-record models spell it
+ADMISSION_TYPE_BY_SCOPE = {"UG": "ug", "PG": "pg", "PHD": "phd"}
 
 
 def _role_names(user):
@@ -117,15 +131,68 @@ def scoped_ids(model, ids, scopes, student_path="student"):
     return list(allowed.values_list("id", flat=True))
 
 
-def scope_admission_records(queryset, scopes):
-    """Narrow StudentBatchUpload rows, whose own programme_type is 'ug'/'pg'."""
+def programme_names_for(scopes):
+    """Programme names inside ``scopes``, or None when nothing is excluded."""
+    if scopes is None:
+        return None
+    names = []
+    for scope in scopes:
+        names.extend(PROGRAMME_NAMES_BY_SCOPE.get(scope, ()))
+    return tuple(names)
+
+
+def programme_name_in_scope(name, scopes):
+    if scopes is None:
+        return True
+    return (name or "") in programme_names_for(scopes)
+
+
+def scope_by_programme_name(queryset, scopes, field="programme"):
+    """Narrow rows that name their programme, such as BatchConfiguration."""
     if scopes is None:
         return queryset
-    wanted = [s for s in scopes if s in ("UG", "PG")]
-    if not wanted:
+    names = programme_names_for(scopes)
+    if not names:
         return queryset.none()
-    values = [s.lower() for s in wanted] + [s.upper() for s in wanted]
+    return queryset.filter(**{"%s__in" % field: names})
+
+
+def admission_type_in_scope(programme_type, scopes):
+    """For the 'ug'/'pg'/'phd' programme_type the admission models carry."""
+    if scopes is None:
+        return True
+    wanted = (programme_type or "").strip().lower()
+    return wanted in {ADMISSION_TYPE_BY_SCOPE[s] for s in scopes
+                      if s in ADMISSION_TYPE_BY_SCOPE}
+
+
+def scope_admission_records(queryset, scopes):
+    """Narrow admission records. StudentBatchUpload names its own programme_type
+    ('ug'/'pg'); PhdStudentBatchUpload has no such field and is PhD by model."""
+    if scopes is None:
+        return queryset
+    field_names = {f.name for f in queryset.model._meta.fields}
+    if "programme_type" not in field_names:
+        return queryset if "PHD" in scopes else queryset.none()
+    values = []
+    for scope in scopes:
+        spelling = ADMISSION_TYPE_BY_SCOPE.get(scope)
+        if spelling:
+            values.extend([spelling, spelling.upper()])
+    if not values:
+        return queryset.none()
     return queryset.filter(programme_type__in=values)
+
+
+def scope_recipients(users, scopes):
+    """Drop students outside the scope. Faculty and staff are not bound to a
+    programme, so they stay: a role-targeted announcement still reaches them."""
+    if scopes is None:
+        return users
+    return users.filter(
+        Q(**{"extrainfo__student__" + STUDENT_CATEGORY_PATH + "__in": scopes})
+        | Q(extrainfo__student__isnull=True)
+    )
 
 
 def allows_phd(scopes):

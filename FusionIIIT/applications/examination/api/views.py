@@ -15,6 +15,7 @@ from applications.examination.models import(hidden_grades , ResultAnnouncement, 
 from applications.globals.access import user_holds_role, user_holds_any_role
 from applications.globals.programme_scope import (
     ALL_ACAD_ROLES,
+    PROGRAMME_NAMES_BY_SCOPE,
     batch_in_scope,
     roll_scope_sql,
     scope_allows,
@@ -85,12 +86,7 @@ PBI_AND_BTP_ALLOWED_GRADES = {
 }
 
 PROGRAMME_TYPE_BUCKETS = {
-    'UG': ['B.Tech', 'B.Des'],
-    'PG': ['M.Tech', 'M.Des'],
-    # Student.programme is declared as 'PhD' in academic_information.Constants.PROGRAMME,
-    # but the PhD student-promotion flow (programme_curriculum) actually writes 'Ph.D' —
-    # accept both so this doesn't silently return zero PhD students.
-    'PHD': ['PhD', 'Ph.D'],
+    scope: list(names) for scope, names in PROGRAMME_NAMES_BY_SCOPE.items()
 }
 
 
