@@ -2092,6 +2092,22 @@ def update_student_status(request):
                                         ).first()
 
                                 if not batch_obj:
+                                    # The specialization does not name the programme:
+                                    # M.Tech Design is run by Mechanical Engineering,
+                                    # not by Design. Prefer the batch whose discipline
+                                    # is the one the student's record states.
+                                    _names = [f"{programme_name} {student.specialization}", programme_name]
+                                    _candidates = Batch.objects.filter(
+                                        name__in=_names, year=student.year, running_batch=True)
+                                    batch_obj = (
+                                        _candidates.filter(
+                                            discipline__name__iexact=(student.branch or '')).first()
+                                        or (_candidates.first() if _candidates.count() == 1 else None)
+                                    )
+                                    if batch_obj is not None:
+                                        discipline = batch_obj.discipline
+
+                                if not batch_obj:
                                     return JsonResponse({
                                         'success': False,
                                         'message': f'No batch found for {programme_name} {discipline.name} Year-{student.year} with specialization {student.specialization}. Please create the required batch manually first.',
