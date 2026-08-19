@@ -600,6 +600,8 @@ def process_excel_upload(request):
         
         column_mapping = {
             'sno': ['sno', 's.no', 'serial number', 's no'],
+            'apaar_id': ['apaar id', 'apaar', 'apaar_id', 'apaar no', 'apaar number',
+                         'abc id', 'abc_id', 'academic bank of credits id'],
             'jee_app_no': ['jee main application number', 'jee app. no./ccmt roll. no.', 'jee app. no./ccmt roll no.', 'jee application no./ccmt roll no.', 'jee application no./ccmt roll. no.', 'jee app. no.', 'jee application number', 'jee main app number', 'ccmt roll. no.', 'ccmt roll no', 'jee app no', 'rollno', 'jee app. no / ccmt roll no.', 'jee app. no / ccmt roll no', 'jee app no / ccmt roll no', 'jee app no / ccmt roll no.', 'jee app. no / ccmt roll no', 'jee app no / ccmt roll no', 'jee app. no./ccmt roll no', 'jee app no./ccmt roll no', 'jee app. no. / ccmt roll no.'],
             'roll_number': ['institute roll number', 'roll number', 'rollno', 'inst roll number'],
             'name': ['name', 'student name', 'full name'],
@@ -652,6 +654,23 @@ def process_excel_upload(request):
             for col in possible_columns:
                 if col in df.columns:
                     mapped_data[field] = col
+                    break
+
+        # A heading that extends a known one still names the same column, as in
+        # "JEE App. No. / CCMT Roll No. / AICTE App. No.", so a field left
+        # unmatched falls back to a header containing one of its spellings.
+        claimed = set(mapped_data.values())
+        for field, possible_columns in column_mapping.items():
+            if field in mapped_data:
+                continue
+            for alias in possible_columns:
+                if len(alias) < 8:
+                    continue
+                match = next((c for c in df.columns
+                              if c not in claimed and alias in c), None)
+                if match:
+                    mapped_data[field] = match
+                    claimed.add(match)
                     break
         
         for index, row in df.iterrows():
@@ -717,6 +736,8 @@ def process_excel_upload(request):
 
                     cleaned_data = {
                         'Sno': student_data.get('sno', ''),
+                        'apaar_id': student_data.get('apaar_id', ''),
+                        'APAAR ID': student_data.get('apaar_id', ''),
                         'jee_app_no': student_data.get('jee_app_no', ''),  # Add this for frontend compatibility
                         'JEE App. No./CCMT Roll. No.': student_data.get('jee_app_no', ''),
                         'JEE App. No / CCMT Roll No': student_data.get('jee_app_no', ''),  # Alternative format
@@ -809,14 +830,29 @@ def check_student_duplicate(student, duplicate_check_fields, programme_type='ug'
         'personalEmail': 'personal_email',
         'mobile': 'mobile_number'
     }
-    
+
+    # An uploaded row may still carry the spreadsheet's own headings, so a
+    # value is looked up under every spelling before deciding it is absent --
+    # otherwise the check passes and the insert fails on the unique index.
+    value_aliases = {
+        'jeeAppNo': ('jeeAppNo', 'jee_app_no', 'JEE App. No./CCMT Roll. No.',
+                     'JEE App. No / CCMT Roll No', 'Jee Main Application Number'),
+        'rollNumber': ('rollNumber', 'roll_number', 'Institute Roll Number'),
+        'instituteEmail': ('instituteEmail', 'institute_email', 'Institute Email ID'),
+        'fname': ('fname', 'father_name', "Father's Name"),
+        'personalEmail': ('personalEmail', 'personal_email', 'Alternate Email ID'),
+        'mobile': ('mobile', 'mobile_number', 'Mobile No'),
+    }
+
     is_phd = (programme_type == 'phd')
 
     try:
         for field in duplicate_check_fields:
             backend_field = field_mapping.get(field, field.lower())
-            student_value = student.get(field)
-            
+            student_value = next(
+                (student.get(key) for key in value_aliases.get(field, (field,))
+                 if student.get(key)), None)
+
             if not student_value:
                 continue
 
@@ -898,24 +934,28 @@ def save_students_batch(request):
         validation_errors = 0
         errors = []
         
-        # Filter out duplicates if requested
-        if skip_duplicates:
-            filtered_students = []
-            duplicate_students = []
-            
-            for student in students:
-                is_duplicate, duplicate_info = check_student_duplicate(student, duplicate_check_fields, programme_type)
-                
-                if is_duplicate:
-                    skipped_duplicates += 1
-                    duplicate_students.append({
-                        'student': student,
-                        'duplicate_reason': duplicate_info
-                    })
-                else:
-                    filtered_students.append(student)
-            
-            students = filtered_students
+        # Duplicates are always detected; skip_duplicates only decides whether
+        # they are passed over quietly or reported. Inserting them regardless
+        # left the caller reading a raw unique-index error.
+        filtered_students = []
+        duplicate_students = []
+
+        for student in students:
+            is_duplicate, duplicate_info = check_student_duplicate(student, duplicate_check_fields, programme_type)
+
+            if not is_duplicate:
+                filtered_students.append(student)
+            elif skip_duplicates:
+                skipped_duplicates += 1
+                duplicate_students.append({
+                    'student': student,
+                    'duplicate_reason': duplicate_info
+                })
+            else:
+                failed_uploads += 1
+                errors.append(duplicate_info)
+
+        students = filtered_students
 
         # Filter out students with validation errors before processing
         valid_students_only = []
@@ -1004,6 +1044,20 @@ def save_students_batch(request):
                         if programme_type == 'phd':
                             print(f"DEBUG PhD: Found batch {batch_obj.id}")
                     except Batch.DoesNotExist:
+                        # The specialization-to-discipline table above is a guess; the
+                        # sheet states the discipline outright. M.Tech Design is run by
+                        # Mechanical Engineering, so prefer the sheet, then a batch of
+                        # this name that is the only one for the year.
+                        _candidates = Batch.objects.filter(
+                            name=batch_name, year=batch_year, running_batch=True)
+                        batch_obj = (
+                            _candidates.filter(discipline__name__iexact=(discipline_name or '')).first()
+                            or (_candidates.first() if _candidates.count() == 1 else None)
+                        )
+                        if batch_obj is not None:
+                            discipline_obj = batch_obj.discipline
+
+                    if batch_obj is None:
                         if programme_type == 'phd':
                             print(f"DEBUG PhD: Batch not found! Looking for alternatives...")
                             all_phd_batches = Batch.objects.filter(name__icontains='phd', year=batch_year, running_batch=True)
@@ -1013,15 +1067,26 @@ def save_students_batch(request):
                         discipline_year_matches = Batch.objects.filter(discipline=discipline_obj, year=batch_year, running_batch=True)
                         existing_batches = Batch.objects.filter(year=batch_year, running_batch=True)
                         
-                        error_msg = f"No active batch exists for {batch_name} with discipline '{discipline_obj.name}' in Year-{batch_year}. Please create the batch via Admin Batch Management first."
+                        # name the batch, not "batch_name + discipline", which read as
+                        # "M.Tech Design Design" and named no batch that could exist
+                        _same_name = list(name_year_matches.values_list('discipline__name', flat=True))
+                        error_msg = (
+                            f"No running batch \"{batch_name}\" for Year-{batch_year} under "
+                            f"discipline '{discipline_name or discipline_obj.name}'."
+                        )
+                        if _same_name:
+                            error_msg += (" A batch of that name exists under: "
+                                          + ", ".join(_same_name) + ".")
+                        else:
+                            error_msg += " Please create it via Admin Batch Management first."
                         failed_uploads += 1
                         errors.append({
                             'student': student_data.get('Name', 'Unknown'),
                             'roll_number': student_data.get('Institute Roll Number', ''),
                             'error': error_msg,
                             'validation_error': 'missing_batch',
-                            'required_batch': f"{batch_name} {discipline_obj.name} {batch_year}",
-                            'required_action': f'Create batch for {batch_name} {discipline_obj.name} Year-{batch_year} via Admin Batch Management first'
+                            'required_batch': f"{batch_name} ({discipline_name or discipline_obj.name}) {batch_year}",
+                            'required_action': error_msg
                         })
                         continue
 
@@ -1038,6 +1103,7 @@ def save_students_batch(request):
 
                     # Common kwargs shared by both PhD and UG/PG models
                     _common = dict(
+                        apaar_id=student_data.get('APAAR ID') or student_data.get('apaar_id') or student_data.get('apaarId') or None,
                         roll_number=student_data.get('Institute Roll Number') or student_data.get('rollNumber', ''),
                         name=student_data.get('Name') or student_data.get('name', ''),
                         institute_email=student_data.get('Institute Email ID') or student_data.get('instituteEmail', ''),
@@ -1394,6 +1460,7 @@ def add_single_student(request):
             name=student_data.get('name') or data.get('name', ''),
             hindi_name=data.get('hindi_name', '') or data.get('hindiName', ''),
             aadhar_number=(data.get('aadhar_number') or data.get('aadharNumber') or data.get('aadharNo') or ''),
+            apaar_id=(data.get('apaar_id') or data.get('apaarId') or data.get('APAAR ID') or ''),
             photo_blob=_photo_blob, photo_mime=_photo_mime,
             signature_blob=_sign_blob, signature_mime=_sign_mime,
             roll_number=student_data.get('roll_number') or data.get('rollNumber', '') or data.get('roll_number', ''),
@@ -3611,6 +3678,8 @@ def get_student(request, student_id):
             'allottedGender': student.allotted_gender,
             'aadhar_number': student.aadhar_number,
             'aadharNumber': student.aadhar_number,
+            'apaar_id': student.apaar_id,
+            'apaarId': student.apaar_id,
             'parent_email': getattr(student, 'parent_email', ''),
             'parentEmail': getattr(student, 'parent_email', ''),  # Camel case for frontend
             'alternateEmail': getattr(student, 'personal_email', ''),
@@ -3756,6 +3825,8 @@ def update_student(request, student_id):
             'income': 'income',
 
             'aadharNumber': 'aadhar_number',
+            'apaarId': 'apaar_id',
+            'apaar_id': 'apaar_id',
             'reportedStatus': 'reported_status',
             'programmeType': 'programme_type'
         }
@@ -3802,7 +3873,7 @@ def update_student(request, student_id):
                         pass
 
         direct_fields = [
-            'name', 'hindi_name', 'aadhar_number',
+            'name', 'hindi_name', 'aadhar_number', 'apaar_id',
             'gender', 'category', 'pwd', 'minority', 'address', 'state', 'branch', 'specialization',
             'personal_email', 'parent_email', 'country', 'nationality',
             'blood_group', 'blood_group_remarks', 'pwd_category', 'pwd_category_remarks',
@@ -4593,6 +4664,8 @@ def get_batch_students(request, batch_id):
                 'mother_mobile': getattr(student, 'mother_mobile', ''),
                 'aadhar_number': getattr(student, 'aadhar_number', ''),
                 'aadharNo': getattr(student, 'aadhar_number', ''),
+                'apaar_id': getattr(student, 'apaar_id', ''),
+                'apaarId': getattr(student, 'apaar_id', ''),
                 'hindi_name': getattr(student, 'hindi_name', ''),
                 'hindiName': getattr(student, 'hindi_name', ''),
                 'photo': _student_image_url(student, 'photo'),
