@@ -27,6 +27,7 @@ SUBMIT_URL = "/programme_curriculum/api/student/profile_completion/submit/"
 def _valid_payload(**overrides):
     payload = {
         "aadhar_number": "123456789012",
+        "apaar_id": "987654321098",
         "hindi_name": "छात्र",
         "photo": PNG_1x1,
         "signature": PNG_1x1,
@@ -108,6 +109,7 @@ class StudentProfileCompletionTests(TestCase):
         self.student.refresh_from_db()
         self.assertTrue(self.student.profile_completed)
         self.assertEqual(self.student.aadhar_number, "123456789012")
+        self.assertEqual(self.student.apaar_id, "987654321098")
         self.assertEqual(self.student.blood_group, "B+")
         self.assertTrue(self.student.photo_blob)
         self.assertEqual(self.student.photo_mime, "image/png")
@@ -126,6 +128,18 @@ class StudentProfileCompletionTests(TestCase):
         resp = self._submit(_valid_payload(aadhar_number="123"))
         self.assertEqual(resp.status_code, 400)
         self.assertIn("aadhar_number", resp.json()["errors"])
+
+    def test_apaar_id_is_required(self):
+        resp = self._submit(_valid_payload(apaar_id=""))
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("apaar_id", resp.json()["errors"])
+        self.student.refresh_from_db()
+        self.assertFalse(self.student.profile_completed)
+
+    def test_apaar_id_must_be_12_digits(self):
+        resp = self._submit(_valid_payload(apaar_id="12345"))
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("apaar_id", resp.json()["errors"])
 
     def test_at_least_one_parent_mobile(self):
         resp = self._submit(_valid_payload(father_mobile="", mother_mobile=""))

@@ -53,6 +53,7 @@ def _serialize(rec):
         or "",
         # Editable fields (prefilled from DB)
         "aadhar_number": rec.aadhar_number or "",
+        "apaar_id": rec.apaar_id or "",
         "hindi_name": rec.hindi_name or "",
         "photo": _student_image_url(rec, "photo"),
         "signature": _student_image_url(rec, "signature"),
@@ -108,6 +109,7 @@ def student_profile_completion_submit(request):
     errors = {}
     required = {
         "aadhar_number": "Aadhaar number",
+        "apaar_id": "APAAR ID",
         "hindi_name": "Name (Hindi)",
         "phone_number": "Mobile number",
         "blood_group": "Blood group",
@@ -125,6 +127,10 @@ def student_profile_completion_submit(request):
     aadhar = str(text("aadhar_number"))
     if aadhar and not re.fullmatch(r"\d{12}", aadhar):
         errors["aadhar_number"] = "Aadhaar number must be exactly 12 digits"
+
+    apaar = str(text("apaar_id"))
+    if apaar and not re.fullmatch(r"\d{12}", apaar):
+        errors["apaar_id"] = "APAAR ID must be exactly 12 digits"
 
     phone = str(text("phone_number"))
     father_mobile = str(text("father_mobile"))
@@ -157,6 +163,7 @@ def student_profile_completion_submit(request):
         )
 
     rec.aadhar_number = aadhar
+    rec.apaar_id = apaar
     rec.hindi_name = text("hindi_name")
     rec.phone_number = phone
     rec.blood_group = blood_group
