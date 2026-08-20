@@ -2896,7 +2896,14 @@ def _check_registration_window(description, action_label):
     try:
         event = Calendar.objects.get(description=description)
     except Calendar.DoesNotExist:
-        return JsonResponse({"error": f"{action_label} date is not yet decided"}, status=400)
+        # Name the event that is missing: the window is keyed by an exact
+        # calendar description, and "not yet decided" gave the office no way to
+        # tell a missing event from one entered under another name.
+        return JsonResponse({
+            "error": f"{action_label} date is not yet decided",
+            "detail": f"No academic calendar event named \"{description}\".",
+            "expected_event": description,
+        }, status=400)
     start, end = _calendar_window_bounds(event)
     now = datetime.datetime.now()
     if now < start:
@@ -2914,7 +2921,16 @@ def get_drop_registration_eligibility(current_date, user_sem, year = datetime.da
 def get_replace_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
     return _check_registration_window(f"Replace {user_sem} {year}", "Replace course")
 
-def get_pre_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
+def get_pre_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year,
+                                     student=None):
+    # Pre-registration is keyed by the semester being registered into, so a UG
+    # student in semester 1 needs "Pre Registration 2". The office opens that
+    # first cohort separately, so "Pre Registration 0" is accepted for them and
+    # takes precedence when it exists.
+    if student is not None and user_sem == 2 and _is_ug_student(student):
+        first_sem_event = f"Pre Registration 0 {year}"
+        if Calendar.objects.filter(description=first_sem_event).exists():
+            return _check_registration_window(first_sem_event, "Pre Registration")
     return _check_registration_window(f"Pre Registration {user_sem} {year}", "Pre Registration")
 
 def get_swayam_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
@@ -3029,7 +3045,8 @@ def get_preregistration_data(request):
             return JsonResponse({"message": "Already registered", "data": data, "backlog_data":backlog_data}, safe=False)
         else:
             # If not already registered, return slots without pre-set priorities.
-            eligibility_resp = get_pre_registration_eligibility(timezone.now().date(), next_sem_no)
+            eligibility_resp = get_pre_registration_eligibility(
+                timezone.now().date(), next_sem_no, student=student)
             if isinstance(eligibility_resp, JsonResponse):
                 return eligibility_resp
             prev_registrations = serializers.CourseRegistrationSerializer(course_registration.objects.filter(student_id=student), many=True).data
@@ -3092,7 +3109,8 @@ def submit_preregistration(request):
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
             return JsonResponse({"error": "Not Eligible for Pre Registration"}, status=400)
-        eligibility_resp = get_pre_registration_eligibility(timezone.now().date(), next_sem_no)
+        eligibility_resp = get_pre_registration_eligibility(
+            timezone.now().date(), next_sem_no, student=student)
         if isinstance(eligibility_resp, JsonResponse):
             return eligibility_resp
     except Student.DoesNotExist:
@@ -8786,6 +8804,13 @@ def _resolve_discipline_matched_entry(manager, student):
 
 def _catalog_entry_to_dict(entry):
     return {'id': entry.id, 'code': entry.code, 'name': entry.name, 'credit': entry.credit} if entry else None
+
+
+def _is_ug_student(student):
+    try:
+        return (student.batch_id.curriculum.programme.category or "").upper() == "UG"
+    except AttributeError:
+        return False
 
 
 def _student_programme_category(student):
