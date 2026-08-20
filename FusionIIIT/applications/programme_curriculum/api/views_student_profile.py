@@ -132,6 +132,15 @@ def student_profile_completion_submit(request):
     if apaar and not re.fullmatch(r"\d{12}", apaar):
         errors["apaar_id"] = "APAAR ID must be exactly 12 digits"
 
+    # The Hindi name has to be in Devanagari: the Latin spelling is already the
+    # name field, so a repeat of it here carries nothing.
+    hindi_name = text("hindi_name")
+    if hindi_name and not (
+        re.search(r"[\u0900-\u097F]", hindi_name)
+        and re.fullmatch(r"[\u0900-\u097F\u200c\u200d\s.'-]+", hindi_name)
+    ):
+        errors["hindi_name"] = "Name (Hindi) must be written in Devanagari, not English"
+
     phone = str(text("phone_number"))
     father_mobile = str(text("father_mobile"))
     mother_mobile = str(text("mother_mobile"))
@@ -164,7 +173,7 @@ def student_profile_completion_submit(request):
 
     rec.aadhar_number = aadhar
     rec.apaar_id = apaar
-    rec.hindi_name = text("hindi_name")
+    rec.hindi_name = hindi_name
     rec.phone_number = phone
     rec.blood_group = blood_group
     rec.blood_group_remarks = blood_remarks

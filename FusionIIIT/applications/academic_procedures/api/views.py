@@ -1169,12 +1169,12 @@ def verify_registration(request):
         batch = student.batch_id
         curr_id = batch.curriculum
         
-        if(student.curr_semester_no+1 >= 9):
-            # print('----------------------------------------------------------------' , student.curr_semester_no)
+        # Verify whichever semester the student actually registered for: a fresh
+        # intake registers into the semester it is already in, so assuming the
+        # next one would find nothing to verify and promote it a semester early.
+        sem_no = pre_registration_target_semester(student)
+        if sem_no >= 9:
             sem_no = 8
-        else:
-            # print('----------------------------------------------------------------' , student.curr_semester_no)
-            sem_no = student.curr_semester_no+1
         sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
         # print('----------------------------------------------------------------' , student.curr_semester_no)
         
@@ -1215,7 +1215,9 @@ def verify_registration(request):
             # course_registration.objects.bulk_create(ver_reg)
             academics_module_notif(request.user, student.id.user, 'registration_approved')
 
-            Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
+            # Only a registration for a later semester moves the student on.
+            if sem_no > student.curr_semester_no:
+                Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
             return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
          
     elif data.get('status_req') == "reject" :
@@ -2921,16 +2923,24 @@ def get_drop_registration_eligibility(current_date, user_sem, year = datetime.da
 def get_replace_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
     return _check_registration_window(f"Replace {user_sem} {year}", "Replace course")
 
-def get_pre_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year,
-                                     student=None):
-    # Pre-registration is keyed by the semester being registered into, so a UG
-    # student in semester 1 needs "Pre Registration 2". The office opens that
-    # first cohort separately, so "Pre Registration 0" is accepted for them and
-    # takes precedence when it exists.
-    if student is not None and user_sem == 2 and _is_ug_student(student):
-        first_sem_event = f"Pre Registration 0 {year}"
-        if Calendar.objects.filter(description=first_sem_event).exists():
-            return _check_registration_window(first_sem_event, "Pre Registration")
+def pre_registration_target_semester(student):
+    """The semester a student's pre-registration belongs to.
+
+    Continuing students choose courses for the semester after the one they are
+    in. A newly admitted batch has nothing registered in its first semester yet,
+    so it registers into that semester rather than skipping past it.
+    """
+    current = student.curr_semester_no or 0
+    if current <= 1 and not course_registration.objects.filter(
+            student_id=student, semester_id__semester_no=current).exists():
+        return current
+    return current + 1
+
+
+def get_pre_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
+    # Keyed by the semester being registered into, so a newly admitted batch --
+    # which registers into the semester it is already in -- opens on
+    # "Pre Registration 1", and every later cohort on its own target semester.
     return _check_registration_window(f"Pre Registration {user_sem} {year}", "Pre Registration")
 
 def get_swayam_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
@@ -2982,7 +2992,7 @@ def get_preregistration_data(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
-        next_sem_no = semester_no+1
+        next_sem_no = pre_registration_target_semester(student)
         try:
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
@@ -3045,8 +3055,7 @@ def get_preregistration_data(request):
             return JsonResponse({"message": "Already registered", "data": data, "backlog_data":backlog_data}, safe=False)
         else:
             # If not already registered, return slots without pre-set priorities.
-            eligibility_resp = get_pre_registration_eligibility(
-                timezone.now().date(), next_sem_no, student=student)
+            eligibility_resp = get_pre_registration_eligibility(timezone.now().date(), next_sem_no)
             if isinstance(eligibility_resp, JsonResponse):
                 return eligibility_resp
             prev_registrations = serializers.CourseRegistrationSerializer(course_registration.objects.filter(student_id=student), many=True).data
@@ -3103,14 +3112,12 @@ def submit_preregistration(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
-        # Here you may want to use next_sem_no = semester_no + 1 if that is the logic.
-        next_sem_no = semester_no+1
+        next_sem_no = pre_registration_target_semester(student)
         try:
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
             return JsonResponse({"error": "Not Eligible for Pre Registration"}, status=400)
-        eligibility_resp = get_pre_registration_eligibility(
-            timezone.now().date(), next_sem_no, student=student)
+        eligibility_resp = get_pre_registration_eligibility(timezone.now().date(), next_sem_no)
         if isinstance(eligibility_resp, JsonResponse):
             return eligibility_resp
     except Student.DoesNotExist:
@@ -8804,13 +8811,6 @@ def _resolve_discipline_matched_entry(manager, student):
 
 def _catalog_entry_to_dict(entry):
     return {'id': entry.id, 'code': entry.code, 'name': entry.name, 'credit': entry.credit} if entry else None
-
-
-def _is_ug_student(student):
-    try:
-        return (student.batch_id.curriculum.programme.category or "").upper() == "UG"
-    except AttributeError:
-        return False
 
 
 def _student_programme_category(student):
