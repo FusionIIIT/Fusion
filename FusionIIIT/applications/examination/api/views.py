@@ -1983,7 +1983,10 @@ class UploadGradesProfAPI(APIView):
             # A no-section (elective) offering owns all registrants; named-section
             # offerings scope the roster to the bound offering, falling back to the
             # student's home section only for pre-sectioning rows (UG only).
-            if (programme_type or "").strip().upper() == "UG" and None not in my_sections:
+            # A course with no offering at all -- a project course nobody is
+            # assigned to -- has an empty set here, which passes the "no None"
+            # test and would then match nothing, hiding every registrant.
+            if (programme_type or "").strip().upper() == "UG" and my_sections and None not in my_sections:
                 regs = regs.filter(
                     Q(course_instructor_id__in=my_offering_ids)
                     | (Q(course_instructor__isnull=True) & Q(student_id__section__in=my_sections))
