@@ -141,6 +141,24 @@ class StudentProfileCompletionTests(TestCase):
         self.assertEqual(resp.status_code, 400)
         self.assertIn("apaar_id", resp.json()["errors"])
 
+    def test_hindi_name_must_be_devanagari(self):
+        resp = self._submit(_valid_payload(hindi_name="Chhatra Kumar"))
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("hindi_name", resp.json()["errors"])
+        self.student.refresh_from_db()
+        self.assertFalse(self.student.profile_completed)
+
+    def test_hindi_name_rejects_a_mixed_spelling(self):
+        resp = self._submit(_valid_payload(hindi_name="छात्र Kumar"))
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("hindi_name", resp.json()["errors"])
+
+    def test_hindi_name_accepts_devanagari_with_spaces(self):
+        resp = self._submit(_valid_payload(hindi_name="छात्र कुमार"))
+        self.assertEqual(resp.status_code, 200, resp.content)
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.hindi_name, "छात्र कुमार")
+
     def test_at_least_one_parent_mobile(self):
         resp = self._submit(_valid_payload(father_mobile="", mother_mobile=""))
         self.assertEqual(resp.status_code, 400)
