@@ -3107,6 +3107,15 @@ def submit_preregistration(request):
 
     registrations = data.get("registrations", [])
     backlog_registrations = data.get("backlog_registrations", [])
+
+    # Marking pre-registration complete for an empty submission saved nothing and
+    # then locked the student out, since the page returns an existing
+    # registration before it offers the form again.
+    if not registrations and not backlog_registrations:
+        return JsonResponse(
+            {"error": "Select at least one course before submitting your pre-registration."},
+            status=400)
+
     try:
         current_user = request.user
         user_details = current_user.extrainfo
