@@ -72,17 +72,6 @@ class Constants:
         ('Management Science', 'Management Science'),
     )
 
-    # B.Tech section labels. CSE is split into A/B by roll-number parity; every
-    # other discipline maps to a single section. See compute_section() below.
-    SECTION_CHOICES = (
-        ('A', 'A'),
-        ('B', 'B'),
-        ('C', 'C'),
-        ('D', 'D'),
-        ('E', 'E'),
-        ('F', 'F'),
-    )
-
 
 def compute_section(discipline_name, roll_no, programme=None):
     """Return the section (A-F) for an undergraduate student, else None.

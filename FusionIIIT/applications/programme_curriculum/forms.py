@@ -417,18 +417,21 @@ class CourseInstructorForm(forms.ModelForm):
         label="Select Semester Type",
         widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
     )
-    section_label = forms.ChoiceField(
-        choices=[('', 'No section (single-offering / elective)')] + [(s, s) for s in ['A', 'B', 'C', 'D', 'E', 'F']],
+    section_label = forms.CharField(
         required=False,
+        max_length=8,
         label="Section",
-        widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
+        widget=forms.TextInput(attrs={'class': 'ui fluid input',
+                                      'placeholder': 'No section (single-offering / elective)'})
     )
 
     def clean_section_label(self):
         # Normalise blank -> None so a single-offering elective stays NULL
-        # (one elective offering per course/term is enforced in the view); a
-        # letter A-F identifies a core section owned by exactly one faculty.
+        # (one elective offering per course/term is enforced in the view). The
+        # office invents its own labels, so any short alphanumeric one is taken.
         value = (self.cleaned_data.get('section_label') or '').strip().upper()
+        if value and not value.isalnum():
+            raise forms.ValidationError('Section can be up to 8 letters or digits.')
         return value or None
 
     class Meta:
