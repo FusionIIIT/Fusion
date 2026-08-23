@@ -11,7 +11,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 import xlsxwriter
 from applications.academic_procedures.models import course_registration
-from applications.academic_information.utils import allocate, check_for_registration_complete
+from applications.academic_information.utils import (
+    allocate, check_for_registration_complete, publish_allocations,
+)
 from applications.globals.models import (HoldsDesignation,Designation)
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
@@ -281,6 +283,15 @@ def check_allocation_api(request):
             )
 
         result = check_for_registration_complete(batch, sem, year, programme_type)
+
+        # Older allocations stopped at FinalRegistration.  Checking one now
+        # also publishes any missing course_registration rows, so all academic
+        # consumers immediately see the same allocation without a separate
+        # Verify Registration step.
+        if result.get("status") == 2:
+            result["publication"] = publish_allocations(
+                batch, sem, year, programme_type)
+            result["message"] = "Courses already allocated and published"
 
         # Map status values to appropriate HTTP codes
         status_code_map = {
