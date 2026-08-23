@@ -40,6 +40,7 @@ urlpatterns = [
     url(r'^section/batches/$',  views.section_batches,  name='section_batches'),
     url(r'^section/students/$', views.section_students, name='section_students'),
     url(r'^section/assign/$',   views.assign_section,   name='assign_section'),
+    url(r'^section/in-use/$',   views.sections_in_use,  name='sections_in_use'),
 
 
     # url(r'^holiday',views.holiday_api,name='holiday-get-api'),
