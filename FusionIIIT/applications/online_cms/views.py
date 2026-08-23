@@ -5,7 +5,6 @@ import collections
 import json
 import os
 import random
-import subprocess
 import datetime
 import requests
 from django.conf import settings
@@ -487,8 +486,7 @@ def upload_assignment(request, course_code, version):
         full_path = full_path + assign.assignment_name + "/" + student.id.id + "/"
         url = settings.MEDIA_URL + filename
         if not os.path.isdir(full_path):
-            cmd = "mkdir " + full_path
-            subprocess.call(cmd, shell=True)
+            os.makedirs(full_path, exist_ok=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(name + file_extenstion, doc)  #saving the media files
         # uploaded_file_url = full_path+ "/" + name + file_extenstion
@@ -553,8 +551,7 @@ def add_document(request, course_code, version):
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/" + version + "/doc/"
         url = settings.MEDIA_URL + filename + file_extenstion
         if not os.path.isdir(full_path):
-            cmd = "mkdir " + full_path
-            subprocess.call(cmd, shell=True)
+            os.makedirs(full_path, exist_ok=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(filename + file_extenstion, doc)
         # uploaded_file_url = full_path + filename + file_extenstion
@@ -594,8 +591,7 @@ def add_attendance(request, course_code, version):
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/" + version + "/attendance/"
         url = settings.MEDIA_URL + filename + file_extenstion
         if not os.path.isdir(full_path):
-            cmd = "mkdir " + full_path
-            subprocess.call(cmd, shell=True)
+            os.makedirs(full_path, exist_ok=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(filename + file_extenstion, doc)
         # uploaded_file_url = full_path + filename + file_extenstion
@@ -656,8 +652,8 @@ def delete(request, course_code, version):
         path = lec_assi.assignment_url
         lec_assi.delete()
     if path:    
-        cmd = "rm "+path
-        subprocess.call(cmd, shell=True)
+        if os.path.isfile(path):
+            os.remove(path)
     
     data = { 'msg': 'Data Deleted successfully'}
     return HttpResponse(json.dumps(data), content_type='application/json')
@@ -685,8 +681,7 @@ def add_videos(request, course_code):
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/vid/"
         url = settings.MEDIA_URL+filename + file_extenstion
         if not os.path.isdir(full_path):
-            cmd = "mkdir "+full_path
-            subprocess.call(cmd, shell=True)
+            os.makedirs(full_path, exist_ok=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(filename+file_extenstion, vid)
         uploaded_file_url = full_path + filename + file_extenstion
@@ -874,8 +869,7 @@ def add_assignment(request, course_code, version):                 #from faculty
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/" + version  + "/assi/" + name + "/"
         url = settings.MEDIA_URL + filename
         if not os.path.isdir(full_path):
-            cmd = "mkdir " + full_path
-            subprocess.call(cmd, shell=True)
+            os.makedirs(full_path, exist_ok=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(filename+file_extenstion, assi)
         uploaded_file_url = "/media/online_cms/"+ course_code + "/" + version + "/assi/" + name + "/" + filename + file_extenstion
@@ -1005,8 +999,7 @@ def add_question(request, course_id, qb_code, topic_id):
             full_path = full_path + "/qb/" + qb_code + "/" + topic_name + "/"
             url = settings.MEDIA_URL + filename
             if not os.path.isdir(full_path):
-                cmd = "mkdir " + full_path
-                subprocess.call(cmd, shell=True)
+                os.makedirs(full_path, exist_ok=True)
             fs = FileSystemStorage(full_path, url)
             fs.save(image.name, image)
             uploaded_file_url = "/media/online_cms/" + course_code
@@ -1540,8 +1533,7 @@ def add_practice_question(request, course_code, practice_contest_code):
             full_path = full_path + "/pq/" +practice_contest_code+ "/" + topic_name + "/"
             url = settings.MEDIA_URL + filename
             if not os.path.isdir(full_path):
-                cmd = "mkdir " + full_path
-                subprocess.call(cmd, shell=True)
+                os.makedirs(full_path, exist_ok=True)
             fs = FileSystemStorage(full_path, url)
             fs.save(image.name, image)
             uploaded_file_url = "/media/online_cms/" + course_code
@@ -1901,8 +1893,7 @@ def add_timetable(request):
             full_path = settings.MEDIA_ROOT + "/Administrator/academic_information/"
             url = settings.MEDIA_URL + filename
             if not os.path.isdir(full_path):
-                cmd = "mkdir " + full_path
-                subprocess.call(cmd, shell=True)
+                os.makedirs(full_path, exist_ok=True)
             fs = FileSystemStorage(full_path, url)
             fs.save(filename+file_extenstion, timetable)
             uploaded_file_url = "Administrator/academic_information/" + filename + file_extenstion

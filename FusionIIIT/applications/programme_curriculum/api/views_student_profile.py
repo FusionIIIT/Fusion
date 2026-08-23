@@ -19,6 +19,7 @@ from applications.programme_curriculum.models_student_management import (
 from .views_student_management import (
     _decode_base64_blob, _student_image_url, _safe_decimal_conversion,
 )
+from .account_sync import sync_account_from_admission
 
 
 def _get_student_record(user):
@@ -52,6 +53,7 @@ def _serialize(rec):
         or "",
         # Editable fields (prefilled from DB)
         "aadhar_number": rec.aadhar_number or "",
+        "apaar_id": rec.apaar_id or "",
         "hindi_name": rec.hindi_name or "",
         "photo": _student_image_url(rec, "photo"),
         "signature": _student_image_url(rec, "signature"),
@@ -107,6 +109,7 @@ def student_profile_completion_submit(request):
     errors = {}
     required = {
         "aadhar_number": "Aadhaar number",
+        "apaar_id": "APAAR ID",
         "hindi_name": "Name (Hindi)",
         "phone_number": "Mobile number",
         "blood_group": "Blood group",
@@ -124,6 +127,19 @@ def student_profile_completion_submit(request):
     aadhar = str(text("aadhar_number"))
     if aadhar and not re.fullmatch(r"\d{12}", aadhar):
         errors["aadhar_number"] = "Aadhaar number must be exactly 12 digits"
+
+    apaar = str(text("apaar_id"))
+    if apaar and not re.fullmatch(r"\d{12}", apaar):
+        errors["apaar_id"] = "APAAR ID must be exactly 12 digits"
+
+    # The Hindi name has to be in Devanagari: the Latin spelling is already the
+    # name field, so a repeat of it here carries nothing.
+    hindi_name = text("hindi_name")
+    if hindi_name and not (
+        re.search(r"[\u0900-\u097F]", hindi_name)
+        and re.fullmatch(r"[\u0900-\u097F\u200c\u200d\s.'-]+", hindi_name)
+    ):
+        errors["hindi_name"] = "Name (Hindi) must be written in Devanagari, not English"
 
     phone = str(text("phone_number"))
     father_mobile = str(text("father_mobile"))
@@ -156,7 +172,8 @@ def student_profile_completion_submit(request):
         )
 
     rec.aadhar_number = aadhar
-    rec.hindi_name = text("hindi_name")
+    rec.apaar_id = apaar
+    rec.hindi_name = hindi_name
     rec.phone_number = phone
     rec.blood_group = blood_group
     rec.blood_group_remarks = blood_remarks
@@ -184,4 +201,5 @@ def student_profile_completion_submit(request):
 
     rec.profile_completed = True
     rec.save()
+    sync_account_from_admission(rec)
     return JsonResponse({"success": True, "message": "Profile completed successfully"})

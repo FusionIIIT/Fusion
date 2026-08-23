@@ -876,12 +876,12 @@ def generate_xlsheet_api(request):
         )
         
         # Add title rows efficiently
-        ws.merge_cells('A1:G1')
+        ws.merge_cells('A1:H1')
         ws['A1'] = "PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR"
         ws['A1'].font = Font(bold=True, size=9)
         ws['A1'].alignment = Alignment(horizontal="center")
         
-        ws.merge_cells('A2:G2')
+        ws.merge_cells('A2:H2')
         ws['A2'] = f"{semester_type.upper()}, {academic_year}"
         ws['A2'].font = Font(bold=True, size=12)
         ws['A2'].alignment = Alignment(horizontal="center")
@@ -901,13 +901,13 @@ def generate_xlsheet_api(request):
             instructor_name = f"{course_instructor.instructor_id.id.user.first_name} {course_instructor.instructor_id.id.user.last_name}".strip()
         
         # Course details merged into single full-width cells (no borders on metadata rows).
-        ws.merge_cells('A3:G3')
+        ws.merge_cells('A3:H3')
         ws['A3'] = f"Course No: {course_info['code']}"
-        ws.merge_cells('A4:G4')
+        ws.merge_cells('A4:H4')
         ws['A4'] = f"Course Title: {course_info['name']}"
-        ws.merge_cells('A5:G5')
+        ws.merge_cells('A5:H5')
         ws['A5'] = f"Instructor: {instructor_name}"
-        ws.merge_cells('A6:G6')
+        ws.merge_cells('A6:H6')
         ws['A6'] = f"List Type: {list_type_display}"
 
         for row in range(3, 7):
@@ -1475,7 +1475,7 @@ def export_all_courses_zip(request):
     thin = Side(style='thin')
     thin_border  = Border(left=thin, right=thin, top=thin, bottom=thin)
 
-    col_widths = [8, 15, 30, 15, 35, 18, 15]
+    col_widths = [8, 15, 30, 15, 10, 35, 18, 15]
 
     # List-type display label
     if not list_type:
@@ -1495,6 +1495,7 @@ def export_all_courses_zip(request):
                     u.username as roll_no,
                     CONCAT(u.first_name, ' ', u.last_name) as full_name,
                     COALESCE(d.acronym, 'General') as discipline,
+                    COALESCE(ci.section_label, s.section) as section,
                     u.email,
                     cr.registration_type
                 FROM course_registration cr
@@ -1503,6 +1504,7 @@ def export_all_courses_zip(request):
                 LEFT JOIN academic_information_student s ON ei.id = s.id_id
                 LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
                 LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
+                LEFT JOIN programme_curriculum_courseinstructor ci ON cr.course_instructor_id = ci.id
                 WHERE cr.session = %s AND cr.semester_type = %s AND cr.course_id_id = %s
             """
             params = [academic_year, semester_type, course_obj.id]
@@ -1542,29 +1544,29 @@ def export_all_courses_zip(request):
             for i, w in enumerate(col_widths, 1):
                 ws.column_dimensions[chr(64 + i)].width = w
 
-            ws.merge_cells('A1:G1')
+            ws.merge_cells('A1:H1')
             ws['A1'] = 'PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR'
             ws['A1'].font = Font(bold=True, size=9)
             ws['A1'].alignment = center_align
 
-            ws.merge_cells('A2:G2')
+            ws.merge_cells('A2:H2')
             ws['A2'] = f'{semester_type.upper()}, {academic_year}'
             ws['A2'].font = Font(bold=True, size=12)
             ws['A2'].alignment = center_align
 
-            ws.merge_cells('A3:G3')
+            ws.merge_cells('A3:H3')
             ws['A3'] = f'Course No: {course_obj.code}'
-            ws.merge_cells('A4:G4')
+            ws.merge_cells('A4:H4')
             ws['A4'] = f'Course Title: {course_obj.name}'
-            ws.merge_cells('A5:G5')
+            ws.merge_cells('A5:H5')
             ws['A5'] = f'Instructor: {instructor_name}'
-            ws.merge_cells('A6:G6')
+            ws.merge_cells('A6:H6')
             ws['A6'] = f'List Type: {list_type_display}'
 
             for row in range(3, 7):
                 ws[f'A{row}'].alignment = left_align
 
-            headers = ['Sl. No', 'Roll No', 'Name', 'Discipline', 'Email', 'Reg. Type', 'Signature']
+            headers = ['Sl. No', 'Roll No', 'Name', 'Discipline', 'Section', 'Email', 'Reg. Type', 'Signature']
             for col, hdr in enumerate(headers, 1):
                 cell = ws.cell(row=8, column=col, value=hdr)
                 cell.font = header_font
@@ -1572,11 +1574,12 @@ def export_all_courses_zip(request):
                 cell.alignment = center_align
 
             for idx, stu in enumerate(students, 1):
-                ws.append([idx, stu['roll_no'], stu['full_name'], stu['discipline'], stu['email'], stu['registration_type'], ''])
+                ws.append([idx, stu['roll_no'], stu['full_name'], stu['discipline'],
+                           stu.get('section') or '—', stu['email'], stu['registration_type'], ''])
 
             last_row = ws.max_row
             for r in range(8, last_row + 1):
-                for c in range(1, 8):
+                for c in range(1, 9):
                     ws.cell(row=r, column=c).border = thin_border
 
             # Save workbook into ZIP

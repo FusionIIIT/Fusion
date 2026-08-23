@@ -13,6 +13,18 @@ from applications.academic_procedures.models import(
 from applications.programme_curriculum.models import Course as Courses ,  Batch, CourseInstructor, Semester
 from applications.examination.models import(hidden_grades , ResultAnnouncement, authentication, PublishedResultStudent)
 from applications.globals.access import user_holds_role, user_holds_any_role
+from applications.globals.programme_scope import (
+    ALL_ACAD_ROLES,
+    PROGRAMME_NAMES_BY_SCOPE,
+    batch_in_scope,
+    roll_scope_sql,
+    scope_allows,
+    scope_grade_rows,
+    scope_batches,
+    scope_via_student,
+    scopes_for,
+    student_in_scope,
+)
 from applications.academic_information.models import(Student)
 from applications.online_cms.models import(Student_grades)
 from rest_framework import status
@@ -74,12 +86,7 @@ PBI_AND_BTP_ALLOWED_GRADES = {
 }
 
 PROGRAMME_TYPE_BUCKETS = {
-    'UG': ['B.Tech', 'B.Des'],
-    'PG': ['M.Tech', 'M.Des'],
-    # Student.programme is declared as 'PhD' in academic_information.Constants.PROGRAMME,
-    # but the PhD student-promotion flow (programme_curriculum) actually writes 'Ph.D' —
-    # accept both so this doesn't silently return zero PhD students.
-    'PHD': ['PhD', 'Ph.D'],
+    scope: list(names) for scope, names in PROGRAMME_NAMES_BY_SCOPE.items()
 }
 
 
@@ -264,14 +271,24 @@ def _phd_extra_grade_items(student, semester_no, require_announced=False):
     return items
 
 
-def _apply_grade_factor(grade, credit, totals):
+# An F carries its 0.2 factor and its credit into SPI/CPI either way. Whether its
+# credit is also banked depends on the caller: SU is a semester-wise attempted
+# figure and has counted an F since the feature was written, while TU is the degree
+# figure and counts a course only once it is cleared. X/I/AU/CD are absent from
+# grade_conversion, so they reach neither. S is the reverse: credit, no CPI weight.
+NON_EARNING_GRADES = {"F"}
+
+
+def _apply_grade_factor(grade, credit, totals, include_failed=False):
     """totals: {'points': Decimal, 'credits': Decimal, 'earned': Decimal}, mutated in place."""
-    factor = grade_conversion.get((grade or "").strip(), -1)
+    grade = (grade or "").strip()
+    factor = grade_conversion.get(grade, -1)
     if factor >= 0:
         if factor != 0:
             totals['points'] += Decimal(str(factor)) * credit
             totals['credits'] += credit
-        totals['earned'] += credit
+        if include_failed or grade not in NON_EARNING_GRADES:
+            totals['earned'] += credit
 
 
 def calculate_spi_for_student(student, selected_semester, semester_type, require_announced=False):
@@ -296,11 +313,12 @@ def calculate_spi_for_student(student, selected_semester, semester_type, require
             .order_by('semester', 'semester_type_order')
     )
     totals = {'points': Decimal('0'), 'credits': Decimal('0'), 'earned': Decimal('0')}
+    # SU counts what was taken that semester, an uncleared F included.
     for g in grades:
         credit = Decimal(str(g.course_id.credit))
-        _apply_grade_factor(g.grade, credit, totals)
+        _apply_grade_factor(g.grade, credit, totals, include_failed=True)
     for credit, grade in _phd_extra_grade_items(student, selected_semester, require_announced):
-        _apply_grade_factor(grade, credit, totals)
+        _apply_grade_factor(grade, credit, totals, include_failed=True)
     total_points, total_credits, semester_unit = totals['points'], totals['credits'], totals['earned']
     return round_from_last_decimal(Decimal('10') * (total_points / total_credits)) if total_credits else 0, semester_unit, (total_points*10)
 
@@ -310,6 +328,34 @@ def trace_registration(reg_id, mapping):
         seen.add(reg_id)
         reg_id = mapping[reg_id]
     return reg_id
+
+def superseded_course_codes(student, graded_codes):
+    """Elective codes a graded replacement/swayam course has superseded.
+
+    A replaced elective stops counting once its replacement is graded; each
+    distinct replacement counts on its own. Shared by the CPI helper and the
+    semester-history builder so both apply one rule.
+    """
+    replacements = course_replacement.objects.filter(
+        Q(old_course_registration__student_id=student) |
+        Q(new_course_registration__student_id=student)
+    ).select_related('old_course_registration__course_id',
+                     'new_course_registration__course_id')
+    code_replacement_map = {}   # replacement/swayam course code -> replaced elective code
+    for rep in replacements:
+        old_code = (rep.old_course_registration.course_id.code or '').strip()
+        new_code = (rep.new_course_registration.course_id.code or '').strip()
+        if new_code and old_code and new_code != old_code:
+            code_replacement_map[new_code] = old_code
+
+    superseded = set()
+    for graded_code in graded_codes:
+        old = code_replacement_map.get(graded_code)
+        while old and old not in superseded:
+            superseded.add(old)
+            old = code_replacement_map.get(old)
+    return superseded
+
 
 def calculate_cpi_for_student(student, selected_semester, semester_type, require_announced=False):
     total_unit = Decimal('0')
@@ -333,18 +379,6 @@ def calculate_cpi_for_student(student, selected_semester, semester_type, require
         grades = Student_grades.objects.filter(
             roll_no=student.id_id, semester__lte=selected_semester,
         ).exclude(semester_type='Summer Semester', semester=selected_semester).select_related('course_id')
-    replacements = course_replacement.objects.filter(
-        Q(old_course_registration__student_id=student) |
-        Q(new_course_registration__student_id=student)
-    ).select_related('old_course_registration__course_id',
-                     'new_course_registration__course_id')
-    code_replacement_map = {}   # replacement/swayam course code -> replaced elective code
-    for rep in replacements:
-        old_code = (rep.old_course_registration.course_id.code or '').strip()
-        new_code = (rep.new_course_registration.course_id.code or '').strip()
-        if new_code and old_code and new_code != old_code:
-            code_replacement_map[new_code] = old_code
-
     # Best-graded attempt per distinct course code (dedups backlog/improvement retakes; keeps distinct courses separate).
     best_by_code = {}
     for g in grades:
@@ -356,13 +390,7 @@ def calculate_cpi_for_student(student, selected_semester, semester_type, require
                             > grade_conversion.get((prev.grade or '').strip(), -1)):
             best_by_code[code] = g
 
-    # A replaced elective is superseded once a replacement is graded; each distinct replacement counts on its own.
-    superseded_codes = set()
-    for graded_code in best_by_code:
-        old = code_replacement_map.get(graded_code)
-        while old and old not in superseded_codes:
-            superseded_codes.add(old)
-            old = code_replacement_map.get(old)
+    superseded_codes = superseded_course_codes(student, best_by_code.keys())
 
     totals = {'points': Decimal('0'), 'credits': Decimal('0'), 'earned': Decimal('0')}
     for code, best_record in best_by_code.items():
@@ -433,6 +461,13 @@ def is_valid_grade(grade: str, course_code: str) -> bool:
     if code in {"PR4001","PR4002", "BTP4001"}:
         return grade in PBI_AND_BTP_ALLOWED_GRADES
     return grade in ALLOWED_GRADES
+
+
+# Remark shown next to a grade once a course has more than one linked attempt:
+# R = repeat of the same course, qualified by why -- BL after a fail, CD when the
+# earlier attempt was dropped, IM on an already-cleared course; S = substitute,
+# where a different course cleared the original.
+REMARK_KIND_BY_GRADE = {'F': 'BL', 'X': 'BL', 'CD': 'CD'}
 
 
 def gather_related_registrations(initial_reg, max_semester):
@@ -764,7 +799,7 @@ class UpdateGradesAPI(APIView):
         academic_year = request.data.get("academic_year")
         semester_type = request.data.get("semester_type")
 
-        if not user_holds_role(request.user, "acadadmin"):
+        if not user_holds_any_role(request.user, ALL_ACAD_ROLES):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=403,
@@ -778,10 +813,13 @@ class UpdateGradesAPI(APIView):
 
         # Filter unverified grades based on academic_year and semester_type, then get unique course IDs.
         unique_course_ids = (
-            Student_grades.objects.filter(
-                verified=False,
-                academic_year=academic_year,
-                semester_type=semester_type,
+            scope_grade_rows(
+                Student_grades.objects.filter(
+                    verified=False,
+                    academic_year=academic_year,
+                    semester_type=semester_type,
+                ),
+                scopes_for(request.user),
             )
             .values("course_id")
             .distinct()
@@ -934,7 +972,7 @@ class ModerateStudentGradesAPI(APIView):
     def post(self, request):
         
         des = request.data.get("Role")
-        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
+        if not user_holds_any_role(request.user, ["Dean Academic", *ALL_ACAD_ROLES]):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -968,6 +1006,10 @@ class ModerateStudentGradesAPI(APIView):
             )
 
         for student_id, course_id, grade in zip(student_ids, course_ids, grades):
+            if not student_in_scope(
+                    Student.objects.filter(id_id=student_id).first(),
+                    scopes_for(request.user)):
+                continue
             try:
                 course_obj = Courses.objects.get(id=course_id)
             except Courses.DoesNotExist:
@@ -1181,14 +1223,15 @@ class GenerateTranscriptForm(APIView):
 
     def get(self, request):
         role = request.GET.get("role")
-        if not user_holds_role(request.user, "acadadmin"):
+        if not user_holds_any_role(request.user, ALL_ACAD_ROLES):
             return Response(
                 {"error": "Access denied. Invalid or missing role."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
         # Query only running batches from the Batch table.
-        batches_queryset = Batch.objects.filter(running_batch=True)
+        batches_queryset = scope_batches(
+            Batch.objects.filter(running_batch=True), scopes_for(request.user))
         # Create a display label that combines batch name, discipline, and year.
         batch_list = [
             {
@@ -1220,7 +1263,7 @@ class GenerateTranscriptForm(APIView):
 
     def post(self, request):
         role = request.data.get("Role")
-        if not user_holds_role(request.user, "acadadmin"):
+        if not user_holds_any_role(request.user, ALL_ACAD_ROLES):
             return Response(
                 {"error": "Access denied. Invalid or missing role."},
                 status=status.HTTP_403_FORBIDDEN
@@ -1270,12 +1313,17 @@ class GenerateResultAPI(APIView):
     def post(self, request):
         try:
             role = request.data.get("Role")
-            if not user_holds_role(request.user, "acadadmin"):
+            if not user_holds_any_role(request.user, ALL_ACAD_ROLES):
                 return Response({"error": "Access denied."}, status=403)
 
             semester = request.data.get("semester")
             branch = request.data.get("specialization")  # optional now
             batch_id = request.data.get("batch")
+            if batch_id and not batch_in_scope(
+                    Batch.objects.filter(id=batch_id).first(),
+                    scopes_for(request.user)):
+                return Response({"error": "Batch not found."},
+                                status=status.HTTP_404_NOT_FOUND)
             semester_type = request.data.get("semester_type")
 
             if not semester or not batch_id:
@@ -1511,10 +1559,12 @@ class GenerateResultAPI(APIView):
                                     reverse=True
                                 )
                                 first_code, first_grade = scored[0]
-                                if first_grade == 'F' or first_grade == 'X':
-                                    remark = 'R(BL)' if first_code == course.code else 'S(BL)'
+                                # R is a repeat of the same course, so it carries why
+                                # it was repeated; S is a substitute, which stands alone.
+                                if first_code == course.code:
+                                    remark = f'R({REMARK_KIND_BY_GRADE.get(first_grade, "IM")})'
                                 else:
-                                    remark = 'R(IM)' if first_code == course.code else 'S(IM)'
+                                    remark = 'S'
                     ws.cell(row=row_idx, column=col_ptr).value = grade_val
                     ws.cell(row=row_idx, column=col_ptr+1).value = remark
                     for c in [col_ptr, col_ptr+1]:
@@ -1699,10 +1749,20 @@ class SubmitGradesProfAPI(APIView):
         academic_year = request.data.get("academic_year")
         semester_type = request.data.get("semester_type")
         programme_type = request.data.get("programme_type")
-        is_acadadmin = role == "acadadmin" and user_holds_role(request.user, "acadadmin")
-        if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor", "acadadmin"]):
+        scopes = scopes_for(request.user)
+        is_acadadmin = user_holds_any_role(request.user, ALL_ACAD_ROLES)
+        if not user_holds_any_role(request.user, [
+            "Associate Professor", "Professor", "Assistant Professor", *ALL_ACAD_ROLES,
+        ]):
             return Response(
                 {"success": False, "error": "Access denied."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if not scope_allows(scopes, programme_type):
+            return Response(
+                {"success": False,
+                 "error": "You may only submit grades for %s." % ", ".join(sorted(scopes))},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -1720,8 +1780,10 @@ class SubmitGradesProfAPI(APIView):
         section_map = defaultdict(set)
         if is_acadadmin:
             course_ids = (
-                course_registration.objects
-                .filter(session=academic_year, semester_type=semester_type)
+                scope_via_student(
+                    course_registration.objects
+                    .filter(session=academic_year, semester_type=semester_type),
+                    scopes, 'student_id')
                 .values_list("course_id", flat=True)
                 .distinct()
             )
@@ -1817,10 +1879,19 @@ class UploadGradesProfAPI(APIView):
         try:
             # 1) ROLE CHECK
             role = request.data.get("Role")
-            is_acadadmin = role == "acadadmin" and user_holds_role(request.user, "acadadmin")
-            if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor", "acadadmin"]):
+            scopes = scopes_for(request.user)
+            is_acadadmin = user_holds_any_role(request.user, ALL_ACAD_ROLES)
+            if not user_holds_any_role(request.user, [
+                "Associate Professor", "Professor", "Assistant Professor", *ALL_ACAD_ROLES,
+            ]):
                 return Response({"error": "Access denied."},
                                 status=status.HTTP_403_FORBIDDEN)
+
+            if not scope_allows(scopes, request.data.get("programme_type")):
+                return Response(
+                    {"error": "You may only submit grades for %s."
+                              % ", ".join(sorted(scopes))},
+                    status=status.HTTP_403_FORBIDDEN)
 
             # 2) FILE CHECK
             csv_file = request.FILES.get("csv_file")
@@ -1912,7 +1983,10 @@ class UploadGradesProfAPI(APIView):
             # A no-section (elective) offering owns all registrants; named-section
             # offerings scope the roster to the bound offering, falling back to the
             # student's home section only for pre-sectioning rows (UG only).
-            if (programme_type or "").strip().upper() == "UG" and None not in my_sections:
+            # A course with no offering at all -- a project course nobody is
+            # assigned to -- has an empty set here, which passes the "no None"
+            # test and would then match nothing, hiding every registrant.
+            if (programme_type or "").strip().upper() == "UG" and my_sections and None not in my_sections:
                 regs = regs.filter(
                     Q(course_instructor_id__in=my_offering_ids)
                     | (Q(course_instructor__isnull=True) & Q(student_id__section__in=my_sections))
@@ -1974,6 +2048,8 @@ class UploadGradesProfAPI(APIView):
                 elif course_has_pg and not course_has_ug:
                     programme_type = 'PG'
                     regs = regs.filter(student_id__in=pg_student_ids)
+
+            regs = scope_via_student(regs, scopes, 'student_id')
 
             existing_query = Student_grades.objects.filter(
                 course_id=course_id,
@@ -3239,7 +3315,7 @@ class ResultAnnouncementListAPI(APIView):
 
     def get(self, request):
         role = request.query_params.get("role")
-        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
+        if not user_holds_any_role(request.user, ["Dean Academic", *ALL_ACAD_ROLES]):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
         
         # Get announcements sorted by creation date (most recent first).
@@ -3249,6 +3325,11 @@ class ResultAnnouncementListAPI(APIView):
             .select_related("batch__discipline")
             .order_by("-created_at")
         )
+        scopes = scopes_for(request.user)
+        if scopes is not None:
+            announcements = [
+                a for a in announcements if batch_in_scope(a.batch, scopes)
+            ]
         ann_data = []
         for ann in announcements:
             # Compute the batch label.
@@ -3277,7 +3358,9 @@ class ResultAnnouncementListAPI(APIView):
             })
         
         batch_objs = sorted(
-            Batch.objects.filter(running_batch=True).select_related("discipline"),
+            scope_batches(
+                Batch.objects.filter(running_batch=True), scopes
+            ).select_related("discipline"),
             key=lambda b: (b.name, -b.year, b.discipline.acronym),
         )
         batch_options = [
@@ -3300,7 +3383,7 @@ class UpdateAnnouncementAPI(APIView):
 
     def post(self, request):
         role = request.data.get("Role")
-        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
+        if not user_holds_any_role(request.user, ["Dean Academic", *ALL_ACAD_ROLES]):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
         announcement_id = request.data.get("id")
         announced = request.data.get("announced")
@@ -3329,7 +3412,7 @@ class CreateAnnouncementAPI(APIView):
     def post(self, request):
         try:
             role = request.data.get("Role")
-            if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
+            if not user_holds_any_role(request.user, ["Dean Academic", *ALL_ACAD_ROLES]):
                 return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
             batch_id = request.data.get("batch")
@@ -3550,6 +3633,52 @@ class StudentSemesterListView(APIView):
         return JsonResponse({"success": True, "semesters": semesters})
 
 
+class StudentCreditSummaryView(APIView):
+    """Credits Details for the signed-in student only.
+
+    Semesters are filtered to those whose result is announced and published for
+    this student -- the same gate CheckResultView applies. Without it the
+    underlying helper would expose unannounced grades.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        roll_number = request.user.username
+
+        try:
+            student = Student.objects.select_related(
+                "id__user", "id__department", "batch_id__discipline"
+            ).get(id_id=roll_number)
+        except Student.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Student record not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        _, semesters_data = _build_grade_validation_semesters(student)
+
+        # A summer announcement records the academic semester its courses belong
+        # to, same as every other term, so one (semester_no, type) match serves all.
+        published = {
+            (ann.semester, ann.semester_type)
+            for ann in ResultAnnouncement.objects.filter(
+                batch=student.batch_id, announced=True
+            )
+            if _is_result_published_for(ann, roll_number)
+        }
+
+        announced = [
+            sem for sem in semesters_data
+            if not sem.get("is_registered_only")
+            and (sem.get("semester_no"), sem.get("semester_type")) in published
+        ]
+
+        return Response(
+            {"success": True, "semesters": announced},
+            status=status.HTTP_200_OK,
+        )
+
+
 class GradeStatusAPI(APIView):
     """
     API to get grade status for all courses in a given academic year and semester type.
@@ -3579,7 +3708,7 @@ class GradeStatusAPI(APIView):
         semester_type = request.data.get("semester_type")
         
         # Role-based access control
-        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
+        if not user_holds_any_role(request.user, ["Dean Academic", *ALL_ACAD_ROLES]):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN
@@ -3598,9 +3727,13 @@ class GradeStatusAPI(APIView):
             
             # Get all courses that have registrations for this academic year and semester type
             # Use values_list with flat=True for better performance
-            course_ids = course_registration.objects.filter(
-                session=academic_year,
-                semester_type=semester_type
+            course_ids = scope_via_student(
+                course_registration.objects.filter(
+                    session=academic_year,
+                    semester_type=semester_type
+                ),
+                scopes_for(request.user),
+                'student_id',
             ).values_list('course_id', flat=True).distinct()
             
             # Fetch courses with select_related for better performance
@@ -4125,7 +4258,7 @@ class GenerateGradeSheetData(APIView):
         if courses_registered.exists():
             academic_year = courses_registered.first().academic_year
 
-        # Build special-symbol map: course.id → 'R' (backlog/improvement), 'S' (substituted), or ''
+        # Build special-symbol map: course.id → 'R' (repeat), 'S' (substitute), or ''
         course_reg_map = {}
         try:
             student_regs = course_registration.objects.filter(
@@ -4134,11 +4267,15 @@ class GenerateGradeSheetData(APIView):
                 semester_type=semester_type,
             ).select_related('course_id')
 
-            swayam_reg_ids = set(
-                course_replacement.objects.filter(
+            # A substitute clears a different course, so the code being replaced
+            # is what separates 'S' from a plain repeat of the same course.
+            replaced_code_by_reg = {
+                rep.new_course_registration_id:
+                    (rep.old_course_registration.course_id.code or '').strip().upper()
+                for rep in course_replacement.objects.filter(
                     new_course_registration__in=student_regs
-                ).values_list('new_course_registration_id', flat=True)
-            )
+                ).select_related('old_course_registration__course_id')
+            }
 
             prev_graded_course_ids = set(
                 Student_grades.objects.filter(
@@ -4152,10 +4289,11 @@ class GenerateGradeSheetData(APIView):
 
             for creg in student_regs:
                 cid = creg.course_id.id
-                course_code = (creg.course_id.code or '').upper()
-                if creg.id in swayam_reg_ids and course_code.startswith('SW'):
+                course_code = (creg.course_id.code or '').strip().upper()
+                replaced_code = replaced_code_by_reg.get(creg.id)
+                if replaced_code and replaced_code != course_code:
                     course_reg_map[cid] = 'S'
-                elif cid in prev_graded_course_ids:
+                elif replaced_code or cid in prev_graded_course_ids:
                     course_reg_map[cid] = 'R'
         except Exception:
             pass
@@ -4345,7 +4483,7 @@ class GradeSummaryAPI(APIView):
         academic_year = request.data.get("academic_year") 
         semester_type = request.data.get("semester_type")
 
-        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
+        if not user_holds_any_role(request.user, ["Dean Academic", *ALL_ACAD_ROLES]):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN
@@ -4394,6 +4532,7 @@ class GradeSummaryAPI(APIView):
                         AND sg.semester_type = %s
                         AND sg.grade IS NOT NULL 
                         AND sg.grade <> ''
+                        {scope_clause}
                     GROUP BY 
                         pc.code, pc.name
                     HAVING 
@@ -4402,7 +4541,11 @@ class GradeSummaryAPI(APIView):
                         pc.code
                 """
                 
-                cursor.execute(query, [academic_year, semester_type])
+                scope_clause, scope_params = roll_scope_sql(scopes_for(request.user))
+                cursor.execute(
+                    query.format(scope_clause=scope_clause),
+                    [academic_year, semester_type] + scope_params,
+                )
                 columns = [col[0] for col in cursor.description]
                 results = [dict(zip(columns, row)) for row in cursor.fetchall()]
             
@@ -4440,14 +4583,35 @@ def _build_grade_validation_semesters(student):
     for g in all_grades:
         semesters_map[(g.semester, g.semester_type)].append(g)
 
+    # Every graded code, whatever the grade: an X/I/AU/CD attempt still routes
+    # through replacement, exactly as the CPI helper does with best_by_code.
+    superseded = superseded_course_codes(
+        student,
+        {(g.course_id.code or '').strip() for g in all_grades},
+    )
+
     all_regs = (
         course_registration.objects.filter(student_id=student)
         .select_related("course_id", "semester_id")
         .order_by("semester_id__semester_no", "semester_type", "course_id__code")
     )
     reg_map = defaultdict(list)
+    reg_by_course = {}
     for r in all_regs:
         reg_map[(r.semester_id.semester_no, r.semester_type)].append(r)
+        reg_by_course[(r.semester_id.semester_no, r.semester_type, r.course_id_id)] = r
+
+    # A substitute clears a different course, so it has no earlier grade of its
+    # own to mark it as a repeat.
+    substitute_reg_ids = {
+        rep.new_course_registration_id
+        for rep in course_replacement.objects.filter(
+            new_course_registration__in=all_regs
+        ).select_related('old_course_registration__course_id',
+                         'new_course_registration__course_id')
+        if (rep.old_course_registration.course_id.code or '').strip()
+        != (rep.new_course_registration.course_id.code or '').strip()
+    }
 
     def _sem_sort_key(key):
         s_no, s_type = key
@@ -4531,7 +4695,9 @@ def _build_grade_validation_semesters(student):
                 prev = course_first_grade[cid]
                 remark = "Backlog" if prev in FAILING_GRADES else "Improvement"
             else:
-                remark = "Regular"
+                reg = reg_by_course.get((key[0], key[1], cid))
+                remark = ("Substitute" if reg and reg.id in substitute_reg_ids
+                          else "Regular")
                 course_first_grade[cid] = grade
 
             credit = Decimal(str(course.credit)) if course.credit is not None else Decimal('0')
@@ -4541,6 +4707,7 @@ def _build_grade_validation_semesters(student):
             courses.append({
                 "code": course.code or "", "name": course.name or "",
                 "credits": float(credit), "grade": grade, "remark": remark,
+                "superseded": (course.code or "").strip() in superseded,
             })
 
         for phd_row in key_to_phd_rows.get(key, []):
@@ -4650,10 +4817,12 @@ class GradeValidationView(APIView):
     def get(self, request):
         """Return batch list for the dropdown (same format as GenerateGradeSheetForm)."""
         role = request.GET.get("role")
-        if not user_holds_role(request.user, "acadadmin"):
+        if not user_holds_any_role(request.user, ALL_ACAD_ROLES):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
-        batches_qs = Batch.objects.select_related("discipline").order_by("-year", "name")
+        batches_qs = scope_batches(
+            Batch.objects.all(), scopes_for(request.user)
+        ).select_related("discipline").order_by("-year", "name")
         batch_list = [
             {"id": b.id, "label": f"{b.name} - {b.discipline} {b.year}"}
             for b in batches_qs
@@ -4662,7 +4831,7 @@ class GradeValidationView(APIView):
 
     def post(self, request):
         role = request.data.get("Role")
-        if not user_holds_role(request.user, "acadadmin"):
+        if not user_holds_any_role(request.user, ALL_ACAD_ROLES):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
         action = request.data.get("action")
@@ -4915,6 +5084,12 @@ class GradeValidationView(APIView):
 
                 cd_rows = []
                 tot_earned = tot_regular = tot_backlog_imp = tot_swayam = 0.0
+                # A course credits the degree once, at its best-graded attempt --
+                # the same rule calculate_cpi_for_student uses for the transcript
+                # total. Taking whichever attempt came first instead understated
+                # anyone whose repeated course changed credit between curriculum
+                # versions. A replaced elective credits nothing.
+                credited_by_code = {}
 
                 for gs in graded_sems:
                     earned = regular = backlog_imp = swayam = 0.0
@@ -4925,18 +5100,40 @@ class GradeValidationView(APIView):
                         is_sw = str(c.get("code", "")).upper().startswith("SW")
                         if g in NON_EARN:
                             continue
-                        earned += cr
                         if is_sw:
-                            swayam += cr
+                            bucket = "swayam"
                         elif rem in ("Backlog", "Improvement"):
+                            bucket = "backlog_imp"
+                        else:
+                            bucket = "regular"
+
+                        # The semester row records what was graded in it, so an
+                        # improvement lands under Backlog / Improvement here.
+                        earned += cr
+                        if bucket == "swayam":
+                            swayam += cr
+                        elif bucket == "backlog_imp":
                             backlog_imp += cr
                         else:
                             regular += cr
 
-                    tot_earned      += earned
-                    tot_regular     += regular
-                    tot_backlog_imp += backlog_imp
-                    tot_swayam      += swayam
+                        # Regular / Backlog / Swayam total down their own column.
+                        if bucket == "swayam":
+                            tot_swayam += cr
+                        elif bucket == "backlog_imp":
+                            tot_backlog_imp += cr
+                        else:
+                            tot_regular += cr
+
+                        # Credits Earned is the degree figure: a course once, at its
+                        # best-graded attempt, and a replaced one never.
+                        code_key = str(c.get("code", "")).strip().upper()
+                        if c.get("superseded"):
+                            continue
+                        kept = credited_by_code.get(code_key)
+                        if kept is None or (grade_conversion.get(g, -1)
+                                            > grade_conversion.get(kept[0], -1)):
+                            credited_by_code[code_key] = (g, cr)
 
                     def _fmt(v): return str(int(v)) if v == int(v) else f"{v:.1f}"
                     cd_rows.append([
@@ -4946,6 +5143,8 @@ class GradeValidationView(APIView):
                         Paragraph(_fmt(backlog_imp), small),
                         Paragraph(_fmt(swayam),      small),
                     ])
+
+                tot_earned = sum(cr for _, cr in credited_by_code.values())
 
                 def _fmt(v): return str(int(v)) if v == int(v) else f"{v:.1f}"
 

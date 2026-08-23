@@ -36,6 +36,12 @@ from .utils import get_and_authenticate_user
 from notifications.models import Notification
 from notifications.signals import notify
 from applications.globals.decorators import role_required
+from applications.globals.programme_scope import (
+    ALL_ACAD_ROLES,
+    STUDENT_CATEGORY_PATH,
+    scope_recipients,
+    scopes_for,
+)
 _security_log = logging.getLogger("fusion.security")
 
 User = get_user_model()
@@ -82,7 +88,7 @@ def logout(request):
 @authentication_classes([TokenAuthentication])
 def auth_view(request):
     user=request.user
-    name = request.user.first_name +"_"+ request.user.last_name
+    name = " ".join(filter(None, [request.user.first_name, request.user.last_name])).strip()
     roll_no = request.user.username
 
     extra_info = get_object_or_404(ExtraInfo, user=user)
@@ -509,6 +515,9 @@ def resolve_audience_recipients(obj):
             current_designation__designation=obj.target_role).distinct()
     if obj.audience_type == 'department':
         return User.objects.filter(extrainfo__department=obj.target_department)
+    if obj.audience_type == 'programme':
+        return User.objects.filter(**{
+            'extrainfo__student__' + STUDENT_CATEGORY_PATH: obj.target_programme})
     if obj.audience_type == 'batch':
         return User.objects.filter(extrainfo__student__batch_id=obj.target_batch)
     if obj.audience_type == 'individual':
@@ -519,15 +528,24 @@ def resolve_audience_recipients(obj):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def create_announcement(request):
     serializer = serializers.AnnouncementSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    scopes = scopes_for(request.user)
+    if scopes is not None:
+        chosen = (request.data.get('target_programme') or '').upper()
+        if request.data.get('audience_type') == 'programme' and chosen not in scopes:
+            return Response(
+                {'error': 'You may only announce to %s.' % ', '.join(sorted(scopes))},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
     announcement = serializer.save(created_by=request.user.extrainfo)
 
-    recipients = resolve_audience_recipients(announcement)
+    recipients = scope_recipients(resolve_audience_recipients(announcement), scopes)
     notify.send(
         sender=request.user,
         recipient=recipients,
@@ -545,7 +563,7 @@ def create_announcement(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def announcement_audience_options(request):
     roles = serializers.DesignationSerializer(Designation.objects.all(), many=True).data
     departments = serializers.DepartmentInfoSerializer(DepartmentInfo.objects.all(), many=True).data
@@ -555,17 +573,22 @@ def announcement_audience_options(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def search_users(request):
     query = request.query_params.get('q', '').strip()
     if not query:
         return Response([], status=status.HTTP_200_OK)
 
-    users = User.objects.filter(
-        Q(username__icontains=query)
-        | Q(first_name__icontains=query)
-        | Q(last_name__icontains=query)
-        | Q(extrainfo__id__icontains=query)
+    # scoped before the slice, so a programme admin cannot pick a student whose
+    # notification would then be dropped on send
+    users = scope_recipients(
+        User.objects.filter(
+            Q(username__icontains=query)
+            | Q(first_name__icontains=query)
+            | Q(last_name__icontains=query)
+            | Q(extrainfo__id__icontains=query)
+        ),
+        scopes_for(request.user),
     ).distinct()[:20]
 
     results = [

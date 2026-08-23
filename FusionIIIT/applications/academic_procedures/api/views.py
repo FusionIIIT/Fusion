@@ -37,6 +37,16 @@ from rest_framework.parsers    import MultiPartParser, FormParser
 
 from applications.globals.models import Faculty, HoldsDesignation, Designation, ExtraInfo
 from applications.globals.decorators import role_required
+from applications.globals.programme_scope import (
+    ALL_ACAD_ROLES,
+    batch_in_scope,
+    scope_batches,
+    scope_students,
+    scope_via_student,
+    scoped_ids,
+    scopes_for,
+    student_in_scope,
+)
 from notifications.signals import notify
 from applications.programme_curriculum.models import ( CourseInstructor, CourseSlot, Course as Courses, Batch, Discipline, Semester)
 # from applications.programme_curriculum.models import Course
@@ -54,6 +64,7 @@ from applications.academic_procedures.views import (get_user_semester, get_acad_
                                                     Constants, get_faculty_list,
                                                     get_registration_courses, get_add_course_options,
                                                     get_final_registration_eligibility,
+                                                    get_final_registration_window,
                                                     get_add_or_drop_course_date_eligibility,
                                                     get_detailed_sem_courses,
                                                     InitialRegistration)
@@ -129,7 +140,7 @@ demo_date = timezone.now()
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_all_courses(request):
     try:
         obj = Courses.objects.all()
@@ -525,47 +536,50 @@ def get_student_add_courses(request):
         session, sem_type = generate_current_session(cur_year, current_sem_no)
         working_year = parse_academic_year(academic_year=session, semester_type=sem_type)[0]
         student_section = student.section or ''
-        from applications.academic_information.models import resolve_offering
+        from applications.academic_information.models import offerings_by_course, pick_offering
 
         courses_list = []
 
-        for slot in bl_slots:
-            courses = slot.courses.all()
+        # One query each for slots+courses, registrations and offerings, instead of
+        # three per course: the BL slots of a big semester hold hundreds of electives.
+        slot_courses = [
+            (slot, course)
+            for slot in bl_slots.prefetch_related('courses')
+            for course in slot.courses.all()
+        ]
+        course_ids = [course.id for _, course in slot_courses]
+        registered_ids = set(course_registration.objects.filter(
+            student_id=student, course_id__in=course_ids,
+        ).values_list('course_id', flat=True))
+        offerings_of = offerings_by_course(course_ids, working_year, sem_type)
 
-            for course in courses:
-                already_registered = course_registration.objects.filter(
-                    course_id=course,
-                    student_id=student
-                ).exists()
-
-                # Sections where this course is running this term. If the student's
-                # own section isn't among them, they pick one of these (backlog/improvement).
-                offerings = CourseInstructor.objects.filter(
-                    course_id=course, year=working_year, semester_type=sem_type,
-                ).select_related('instructor_id__id__user')
-                sections = []
-                for o in offerings:
-                    u = o.instructor_id.id.user
-                    sections.append({
-                        'course_instructor_id': o.id,
-                        'section': o.section_label or '',
-                        'instructor': f"{u.first_name} {u.last_name}".strip(),
-                    })
-                # Auto-resolvable (own section, or a single/unsectioned offering) -> no pick needed; only genuinely sectioned courses missing the student's section prompt one.
-                own_section_running = resolve_offering(student, course, working_year, sem_type) is not None
-
-                courses_list.append({
-                    'id': course.id,
-                    'code': course.code,
-                    'name': course.name,
-                    'credit': course.credit,
-                    'slot': slot.name,
-                    'slot_id': slot.id,
-                    'already_registered': already_registered,
-                    'sections': sections,
-                    'own_section_running': own_section_running,
-                    'student_section': student_section,
+        for slot, course in slot_courses:
+            # Sections where this course is running this term. If the student's
+            # own section isn't among them, they pick one of these (backlog/improvement).
+            offerings = offerings_of.get(course.id, [])
+            sections = []
+            for o in offerings:
+                u = o.instructor_id.id.user
+                sections.append({
+                    'course_instructor_id': o.id,
+                    'section': o.section_label or '',
+                    'instructor': f"{u.first_name} {u.last_name}".strip(),
                 })
+            # Auto-resolvable (own section, or a single/unsectioned offering) -> no pick needed; only genuinely sectioned courses missing the student's section prompt one.
+            own_section_running = pick_offering(student, offerings) is not None
+
+            courses_list.append({
+                'id': course.id,
+                'code': course.code,
+                'name': course.name,
+                'credit': course.credit,
+                'slot': slot.name,
+                'slot_id': slot.id,
+                'already_registered': course.id in registered_ids,
+                'sections': sections,
+                'own_section_running': own_section_running,
+                'student_section': student_section,
+            })
 
         return Response(courses_list, status=status.HTTP_200_OK)
         
@@ -908,7 +922,7 @@ def student_final_registration(request):
 # with this acad admin can fetch the list of courses for any batch , semester and brach
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_course_list(request):
     
     programme = request.data['programme']
@@ -931,7 +945,7 @@ def get_course_list(request):
 #  with this api acad person can see the list of students who have completed their pre and final registrations for any semester
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def acad_view_reigstrations(request):
     try:
         semester = request.data["semester"]
@@ -1146,7 +1160,7 @@ def get_next_sem_courses(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def verify_registration(request):
     data = json.loads(request.body)
     if data.get('status_req') == "accept" :
@@ -1155,12 +1169,12 @@ def verify_registration(request):
         batch = student.batch_id
         curr_id = batch.curriculum
         
-        if(student.curr_semester_no+1 >= 9):
-            # print('----------------------------------------------------------------' , student.curr_semester_no)
+        # Verify whichever semester the student actually registered for: a fresh
+        # intake registers into the semester it is already in, so assuming the
+        # next one would find nothing to verify and promote it a semester early.
+        sem_no = pre_registration_target_semester(student)
+        if sem_no >= 9:
             sem_no = 8
-        else:
-            # print('----------------------------------------------------------------' , student.curr_semester_no)
-            sem_no = student.curr_semester_no+1
         sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
         # print('----------------------------------------------------------------' , student.curr_semester_no)
         
@@ -1201,7 +1215,9 @@ def verify_registration(request):
             # course_registration.objects.bulk_create(ver_reg)
             academics_module_notif(request.user, student.id.user, 'registration_approved')
 
-            Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
+            # Only a registration for a later semester moves the student on.
+            if sem_no > student.curr_semester_no:
+                Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
             return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
          
     elif data.get('status_req') == "reject" :
@@ -1229,7 +1245,7 @@ def verify_registration(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def verify_course(request):
     roll_no = request.data.get("rollno")
     if not roll_no:
@@ -1826,8 +1842,12 @@ def final_registration_page(request):
             final_registration = serializers.FinalRegistrationSerializer(final_registration, many=True).data
         else:
             final_registration = None
+        frd_window = get_final_registration_window()
         resp = {
             'frd': final_registration_date_flag,
+            'frd_configured': frd_window is not None,
+            'frd_from': frd_window.from_date if frd_window else None,
+            'frd_to': frd_window.to_date if frd_window else None,
             'final_registration_flag': final_registration_flag,
             'final_registration': final_registration,
         }
@@ -1839,7 +1859,7 @@ def final_registration_page(request):
 @api_view(['GET', 'POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def student_list(request):
     if request.method == 'POST':
         excel_export = request.GET.get("excel_export", "false")
@@ -1853,6 +1873,9 @@ def student_list(request):
         queryflag = 1
 
         batch_id = Batch.objects.get(id=batch)
+        if not batch_in_scope(batch_id, scopes_for(request.user)):
+            return Response({'detail': 'Batch not found.'},
+                            status=status.HTTP_404_NOT_FOUND)
         student_obj = FeePayments.objects.all().select_related('student_id').filter(student_id__batch_id=batch_id)
 
         if excel_export == "false":
@@ -1924,7 +1947,7 @@ def student_list(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def course_list(request):
     request_body = json.loads(request.body)
     student_id = request_body['student_id']
@@ -1945,7 +1968,7 @@ def course_list(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def dropcourseadmin(request):
     try:
         reg_id = request.data.get('id')
@@ -1965,7 +1988,7 @@ def dropcourseadmin(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def acad_add_course(request):
     data = request.data
     for fld in ("roll_no", "semester_id", "courseslot_id", "course_id", "academic_year", "registration_type", "semester_type"):
@@ -2029,7 +2052,7 @@ def acad_add_course(request):
             course_instructor = offering,
         )
         if old_id:
-            old = course_registration.objects.filter(id=old_id).first()
+            old = course_registration.objects.filter(id=old_id, student_id=student).first()
             if old:
                 course_replacement.objects.create(
                     old_course_registration = old,
@@ -2056,7 +2079,7 @@ def acad_add_course(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_thesis_slots(request):
     sem_id = request.query_params.get('semester_id')
     if not sem_id:
@@ -2069,7 +2092,7 @@ def get_thesis_slots(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_thesis_courses(request):
     slot_id = request.query_params.get('slot_id')
     if not slot_id:
@@ -2081,7 +2104,7 @@ def get_thesis_courses(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_progress_seminar_slots(request):
     sem_id = request.query_params.get('semester_id')
     if not sem_id:
@@ -2094,7 +2117,7 @@ def get_progress_seminar_slots(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_progress_seminar_courses(request):
     slot_id = request.query_params.get('slot_id')
     if not slot_id:
@@ -2106,7 +2129,7 @@ def get_progress_seminar_courses(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_teaching_credit_slots(request):
     sem_id = request.query_params.get('semester_id')
     if not sem_id:
@@ -2119,7 +2142,7 @@ def get_teaching_credit_slots(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_teaching_credit_courses(request):
     slot_id = request.query_params.get('slot_id')
     if not slot_id:
@@ -2131,7 +2154,7 @@ def get_teaching_credit_courses(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_add_thesis(request):
     roll_no = request.data.get('roll_no')
     semester_id = request.data.get('semester_id')
@@ -2192,7 +2215,7 @@ def admin_add_thesis(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_add_progress_seminar(request):
     roll_no = request.data.get('roll_no')
     semester_id = request.data.get('semester_id')
@@ -2222,7 +2245,7 @@ def admin_add_progress_seminar(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_add_teaching_credit(request):
     roll_no = request.data.get('roll_no')
     semester_id = request.data.get('semester_id')
@@ -2290,11 +2313,14 @@ def academic_procedures_faculty_api(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def search_preregistration(request):
     try:
         roll_no=request.data.get("roll_no")
         sem_no=request.data.get("sem_no")
+        looked_up = Student.objects.filter(id_id=roll_no).first()
+        if looked_up and not student_in_scope(looked_up, scopes_for(request.user)):
+            return JsonResponse({'error': 'Student record not found'}, status=400)
         initial_registrations = InitialRegistration.objects.filter(
             student_id_id=roll_no, semester_id__semester_no=sem_no
         )
@@ -2317,12 +2343,15 @@ def search_preregistration(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def delete_preregistration(request):
     try:
         # Extract roll_no and sem_no from the request
         roll_no = request.data.get("roll_no")
         sem_no = request.data.get("sem_no")
+        target = Student.objects.filter(id_id=roll_no).first()
+        if target and not student_in_scope(target, scopes_for(request.user)):
+            return JsonResponse({'error': 'Student record not found'}, status=400)
 
         # Validate input data
         if not roll_no or not sem_no:
@@ -2358,13 +2387,17 @@ def delete_preregistration(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def allot_courses(request):
     if 'allotedCourses' not in request.FILES:
         return Response({'error': 'Excel file not provided.'},
                         status=status.HTTP_400_BAD_REQUEST)
 
     batch_id = request.data.get('batch')
+    if batch_id and not batch_in_scope(
+            Batch.objects.filter(id=batch_id).first(), scopes_for(request.user)):
+        return Response({'detail': 'Batch not found.'},
+                        status=status.HTTP_404_NOT_FOUND)
     sem_no = request.data.get('semester')
     sem_type = request.data.get('semester_type')
     academic_year = request.data.get('academic_year')
@@ -2496,12 +2529,16 @@ def allot_courses(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def allot_thesis(request):
     if 'allotedThesis' not in request.FILES:
         return Response({'error': 'Excel file not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
     batch_id = request.data.get('batch')
+    if batch_id and not batch_in_scope(
+            Batch.objects.filter(id=batch_id).first(), scopes_for(request.user)):
+        return Response({'detail': 'Batch not found.'},
+                        status=status.HTTP_404_NOT_FOUND)
     sem_no = request.data.get('semester')
     if not batch_id or not sem_no:
         return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -2591,12 +2628,16 @@ def allot_thesis(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def allot_progress_seminar(request):
     if 'allotedSeminar' not in request.FILES:
         return Response({'error': 'Excel file not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
     batch_id = request.data.get('batch')
+    if batch_id and not batch_in_scope(
+            Batch.objects.filter(id=batch_id).first(), scopes_for(request.user)):
+        return Response({'detail': 'Batch not found.'},
+                        status=status.HTTP_404_NOT_FOUND)
     sem_no = request.data.get('semester')
     if not batch_id or not sem_no:
         return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -2663,12 +2704,16 @@ def allot_progress_seminar(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def allot_teaching_credit(request):
     if 'allotedTeachingCredit' not in request.FILES:
         return Response({'error': 'Excel file not provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
     batch_id = request.data.get('batch')
+    if batch_id and not batch_in_scope(
+            Batch.objects.filter(id=batch_id).first(), scopes_for(request.user)):
+        return Response({'detail': 'Batch not found.'},
+                        status=status.HTTP_404_NOT_FOUND)
     sem_no = request.data.get('semester')
     if not batch_id or not sem_no:
         return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -2853,7 +2898,14 @@ def _check_registration_window(description, action_label):
     try:
         event = Calendar.objects.get(description=description)
     except Calendar.DoesNotExist:
-        return JsonResponse({"error": f"{action_label} date is not yet decided"}, status=400)
+        # Name the event that is missing: the window is keyed by an exact
+        # calendar description, and "not yet decided" gave the office no way to
+        # tell a missing event from one entered under another name.
+        return JsonResponse({
+            "error": f"{action_label} date is not yet decided",
+            "detail": f"No academic calendar event named \"{description}\".",
+            "expected_event": description,
+        }, status=400)
     start, end = _calendar_window_bounds(event)
     now = datetime.datetime.now()
     if now < start:
@@ -2871,7 +2923,24 @@ def get_drop_registration_eligibility(current_date, user_sem, year = datetime.da
 def get_replace_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
     return _check_registration_window(f"Replace {user_sem} {year}", "Replace course")
 
+def pre_registration_target_semester(student):
+    """The semester a student's pre-registration belongs to.
+
+    Continuing students choose courses for the semester after the one they are
+    in. A newly admitted batch has nothing registered in its first semester yet,
+    so it registers into that semester rather than skipping past it.
+    """
+    current = student.curr_semester_no or 0
+    if current <= 1 and not course_registration.objects.filter(
+            student_id=student, semester_id__semester_no=current).exists():
+        return current
+    return current + 1
+
+
 def get_pre_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
+    # Keyed by the semester being registered into, so a newly admitted batch --
+    # which registers into the semester it is already in -- opens on
+    # "Pre Registration 1", and every later cohort on its own target semester.
     return _check_registration_window(f"Pre Registration {user_sem} {year}", "Pre Registration")
 
 def get_swayam_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
@@ -2923,7 +2992,7 @@ def get_preregistration_data(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
-        next_sem_no = semester_no+1
+        next_sem_no = pre_registration_target_semester(student)
         try:
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
@@ -3038,13 +3107,21 @@ def submit_preregistration(request):
 
     registrations = data.get("registrations", [])
     backlog_registrations = data.get("backlog_registrations", [])
+
+    # Marking pre-registration complete for an empty submission saved nothing and
+    # then locked the student out, since the page returns an existing
+    # registration before it offers the form again.
+    if not registrations and not backlog_registrations:
+        return JsonResponse(
+            {"error": "Select at least one course before submitting your pre-registration."},
+            status=400)
+
     try:
         current_user = request.user
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
-        # Here you may want to use next_sem_no = semester_no + 1 if that is the logic.
-        next_sem_no = semester_no+1
+        next_sem_no = pre_registration_target_semester(student)
         try:
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
@@ -3069,11 +3146,30 @@ def submit_preregistration(request):
             timestamp=timezone.now()
         )
 
+    # The replaced registration is taken from the request body, so check it is
+    # this student's before any row is written.
+    backlog_entries = []
     for reg in backlog_registrations:
+        prev_registration_id = reg.get("prev_registration_id")
+        prev_reg = None
+        if prev_registration_id:
+            prev_reg = course_registration.objects.filter(
+                id=prev_registration_id, student_id=student
+            ).first()
+            if not prev_reg:
+                return JsonResponse(
+                    {"error": "The course being repeated is not one of your registrations."},
+                    status=400)
+        backlog_entries.append((reg, prev_reg))
+
+    for reg, prev_reg in backlog_entries:
         slot_id = reg.get("slot_id")
         course_id = reg.get("course_id")
         priority = reg.get("priority")
-        prev_registration_id = reg.get("prev_registration_id")
+
+        # The repeated course carries the grade, so it decides backlog vs improvement.
+        _sg = latest_grade(student.id_id, prev_reg.course_id) if prev_reg else None
+        reg_type = registration_type_for_grade(_sg.grade if _sg else None)
 
         InitialRegistration.objects.create(
             course_id_id=course_id,
@@ -3081,8 +3177,8 @@ def submit_preregistration(request):
             student_id=student,
             course_slot_id_id=slot_id,
             priority=priority,
-            registration_type='Backlog',
-            old_course_registration_id = prev_registration_id,
+            registration_type=(reg_type if reg_type != 'Regular' else 'Backlog'),
+            old_course_registration=prev_reg,
             timestamp=timezone.now()
         )
 
@@ -3308,10 +3404,11 @@ def swayam_replace_check(request):
 
         existing_request = SwayamReplacementRequest.objects.filter(
             student=student,
+            semester=current_semester,
             request_type='Swayam_Replace',
             status__in=['Pending', 'Approved']
         ).first()
-        
+
         if existing_request:
             return JsonResponse({
                 "has_existing": False,
@@ -3840,8 +3937,11 @@ def student_swayam_requests(request):
         student = Student.objects.get(id=user_details)
 
         request_type = request.GET.get('request_type')
-        requests_query = SwayamReplacementRequest.objects.filter(student=student)
-        
+        requests_query = SwayamReplacementRequest.objects.filter(
+            student=student,
+            semester__semester_no=student.curr_semester_no
+        )
+
         if request_type:
             requests_query = requests_query.filter(request_type=request_type)
         
@@ -3875,7 +3975,8 @@ def student_swayam_requests(request):
                 'submitted_at': req.submitted_at.isoformat() if req.submitted_at else None,
                 'processed_at': req.processed_at.isoformat() if req.processed_at else None,
                 'academic_year': req.academic_year,
-                'semester_type': req.semester_type
+                'semester_type': req.semester_type,
+                'semester_no': req.semester.semester_no if req.semester else None
             })
         
         return JsonResponse({'requests': requests_data}, status=200)
@@ -3890,7 +3991,7 @@ def student_swayam_requests(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_swayam_list_requests(request):
     try:
         request_type = request.GET.get('request_type')
@@ -3901,13 +4002,18 @@ def admin_swayam_list_requests(request):
         queryset = SwayamReplacementRequest.objects.select_related(
             'student',
             'student__id__user',
+            'student__batch_id',
             'old_course',
             'new_course',
             'new_course_slot',
             'semester'
         ).order_by('-submitted_at')
 
-        count_queryset = SwayamReplacementRequest.objects.all()
+        scopes = scopes_for(request.user)
+        queryset = scope_via_student(queryset, scopes, 'student')
+
+        count_queryset = scope_via_student(
+            SwayamReplacementRequest.objects.all(), scopes, 'student')
         
         if request_type:
             count_queryset = count_queryset.filter(request_type=request_type)
@@ -3984,7 +4090,7 @@ def admin_swayam_list_requests(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_swayam_approve(request):
     try:
         request_id = request.data.get('request_id')
@@ -3992,6 +4098,8 @@ def admin_swayam_approve(request):
             return JsonResponse({"error": "request_id is required"}, status=400)
         
         req_obj = SwayamReplacementRequest.objects.get(id=request_id)
+        if not student_in_scope(req_obj.student, scopes_for(request.user)):
+            return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
         
         if req_obj.status != 'Pending':
             return JsonResponse({"error": "Only pending requests can be approved"}, status=400)
@@ -4034,10 +4142,7 @@ def admin_swayam_approve(request):
             else:
                 backlog_grades = ['F', 'CD', 'X']
                 improvement_grades = ['D', 'D+', 'C']
-                src_grade_obj = Student_grades.objects.filter(
-                    roll_no=roll_no,
-                    course_id=req_obj.old_course
-                ).first()
+                src_grade_obj = latest_grade(roll_no, req_obj.old_course)
                 if src_grade_obj and src_grade_obj.grade in backlog_grades:
                     new_registration_type = 'Backlog'
                 elif src_grade_obj and src_grade_obj.grade in improvement_grades:
@@ -4166,7 +4271,7 @@ def admin_swayam_approve(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_swayam_reject(request):
     try:
         request_id = request.data.get('request_id')
@@ -4174,6 +4279,8 @@ def admin_swayam_reject(request):
             return JsonResponse({"error": "request_id is required"}, status=400)
         
         req_obj = SwayamReplacementRequest.objects.get(id=request_id)
+        if not student_in_scope(req_obj.student, scopes_for(request.user)):
+            return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
         
         if req_obj.status != 'Pending':
             return JsonResponse({"error": "Only pending requests can be rejected"}, status=400)
@@ -4194,7 +4301,7 @@ def admin_swayam_reject(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_swayam_revert(request):
     try:
         request_id = request.data.get('request_id')
@@ -4202,6 +4309,8 @@ def admin_swayam_revert(request):
             return JsonResponse({"error": "request_id is required"}, status=400)
         
         req_obj = SwayamReplacementRequest.objects.get(id=request_id)
+        if not student_in_scope(req_obj.student, scopes_for(request.user)):
+            return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
         
         if req_obj.status != 'Rejected':
             return JsonResponse({"error": "Only rejected requests can be reverted"}, status=400)
@@ -4222,7 +4331,7 @@ def admin_swayam_revert(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_swayam_delete(request):
     try:
         request_id = request.data.get('request_id')
@@ -4230,6 +4339,8 @@ def admin_swayam_delete(request):
             return JsonResponse({"error": "request_id is required"}, status=400)
         
         req_obj = SwayamReplacementRequest.objects.get(id=request_id)
+        if not student_in_scope(req_obj.student, scopes_for(request.user)):
+            return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
         req_obj.delete()
         
         return JsonResponse({"message": "Request deleted successfully"}, status=200)
@@ -4244,7 +4355,7 @@ def admin_swayam_delete(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_add_course_slots(request):
     """
     GET /api/course-slots/?semester_id=<id>
@@ -4268,7 +4379,7 @@ def get_add_course_slots(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_add_course_courses(request):
     """
     GET /api/courses/?courseslot_id=<id>
@@ -4400,6 +4511,13 @@ def upload_excel_replacement(request):
                     old_course_registration=old_reg,
                     new_course_registration=new_reg
                 )
+                # The replaced course carries the grade, so it decides whether
+                # the new one counts as a backlog or an improvement.
+                _sg = latest_grade(old_reg.student_id.id_id, old_reg.course_id)
+                reg_type = registration_type_for_grade(_sg.grade if _sg else None)
+                if reg_type != 'Regular' and new_reg.registration_type != reg_type:
+                    new_reg.registration_type = reg_type
+                    new_reg.save(update_fields=['registration_type'])
     except Exception as e:
         return Response({'error': str(e)}, status=400)
 
@@ -4834,18 +4952,22 @@ def batch_create_requests(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_list_requests(request):
     qs = CourseReplacementRequest.objects.select_related(
         'student', 'student__id__user', 'course_slot', 'course_slot__semester', 'old_course', 'new_course'
     ).all().order_by('-created_at')
+    qs = scope_via_student(qs, scopes_for(request.user), 'student')
     
     year = request.GET.get('academic_year')
     sem  = request.GET.get('semester_type')
+    status_filter = request.GET.get('status')
     if year:
         qs = qs.filter(academic_year=year)
     if sem:
         qs = qs.filter(semester_type=sem)
+    if status_filter:
+        qs = qs.filter(status__iexact=status_filter)
 
     out = []
     for r in qs:
@@ -4905,7 +5027,7 @@ def student_list_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def allocate_all(request):
     import json
     try:
@@ -4913,6 +5035,7 @@ def allocate_all(request):
         year = body.get('academic_year')
         sem  = body.get('semester_type')
         request_ids = body.get('request_ids') or []
+        request_ids = scoped_ids(CourseReplacementRequest, request_ids, scopes_for(request.user))
     except:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
@@ -5006,7 +5129,7 @@ def allocate_all(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def revert_replacement_to_pending(request):
     import json
     import logging
@@ -5015,6 +5138,7 @@ def revert_replacement_to_pending(request):
     try:
         body = json.loads(request.body)
         request_ids = body.get('request_ids', [])
+        request_ids = scoped_ids(CourseReplacementRequest, request_ids, scopes_for(request.user))
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
     except Exception as e:
@@ -5058,7 +5182,7 @@ def revert_replacement_to_pending(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def delete_replacement_requests(request):
     import json
     import logging
@@ -5067,6 +5191,7 @@ def delete_replacement_requests(request):
     try:
         body = json.loads(request.body)
         request_ids = body.get('request_ids', [])
+        request_ids = scoped_ids(CourseReplacementRequest, request_ids, scopes_for(request.user))
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
     except Exception as e:
@@ -5261,8 +5386,11 @@ def student_calendar_view(request):
 
     result = [
         {
+            "id": entry.id,
             "from_date": entry.from_date,
             "to_date": entry.to_date,
+            "from_time": entry.from_time,
+            "to_time": entry.to_time,
             "description": entry.description,
         }
         for entry in calendar_entries
@@ -5330,10 +5458,30 @@ def student_list_drop_requests(request):
         logger.error(f"Error listing drop requests for {request.user.username}: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'An error occurred while fetching requests'}, status=500)
 
+# Counts the queues the acadadmin home page reports, without serialising rows.
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def admin_pending_counts(request):
+    scopes = scopes_for(request.user)
+    pending = lambda model: scope_via_student(
+        model.objects.filter(status__iexact='pending'), scopes, 'student').count()
+    return JsonResponse({'counts': {
+        'swayam': pending(SwayamReplacementRequest),
+        'add': pending(CourseAddRequest),
+        'drop': pending(CourseDropRequest),
+        'replacement': pending(CourseReplacementRequest),
+        'phdCourses': pending(PhDCourseRegistrationRequest),
+        'thesisEnrolments': pending(ThesisRegistration),
+        'progressSeminars': pending(ProgressSeminarRegistration),
+        'teachingCredits': pending(TeachingCreditRegistration),
+    }}, status=200)
+
+
  # Lists all course drop requests with optional filtering
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_list_drop_requests(request):
     try:
         qs = CourseDropRequest.objects.select_related(
@@ -5342,14 +5490,26 @@ def admin_list_drop_requests(request):
             'course_slot',
             'course_slot__semester'
         ).all().order_by('-created_at')
+        qs = scope_via_student(qs, scopes_for(request.user), 'student')
 
         year = request.GET.get('academic_year', '').strip()
         sem = request.GET.get('semester_type', '').strip()
-        
+        status_filter = request.GET.get('status', '').strip()
+
         if year:
             qs = qs.filter(academic_year=year)
         if sem:
             qs = qs.filter(semester_type=sem)
+        # Filter before the cap, so a status query cannot be truncated away.
+        if status_filter:
+            qs = qs.filter(status__iexact=status_filter)
+
+        # Pending first, so the rows needing action survive the cap below.
+        qs = qs.order_by(
+            Case(When(status__iexact='pending', then=0), default=1,
+                 output_field=IntegerField()),
+            '-created_at',
+        )
 
         qs = qs[:500]
 
@@ -5383,7 +5543,7 @@ def admin_list_drop_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def approve_drop_requests(request):
     import json
     import logging
@@ -5392,6 +5552,7 @@ def approve_drop_requests(request):
     try:
         body = json.loads(request.body)
         request_ids = body.get('request_ids', [])
+        request_ids = scoped_ids(CourseDropRequest, request_ids, scopes_for(request.user))
         action = body.get('action', 'approve').lower().strip()
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
@@ -5481,7 +5642,7 @@ def approve_drop_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def delete_drop_requests(request):
     import json
     import logging
@@ -5490,6 +5651,7 @@ def delete_drop_requests(request):
     try:
         body = json.loads(request.body)
         request_ids = body.get('request_ids', [])
+        request_ids = scoped_ids(CourseDropRequest, request_ids, scopes_for(request.user))
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
     except Exception as e:
@@ -5586,7 +5748,7 @@ def student_list_add_requests(request):
 # Lists all course add requests with optional filtering
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_list_add_requests(request):
     try:
         qs = CourseAddRequest.objects.select_related(
@@ -5595,14 +5757,26 @@ def admin_list_add_requests(request):
             'course_slot',
             'course_slot__semester'
         ).all().order_by('-created_at')
+        qs = scope_via_student(qs, scopes_for(request.user), 'student')
 
         year = request.GET.get('academic_year', '').strip()
         sem = request.GET.get('semester_type', '').strip()
-        
+        status_filter = request.GET.get('status', '').strip()
+
         if year:
             qs = qs.filter(academic_year=year)
         if sem:
             qs = qs.filter(semester_type=sem)
+        # Filter before the cap, so a status query cannot be truncated away.
+        if status_filter:
+            qs = qs.filter(status__iexact=status_filter)
+
+        # Pending first, so the rows needing action survive the cap below.
+        qs = qs.order_by(
+            Case(When(status__iexact='pending', then=0), default=1,
+                 output_field=IntegerField()),
+            '-created_at',
+        )
 
         qs = qs[:500]
 
@@ -5636,7 +5810,7 @@ def admin_list_add_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def approve_add_requests(request):
     import json
     import logging
@@ -5645,6 +5819,7 @@ def approve_add_requests(request):
     try:
         body = json.loads(request.body)
         request_ids = body.get('request_ids', [])
+        request_ids = scoped_ids(CourseAddRequest, request_ids, scopes_for(request.user))
         action = body.get('action', 'approve').lower().strip()
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
@@ -5790,7 +5965,7 @@ def approve_add_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def delete_add_requests(request):
     import json
     import logging
@@ -5799,6 +5974,7 @@ def delete_add_requests(request):
     try:
         body = json.loads(request.body)
         request_ids = body.get('request_ids', [])
+        request_ids = scoped_ids(CourseAddRequest, request_ids, scopes_for(request.user))
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
     except Exception as e:
@@ -5833,13 +6009,13 @@ def delete_add_requests(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def student_search(request):
     roll_no = request.data.get('rollno','').upper()
     if not roll_no:
         return JsonResponse({'error':'rollno is required'},status=400)
     student = Student.objects.filter(id_id=roll_no).first()
-    if not student:
+    if not student or not student_in_scope(student, scopes_for(request.user)):
         return JsonResponse({'error':'Student record not found'},status=400)
     extra = student.id
     user = extra.user
@@ -6311,9 +6487,11 @@ def admin_all_stats(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def list_batches(request):
-    batches = Batch.objects.filter(running_batch=True).select_related("discipline").order_by("year", "name")
+    batches = scope_batches(
+        Batch.objects.filter(running_batch=True), scopes_for(request.user)
+    ).select_related("discipline").order_by("year", "name")
     result = []
     for b in batches:
         label = f"{b.name} {b.discipline.acronym} {b.year}"
@@ -6322,12 +6500,13 @@ def list_batches(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def list_students_in_batch(request):
     batch_id = request.query_params.get("batch_id")
     if not batch_id:
         return Response({"detail": "batch_id required."}, status=status.HTTP_400_BAD_REQUEST)
-    students = Student.objects.filter(batch_id__id=batch_id)
+    students = scope_students(
+        Student.objects.filter(batch_id__id=batch_id), scopes_for(request.user))
     result = []
     for st in students:
         cb = st.batch_id
@@ -6343,7 +6522,7 @@ def list_students_in_batch(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def apply_batch_changes(request):
     data = request.data
     user = request.user
@@ -6359,6 +6538,9 @@ def apply_batch_changes(request):
                 continue
             try:
                 student = Student.objects.get(id=sid)
+                if not student_in_scope(student, scopes_for(request.user)):
+                    errors.append({"index": idx, "detail": f"Student {sid} not found."})
+                    continue
             except Student.DoesNotExist:
                 errors.append({"index": idx, "detail": f"Student {sid} not found."})
                 continue
@@ -6423,24 +6605,30 @@ def apply_batch_changes(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def list_students_in_batch_semester_promotion(request):
     batch_id = request.query_params.get("batch_id")
     if not batch_id:
         return Response({"detail": "batch_id required."}, status=status.HTTP_400_BAD_REQUEST)
-    students = Student.objects.filter(batch_id__id=batch_id).order_by('id_id')
+    students = scope_students(
+        Student.objects.filter(batch_id__id=batch_id), scopes_for(request.user)
+    ).select_related('id__user', 'batch_id__discipline').order_by('id_id')
     result = []
     for st in students:
+        user = st.id.user
         result.append({
             "id": st.id_id,
             "username": str(st.id_id),
+            "name": f"{user.first_name} {user.last_name}".strip(),
+            "discipline": (st.batch_id.discipline.acronym
+                           if st.batch_id and st.batch_id.discipline_id else ''),
             "current_semester_no": st.curr_semester_no,
         })
     return Response(result)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def apply_promotion(request):
     data = request.data  # list of student IDs
     user = request.user
@@ -6449,6 +6637,9 @@ def apply_promotion(request):
         for idx, sid in enumerate(data):
             try:
                 student = Student.objects.get(id=sid)
+                if not student_in_scope(student, scopes_for(request.user)):
+                    errors.append({"index": idx, "detail": f"Student {sid} not found."})
+                    continue
             except Student.DoesNotExist:
                 errors.append({"index": idx, "detail": f"Student {sid} not found."})
                 continue
@@ -6508,7 +6699,7 @@ def apply_promotion(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def apply_demotion(request):
     """Move selected students one semester back (correction for over-promotion).
 
@@ -6521,6 +6712,9 @@ def apply_demotion(request):
         for idx, sid in enumerate(data):
             try:
                 student = Student.objects.get(id=sid)
+                if not student_in_scope(student, scopes_for(request.user)):
+                    errors.append({"index": idx, "detail": f"Student {sid} not found."})
+                    continue
             except Student.DoesNotExist:
                 errors.append({"index": idx, "detail": f"Student {sid} not found."})
                 continue
@@ -8842,7 +9036,7 @@ def student_thesis_enrollment_api(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_thesis_enrollment_list(request):
     """
     GET /acadadmin/thesis-enrollments/?semester=<no>&status=<status>
@@ -8860,7 +9054,7 @@ def admin_thesis_enrollment_list(request):
 
     status_filter = request.GET.get('status')
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
 
     data = []
     for reg in qs:
@@ -9681,7 +9875,7 @@ def student_progress_seminar_enrollment_api(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_progress_seminar_enrollment_list(request):
     """
     GET /acadadmin/progress-seminar-enrollments/?semester=<no>&status=<status>
@@ -9699,7 +9893,7 @@ def admin_progress_seminar_enrollment_list(request):
 
     status_filter = request.GET.get('status')
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
 
     data = []
     for reg in qs:
@@ -9933,7 +10127,7 @@ def student_teaching_credit_enrollment_api(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_teaching_credit_enrollment_list(request):
     """
     GET /acadadmin/teaching-credit-enrollments/?semester=<no>&status=<status>
@@ -9951,7 +10145,7 @@ def admin_teaching_credit_enrollment_list(request):
 
     status_filter = request.GET.get('status')
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
 
     data = [_teaching_credit_enrollment_to_dict(reg) for reg in qs]
     return JsonResponse({'registrations': data}, status=200)
@@ -10122,15 +10316,67 @@ def phd_course_slots(request):
 _PHD_BL_ALLOWED_GRADES = ['F', 'X', 'CD', 'C', 'D+', 'D']
 
 
+_PHD_BL_BACKLOG_GRADES = {'F', 'X', 'CD'}
+
+
+def registration_type_for_grade(grade):
+    if grade in _PHD_BL_BACKLOG_GRADES:
+        return 'Backlog'
+    if grade in _PHD_BL_ALLOWED_GRADES:
+        return 'Improvement'
+    return 'Regular'
+
+
+def latest_grade(roll_no, course):
+    """The student's most recent grade row in a course, or None."""
+    return Student_grades.objects.filter(
+        roll_no=roll_no, course_id=course
+    ).order_by('-year', '-semester').first()
+
+
 def _phd_bl_grade_status(username, course):
     """Returns (allowed, grade) for a BL course. grade is None when the student
     has no recorded grade in the course (also treated as not allowed)."""
-    sg = Student_grades.objects.filter(
-        roll_no=username, course_id=course
-    ).order_by('-year', '-semester').first()
+    sg = latest_grade(username, course)
     if not sg:
         return False, None
     return sg.grade in _PHD_BL_ALLOWED_GRADES, sg.grade
+
+
+def _phd_bl_source_courses(student):
+    """The student's own courses eligible to be cleared through a BL slot: the
+    latest grade in each is below C+. A course taken in an OE slot may be
+    swapped for a different one; anything else has to be retaken as it is."""
+    username = student.id.user.username
+    # The latest grade decides, so the filter cannot come first: a course whose
+    # latest attempt cleared it must drop out, not fall back to the older low one.
+    latest = {}
+    for sg in Student_grades.objects.filter(
+        roll_no=username
+    ).select_related('course_id').order_by('year', 'semester'):
+        latest[sg.course_id_id] = sg
+    latest = {course_id: sg for course_id, sg in latest.items()
+              if sg.grade in _PHD_BL_ALLOWED_GRADES}
+
+    oe_course_ids = set(course_registration.objects.filter(
+        student_id=student, course_id__in=latest.keys(),
+        course_slot_id__name__istartswith='OE',
+    ).values_list('course_id', flat=True))
+
+    out = []
+    for course_id, sg in latest.items():
+        course = sg.course_id
+        out.append({
+            'id': course.id,
+            'code': course.code,
+            'name': course.name,
+            'credit': course.credit,
+            'grade': sg.grade,
+            'registration_type': registration_type_for_grade(sg.grade),
+            'replaceable': course_id in oe_course_ids,
+        })
+    out.sort(key=lambda c: c['code'])
+    return out
 
 
 @api_view(['GET'])
@@ -10158,9 +10404,9 @@ def phd_course_slot_courses(request):
     except (Semester.DoesNotExist, CourseSlot.DoesNotExist):
         return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
 
-    # Like the UG add flow, the slot lists all its courses; the BL backlog grade
-    # rule is enforced at submit. BL courses also carry their eligibility so the
-    # form can warn the moment an ineligible one is picked, not only at submit.
+    # A BL slot clears a past course, so it is driven by the student's own
+    # below-C+ grades rather than the slot list; the slot list is only the pool
+    # a replaceable (OE) course can be swapped for.
     is_bl = slot.name.startswith('BL')
     username = student.id.user.username
     courses = []
@@ -10172,7 +10418,20 @@ def phd_course_slot_courses(request):
             entry['bl_eligible'] = allowed
             entry['bl_grade'] = grade
         courses.append(entry)
-    return JsonResponse({'courses': courses}, status=200)
+
+    payload = {'courses': courses}
+    if is_bl:
+        # A source already in flight through another slot is spoken for, so the
+        # dropdown can leave it out instead of failing on submit.
+        claimed = dict(PhDCourseRegistrationRequest.objects.filter(
+            student=student, semester=semester, status__in=['Pending', 'Approved'],
+            source_course__isnull=False,
+        ).exclude(course_slot=slot).values_list('source_course_id', 'course_slot__name'))
+        sources = _phd_bl_source_courses(student)
+        for source in sources:
+            source['claimed_by'] = claimed.get(source['id'])
+        payload['source_courses'] = sources
+    return JsonResponse(payload, status=200)
 
 
 @api_view(['POST'])
@@ -10197,6 +10456,7 @@ def phd_submit_course_request(request):
 
     slot_id = request.data.get('slot_id')
     course_id = request.data.get('course_id')
+    source_course_id = request.data.get('source_course_id')
     if not slot_id or not course_id:
         return JsonResponse({'error': 'slot_id and course_id are required'}, status=400)
 
@@ -10206,26 +10466,60 @@ def phd_submit_course_request(request):
             semester_no=student.curr_semester_no,
         )
         slot = CourseSlot.objects.get(id=slot_id, semester=semester)
-        course = slot.courses.get(id=course_id)
     except Semester.DoesNotExist:
         return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
     except CourseSlot.DoesNotExist:
         return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
-    except Courses.DoesNotExist:
-        return JsonResponse({'error': 'Course not found in this slot'}, status=404)
 
-    # BL (backlog) slots: enforce the UG add-course grade gate.
-    if slot.name.startswith('BL'):
-        allowed, grade = _phd_bl_grade_status(student.id.user.username, course)
-        if grade is None:
-            return JsonResponse({'error': 'You can only register for BL courses if you have a grade below C+ in this course. No grade record found.'}, status=400)
-        if not allowed:
-            return JsonResponse({'error': f'You can only register for BL courses with grades below C+. Your grade: {grade}'}, status=400)
+    is_bl = slot.name.startswith('BL')
+    source_course = None
+    registration_type = ''
+
+    if is_bl:
+        if not source_course_id:
+            return JsonResponse({'error': 'source_course_id is required for a BL slot'}, status=400)
+        eligible = {c['id']: c for c in _phd_bl_source_courses(student)}
+        source = eligible.get(int(source_course_id))
+        if not source:
+            return JsonResponse({'error': 'That course is not one you can clear: a BL slot needs a course you scored below C+ in.'}, status=400)
+        registration_type = source['registration_type']
+        # An OE course can be cleared by a different course from this slot;
+        # anything else has to be the same course taken again.
+        if source['replaceable']:
+            # a retake is allowed even though it is not one of the stand-ins
+            if int(course_id) == source['id']:
+                course = Courses.objects.get(id=source['id'])
+            else:
+                try:
+                    course = slot.courses.get(id=course_id)
+                except Courses.DoesNotExist:
+                    return JsonResponse({'error': 'Course not found in this slot'}, status=404)
+        elif int(course_id) != source['id']:
+            return JsonResponse({'error': f"{source['code']} was not taken in an open elective slot, so it has to be cleared by retaking the same course."}, status=400)
+        else:
+            course = Courses.objects.get(id=source['id'])
+        source_course = Courses.objects.get(id=source['id'])
+    else:
+        try:
+            course = slot.courses.get(id=course_id)
+        except Courses.DoesNotExist:
+            return JsonResponse({'error': 'Course not found in this slot'}, status=404)
 
     if PhDCourseRegistrationRequest.objects.filter(
         student=student, semester=semester, course_slot=slot, status__in=['Pending', 'Approved']
     ).exists():
         return JsonResponse({'error': 'You already have a request for this slot'}, status=400)
+
+    # One backlog is cleared once: without this a second slot could clear the
+    # same course again and earn its credits twice.
+    if source_course:
+        clash = PhDCourseRegistrationRequest.objects.filter(
+            student=student, semester=semester, source_course=source_course,
+            status__in=['Pending', 'Approved'],
+        ).exclude(course_slot=slot).select_related('course_slot').first()
+        if clash:
+            return JsonResponse({'error': f"{source_course.code} is already being cleared "
+                                          f"through {clash.course_slot.name} this semester."}, status=400)
 
     academic_year, semester_type = generate_current_session(
         datetime.datetime.now().year, student.curr_semester_no
@@ -10239,6 +10533,8 @@ def phd_submit_course_request(request):
             'academic_year': academic_year,
             'semester_type': semester_type,
             'course': course,
+            'source_course': source_course,
+            'registration_type': registration_type,
             'status': 'Pending',
             'remarks': '',
             'requested_at': timezone.now(),
@@ -10277,7 +10573,8 @@ def phd_my_course_requests(request):
         return err
 
     qs = PhDCourseRegistrationRequest.objects.filter(student=student) \
-        .select_related('course', 'course_slot', 'semester').order_by('-requested_at')
+        .select_related('course', 'source_course', 'course_slot', 'semester') \
+        .order_by('-requested_at')
 
     data = [{
         'id': r.id,
@@ -10285,6 +10582,8 @@ def phd_my_course_requests(request):
         'course': r.course.code,
         'course_name': r.course.name,
         'credit': r.course.credit,
+        'source_course': r.source_course.code if r.source_course_id else None,
+        'registration_type': r.registration_type or None,
         'semester_no': r.semester.semester_no,
         'academic_year': r.academic_year,
         'semester_type': r.semester_type,
@@ -10300,7 +10599,7 @@ def phd_my_course_requests(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def phd_admin_list_requests(request):
     """
     GET /acadadmin/phd/course-requests/?academic_year=&semester_type=&semester=&status=
@@ -10309,8 +10608,10 @@ def phd_admin_list_requests(request):
     teaching-credit enrollment list endpoints (used by the merged admin view).
     """
     qs = PhDCourseRegistrationRequest.objects.select_related(
-        'student__id__user', 'student__batch_id__discipline', 'course', 'course_slot', 'semester'
+        'student__id__user', 'student__batch_id__discipline', 'course', 'source_course',
+        'course_slot', 'semester'
     ).all().order_by('-requested_at')
+    qs = scope_via_student(qs, scopes_for(request.user), 'student')
 
     year = request.GET.get('academic_year', '').strip()
     sem_type = request.GET.get('semester_type', '').strip()
@@ -10324,7 +10625,14 @@ def phd_admin_list_requests(request):
     if sem_no:
         qs = qs.filter(semester__semester_no=sem_no)
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
+
+    # Pending first, so the rows needing action survive the cap below.
+    qs = qs.order_by(
+        Case(When(status__iexact='pending', then=0), default=1,
+             output_field=IntegerField()),
+        '-requested_at',
+    )
 
     qs = qs[:500]
 
@@ -10338,6 +10646,8 @@ def phd_admin_list_requests(request):
         'course': r.course.code,
         'course_name': r.course.name,
         'credit': r.course.credit,
+        'source_course': r.source_course.code if r.source_course_id else None,
+        'registration_type': r.registration_type or None,
         'semester_no': r.semester.semester_no,
         'academic_year': r.academic_year,
         'semester_type': r.semester_type,
@@ -10354,7 +10664,7 @@ def phd_admin_list_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def phd_admin_process_requests(request):
     """
     POST /acadadmin/phd/course-requests/process/
@@ -10362,6 +10672,8 @@ def phd_admin_process_requests(request):
     Approving creates the real course_registration row; rejecting just marks status.
     """
     request_ids = request.data.get('request_ids', [])
+    request_ids = scoped_ids(
+        PhDCourseRegistrationRequest, request_ids, scopes_for(request.user))
     action = str(request.data.get('action', 'approve')).lower().strip()
     remarks = request.data.get('remarks', '')
 
@@ -10430,20 +10742,20 @@ def phd_admin_process_requests(request):
             results.append({'id': req_id, 'status': 'error', 'detail': 'Already registered'})
             continue
 
-        # Registration type from the prior grade (same rule as the UG add approval).
-        registration_type = 'Regular'
-        _sg = Student_grades.objects.filter(
-            roll_no=req.student.id.user.username, course_id=req.course,
-        ).order_by('-year', '-semester').first()
-        if _sg and _sg.grade:
-            if _sg.grade in ['F', 'X', 'CD']:
-                registration_type = 'Backlog'
-            elif _sg.grade in ['C', 'D+', 'D']:
-                registration_type = 'Improvement'
+        # A BL request clears its source course, which for a stand-in is not the
+        # course being registered; that source carries the grade and the
+        # registration this one replaces.
+        cleared_course = req.source_course or req.course
 
-        # The prior registration of this course (the failed/low attempt) is the one being replaced.
+        # Registration type from the prior grade (same rule as the UG add approval).
+        _sg = latest_grade(req.student.id.user.username, cleared_course)
+        registration_type = registration_type_for_grade(_sg.grade if _sg else None)
+        if registration_type == 'Regular' and req.registration_type:
+            registration_type = req.registration_type
+
+        # The prior registration of the cleared course (the low attempt) is the one being replaced.
         old_reg = course_registration.objects.filter(
-            student_id=req.student, course_id=req.course,
+            student_id=req.student, course_id=cleared_course,
         ).order_by('-working_year', '-semester_id__semester_no').first()
 
         try:

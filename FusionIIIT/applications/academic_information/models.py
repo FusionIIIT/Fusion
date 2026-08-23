@@ -136,23 +136,39 @@ def resolve_offering(student, course, year, semester_type):
     working_year for both Odd and Even semesters).
     """
     from applications.programme_curriculum.models import CourseInstructor
-    qs = CourseInstructor.objects.filter(
+    return pick_offering(student, list(CourseInstructor.objects.filter(
         course_id=course, year=year, semester_type=semester_type,
-    )
+    )))
+
+
+def pick_offering(student, offerings):
+    """Apply resolve_offering's rules to offerings already loaded for one course."""
     section = getattr(student, 'section', None)
     if section:
-        match = qs.filter(section_label=section).first()
-        if match:
-            return match
+        for offering in offerings:
+            if offering.section_label == section:
+                return offering
     # Elective / single-offering: exactly one no-section offering. If more than
     # one exists (legacy team-taught rows), it is ambiguous -> return None rather
     # than guess an instructor, so it can be relabelled deliberately.
-    nulls = list(qs.filter(section_label__isnull=True)[:2])
+    nulls = [o for o in offerings if o.section_label is None]
     if len(nulls) == 1:
         return nulls[0]
-    if not nulls and qs.count() == 1:
-        return qs.first()
+    if not nulls and len(offerings) == 1:
+        return offerings[0]
     return None
+
+
+def offerings_by_course(course_ids, year, semester_type):
+    """One query for many courses, grouped by course id, for pick_offering."""
+    from applications.programme_curriculum.models import CourseInstructor
+    grouped = {}
+    offerings = CourseInstructor.objects.filter(
+        course_id__in=course_ids, year=year, semester_type=semester_type,
+    ).select_related('instructor_id__id__user')
+    for offering in offerings:
+        grouped.setdefault(offering.course_id_id, []).append(offering)
+    return grouped
 
 
 class Student(models.Model):
@@ -169,6 +185,8 @@ class Student(models.Model):
         batch_id(programme_curriculum.Batch) - reference to the Batch collective details(foreign key, can be null)
         cpi(Float) - to store the current CPI of the student
         category - to store the details about category of a sutdent (General/OBC etc)[not nullable]
+        is_ews(bool) - whether the student holds EWS status, which category alone cannot express
+        is_pwd(bool) - whether the student is a person with disability, orthogonal to category
         father_name(char) - father's name
         mother_name(char) - mother's name
         hall_no(integer) - the hostel number in which the student has been alloted a room
@@ -183,6 +201,8 @@ class Student(models.Model):
     batch_id = models.ForeignKey(Batch, null=True, blank=True, on_delete=models.CASCADE)
     cpi = models.FloatField(default=0)
     category = models.CharField(max_length=10, choices=Constants.CATEGORY, null=False)
+    is_ews = models.BooleanField(default=False)
+    is_pwd = models.BooleanField(default=False)
     father_name = models.CharField(max_length=40, default='',null=True)
     mother_name = models.CharField(max_length=40, default='',null=True)
     hall_no = models.IntegerField(default=0)

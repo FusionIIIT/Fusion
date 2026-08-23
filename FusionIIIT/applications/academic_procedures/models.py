@@ -1948,6 +1948,16 @@ class PhDCourseRegistrationRequest(models.Model):
     course_slot = models.ForeignKey(CourseSlot, on_delete=models.CASCADE)
     course = models.ForeignKey(Courses, on_delete=models.CASCADE,
                                 related_name='phd_course_requests')
+    # BL slots clear a past course. source_course is the one being cleared; it
+    # differs from course only when the past course sat in an OE slot and the
+    # student picked a different course to replace it with.
+    source_course = models.ForeignKey(Courses, null=True, blank=True,
+                                       on_delete=models.SET_NULL,
+                                       related_name='phd_source_course_requests')
+    registration_type = models.CharField(max_length=20, blank=True, choices=[
+        ("Backlog", "Backlog"),
+        ("Improvement", "Improvement"),
+    ])
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
     remarks = models.CharField(max_length=500, blank=True)
     requested_at = models.DateTimeField(default=timezone.now)

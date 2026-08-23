@@ -90,6 +90,7 @@ urlpatterns = [
     url(r'^acad/replacement-requests/$', views.admin_list_requests, name='admin_list_requests'),
     url(r'^acad/replacement-requests/revert/$', views.revert_replacement_to_pending, name='revert_replacement_to_pending'),
     url(r'^acad/replacement-requests/delete/$', views.delete_replacement_requests, name='delete_replacement_requests'),
+    url(r'^acad/pending-counts/$', views.admin_pending_counts, name='admin_pending_counts'),
     url(r'^acad/drop-requests/$', views.admin_list_drop_requests, name='admin_list_drop_requests'),
     url(r'^acad/drop-requests/approve/$', views.approve_drop_requests, name='approve_drop_requests'),
     url(r'^acad/drop-requests/delete/$', views.delete_drop_requests, name='delete_drop_requests'),
