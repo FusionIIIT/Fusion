@@ -212,7 +212,9 @@ class Student(models.Model):
     # B.Tech section (A-F). Derived from discipline + roll parity via
     # compute_section(); (re)set at onboarding and on branch change. Null for
     # non-B.Tech students and disciplines without a section mapping.
-    section = models.CharField(max_length=2, choices=Constants.SECTION_CHOICES, null=True, blank=True)
+    # Sections are whatever the office creates -- letters, digits or both --
+    # so the value is not constrained to a fixed list.
+    section = models.CharField(max_length=8, null=True, blank=True)
 
     def __str__(self):
         username = str(self.id.user.username)

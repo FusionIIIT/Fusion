@@ -1655,6 +1655,38 @@ def section_students(request):
     return Response(result)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def sections_in_use(request):
+    """Every section the institute actually uses, so one list feeds each dropdown.
+
+    A section exists because it was assigned to a student or because an offering
+    teaches it, and the office invents its own labels, so neither a fixed A-F
+    list nor one of the two tables alone would be complete.
+    """
+    from applications.programme_curriculum.models import CourseInstructor
+
+    labels = set()
+    for value in (Student.objects
+                  .exclude(section__isnull=True).exclude(section='')
+                  .values_list('section', flat=True).distinct()):
+        labels.add(str(value).strip().upper())
+    for value in (CourseInstructor.objects
+                  .exclude(section_label__isnull=True).exclude(section_label='')
+                  .values_list('section_label', flat=True).distinct()):
+        labels.add(str(value).strip().upper())
+    labels.discard('')
+
+    def order(label):
+        # A, B ... then A1, A2 ... so plain letters lead and numbered follow
+        head = ''.join(c for c in label if not c.isdigit())
+        tail = ''.join(c for c in label if c.isdigit())
+        return (head, int(tail) if tail else -1)
+
+    return Response({'sections': sorted(labels, key=order)})
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -1667,8 +1699,8 @@ def assign_section(request):
     if not roll_numbers:
         return Response({'detail': 'roll_numbers required.'},
                         status=status.HTTP_400_BAD_REQUEST)
-    if section and (len(section) > 2 or not section.isalpha()):
-        return Response({'detail': 'section must be one or two letters.'},
+    if section and (len(section) > 8 or not section.isalnum()):
+        return Response({'detail': 'section must be up to 8 letters or digits.'},
                         status=status.HTTP_400_BAD_REQUEST)
 
     updated = (Student.objects
