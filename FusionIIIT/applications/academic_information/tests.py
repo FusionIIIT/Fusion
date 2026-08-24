@@ -2,7 +2,9 @@ import json
 from types import SimpleNamespace
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import Client, TestCase
+from django.utils import timezone
+from rest_framework.authtoken.models import Token
 
 from applications.academic_information.models import Student
 from applications.academic_information.utils import (
@@ -11,7 +13,9 @@ from applications.academic_information.utils import (
 from applications.academic_procedures.models import (
     FinalRegistration, InitialRegistration, course_registration,
 )
-from applications.globals.models import ExtraInfo, Faculty
+from applications.globals.models import (
+    Designation, ExtraInfo, Faculty, HoldsDesignation,
+)
 from applications.programme_curriculum.models import (
     Batch, Course, CourseInstructor, CourseSlot, Curriculum, Discipline,
     Programme, Semester,
@@ -196,3 +200,78 @@ class AllocationPublicationTests(TestCase):
         self.assertTrue(FinalRegistration.objects.filter(
             student_id=second_student).exists())
         self.assertEqual(FinalRegistration.objects.count(), 2)
+
+
+class PhdStudentListTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        admin = User.objects.create_user(username='roll_list_admin')
+        token = Token.objects.create(user=admin)
+        designation = Designation.objects.create(name='acadadmin')
+        HoldsDesignation.objects.create(
+            user=admin,
+            working=admin,
+            designation=designation,
+            held_at=timezone.now(),
+        )
+        self.auth = 'Token {}'.format(token.key)
+
+        programme = Programme.objects.create(
+            category='PHD', name='Test Ph.D.', programme_begin_year=2026)
+        discipline = Discipline.objects.create(
+            name='Test Doctoral Discipline', acronym='TDD')
+        curriculum = Curriculum.objects.create(
+            programme=programme, name='Test Ph.D. Curriculum',
+            no_of_semester=8)
+        semester = Semester.objects.create(
+            curriculum=curriculum, semester_no=1)
+        canonical_batch = Batch.objects.create(
+            name='PhD (Odd)', discipline=discipline, year=2026,
+            curriculum=curriculum)
+        legacy_batch = Batch.objects.create(
+            name='PhD (Even)', discipline=discipline, year=2026)
+        self.course = Course.objects.create(
+            code='TD8001', name='Doctoral Test Course', credit=4,
+            syllabus='', ref_books='')
+
+        self._register_student(
+            '26TDD001', 'Other', canonical_batch, semester)
+        self._register_student(
+            '26TDD002', 'Ph.D', legacy_batch, semester)
+
+    def _register_student(self, roll_no, programme, batch, semester):
+        user = User.objects.create_user(username=roll_no)
+        extra = ExtraInfo.objects.create(
+            id=roll_no, user=user, user_type='student')
+        student = Student.objects.create(
+            id=extra, programme=programme, batch=2026, batch_id=batch,
+            category='GEN', curr_semester_no=1)
+        course_registration.objects.create(
+            student_id=student,
+            working_year=2026,
+            semester_id=semester,
+            course_id=self.course,
+            registration_type='Regular',
+            session='2026-27',
+            semester_type='Odd Semester',
+        )
+
+    def test_phd_preview_accepts_category_and_legacy_programme_value(self):
+        response = self.client.post(
+            '/aims/api/generatexlsheet',
+            data=json.dumps({
+                'academic_year': '2026-27',
+                'semester_type': 'Odd Semester',
+                'course': self.course.id,
+                'programme_type': 'PHD',
+                'preview_only': True,
+            }),
+            content_type='application/json',
+            HTTP_AUTHORIZATION=self.auth,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            {student['roll_no'] for student in response.json()['students']},
+            {'26TDD001', '26TDD002'},
+        )
