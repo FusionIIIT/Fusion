@@ -34,11 +34,34 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from applications.globals.decorators import role_required
 from applications.globals.api.views import resolve_audience_recipients
+from applications.globals.programme_scope import PROGRAMME_NAMES_BY_SCOPE
 from notifications.signals import notify
 from django.core.cache import cache
 from django.db import connection, transaction
 
 logger = logging.getLogger(__name__)
+
+
+def _student_programme_q(programme_type):
+    scope = (programme_type or '').strip().upper()
+    names = PROGRAMME_NAMES_BY_SCOPE.get(scope)
+    if names:
+        return (
+            Q(batch_id__curriculum__programme__category=scope)
+            | Q(programme__in=names)
+        )
+    return Q(programme=programme_type)
+
+
+def _student_programme_sql(programme_type):
+    scope = (programme_type or '').strip().upper()
+    names = PROGRAMME_NAMES_BY_SCOPE.get(scope)
+    if names:
+        return (
+            " AND (p.category = %s OR s.programme IN %s)",
+            [scope, tuple(names)],
+        )
+    return " AND s.programme = %s", [programme_type]
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -746,6 +769,8 @@ def generate_xlsheet_api(request):
             INNER JOIN auth_user u ON ei.user_id = u.id
             LEFT JOIN academic_information_student s ON ei.id = s.id_id
             LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
+            LEFT JOIN programme_curriculum_curriculum cur ON b.curriculum_id = cur.id
+            LEFT JOIN programme_curriculum_programme p ON cur.programme_id = p.id
             LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
             INNER JOIN programme_curriculum_course c ON cr.course_id_id = c.id
             LEFT JOIN programme_curriculum_courseinstructor ci ON cr.course_instructor_id = ci.id
@@ -766,15 +791,9 @@ def generate_xlsheet_api(request):
             
             # Add programme_type filter if specified
             if programme_type:
-                if programme_type.upper() == 'UG':
-                    sql += " AND s.programme IN ('B.Tech', 'B.Des')"
-                elif programme_type.upper() == 'PG':
-                    sql += " AND s.programme IN ('M.Tech', 'M.Des')"
-                elif programme_type.upper() == 'PHD':
-                    sql += " AND s.programme = 'PhD'"
-                else:
-                    sql += " AND s.programme = %s"
-                    params.append(programme_type)
+                programme_sql, programme_params = _student_programme_sql(programme_type)
+                sql += programme_sql
+                params.extend(programme_params)
 
             # Section = the course offering's section (course_instructor), else home section.
             if section:
@@ -1391,19 +1410,10 @@ def available_courses(request):
     regs = course_registration.objects.filter(session=year, semester_type=sem)
 
     if programme_type:
-        programme_mapping = {
-            'UG': ['B.Tech', 'B.Des'],
-            'PG': ['M.Tech', 'M.Des', 'PhD']
-        }
-        
-        if programme_type in programme_mapping:
-            programmes = programme_mapping[programme_type]
-            from applications.academic_information.models import Student
-            student_ids_with_programme = Student.objects.filter(
-                programme__in=programmes
-            ).values_list('id', flat=True)
-            
-            regs = regs.filter(student_id__in=student_ids_with_programme)
+        student_ids_with_programme = Student.objects.filter(
+            _student_programme_q(programme_type)
+        ).values_list('id', flat=True)
+        regs = regs.filter(student_id__in=student_ids_with_programme)
     
     course_ids = regs.values_list('course_id', flat=True).distinct()
     courses = Courses.objects.filter(id__in=course_ids)
@@ -1467,10 +1477,10 @@ def export_all_courses_zip(request):
     # Build base query for course_registration
     regs = course_registration.objects.filter(session=academic_year, semester_type=semester_type)
     if programme_type:
-        prog_map = {'UG': ['B.Tech', 'B.Des'], 'PG': ['M.Tech', 'M.Des', 'PhD']}
-        if programme_type.upper() in prog_map:
-            stu_ids = Student.objects.filter(programme__in=prog_map[programme_type.upper()]).values_list('id', flat=True)
-            regs = regs.filter(student_id__in=stu_ids)
+        stu_ids = Student.objects.filter(
+            _student_programme_q(programme_type)
+        ).values_list('id', flat=True)
+        regs = regs.filter(student_id__in=stu_ids)
 
     course_ids = regs.values_list('course_id', flat=True).distinct()
     courses = Courses.objects.filter(id__in=course_ids).order_by('code')
@@ -1514,6 +1524,8 @@ def export_all_courses_zip(request):
                 INNER JOIN auth_user u ON ei.user_id = u.id
                 LEFT JOIN academic_information_student s ON ei.id = s.id_id
                 LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
+                LEFT JOIN programme_curriculum_curriculum cur ON b.curriculum_id = cur.id
+                LEFT JOIN programme_curriculum_programme p ON cur.programme_id = p.id
                 LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
                 LEFT JOIN programme_curriculum_courseinstructor ci ON cr.course_instructor_id = ci.id
                 WHERE cr.session = %s AND cr.semester_type = %s AND cr.course_id_id = %s
@@ -1528,11 +1540,9 @@ def export_all_courses_zip(request):
                     params.append(list_type)
 
             if programme_type:
-                pt = programme_type.upper()
-                if pt == 'UG':
-                    sql += " AND s.programme IN ('B.Tech', 'B.Des')"
-                elif pt == 'PG':
-                    sql += " AND s.programme IN ('M.Tech', 'M.Des', 'PhD')"
+                programme_sql, programme_params = _student_programme_sql(programme_type)
+                sql += programme_sql
+                params.extend(programme_params)
 
             sql += ' ORDER BY u.username'
 
