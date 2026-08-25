@@ -1,8 +1,13 @@
 from django.conf.urls import url
 from . import views
+from . import bonafide_certificate
 
 
 urlpatterns = [
+    url(r'^acad/bonafide/student/$', bonafide_certificate.bonafide_student,
+        name='bonafide-student'),
+    url(r'^acad/bonafide/pdf/$', bonafide_certificate.generate_bonafide_pdf,
+        name='bonafide-pdf'),
     # url(r'^stu/details', views.academic_procedures_student, name='student_procedures'),
     # url(r'^stu/pre_registration' , views.student_pre_registration , name = 'pre_registration'),
     url(r'^stu/final_registration' , views.final_registration , name = 'final_registration'),

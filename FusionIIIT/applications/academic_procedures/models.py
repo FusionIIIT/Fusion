@@ -2,6 +2,7 @@ import datetime
 from decimal import Decimal
 
 from django.db import models
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 from applications.academic_information.models import Course, Student, Curriculum
@@ -355,6 +356,34 @@ class Bonafide(models.Model):
 
     class Meta:
         db_table = 'Bonafide'
+
+
+class BonafideCertificate(models.Model):
+    PURPOSE_CHOICES = (
+        ('Scholarship', 'Scholarship'),
+        ('Railway Pass', 'Railway Pass'),
+        ('Education Loan', 'Education Loan'),
+        ('Higher Studies', 'Higher Studies'),
+        ('Staff Benefit Fund', 'Staff Benefit Fund'),
+        ('Bihar Student Credit Card', 'Bihar Student Credit Card'),
+        ('Internship', 'Internship'),
+        ('VISA Purpose', 'VISA Purpose'),
+        ('Other', 'Other'),
+    )
+
+    student = models.ForeignKey(
+        Student, on_delete=models.PROTECT, related_name='bonafide_certificates')
+    purpose = models.CharField(max_length=40, choices=PURPOSE_CHOICES)
+    custom_purpose = models.CharField(max_length=150, blank=True)
+    reference_number = models.CharField(max_length=120, db_index=True, null=True)
+    issued_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+        related_name='issued_bonafide_certificates')
+    issued_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'BonafideCertificate'
+        ordering = ('-issued_at',)
 
 class AssistantshipClaim(models.Model):
     Month_Choices = [
