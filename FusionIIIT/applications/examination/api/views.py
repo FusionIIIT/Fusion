@@ -24,6 +24,7 @@ from applications.globals.programme_scope import (
     scope_via_student,
     scopes_for,
     student_in_scope,
+    programme_display_name,
 )
 from applications.academic_information.models import(Student)
 from applications.online_cms.models import(Student_grades)
@@ -4776,14 +4777,7 @@ def _build_grade_validation_semesters(student):
     except Exception:
         pass
 
-    PROGRAMME_MAP = {
-        "B.Tech": "Bachelor of Technology",
-        "B.Des": "Bachelor of Design",
-        "M.Tech": "Master of Technology",
-        "M.Des": "Master of Design",
-        "PhD": "Doctor of Philosophy",
-    }
-    programme_full = PROGRAMME_MAP.get(student.programme, student.programme or "")
+    programme_full = programme_display_name(student.programme)
 
     discipline_full = ""
     try:
@@ -4856,14 +4850,6 @@ class GradeValidationView(APIView):
                 .order_by("id__user__username")
             )
 
-            PROGRAMME_MAP = {
-                "B.Tech": "Bachelor of Technology",
-                "B.Des": "Bachelor of Design",
-                "M.Tech": "Master of Technology",
-                "M.Des": "Master of Design",
-                "PhD": "Doctor of Philosophy",
-            }
-
             student_list = []
             for s in students:
                 discipline = ""
@@ -4876,7 +4862,7 @@ class GradeValidationView(APIView):
                 student_list.append({
                     "roll_no": s.id.user.username,
                     "name": f"{s.id.user.first_name} {s.id.user.last_name}".strip(),
-                    "programme": PROGRAMME_MAP.get(s.programme, s.programme or ""),
+                    "programme": programme_display_name(s.programme),
                     "discipline": discipline,
                 })
 

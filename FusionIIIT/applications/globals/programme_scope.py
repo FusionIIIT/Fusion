@@ -25,16 +25,35 @@ ALL_ACAD_ROLES = UNSCOPED_ACAD_ROLES + SCOPED_ACAD_ROLES
 STUDENT_CATEGORY_PATH = "batch_id__curriculum__programme__category"
 
 # Programme names as they are stored on Student.programme and on
-# BatchConfiguration.programme. The PhD promotion flow writes 'Ph.D' while
-# academic_information.Constants declares 'PhD', so both spellings count.
+# BatchConfiguration.programme. Legacy PhD rows use multiple spellings.
 PROGRAMME_NAMES_BY_SCOPE = {
     "UG": ("B.Tech", "B.Des"),
     "PG": ("M.Tech", "M.Des"),
-    "PHD": ("PhD", "Ph.D"),
+    "PHD": ("PhD", "Ph.D", "Ph.D.", "PHD"),
+}
+
+PROGRAMME_DISPLAY_NAMES = {
+    "B.Tech": "Bachelor of Technology",
+    "B.Des": "Bachelor of Design",
+    "M.Tech": "Master of Technology",
+    "M.Des": "Master of Design",
+    "PhD": "Doctor of Philosophy",
 }
 
 # 'ug' / 'pg' / 'phd' as the admission-record models spell it
 ADMISSION_TYPE_BY_SCOPE = {"UG": "ug", "PG": "pg", "PHD": "phd"}
+
+
+def canonical_programme_name(name):
+    value = (name or "").strip()
+    if value.upper().replace(".", "") == "PHD":
+        return "PhD"
+    return value
+
+
+def programme_display_name(name):
+    canonical = canonical_programme_name(name)
+    return PROGRAMME_DISPLAY_NAMES.get(canonical, canonical)
 
 
 def _role_names(user):

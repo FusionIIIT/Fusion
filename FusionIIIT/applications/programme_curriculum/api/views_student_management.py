@@ -263,6 +263,7 @@ from applications.globals.programme_scope import (
     admission_record_in_scope,
     admission_type_in_scope,
     batch_in_scope,
+    canonical_programme_name,
     programme_name_in_scope,
     scope_admission_records,
     scope_batches,
@@ -2278,12 +2279,13 @@ def update_student_status(request):
                         else:
                             transfer_message_addition += f" | Using batch: {final_batch.name} (no curriculum assigned to batch)"
 
+                        academic_programme_name = canonical_programme_name(programme_name)
                         academic_student, created = AcademicStudent.objects.get_or_create(
                             id=extra_info, 
                             defaults={
                                 'batch_id': final_batch,
                                 'specialization': specialization,
-                                'programme': programme_name,
+                                'programme': academic_programme_name,
                                 'batch': student.year,  
                                 'father_name': student.father_name or '',  
                                 'mother_name': student.mother_name or '', 
@@ -2299,7 +2301,7 @@ def update_student_status(request):
                         if not created:                         
                             academic_student.specialization = specialization
                             academic_student.batch_id = final_batch
-                            academic_student.programme = programme_name 
+                            academic_student.programme = academic_programme_name
                             academic_student.batch = student.year 
                             academic_student.father_name = student.father_name or ''  
                             academic_student.mother_name = student.mother_name or '' 
