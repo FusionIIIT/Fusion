@@ -2401,12 +2401,13 @@ def allot_courses(request):
     sem_no = request.data.get('semester')
     sem_type = request.data.get('semester_type')
     academic_year = request.data.get('academic_year')
-    working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=sem_type)
     from applications.academic_information.models import resolve_offering
 
     if not all([batch_id, sem_no, sem_type, academic_year]):
         return Response({'error': 'Missing required fields.'},
                         status=status.HTTP_400_BAD_REQUEST)
+
+    working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=sem_type)
 
     try:
         sem_no = int(sem_no)
@@ -2435,10 +2436,23 @@ def allot_courses(request):
                     slot_name = sheet.cell_value(i,1).strip()
                     code = sheet.cell_value(i,2).strip()
 
-                    # user = User.objects.get(username=roll_no)
-                    student = Student.objects.get(id__user__username=roll_no)
-                    slot = CourseSlot.objects.get(name=slot_name, semester=sem)
-                    course = slot.courses.get(code=code)
+                    # Each lookup names what is wrong, so the office can read
+                    # the failed rows without guessing which column is at fault.
+                    try:
+                        student = Student.objects.get(id__user__username=roll_no)
+                    except Exception:
+                        raise ValueError(f"No student with roll number {roll_no}.")
+                    try:
+                        slot = CourseSlot.objects.get(name=slot_name, semester=sem)
+                    except Exception:
+                        raise ValueError(
+                            f"Semester {sem_no} of this batch's curriculum has no slot named '{slot_name}'.")
+                    try:
+                        course = slot.courses.get(code=code)
+                    except Exception:
+                        raise ValueError(
+                            f"'{code}' is not one of the courses in slot '{slot_name}' "
+                            f"(semester {sem_no}); add it to the slot or name the slot that holds it.")
                     if roll_no not in seen:
                         checks.append(StudentRegistrationChecks(
                             student_id=student,
@@ -2462,6 +2476,25 @@ def allot_courses(request):
                         semester_id=sem,
                         verified=True
                     ))
+                    # A repeat within the same term has to say which kind of
+                    # repeat it is, or it collides with the original; the grade
+                    # on record decides that. Across terms the term itself
+                    # already separates the rows.
+                    held = course_registration.objects.filter(
+                        student_id=student, course_id=course, semester_id=sem,
+                        semester_type=sem_type)
+                    reg_type = 'Regular'
+                    if held.exists():
+                        sg = latest_grade(roll_no, course)
+                        reg_type = registration_type_for_grade(sg.grade) if sg else 'Regular'
+                        clash = held.filter(registration_type=reg_type).first()
+                        if clash:
+                            raise ValueError(
+                                f"{roll_no} already holds {code} in semester {sem_no} as "
+                                f"{clash.semester_type} / {clash.registration_type}"
+                                + (f", and has no grade in it yet, so this repeat has no type to take."
+                                   if not sg else "."))
+
                     offering = resolve_offering(student, course, working_year, sem_type)
                     course_regs.append(course_registration(
                         session=academic_year,
@@ -2471,6 +2504,7 @@ def allot_courses(request):
                         student_id=student,
                         course_slot_id=slot,
                         semester_type = sem_type,
+                        registration_type = reg_type,
                         course_instructor = offering
                     ))
                 except Exception as e:
@@ -2487,6 +2521,7 @@ def allot_courses(request):
                 return Response(
                     {
                         'error': 'No valid rows were found in the uploaded file.',
+                        'reasons': sorted({e['error'] for e in row_errors})[:5],
                         'failed_rows': row_errors[:25],
                         'failed_rows_count': len(row_errors)
                     },
@@ -2496,13 +2531,20 @@ def allot_courses(request):
             StudentRegistrationChecks.objects.bulk_create(checks, ignore_conflicts=True)
             InitialRegistration.objects.bulk_create(pre_regs, ignore_conflicts=True)
             FinalRegistration.objects.bulk_create(final_regs, ignore_conflicts=True)
+            # bulk_create drops conflicting rows without saying so, so the count
+            # reported has to come from the table, not from the list length.
+            before = course_registration.objects.count()
             course_registration.objects.bulk_create(course_regs, ignore_conflicts=True)
+            inserted = course_registration.objects.count() - before
+            dropped = len(course_regs) - inserted
 
-        if row_errors:
+        if row_errors or dropped:
             return Response({
                 'message': 'Upload completed with partial success.',
                 'inserted_rows': inserted,
+                'already_registered_rows': dropped,
                 'failed_rows_count': len(row_errors),
+                'reasons': sorted({e['error'] for e in row_errors})[:5],
                 'failed_rows': row_errors[:25]
             }, status=status.HTTP_207_MULTI_STATUS)
 
