@@ -376,6 +376,7 @@ class BonafideCertificate(models.Model):
     purpose = models.CharField(max_length=40, choices=PURPOSE_CHOICES)
     custom_purpose = models.CharField(max_length=150, blank=True)
     reference_number = models.CharField(max_length=120, db_index=True, null=True)
+    pdf_content = models.BinaryField(blank=True, null=True, editable=False)
     issued_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
         related_name='issued_bonafide_certificates')
