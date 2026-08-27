@@ -1,11 +1,13 @@
 import math
 import re
+from datetime import datetime
 from io import BytesIO
 from xml.sax.saxutils import escape
 
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Max
+from django.db.models import Max, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -252,6 +254,77 @@ def _student_queryset():
     )
 
 
+def _effective_purpose(certificate):
+    if certificate.purpose == 'Other':
+        return certificate.custom_purpose
+    return certificate.purpose
+
+
+def _certificate_filename(certificate):
+    roll_number = certificate.student.id.user.username
+    safe_roll_number = re.sub(r'[^A-Za-z0-9_-]', '_', roll_number)
+    return f'{safe_roll_number}_Bonafide_Certificate_{certificate.pk:03d}.pdf'
+
+
+def _certificate_reference(certificate):
+    if certificate.reference_number:
+        return certificate.reference_number
+    prefix = settings.BONAFIDE_REFERENCE_PREFIX.rstrip('/')
+    issued_on = certificate.issued_at.date()
+    roll_number = certificate.student.id.user.username
+    return (
+        f'{prefix}/{issued_on.year}/{issued_on.month:02d}/'
+        f'{roll_number}/{certificate.pk:03d}'
+    )
+
+
+def _certificate_pdf(certificate):
+    if certificate.pdf_content:
+        return bytes(certificate.pdf_content)
+
+    context = build_certificate_context(certificate.student)
+    if not context['is_ready']:
+        return None
+    document = render_bonafide_pdf(
+        context,
+        _effective_purpose(certificate),
+        _certificate_reference(certificate),
+        certificate.issued_at.date(),
+        include_internship_note=certificate.purpose == 'Internship',
+    )
+    return document.getvalue()
+
+
+def _search_certificates(queryset, search):
+    if not search:
+        return queryset
+
+    for date_format in ('%d.%m.%Y', '%d-%m-%Y', '%Y-%m-%d'):
+        try:
+            issued_on = datetime.strptime(search, date_format).date()
+            return queryset.filter(issued_at__date=issued_on)
+        except ValueError:
+            continue
+
+    if search.isdigit():
+        return queryset.filter(pk=int(search))
+
+    fields = (
+        'reference_number__icontains',
+        'student__id__user__username__icontains',
+        'student__id__user__first_name__icontains',
+        'student__id__user__last_name__icontains',
+        'purpose__icontains',
+        'custom_purpose__icontains',
+    )
+    for term in search.split():
+        conditions = Q()
+        for field in fields:
+            conditions |= Q(**{field: term})
+        queryset = queryset.filter(conditions)
+    return queryset
+
+
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -352,13 +425,90 @@ def generate_bonafide_pdf(request):
             issued_on,
             include_internship_note=purpose == 'Internship',
         )
+        document_bytes = document.getvalue()
+        certificate.pdf_content = document_bytes
+        certificate.save(update_fields=['pdf_content'])
 
-    filename_roll = re.sub(r'[^A-Za-z0-9_-]', '_', context['roll_number'])
     response = HttpResponse(
-        document.getvalue(),
+        document_bytes,
         content_type='application/pdf',
     )
     response['Content-Disposition'] = (
-        f'attachment; filename="{filename_roll}_Bonafide_Certificate.pdf"')
+        f'attachment; filename="{_certificate_filename(certificate)}"')
     response['X-Certificate-Reference'] = reference_number
+    return response
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def bonafide_certificates(request):
+    search = (request.query_params.get('search') or '').strip()
+    try:
+        page_size = int(request.query_params.get('page_size', 20))
+    except (TypeError, ValueError):
+        page_size = 20
+    page_size = min(max(page_size, 1), 100)
+
+    queryset = BonafideCertificate.objects.select_related(
+        'student__id__user',
+    ).order_by('-issued_at', '-pk')
+    queryset = _search_certificates(queryset, search).distinct()
+    page = Paginator(queryset, page_size).get_page(
+        request.query_params.get('page', 1))
+
+    results = []
+    for certificate in page.object_list:
+        results.append({
+            'id': certificate.pk,
+            'serial_number': f'{certificate.pk:03d}',
+            'reference_number': _certificate_reference(certificate),
+            'roll_number': certificate.student.id.user.username,
+            'name': _student_name(certificate.student),
+            'purpose': _effective_purpose(certificate),
+            'issued_on': certificate.issued_at.strftime('%d.%m.%Y'),
+        })
+
+    return Response({
+        'results': results,
+        'count': page.paginator.count,
+        'page': page.number,
+        'page_size': page_size,
+        'total_pages': page.paginator.num_pages,
+    })
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def bonafide_certificate_pdf(request, certificate_id):
+    certificate = get_object_or_404(
+        BonafideCertificate.objects.select_related(
+            'student__id__user', 'student__id__department',
+            'student__batch_id__discipline',
+            'student__batch_id__curriculum__programme',
+        ),
+        pk=certificate_id,
+    )
+    document_bytes = _certificate_pdf(certificate)
+    if document_bytes is None:
+        return Response(
+            {
+                'error': 'The certificate cannot be rendered because the '
+                         'student record is now incomplete.'
+            },
+            status=status.HTTP_409_CONFLICT,
+        )
+
+    disposition = (
+        'attachment'
+        if request.query_params.get('download') in {'1', 'true', 'True'}
+        else 'inline'
+    )
+    response = HttpResponse(document_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f'{disposition}; filename="{_certificate_filename(certificate)}"')
+    response['X-Certificate-Reference'] = _certificate_reference(certificate)
     return response

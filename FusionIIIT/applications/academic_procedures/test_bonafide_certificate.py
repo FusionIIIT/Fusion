@@ -162,6 +162,7 @@ class BonafideCertificateTests(TestCase):
         certificate = BonafideCertificate.objects.get()
         self.assertEqual(certificate.student, self.student)
         self.assertEqual(certificate.purpose, 'Internship')
+        self.assertEqual(bytes(certificate.pdf_content), response.content)
         self.assertRegex(
             certificate.reference_number,
             rf'/26BCS1234/{certificate.pk:03d}$',
@@ -260,6 +261,104 @@ class BonafideCertificateTests(TestCase):
         self.assertIn('request for Conference Participation.', text)
         self.assertNotIn('Note: No objection certificate', text)
 
+    def test_certificate_history_supports_search_and_pagination(self):
+        certificates = []
+        for purpose, custom_purpose in (
+                ('Scholarship', ''), ('Other', 'Conference Participation')):
+            certificates.append(BonafideCertificate.objects.create(
+                student=self.student,
+                purpose=purpose,
+                custom_purpose=custom_purpose,
+                reference_number=(
+                    f'IIITDMJ/AR/2026/08/{self.student.pk}/'
+                    f'{BonafideCertificate.objects.count() + 1:03d}'
+                ),
+                issued_by=self.admin,
+            ))
+
+        response = self.client.get(
+            '/academic-procedures/api/acad/bonafide/certificates/',
+            {'page': 1, 'page_size': 1},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(response.data['total_pages'], 2)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(
+            response.data['results'][0]['purpose'],
+            'Conference Participation',
+        )
+
+        serial_search = self.client.get(
+            '/academic-procedures/api/acad/bonafide/certificates/',
+            {'search': str(certificates[1].pk)},
+        )
+        self.assertEqual(serial_search.status_code, 200)
+        self.assertEqual(serial_search.data['count'], 1)
+        self.assertEqual(
+            serial_search.data['results'][0]['id'], certificates[1].pk)
+
+        for search in (
+                '26BCS1234', 'Ananya Venkateshwarlu',
+                'Conference Participation'):
+            with self.subTest(search=search):
+                result = self.client.get(
+                    '/academic-procedures/api/acad/bonafide/certificates/',
+                    {'search': search},
+                )
+                self.assertEqual(result.status_code, 200)
+                self.assertGreaterEqual(result.data['count'], 1)
+
+        date_search = self.client.get(
+            '/academic-procedures/api/acad/bonafide/certificates/',
+            {'search': BonafideCertificate.objects.first().issued_at.strftime('%d.%m.%Y')},
+        )
+        self.assertEqual(date_search.status_code, 200)
+        self.assertEqual(date_search.data['count'], 2)
+
+    def test_generated_certificate_can_be_previewed_and_downloaded(self):
+        generated = self.client.post(
+            '/academic-procedures/api/acad/bonafide/pdf/',
+            {'student_id': self.student.pk, 'purpose': 'Scholarship'},
+            format='json',
+        )
+        certificate = BonafideCertificate.objects.get()
+
+        preview = self.client.get(
+            f'/academic-procedures/api/acad/bonafide/certificates/{certificate.pk}/pdf/'
+        )
+        self.assertEqual(preview.status_code, 200)
+        self.assertTrue(preview['Content-Disposition'].startswith('inline;'))
+        self.assertEqual(preview.content, generated.content)
+
+        download = self.client.get(
+            f'/academic-procedures/api/acad/bonafide/certificates/{certificate.pk}/pdf/',
+            {'download': '1'},
+        )
+        self.assertEqual(download.status_code, 200)
+        self.assertTrue(download['Content-Disposition'].startswith('attachment;'))
+        self.assertEqual(download.content, generated.content)
+
+    def test_legacy_certificate_without_stored_pdf_can_be_previewed(self):
+        certificate = BonafideCertificate.objects.create(
+            student=self.student,
+            purpose='Railway Pass',
+            reference_number='IIITDMJ/AR/2026/08/26BCS1234/001',
+            issued_by=self.admin,
+        )
+
+        response = self.client.get(
+            f'/academic-procedures/api/acad/bonafide/certificates/{certificate.pk}/pdf/'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.content.startswith(b'%PDF-'))
+        text = ' '.join(
+            PdfFileReader(BytesIO(response.content)).getPage(0).extractText().split()
+        )
+        self.assertIn('request for Railway Pass.', text)
+
     def test_non_acadadmin_cannot_access_certificate_data(self):
         user = User.objects.create_user(username='student-role-user')
         designation = Designation.objects.create(name='student')
@@ -273,3 +372,7 @@ class BonafideCertificateTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
+        history = self.client.get(
+            '/academic-procedures/api/acad/bonafide/certificates/'
+        )
+        self.assertEqual(history.status_code, 403)
