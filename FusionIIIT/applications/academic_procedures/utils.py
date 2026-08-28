@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 
 from django.core.mail import EmailMultiAlternatives
@@ -11,13 +12,42 @@ logger = logging.getLogger(__name__)
 
 INVITATION_TIMEOUT_DAYS = 15
 
+
+def frontend_base_url():
+    """Base URL for links mailed to examiners.
+
+    An explicitly exported FRONTEND_URL wins. Failing that the domain
+    registered in the sites table is used, because these mails also go out
+    from a background task that does not necessarily inherit the web
+    server's environment -- and a link to localhost is useless to an
+    examiner outside the institute.
+    """
+    explicit = os.environ.get('FRONTEND_URL')
+    if explicit:
+        return explicit.rstrip('/')
+    try:
+        from django.contrib.sites.models import Site
+        domain = Site.objects.get_current().domain.strip().strip('/')
+    except Exception:
+        logger.exception("Could not read the configured site domain")
+        domain = ''
+    if domain and domain != 'example.com':
+        if domain.startswith(('http://', 'https://')):
+            return domain.rstrip('/')
+        local = domain.startswith(('localhost', '127.0.0.1'))
+        return f"{'http' if local else 'https'}://{domain}"
+    logger.warning(
+        "Neither FRONTEND_URL nor a site domain is configured; "
+        "emailed links will point at the development server")
+    return getattr(settings, 'FRONTEND_URL', 'http://localhost:5173').rstrip('/')
+
 def send_invitation_email(inv):
     """
     Send the initial invitation email to the professor with template rendering.
     """
     try:
         thesis_title = inv.submission.thesis.research_theme
-        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+        frontend_url = frontend_base_url()
         accept_url = f"{frontend_url}/thesis-invitation/{inv.token}/accept"
         reject_url = f"{frontend_url}/thesis-invitation/{inv.token}/reject"
         expires_at = inv.expires_at.strftime('%Y-%m-%d') if inv.expires_at else 'N/A'
@@ -55,7 +85,7 @@ def send_review_form_email(inv):
     """
     try:
         thesis_title = inv.submission.thesis.research_theme
-        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+        frontend_url = frontend_base_url()
         review_url = f"{frontend_url}/thesis-evaluation/{inv.token}"
 
         context = {
@@ -118,7 +148,7 @@ def send_examiner_panel_invitation_email(candidate):
     """
     try:
         batch_name = str(candidate.panel.batch)
-        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+        frontend_url = frontend_base_url()
         accept_url = f"{frontend_url}/thesis-examiner-panel/{candidate.token}/accept"
         reject_url = f"{frontend_url}/thesis-examiner-panel/{candidate.token}/reject"
         expires_at = candidate.expires_at.strftime('%Y-%m-%d') if candidate.expires_at else 'N/A'
@@ -155,7 +185,7 @@ def send_examiner_panel_scoring_email(candidate):
     """
     try:
         batch_name = str(candidate.panel.batch)
-        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+        frontend_url = frontend_base_url()
         scoring_url = f"{frontend_url}/thesis-examiner-panel/{candidate.token}/score"
 
         context = {
