@@ -70,7 +70,7 @@ from applications.academic_procedures.views import (get_user_semester, get_acad_
                                                     InitialRegistration)
 
 from applications.academic_procedures.views import get_sem_courses, get_student_registrtion_check, get_cpi, academics_module_notif, get_final_registration_choices, get_currently_registered_course, get_add_course_options, get_drop_course_options, get_replace_course_options
-from applications.examination.api.views import parse_academic_year
+from applications.examination.api.views import parse_academic_year, calculate_cpi_for_student
 
 from . import serializers
 
@@ -8024,7 +8024,10 @@ def rpc_finalize(request, pk):
     return JsonResponse({"message": "Seminar approved."})
 
 
-from applications.academic_procedures.models import ThesisSubmission, ReviewInvitation, ThesisReview, ExaminerBankDetails
+from applications.academic_procedures.models import (
+    ThesisSubmission, ReviewInvitation, ThesisReview, ExaminerBankDetails,
+    ThesisRevisionRound, ThesisRevisionConsent,
+)
 from applications.academic_procedures.utils import (
     send_invitation_email,
     send_review_form_email,
@@ -8032,6 +8035,16 @@ from applications.academic_procedures.utils import (
     advance_invitation,
     INVITATION_TIMEOUT_DAYS,
 )
+
+
+def _current_invitation(sub, examiner_type):
+    """The examiner currently 'holding' this category -- the one who accepted
+    (or is still pending a response) rather than one who rejected/expired and
+    was passed over. There's only ever one non-finalized-out invitation per
+    category once the panel has been sent out."""
+    return ReviewInvitation.objects.filter(
+        submission=sub, examiner_type=examiner_type
+    ).exclude(status__in=['rejected', 'expired']).order_by('priority').first()
 
 # 1. Student submits thesis
 @api_view(['POST'])
@@ -8100,6 +8113,7 @@ def thesis_submission_status(request):
     except ThesisSubmission.DoesNotExist:
         return Response({'submission': None}, status=200)
 
+    current_round = sub.revision_rounds.order_by('-round_number').first()
     return Response({
         'submission': {
             'id': sub.id,
@@ -8110,6 +8124,13 @@ def thesis_submission_status(request):
             'thesis_report_url': sub.thesis_report.url if sub.thesis_report else None,
             'dean_panel_remarks': sub.dean_panel_remarks,
             'director_remarks': sub.director_remarks,
+            # Only meaningful (and only the student's turn) when status is
+            # 'student_revision_pending' -- revised_thesis_url null means
+            # they haven't uploaded yet.
+            'pending_revision_round': (
+                current_round.round_number
+                if sub.status == 'student_revision_pending' and current_round else None
+            ),
         },
     }, status=200)
 
@@ -8211,6 +8232,42 @@ def supervisor_submission_detail(request, submission_id):
     })
 
 
+def _serialize_examiner_reports(sub):
+    """Completed examiners' latest-round reports for a submission. Identity
+    redaction is deliberately not applied here yet -- deferred until the
+    exact rule is confirmed with officials."""
+    completed = (
+        ReviewInvitation.objects
+        .filter(submission=sub, status='completed')
+        .prefetch_related('reviews')
+        .order_by('examiner_type', 'priority')
+    )
+    reviews = []
+    for inv in completed:
+        # Only the latest round's report matters here -- earlier rounds
+        # are superseded once the examiner reconfirms on a revision.
+        latest = inv.reviews.order_by('-round_number').first()
+        if latest is None:
+            continue
+        reviews.append({
+            'examiner_type': inv.examiner_type,
+            'examiner_name': inv.prof_name,
+            'examiner_email': inv.prof_email,
+            'round_number': latest.round_number,
+            'originality_presentation': latest.originality_presentation,
+            'quality_comparable': latest.quality_comparable,
+            'new_ideas_original': latest.new_ideas_original,
+            'correction_severity': latest.correction_severity,
+            'technical_content': latest.technical_content,
+            'highlights': latest.highlights,
+            'suggestions': latest.suggestions,
+            'defense_questions': latest.defense_questions,
+            'recommendation': latest.recommendation,
+            'submitted_at': latest.submitted_at,
+        })
+    return reviews
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def supervisor_review_reports(request):
@@ -8225,30 +8282,7 @@ def supervisor_review_reports(request):
 
     data = []
     for sub in ThesisSubmission.objects.filter(thesis__in=topics):
-        completed = (
-            ReviewInvitation.objects
-            .filter(submission=sub, status='completed')
-            .select_related('review')
-            .order_by('examiner_type', 'priority')
-        )
-        reviews = [
-            {
-                'examiner_type': inv.examiner_type,
-                'examiner_name': inv.prof_name,
-                'examiner_email': inv.prof_email,
-                'originality_presentation': inv.review.originality_presentation,
-                'quality_comparable': inv.review.quality_comparable,
-                'new_ideas_original': inv.review.new_ideas_original,
-                'correction_severity': inv.review.correction_severity,
-                'technical_content': inv.review.technical_content,
-                'highlights': inv.review.highlights,
-                'suggestions': inv.review.suggestions,
-                'defense_questions': inv.review.defense_questions,
-                'recommendation': inv.review.recommendation,
-                'submitted_at': inv.review.submitted_at,
-            }
-            for inv in completed if hasattr(inv, 'review')
-        ]
+        reviews = _serialize_examiner_reports(sub)
         if reviews:
             data.append({
                 'id': sub.id,
@@ -8256,9 +8290,45 @@ def supervisor_review_reports(request):
                 'student_name': sub.thesis.student.id.user.get_full_name(),
                 'student_roll': sub.thesis.student.id.id,
                 'reviews': reviews,
+                'status': sub.status,
+                'status_label': sub.get_status_display(),
+                'reports_forwarded_at': sub.reports_forwarded_at,
+                'current_round': _serialize_revision_round(sub, request),
             })
 
     return Response(data)
+
+
+def _serialize_revision_round(sub, request):
+    """Latest revision round + RPC consent progress, or None if the
+    submission hasn't reached the revision stage."""
+    round_obj = sub.revision_rounds.order_by('-round_number').first()
+    if round_obj is None:
+        return None
+
+    base = request.build_absolute_uri(settings.MEDIA_URL)
+    committee = CommitteeMember.objects.filter(thesis=sub.thesis).select_related('member__id__user')
+    consents = {
+        c.member_id: c
+        for c in ThesisRevisionConsent.objects.filter(round=round_obj)
+    }
+    members = [
+        {
+            'member_name': cm.member.id.user.get_full_name(),
+            'consented': consents[cm.member_id].consented if cm.member_id in consents else False,
+            'remarks': consents[cm.member_id].remarks if cm.member_id in consents else '',
+        }
+        for cm in committee
+    ]
+    return {
+        'round_number': round_obj.round_number,
+        'revised_thesis_url': (base + round_obj.revised_thesis.name) if round_obj.revised_thesis else None,
+        'revised_at': round_obj.revised_at,
+        'supervisor_consented_at': round_obj.supervisor_consented_at,
+        'committee': members,
+        'committee_size': len(members),
+        'consented_count': sum(1 for m in members if m['consented']),
+    }
 
 
 # 3) Supervisor assign examiners
@@ -8344,20 +8414,23 @@ def supervisor_assign(request):
 # 4) Dean panel dashboard: a single "action required" queue covering both
 #    panel approval and invitation-sending, plus a read-only history.
 ACTION_STATUSES = {
-    'dean_panel_review':  ('approve_panel', 'Forward Panel'),
-    'dean_invite_pending': ('send_invitations', 'Send Invitations'),
+    'dean_panel_review':      ('approve_panel', 'Forward Panel'),
+    'dean_invite_pending':    ('send_invitations', 'Send Invitations'),
+    'examiner_reports_ready': ('forward_reports', 'Forward Reports to Supervisor'),
+    'dean_final_review':      ('final_review', 'Final Review'),
 }
 
 # Friendly labels for the Dean's read-only History tab. 'submitted' only
 # reaches history once it has been through dean_panel_review at least once
 # (see the history query below), so here it always means "sent back".
 STATUS_LABELS = {
-    'submitted':      'Sent Back to Supervisor',
-    'director_review': 'With Director',
-    'in_review':      'In External Review',
-    'approved':       'Approved',
-    'rejected':       'Rejected',
-    'completed':      'Completed',
+    'submitted':                  'Sent Back to Supervisor',
+    'director_review':            'With Director',
+    'in_review':                  'In External Review',
+    'supervisor_reports_review':  'With Supervisor',
+    'student_revision_pending':   'Awaiting Student Revision',
+    'supervisor_revision_review': 'Awaiting Supervisor & RPC Consent',
+    'approved_for_defense':       'Approved for Defense',
 }
 
 
@@ -8383,6 +8456,13 @@ def dean_panel_dashboard(request):
             'director_remarks': sub.director_remarks,
             'indian_examiners': indian,
             'foreign_examiners': foreign,
+            'reviews': _serialize_examiner_reports(sub) if sub.status in (
+                'examiner_reports_ready', 'dean_final_review', 'approved_for_defense',
+            ) else [],
+            'current_round': _serialize_revision_round(sub, request) if sub.status in (
+                'student_revision_pending', 'supervisor_revision_review', 'dean_final_review',
+                'approved_for_defense',
+            ) else None,
         }
 
     action_required = []
@@ -8399,6 +8479,15 @@ def dean_panel_dashboard(request):
         elif sub.status == 'dean_invite_pending':
             action, action_label = ACTION_STATUSES[sub.status]
             waiting_since = sub.director_approved_at
+        elif sub.status == 'examiner_reports_ready':
+            action, action_label = ACTION_STATUSES[sub.status]
+            waiting_since = sub.examiner_reports_ready_at
+        elif sub.status == 'dean_final_review':
+            if _dissenting_invitations(sub):
+                action, action_label = 'send_back_to_examiner', 'Send Back to Examiner(s)'
+            else:
+                action, action_label = 'approve_for_defense', 'Approve for Defense'
+            waiting_since = sub.revision_consented_at or sub.final_review_requested_at
         else:
             action, action_label = ACTION_STATUSES[sub.status]
             waiting_since = sub.supervisor_approved_at
@@ -8672,13 +8761,22 @@ def review_detail(request, token):
 
     if request.method == 'GET':
         base = request.build_absolute_uri(settings.MEDIA_URL)
+        # Reconfirmation rounds (revision_round > 1) review the student's
+        # revised thesis from the matching round, not the original upload --
+        # round N here pairs with ThesisRevisionRound N-1's resubmission.
+        report_file = sub.thesis_report
+        if inv.revision_round > 1:
+            prior_round = sub.revision_rounds.filter(round_number=inv.revision_round - 1).first()
+            if prior_round and prior_round.revised_thesis:
+                report_file = prior_round.revised_thesis
         return Response({
             'student_name': topic.student.id.user.get_full_name(),
             'student_roll': topic.student.id.id,
             'student_discipline': topic.student.specialization,
             'thesis_title': topic.research_theme,
             'synopsis_url': base + sub.synopsis.name,
-            'report_url': base + sub.thesis_report.name,
+            'report_url': base + report_file.name,
+            'revision_round': inv.revision_round,
             'examiner_type': inv.examiner_type,
             'examiner': {
                 'name': inv.prof_name,
@@ -8690,11 +8788,10 @@ def review_detail(request, token):
             },
         }, status=200)
 
-    # POST: record the formal evaluation and finalize this examiner's invitation.
-    # Note: this only closes out THIS examiner's invitation -- the other
-    # category's examiner (Indian/Foreign) is untouched and continues its own
-    # lifecycle independently. What happens once both examiners have reviewed
-    # (aggregating outcomes, a final decision, etc.) is not yet implemented.
+    # POST: record the formal evaluation and finalize this examiner's invitation
+    # (for this revision round -- see ReviewInvitation.revision_round). Once
+    # BOTH categories are sitting at 'completed' for their current round, the
+    # submission moves to examiner_reports_ready for the Dean to forward on.
     data = request.data
     if not data.get('recommendation'):
         return Response({'error': 'A specific recommendation is required.'}, status=400)
@@ -8702,6 +8799,7 @@ def review_detail(request, token):
     with transaction.atomic():
         ThesisReview.objects.update_or_create(
             invitation=inv,
+            round_number=inv.revision_round,
             defaults={
                 'originality_presentation': data.get('originality_presentation', ''),
                 'quality_comparable': data.get('quality_comparable'),
@@ -8733,6 +8831,14 @@ def review_detail(request, token):
 
         inv.status = 'completed'
         inv.save(update_fields=['status'])
+
+        indian_inv = _current_invitation(sub, 'indian')
+        foreign_inv = _current_invitation(sub, 'foreign')
+        if (indian_inv and indian_inv.status == 'completed' and
+                foreign_inv and foreign_inv.status == 'completed'):
+            sub.status = 'examiner_reports_ready'
+            sub.examiner_reports_ready_at = timezone.now()
+            sub.save(update_fields=['status', 'examiner_reports_ready_at'])
 
     try:
         send_thank_you_email(inv)
@@ -8782,6 +8888,234 @@ def examiner_honorarium_list(request):
         })
 
     return Response(data)
+
+
+# ===========================================================================
+# Post-evaluation workflow: both examiner reports received -> Dean forwards
+# (identity redaction deliberately deferred, per instruction, until officials
+# confirm the exact rule) -> Supervisor decides revision or not -> Student
+# revises -> Supervisor + RPC consent -> Dean's final call, which either
+# approves for defense or sends the revision back to whichever examiner(s)
+# didn't give a clean accept, unlimited rounds, via ReviewInvitation.revision_round.
+# ===========================================================================
+
+# 11) Dean forwards both examiner reports to the Supervisor.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_forward_reports(request):
+    sub = get_object_or_404(ThesisSubmission, id=request.data.get('submission_id'))
+    if sub.status != 'examiner_reports_ready':
+        return Response({'error': 'Examiner reports are not ready to be forwarded.'}, status=400)
+
+    sub.status = 'supervisor_reports_review'
+    sub.reports_forwarded_at = timezone.now()
+    sub.save(update_fields=['status', 'reports_forwarded_at'])
+    return Response({'detail': 'Reports forwarded to the Supervisor.'})
+
+
+def _require_supervisor(request, sub):
+    topic = sub.thesis
+    allowed_users = {topic.supervisor.id.user_id}
+    if topic.co_supervisor:
+        allowed_users.add(topic.co_supervisor.id.user_id)
+    return request.user.id in allowed_users
+
+
+# 12) Supervisor decides whether the reports call for a revision, or approves
+#     straight through to the Dean's final review.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def supervisor_reports_decision(request):
+    sub = get_object_or_404(ThesisSubmission, id=request.data.get('submission_id'))
+    if not _require_supervisor(request, sub):
+        return Response({'error': 'You are not the supervisor or co-supervisor for this thesis.'}, status=403)
+    if sub.status != 'supervisor_reports_review':
+        return Response({'error': 'This submission is not awaiting your decision.'}, status=400)
+
+    action = request.data.get('action')
+    if action not in ('forward_to_student', 'no_revision_needed'):
+        return Response({'error': 'Unknown action.'}, status=400)
+
+    sub.revision_requested_at = timezone.now()
+    if action == 'forward_to_student':
+        next_round = (sub.revision_rounds.aggregate(m=Max('round_number'))['m'] or 0) + 1
+        ThesisRevisionRound.objects.create(submission=sub, round_number=next_round)
+        sub.status = 'student_revision_pending'
+        detail = 'Forwarded to the student for revision.'
+    else:
+        sub.status = 'dean_final_review'
+        sub.final_review_requested_at = timezone.now()
+        detail = 'No revision needed -- forwarded to the Dean for final approval.'
+    sub.save()
+
+    return Response({'detail': detail})
+
+
+# 13) Student uploads the revised thesis for the current round.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def student_submit_revision(request):
+    sub = get_object_or_404(
+        ThesisSubmission, id=request.data.get('submission_id'),
+        thesis__student__id__user=request.user,
+    )
+    if sub.status != 'student_revision_pending':
+        return Response({'error': 'No revision is currently pending for this submission.'}, status=400)
+
+    round_obj = sub.revision_rounds.order_by('-round_number').first()
+    if round_obj is None or round_obj.revised_thesis:
+        return Response({'error': 'No pending revision round found.'}, status=400)
+
+    file = request.FILES.get('revised_thesis')
+    if not file:
+        return Response({'error': 'A revised thesis file is required.'}, status=400)
+    if file.content_type != 'application/pdf':
+        return Response({'error': 'The revised thesis must be a PDF.'}, status=400)
+    if file.size > 25 * 1024 * 1024:
+        return Response({'error': 'File too large.'}, status=400)
+
+    round_obj.revised_thesis = file
+    round_obj.revised_at = timezone.now()
+    round_obj.save(update_fields=['revised_thesis', 'revised_at'])
+
+    sub.status = 'supervisor_revision_review'
+    sub.revision_submitted_at = timezone.now()
+    sub.save(update_fields=['status', 'revision_submitted_at'])
+
+    return Response({'detail': 'Revised thesis submitted.'})
+
+
+# 14) RPC: list revision rounds awaiting the calling faculty member's consent.
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def thesis_revision_rpc_list(request):
+    faculty = get_object_or_404(Faculty, id__user=request.user)
+    rounds = (
+        ThesisRevisionRound.objects
+        .filter(submission__thesis__committee__member=faculty, submission__status='supervisor_revision_review')
+        .distinct()
+        .select_related('submission__thesis__student__id__user')
+    )
+
+    data = []
+    for r in rounds:
+        sub = r.submission
+        base = request.build_absolute_uri(settings.MEDIA_URL)
+        data.append({
+            'round_id': r.id,
+            'submission_id': sub.id,
+            'round_number': r.round_number,
+            'student_name': sub.thesis.student.id.user.get_full_name(),
+            'thesis_title': sub.thesis.research_theme,
+            'revised_thesis_url': (base + r.revised_thesis.name) if r.revised_thesis else None,
+            'revised_at': r.revised_at,
+            'my_consent_given': ThesisRevisionConsent.objects.filter(
+                round=r, member=faculty, consented=True
+            ).exists(),
+        })
+    return Response(data)
+
+
+# 15) RPC: record this faculty member's consent on a revision round.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def thesis_revision_rpc_consent(request):
+    faculty = get_object_or_404(Faculty, id__user=request.user)
+    round_obj = get_object_or_404(ThesisRevisionRound, id=request.data.get('round_id'))
+    if not CommitteeMember.objects.filter(thesis=round_obj.submission.thesis, member=faculty).exists():
+        return Response({'error': 'You are not on this thesis\'s RPC.'}, status=403)
+    if round_obj.submission.status != 'supervisor_revision_review':
+        return Response({'error': 'This round is not awaiting RPC consent.'}, status=400)
+
+    ThesisRevisionConsent.objects.update_or_create(
+        round=round_obj, member=faculty,
+        defaults={'consented': True, 'remarks': request.data.get('remarks', '')},
+    )
+    return Response({'detail': 'Consent recorded.'})
+
+
+# 16) Supervisor forwards the RPC-consented revision to the Dean, once every
+#     current committee member has consented.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def supervisor_finalize_revision(request):
+    sub = get_object_or_404(ThesisSubmission, id=request.data.get('submission_id'))
+    if not _require_supervisor(request, sub):
+        return Response({'error': 'You are not the supervisor or co-supervisor for this thesis.'}, status=403)
+    if sub.status != 'supervisor_revision_review':
+        return Response({'error': 'This submission is not awaiting revision consent.'}, status=400)
+
+    round_obj = sub.revision_rounds.order_by('-round_number').first()
+    committee_ids = list(CommitteeMember.objects.filter(thesis=sub.thesis).values_list('member_id', flat=True))
+    consented = ThesisRevisionConsent.objects.filter(
+        round=round_obj, consented=True, member_id__in=committee_ids
+    ).count()
+    if not committee_ids or consented < len(committee_ids):
+        return Response({'error': 'Not all RPC members have consented yet.'}, status=400)
+
+    round_obj.supervisor_consented_at = timezone.now()
+    round_obj.save(update_fields=['supervisor_consented_at'])
+
+    sub.status = 'dean_final_review'
+    sub.revision_consented_at = timezone.now()
+    sub.final_review_requested_at = timezone.now()
+    sub.save(update_fields=['status', 'revision_consented_at', 'final_review_requested_at'])
+
+    return Response({'detail': 'Forwarded to the Dean for final approval.'})
+
+
+def _dissenting_invitations(sub):
+    """Examiner categories whose latest review wasn't a clean accept -- these
+    are the ones the Dean sends the revision back to for reconfirmation."""
+    dissenting = []
+    for examiner_type in ('indian', 'foreign'):
+        inv = _current_invitation(sub, examiner_type)
+        if inv is None:
+            continue
+        latest = inv.reviews.order_by('-round_number').first()
+        if latest and latest.recommendation != 'accept':
+            dissenting.append(inv)
+    return dissenting
+
+
+# 17) Dean's final call: approve for defense if every examiner is now a clean
+#     accept, otherwise send the revision back to whoever still isn't (unlimited
+#     rounds -- ReviewInvitation.revision_round just keeps incrementing).
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_final_review_action(request):
+    sub = get_object_or_404(ThesisSubmission, id=request.data.get('submission_id'))
+    if sub.status != 'dean_final_review':
+        return Response({'error': 'This submission is not awaiting your final review.'}, status=400)
+
+    dissenting = _dissenting_invitations(sub)
+
+    with transaction.atomic():
+        if dissenting:
+            for inv in dissenting:
+                inv.revision_round += 1
+                inv.status = 'accepted'
+                inv.save(update_fields=['revision_round', 'status'])
+                try:
+                    send_review_form_email(inv)
+                    inv.review_form_sent = timezone.now()
+                    inv.save(update_fields=['review_form_sent'])
+                except Exception:
+                    logger.exception(f"Failed to re-send review-form email for token {inv.token}")
+            sub.status = 'in_review'
+            sub.save(update_fields=['status'])
+            detail = 'Revised thesis sent back to the examiner(s) for reconfirmation.'
+        else:
+            sub.status = 'approved_for_defense'
+            sub.defense_approved_at = timezone.now()
+            sub.dean = request.user
+            sub.save(update_fields=['status', 'defense_approved_at', 'dean'])
+            detail = 'Approved for defense.'
+
+    return Response({'detail': detail})
 
 
 # ===========================================================================
@@ -11413,21 +11747,95 @@ def _is_exam_supervisor_or_co(request, exam):
 
 def _can_set_exam_date(request, attempt):
     """Supervisor/co-supervisor or any RPC member may set/update the exam date."""
-    if _is_exam_supervisor_or_co(request, attempt.exam):
+    return _is_exam_supervisor_co_or_rpc_member(request, attempt.exam)
+
+
+def _is_exam_supervisor_co_or_rpc_member(request, exam):
+    """Supervisor/co-supervisor or any RPC committee member -- the Manage
+    Comprehensive Examination modal (supervisor_comprehensive_exam_detail) is
+    shared by both audiences (RPC-only members reach it via the "RPC Member"
+    tab's Consent button, per SupervisorComprehensiveExamDashboard)."""
+    if _is_exam_supervisor_or_co(request, exam):
         return True
     try:
         faculty = Faculty.objects.get(id__user=request.user)
     except Faculty.DoesNotExist:
         return False
-    return _exam_rpc_committee(attempt.exam.student).filter(member=faculty).exists()
+    return _exam_rpc_committee(exam.student).filter(member=faculty).exists()
 
 
 def _student_completed_credits(student):
-    """Sum of credits for courses the student has a passing grade for (SemesterMarks)."""
-    total = SemesterMarks.objects.filter(student_id=student).exclude(
+    """Sum of credits for regular courses the student has a passing grade for.
+    Coursework only -- callers needing PhD Thesis/Progress Seminar/Teaching
+    Credit too should add those separately (see _student_total_credits_completed)
+    or, like _compute_open_seminar_eligibility, report them as their own fields.
+
+    Reads Student_grades (the table the current React grade-submission flow
+    and transcript both actually use), not SemesterMarks -- that table is
+    only ever written by an old, disconnected legacy Django-template grading
+    view (academic_procedures/views.py::course_marks_data) and is empty for
+    students graded through the current flow.
+    """
+    total = Student_grades.objects.filter(roll_no=student.id_id).exclude(
         grade__isnull=True
-    ).exclude(grade__in=['F', 'X']).aggregate(total=Sum('curr_id__credit'))['total']
+    ).exclude(grade__in=['F', 'X']).aggregate(total=Sum('course_id__credit'))['total']
     return total or 0
+
+
+def _progress_seminar_credits_completed(student):
+    """Sum of each of the student's rpc_approved ProgressSeminarEntry records at its
+    own catalog credit value (see resolve_progress_seminar_credit -- do not hardcode
+    this number, it varies by the Seminar catalog row)."""
+    thesis_topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+    if not thesis_topic:
+        return 0
+    approved_seminars = thesis_topic.seminars.filter(status='rpc_approved')
+    return sum(
+        resolve_progress_seminar_credit(student, s.semester) for s in approved_seminars
+    )
+
+
+def _thesis_research_credits_completed(student):
+    """Registered credits (ThesisRegistration.credits) are just what the student
+    signed up for -- actual earned credit only counts once a block is graded
+    Satisfactory and the result announced (each block = 3 credits)."""
+    return ThesisEvaluation.objects.filter(
+        registration__student=student, grade='S', announced=True,
+    ).count() * 3
+
+
+def _teaching_credits_completed(student):
+    """Registering for teaching credit (TeachingCreditRegistration) or being
+    allocated a course (TeachingCreditAllocation) isn't earning the credit --
+    only a semester marked 'completed'/'satisfactory' counts, at that
+    semester's own catalog credit value."""
+    return sum(
+        resolve_teaching_credit_credit(student, alloc.semester)
+        for alloc in TeachingCreditAllocation.objects.filter(
+            student=student, status='completed', result='satisfactory',
+        )
+    )
+
+
+def _student_total_credits_completed(student):
+    """Full credits-completed figure: coursework plus PhD Thesis/Progress
+    Seminar/Teaching Credit -- the same four numbers _compute_open_seminar_eligibility
+    reports separately (to avoid double-counting there), summed into one total for
+    eligibility checks (e.g. Comprehensive Exam) that just need a single figure."""
+    return (
+        _student_completed_credits(student)
+        + _progress_seminar_credits_completed(student)
+        + _thesis_research_credits_completed(student)
+        + _teaching_credits_completed(student)
+    )
+
+
+def _student_current_cpi(student):
+    """Live CPI as of now, via the same canonical calculate_cpi_for_student() the
+    transcript uses. Student.cpi itself is a dead field -- nothing in the codebase
+    ever writes to it after grades are submitted -- so it can't be trusted here."""
+    cpi, _, _ = calculate_cpi_for_student(student, student.curr_semester_no, None)
+    return cpi
 
 
 def comprehensive_exam_to_dict(exam):
@@ -11534,8 +11942,8 @@ def supervisor_student_academic_info(request, roll_no):
         return JsonResponse({'error': 'Student not found'}, status=404)
 
     return JsonResponse({
-        'credits_completed': _student_completed_credits(student),
-        'current_cpi': str(student.cpi) if student.cpi is not None else None,
+        'credits_completed': _student_total_credits_completed(student),
+        'current_cpi': str(_student_current_cpi(student)),
     }, status=200)
 
 
@@ -11584,8 +11992,8 @@ def supervisor_propose_comprehensive_exam(request):
         possible_thesis_title=data.get('possible_thesis_title', ''),
         proposed_exam_date=data.get('proposed_exam_date') or None,
         entry_qualification=entry_qualification,
-        credits_completed=_student_completed_credits(student),
-        current_cpi=student.cpi,
+        credits_completed=_student_total_credits_completed(student),
+        current_cpi=_student_current_cpi(student),
     )
 
     _comprehensive_exam_notify(
@@ -11602,9 +12010,11 @@ def supervisor_propose_comprehensive_exam(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def supervisor_comprehensive_exam_detail(request, pk):
-    """GET /supervisor/comprehensive-exam/<pk>/ -> full detail (also used to prefill a resubmission)."""
+    """GET /supervisor/comprehensive-exam/<pk>/ -> full detail (also used to prefill a
+    resubmission, and shared with the RPC Member "Consent" view -- see
+    _is_exam_supervisor_co_or_rpc_member)."""
     exam = get_object_or_404(ComprehensiveExam, pk=pk)
-    if not _is_exam_supervisor_or_co(request, exam):
+    if not _is_exam_supervisor_co_or_rpc_member(request, exam):
         return JsonResponse({'error': 'Not authorized'}, status=403)
     return JsonResponse(comprehensive_exam_to_dict(exam), status=200)
 
@@ -11634,8 +12044,8 @@ def supervisor_resubmit_proposal(request, pk):
         exam.co_supervisor_id = data['co_supervisor_id'] or None
 
     # Re-derive from the student's own records rather than trusting client input.
-    exam.credits_completed = _student_completed_credits(exam.student)
-    exam.current_cpi = exam.student.cpi
+    exam.credits_completed = _student_total_credits_completed(exam.student)
+    exam.current_cpi = _student_current_cpi(exam.student)
 
     exam.status = 'academic_office_pending'
     exam.credits_verified = False
@@ -11705,7 +12115,17 @@ def academic_office_comprehensive_exam_list(request):
     status_param = request.GET.get('status')
     if status_param:
         qs = qs.filter(status=status_param)
-    return JsonResponse({'exams': [comprehensive_exam_to_dict(e) for e in qs]}, status=200)
+    exams = list(qs)
+    # Still-pending exams may have been proposed before the student earned more
+    # credits / their CPI changed -- refresh from current records (and persist,
+    # so what's shown here matches exactly what the verify action will check)
+    # rather than displaying whatever was snapshotted at proposal time.
+    for exam in exams:
+        if exam.status == 'academic_office_pending':
+            exam.credits_completed = _student_total_credits_completed(exam.student)
+            exam.current_cpi = _student_current_cpi(exam.student)
+            exam.save(update_fields=['credits_completed', 'current_cpi'])
+    return JsonResponse({'exams': [comprehensive_exam_to_dict(e) for e in exams]}, status=200)
 
 
 @api_view(['POST'])
@@ -11719,6 +12139,12 @@ def academic_office_verify_comprehensive_exam(request, pk):
     """
     exam = get_object_or_404(ComprehensiveExam, pk=pk, status='academic_office_pending')
     data = request.data
+
+    # Refresh from the student's current records rather than trusting whatever was
+    # snapshotted at proposal time -- the student may have earned more credits
+    # (or their CPI may have changed) since then.
+    exam.credits_completed = _student_total_credits_completed(exam.student)
+    exam.current_cpi = _student_current_cpi(exam.student)
 
     exam.credits_verified = bool(data.get('credits_verified', False))
     exam.cpi_verified = bool(data.get('cpi_verified', False))
@@ -12272,59 +12698,45 @@ def _is_open_seminar_supervisor_or_co(request, seminar):
 
 def _can_set_seminar_date(request, attempt):
     """Supervisor/co-supervisor or any RPC member may set/update the seminar date."""
-    if _is_open_seminar_supervisor_or_co(request, attempt.open_seminar):
+    return _is_seminar_supervisor_co_or_rpc_member(request, attempt.open_seminar)
+
+
+def _is_seminar_supervisor_co_or_rpc_member(request, seminar):
+    """Supervisor/co-supervisor or any RPC committee member -- the Manage Open
+    Seminar modal (supervisor_open_seminar_detail) is shared by both audiences
+    (RPC-only members reach it via the "RPC Member" tab's Consent button,
+    mirroring the Comprehensive Exam flow's _is_exam_supervisor_co_or_rpc_member)."""
+    if _is_open_seminar_supervisor_or_co(request, seminar):
         return True
     try:
         faculty = Faculty.objects.get(id__user=request.user)
     except Faculty.DoesNotExist:
         return False
-    return _exam_rpc_committee(attempt.open_seminar.student).filter(member=faculty).exists()
+    return _exam_rpc_committee(seminar.student).filter(member=faculty).exists()
 
 
 def _compute_open_seminar_eligibility(student):
     """Auto-derive the Constitution form's credit breakdown + RPC recommendation.
 
-    course_work_credits reuses the same SemesterMarks-based helper as
-    Comprehensive Exam; progress_seminar_credits sums each of the student's
-    rpc_approved ProgressSeminarEntry records at its own catalog credit value (see
-    resolve_progress_seminar_credit -- do not hardcode this number, it varies by the
-    Seminar catalog row); thesis_research_credits sums graded-and-announced
-    ThesisEvaluation blocks; teaching_credits sums each satisfactorily-completed
-    TeachingCreditAllocation semester at its own catalog credit value (see
-    resolve_teaching_credit_credit); rpc_recommended_open_seminar reads the
-    latest approved seminar's rec_open field.
+    The four credit numbers are reported separately here (not summed into one
+    total) -- see _student_completed_credits / _progress_seminar_credits_completed /
+    _thesis_research_credits_completed / _teaching_credits_completed for what each
+    one means. rpc_recommended_open_seminar reads the latest approved seminar's
+    rec_open field.
     """
     course_work_credits = _student_completed_credits(student)
+    progress_seminar_credits = _progress_seminar_credits_completed(student)
+    thesis_research_credits = _thesis_research_credits_completed(student)
+    teaching_credits = _teaching_credits_completed(student)
 
     thesis_topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
-    progress_seminar_credits = 0
     rpc_recommended_open_seminar = False
     if thesis_topic:
-        approved_seminars = thesis_topic.seminars.filter(status='rpc_approved')
-        progress_seminar_credits = sum(
-            resolve_progress_seminar_credit(student, s.semester) for s in approved_seminars
-        )
-        latest_approved = approved_seminars.order_by('-version').first()
+        latest_approved = thesis_topic.seminars.filter(
+            status='rpc_approved'
+        ).order_by('-version').first()
         if latest_approved:
             rpc_recommended_open_seminar = (latest_approved.rec_open == 'Yes')
-
-    # Registered credits (ThesisRegistration.credits) are just what the student
-    # signed up for -- actual earned credit only counts once a block is graded
-    # Satisfactory and the result announced (each block = 3 credits).
-    thesis_research_credits = ThesisEvaluation.objects.filter(
-        registration__student=student, grade='S', announced=True,
-    ).count() * 3
-
-    # Registering for teaching credit (TeachingCreditRegistration) or being
-    # allocated a course (TeachingCreditAllocation) isn't earning the credit --
-    # only a semester marked 'completed'/'satisfactory' counts, at that
-    # semester's own catalog credit value.
-    teaching_credits = sum(
-        resolve_teaching_credit_credit(student, alloc.semester)
-        for alloc in TeachingCreditAllocation.objects.filter(
-            student=student, status='completed', result='satisfactory',
-        )
-    )
 
     return {
         'course_work_credits': course_work_credits,
@@ -12556,9 +12968,11 @@ def supervisor_propose_open_seminar(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def supervisor_open_seminar_detail(request, pk):
-    """GET /supervisor/open-seminar/<pk>/ -> full detail (also used to prefill a resubmission)."""
+    """GET /supervisor/open-seminar/<pk>/ -> full detail (also used to prefill a
+    resubmission, and shared with the RPC Member "Consent" view -- see
+    _is_seminar_supervisor_co_or_rpc_member)."""
     seminar = get_object_or_404(OpenSeminar, pk=pk)
-    if not _is_open_seminar_supervisor_or_co(request, seminar):
+    if not _is_seminar_supervisor_co_or_rpc_member(request, seminar):
         return JsonResponse({'error': 'Not authorized'}, status=403)
     return JsonResponse(open_seminar_to_dict(seminar), status=200)
 
