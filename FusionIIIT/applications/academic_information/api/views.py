@@ -11,7 +11,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 import xlsxwriter
 from applications.academic_procedures.models import course_registration
-from applications.academic_information.utils import allocate, check_for_registration_complete
+from applications.academic_information.utils import (
+    allocate, check_for_registration_complete, publish_allocations,
+)
 from applications.globals.models import (HoldsDesignation,Designation)
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
@@ -32,11 +34,34 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from applications.globals.decorators import role_required
 from applications.globals.api.views import resolve_audience_recipients
+from applications.globals.programme_scope import PROGRAMME_NAMES_BY_SCOPE
 from notifications.signals import notify
 from django.core.cache import cache
 from django.db import connection, transaction
 
 logger = logging.getLogger(__name__)
+
+
+def _student_programme_q(programme_type):
+    scope = (programme_type or '').strip().upper()
+    names = PROGRAMME_NAMES_BY_SCOPE.get(scope)
+    if names:
+        return (
+            Q(batch_id__curriculum__programme__category=scope)
+            | Q(programme__in=names)
+        )
+    return Q(programme=programme_type)
+
+
+def _student_programme_sql(programme_type):
+    scope = (programme_type or '').strip().upper()
+    names = PROGRAMME_NAMES_BY_SCOPE.get(scope)
+    if names:
+        return (
+            " AND (p.category = %s OR s.programme IN %s)",
+            [scope, tuple(names)],
+        )
+    return " AND s.programme = %s", [programme_type]
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -281,6 +306,15 @@ def check_allocation_api(request):
             )
 
         result = check_for_registration_complete(batch, sem, year, programme_type)
+
+        # Older allocations stopped at FinalRegistration.  Checking one now
+        # also publishes any missing course_registration rows, so all academic
+        # consumers immediately see the same allocation without a separate
+        # Verify Registration step.
+        if result.get("status") == 2:
+            result["publication"] = publish_allocations(
+                batch, sem, year, programme_type)
+            result["message"] = "Courses already allocated and published"
 
         # Map status values to appropriate HTTP codes
         status_code_map = {
@@ -735,6 +769,8 @@ def generate_xlsheet_api(request):
             INNER JOIN auth_user u ON ei.user_id = u.id
             LEFT JOIN academic_information_student s ON ei.id = s.id_id
             LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
+            LEFT JOIN programme_curriculum_curriculum cur ON b.curriculum_id = cur.id
+            LEFT JOIN programme_curriculum_programme p ON cur.programme_id = p.id
             LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
             INNER JOIN programme_curriculum_course c ON cr.course_id_id = c.id
             LEFT JOIN programme_curriculum_courseinstructor ci ON cr.course_instructor_id = ci.id
@@ -755,15 +791,9 @@ def generate_xlsheet_api(request):
             
             # Add programme_type filter if specified
             if programme_type:
-                if programme_type.upper() == 'UG':
-                    sql += " AND s.programme IN ('B.Tech', 'B.Des')"
-                elif programme_type.upper() == 'PG':
-                    sql += " AND s.programme IN ('M.Tech', 'M.Des')"
-                elif programme_type.upper() == 'PHD':
-                    sql += " AND s.programme = 'PhD'"
-                else:
-                    sql += " AND s.programme = %s"
-                    params.append(programme_type)
+                programme_sql, programme_params = _student_programme_sql(programme_type)
+                sql += programme_sql
+                params.extend(programme_params)
 
             # Section = the course offering's section (course_instructor), else home section.
             if section:
@@ -1380,19 +1410,10 @@ def available_courses(request):
     regs = course_registration.objects.filter(session=year, semester_type=sem)
 
     if programme_type:
-        programme_mapping = {
-            'UG': ['B.Tech', 'B.Des'],
-            'PG': ['M.Tech', 'M.Des', 'PhD']
-        }
-        
-        if programme_type in programme_mapping:
-            programmes = programme_mapping[programme_type]
-            from applications.academic_information.models import Student
-            student_ids_with_programme = Student.objects.filter(
-                programme__in=programmes
-            ).values_list('id', flat=True)
-            
-            regs = regs.filter(student_id__in=student_ids_with_programme)
+        student_ids_with_programme = Student.objects.filter(
+            _student_programme_q(programme_type)
+        ).values_list('id', flat=True)
+        regs = regs.filter(student_id__in=student_ids_with_programme)
     
     course_ids = regs.values_list('course_id', flat=True).distinct()
     courses = Courses.objects.filter(id__in=course_ids)
@@ -1456,10 +1477,10 @@ def export_all_courses_zip(request):
     # Build base query for course_registration
     regs = course_registration.objects.filter(session=academic_year, semester_type=semester_type)
     if programme_type:
-        prog_map = {'UG': ['B.Tech', 'B.Des'], 'PG': ['M.Tech', 'M.Des', 'PhD']}
-        if programme_type.upper() in prog_map:
-            stu_ids = Student.objects.filter(programme__in=prog_map[programme_type.upper()]).values_list('id', flat=True)
-            regs = regs.filter(student_id__in=stu_ids)
+        stu_ids = Student.objects.filter(
+            _student_programme_q(programme_type)
+        ).values_list('id', flat=True)
+        regs = regs.filter(student_id__in=stu_ids)
 
     course_ids = regs.values_list('course_id', flat=True).distinct()
     courses = Courses.objects.filter(id__in=course_ids).order_by('code')
@@ -1503,6 +1524,8 @@ def export_all_courses_zip(request):
                 INNER JOIN auth_user u ON ei.user_id = u.id
                 LEFT JOIN academic_information_student s ON ei.id = s.id_id
                 LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
+                LEFT JOIN programme_curriculum_curriculum cur ON b.curriculum_id = cur.id
+                LEFT JOIN programme_curriculum_programme p ON cur.programme_id = p.id
                 LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
                 LEFT JOIN programme_curriculum_courseinstructor ci ON cr.course_instructor_id = ci.id
                 WHERE cr.session = %s AND cr.semester_type = %s AND cr.course_id_id = %s
@@ -1517,11 +1540,9 @@ def export_all_courses_zip(request):
                     params.append(list_type)
 
             if programme_type:
-                pt = programme_type.upper()
-                if pt == 'UG':
-                    sql += " AND s.programme IN ('B.Tech', 'B.Des')"
-                elif pt == 'PG':
-                    sql += " AND s.programme IN ('M.Tech', 'M.Des', 'PhD')"
+                programme_sql, programme_params = _student_programme_sql(programme_type)
+                sql += programme_sql
+                params.extend(programme_params)
 
             sql += ' ORDER BY u.username'
 
@@ -1655,6 +1676,38 @@ def section_students(request):
     return Response(result)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def sections_in_use(request):
+    """Every section the institute actually uses, so one list feeds each dropdown.
+
+    A section exists because it was assigned to a student or because an offering
+    teaches it, and the office invents its own labels, so neither a fixed A-F
+    list nor one of the two tables alone would be complete.
+    """
+    from applications.programme_curriculum.models import CourseInstructor
+
+    labels = set()
+    for value in (Student.objects
+                  .exclude(section__isnull=True).exclude(section='')
+                  .values_list('section', flat=True).distinct()):
+        labels.add(str(value).strip().upper())
+    for value in (CourseInstructor.objects
+                  .exclude(section_label__isnull=True).exclude(section_label='')
+                  .values_list('section_label', flat=True).distinct()):
+        labels.add(str(value).strip().upper())
+    labels.discard('')
+
+    def order(label):
+        # A, B ... then A1, A2 ... so plain letters lead and numbered follow
+        head = ''.join(c for c in label if not c.isdigit())
+        tail = ''.join(c for c in label if c.isdigit())
+        return (head, int(tail) if tail else -1)
+
+    return Response({'sections': sorted(labels, key=order)})
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -1667,8 +1720,8 @@ def assign_section(request):
     if not roll_numbers:
         return Response({'detail': 'roll_numbers required.'},
                         status=status.HTTP_400_BAD_REQUEST)
-    if section and (len(section) > 2 or not section.isalpha()):
-        return Response({'detail': 'section must be one or two letters.'},
+    if section and (len(section) > 8 or not section.isalnum()):
+        return Response({'detail': 'section must be up to 8 letters or digits.'},
                         status=status.HTTP_400_BAD_REQUEST)
 
     updated = (Student.objects

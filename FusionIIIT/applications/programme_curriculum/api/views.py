@@ -3637,8 +3637,8 @@ def add_course_instructor(request):
                     sec = None
                     if sheet.ncols > 5:
                         sec = str(sheet.cell(i, 5).value).strip().upper() or None
-                    if sec is not None and sec not in ('A', 'B', 'C', 'D', 'E', 'F'):
-                        raise ValueError(f"Bad section '{sec}' (expected A-F or blank)")
+                    if sec is not None and not (len(sec) <= 8 and sec.isalnum()):
+                        raise ValueError(f"Bad section '{sec}' (up to 8 letters or digits, or blank)")
 
                     # convert year
                     year = parse_academic_year(acad_year, sem_type)

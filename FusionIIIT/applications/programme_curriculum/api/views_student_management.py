@@ -7,6 +7,7 @@ import secrets
 import string
 import sys
 import os
+import unicodedata
 from io import BytesIO
 from datetime import datetime, date
 from django.http import JsonResponse, HttpResponse, Http404
@@ -262,6 +263,7 @@ from applications.globals.programme_scope import (
     admission_record_in_scope,
     admission_type_in_scope,
     batch_in_scope,
+    canonical_programme_name,
     programme_name_in_scope,
     scope_admission_records,
     scope_batches,
@@ -365,6 +367,68 @@ def get_academic_year_from_batch_year(batch_year):
     batch_year = int(batch_year)
     next_year = batch_year + 1
     return f"{batch_year}-{str(next_year)[-2:]}"
+
+def normalize_discipline_reference(value):
+    return ' '.join(unicodedata.normalize('NFKC', str(value or '')).split())
+
+def resolve_discipline_reference(value):
+    reference = normalize_discipline_reference(value)
+    if not reference:
+        return None, 'Discipline is required.'
+
+    name_matches = list(Discipline.objects.filter(name__iexact=reference)[:2])
+    if len(name_matches) == 1:
+        return name_matches[0], None
+    if len(name_matches) > 1:
+        return None, f'Discipline name "{reference}" is ambiguous.'
+
+    acronym_matches = list(Discipline.objects.filter(acronym__iexact=reference)[:2])
+    if len(acronym_matches) == 1:
+        return acronym_matches[0], None
+    if len(acronym_matches) > 1:
+        return None, f'Discipline acronym "{reference}" is ambiguous.'
+    return None, f'Discipline "{reference}" does not exist in the discipline master.'
+
+def batch_matches_upload_context(batch, programme_type, phd_semester=None):
+    programme = str(programme_type or '').strip().upper()
+    expected_category = {'UG': 'UG', 'PG': 'PG', 'PHD': 'PHD'}.get(programme)
+    if expected_category and get_batch_category(batch.name) != expected_category:
+        return False
+    if programme == 'PHD':
+        semester = str(phd_semester or '').strip().capitalize()
+        if semester not in ('Odd', 'Even'):
+            return False
+        return batch.name.casefold() == f'PhD ({semester})'.casefold()
+    return True
+
+def resolve_requested_batch(batch_id, discipline_reference, batch_year,
+                            programme_type, phd_semester, scopes):
+    discipline, error = resolve_discipline_reference(discipline_reference)
+    if error:
+        return None, error
+    try:
+        batch_id = int(batch_id)
+    except (TypeError, ValueError):
+        return None, 'The selected batch identifier is invalid.'
+
+    batch = scope_batches(
+        Batch.objects.select_related('discipline').filter(
+            id=batch_id,
+            year=batch_year,
+            running_batch=True,
+        ),
+        scopes,
+    ).first()
+    if not batch:
+        return None, 'The selected running batch is unavailable for this academic year.'
+    if batch.discipline_id != discipline.id:
+        return None, (
+            f'The selected batch belongs to {batch.discipline.name}, not '
+            f'{discipline.name}.'
+        )
+    if not batch_matches_upload_context(batch, programme_type, phd_semester):
+        return None, 'The selected batch does not match the programme or admission semester.'
+    return batch, None
 
 def calculate_batch_filled_seats(batch):
     """
@@ -988,10 +1052,27 @@ def save_students_batch(request):
                     
                     discipline_name = student_data.get('Discipline') or student_data.get('branch', '')
                     specialization = student_data.get('Specialization') or student_data.get('specialization', '')
-                    
-                    # Debug PhD semester
-                    if programme_type == 'phd':
-                        print(f"DEBUG: programme_type={programme_type}, phd_semester={phd_semester}, type={type(phd_semester)}")
+                    requested_batch_obj = None
+                    requested_batch_id = student_data.get('batch_id') or student_data.get('batchId')
+                    if requested_batch_id:
+                        requested_batch_obj, batch_resolution_error = resolve_requested_batch(
+                            requested_batch_id,
+                            discipline_name,
+                            batch_year,
+                            programme_type,
+                            phd_semester,
+                            scopes_for(request.user),
+                        )
+                        if batch_resolution_error:
+                            failed_uploads += 1
+                            errors.append({
+                                'student': student_name,
+                                'roll_number': student_data.get('Institute Roll Number', ''),
+                                'error': batch_resolution_error,
+                                'validation_error': 'invalid_batch',
+                                'required_action': batch_resolution_error,
+                            })
+                            continue
                     
                     # For PhD students, use semester-specific batch names
                     if programme_type == 'phd' and phd_semester:
@@ -1012,7 +1093,10 @@ def save_students_batch(request):
                     else:
                         batch_name = get_batch_name_from_discipline(discipline_name, programme_type)
 
-                    if programme_type == 'pg' and specialization:
+                    if requested_batch_obj:
+                        discipline_obj = requested_batch_obj.discipline
+                        batch_name = requested_batch_obj.name
+                    elif programme_type == 'pg' and specialization:
                         if 'design' in discipline_name.lower():
                             discipline_obj = get_or_create_discipline('Design')
                         elif specialization in ['Data Science', 'AI & ML']:
@@ -1030,42 +1114,27 @@ def save_students_batch(request):
                     else:
                         discipline_obj = get_or_create_discipline(discipline_name)
                     
-                    # Debug logging for PhD batch matching
-                    if programme_type == 'phd':
-                        print(f"DEBUG PhD: batch_name={batch_name}, discipline={discipline_obj.name}, year={batch_year}")
-                    
-                    try:
-                        batch_obj = Batch.objects.get(
-                            name=batch_name, 
-                            discipline=discipline_obj, 
-                            year=batch_year,
-                            running_batch=True
-                        )
-                        if programme_type == 'phd':
-                            print(f"DEBUG PhD: Found batch {batch_obj.id}")
-                    except Batch.DoesNotExist:
-                        # The specialization-to-discipline table above is a guess; the
-                        # sheet states the discipline outright. M.Tech Design is run by
-                        # Mechanical Engineering, so prefer the sheet, then a batch of
-                        # this name that is the only one for the year.
-                        _candidates = Batch.objects.filter(
-                            name=batch_name, year=batch_year, running_batch=True)
-                        batch_obj = (
-                            _candidates.filter(discipline__name__iexact=(discipline_name or '')).first()
-                            or (_candidates.first() if _candidates.count() == 1 else None)
-                        )
-                        if batch_obj is not None:
-                            discipline_obj = batch_obj.discipline
+                    batch_obj = requested_batch_obj
+                    if batch_obj is None:
+                        try:
+                            batch_obj = Batch.objects.get(
+                                name=batch_name,
+                                discipline=discipline_obj,
+                                year=batch_year,
+                                running_batch=True
+                            )
+                        except Batch.DoesNotExist:
+                            _candidates = Batch.objects.filter(
+                                name=batch_name, year=batch_year, running_batch=True)
+                            batch_obj = (
+                                _candidates.filter(discipline__name__iexact=(discipline_name or '')).first()
+                                or (_candidates.first() if _candidates.count() == 1 else None)
+                            )
+                            if batch_obj is not None:
+                                discipline_obj = batch_obj.discipline
 
                     if batch_obj is None:
-                        if programme_type == 'phd':
-                            print(f"DEBUG PhD: Batch not found! Looking for alternatives...")
-                            all_phd_batches = Batch.objects.filter(name__icontains='phd', year=batch_year, running_batch=True)
-                            print(f"DEBUG PhD: Available PhD batches: {[(b.id, b.name, b.discipline.name) for b in all_phd_batches]}")
-                        
                         name_year_matches = Batch.objects.filter(name=batch_name, year=batch_year, running_batch=True)
-                        discipline_year_matches = Batch.objects.filter(discipline=discipline_obj, year=batch_year, running_batch=True)
-                        existing_batches = Batch.objects.filter(year=batch_year, running_batch=True)
                         
                         # name the batch, not "batch_name + discipline", which read as
                         # "M.Tech Design Design" and named no batch that could exist
@@ -1440,6 +1509,23 @@ def add_single_student(request):
                 'success': False,
                 'message': f'Missing required fields: {", ".join(missing_fields)}'
             }, status=400)
+
+        requested_batch_id = data.get('batch_id') or data.get('batchId')
+        if requested_batch_id:
+            _, batch_resolution_error = resolve_requested_batch(
+                requested_batch_id,
+                data.get('branch'),
+                batch_year,
+                programme_type,
+                phd_semester,
+                scopes_for(request.user),
+            )
+            if batch_resolution_error:
+                return JsonResponse({
+                    'success': False,
+                    'message': batch_resolution_error,
+                    'error_code': 'BATCH_MATCHING_ERROR',
+                }, status=400)
 
         processed_students = process_batch_allocation([data], programme_type, batch_year)
         
@@ -2193,12 +2279,13 @@ def update_student_status(request):
                         else:
                             transfer_message_addition += f" | Using batch: {final_batch.name} (no curriculum assigned to batch)"
 
+                        academic_programme_name = canonical_programme_name(programme_name)
                         academic_student, created = AcademicStudent.objects.get_or_create(
                             id=extra_info, 
                             defaults={
                                 'batch_id': final_batch,
                                 'specialization': specialization,
-                                'programme': programme_name,
+                                'programme': academic_programme_name,
                                 'batch': student.year,  
                                 'father_name': student.father_name or '',  
                                 'mother_name': student.mother_name or '', 
@@ -2214,7 +2301,7 @@ def update_student_status(request):
                         if not created:                         
                             academic_student.specialization = specialization
                             academic_student.batch_id = final_batch
-                            academic_student.programme = programme_name 
+                            academic_student.programme = academic_programme_name
                             academic_student.batch = student.year 
                             academic_student.father_name = student.father_name or ''  
                             academic_student.mother_name = student.mother_name or '' 
@@ -5036,6 +5123,7 @@ def sync_batch_data(request):
                 'name': batch.name,
                 'category': batch_category,
                 'discipline': batch.discipline.acronym,
+                'discipline_id': batch.discipline.id,
                 'discipline_name': batch.discipline.name,
                 'year': batch.year,
                 'total_seats': batch.total_seats,
@@ -5072,8 +5160,10 @@ def validate_batch_prerequisites(request):
     """
     try:
         data = json.loads(request.body)
-        academic_year = data.get('academic_year')  # e.g., 2025
+        academic_year = data.get('academic_year')
         requested_disciplines = data.get('disciplines') or []
+        programme_type = data.get('programme_type')
+        phd_semester = data.get('phd_semester')
         
         if not academic_year:
             return JsonResponse({
@@ -5085,61 +5175,88 @@ def validate_batch_prerequisites(request):
             requested_disciplines = [requested_disciplines]
 
         requested_disciplines = [
-            str(discipline).strip()
+            normalize_discipline_reference(discipline)
             for discipline in requested_disciplines
-            if str(discipline).strip()
+            if normalize_discipline_reference(discipline)
         ]
-        
-        from applications.programme_curriculum.models import Batch, Discipline
 
-        default_required_disciplines = ['Computer Science and Engineering', 'Electronics and Communication Engineering', 
-                                        'Mechanical Engineering', 'Smart Manufacturing', 'Design']
+        if not requested_disciplines:
+            return JsonResponse({
+                'success': False,
+                'message': 'At least one discipline is required'
+            }, status=400)
 
-        required_disciplines = requested_disciplines or default_required_disciplines
+        try:
+            batch_year = get_batch_year_from_academic_year(academic_year)
+        except (TypeError, ValueError):
+            return JsonResponse({
+                'success': False,
+                'message': 'Academic year is invalid'
+            }, status=400)
         
         missing_batches = []
         existing_batches = []
+        scopes = scopes_for(request.user)
         
-        for discipline_name in required_disciplines:
-            try:
-                discipline = Discipline.objects.filter(name__iexact=discipline_name).first()
-                if discipline:
-                    batch = scope_batches(Batch.objects.filter(
-                        year=academic_year,
-                        discipline=discipline,
-                        running_batch=True
-                    ), scopes_for(request.user)).first()
-                    
-                    if batch:
-                        existing_batches.append({
-                            'discipline': discipline.name,
-                            'acronym': discipline.acronym,
-                            'batch_id': batch.id,
-                            'curriculum_assigned': batch.curriculum is not None,
-                            'curriculum_name': batch.curriculum.name if batch.curriculum else None,
-                            'total_seats': getattr(batch, 'total_seats', 0)
-                        })
-                    else:
-                        missing_batches.append({
-                            'discipline': discipline.name,
-                            'acronym': discipline.acronym,
-                            'action_required': f'Create {discipline.acronym} batch for year {academic_year}'
-                        })
-                else:
-                    missing_batches.append({
-                        'discipline': discipline_name,
-                        'acronym': discipline_name,
-                        'action_required': f'Create {discipline_name} batch for year {academic_year}'
-                    })
-            except Exception as e:
-                pass
+        for discipline_reference in requested_disciplines:
+            discipline, resolution_error = resolve_discipline_reference(
+                discipline_reference
+            )
+            if resolution_error:
+                missing_batches.append({
+                    'discipline': discipline_reference,
+                    'acronym': discipline_reference,
+                    'action_required': resolution_error,
+                })
+                continue
+
+            candidates = scope_batches(
+                Batch.objects.select_related('curriculum').filter(
+                    year=batch_year,
+                    discipline=discipline,
+                    running_batch=True,
+                ),
+                scopes,
+            )
+            candidates = [
+                batch for batch in candidates
+                if batch_matches_upload_context(
+                    batch, programme_type, phd_semester
+                )
+            ]
+
+            if not candidates:
+                missing_batches.append({
+                    'discipline': discipline.name,
+                    'acronym': discipline.acronym,
+                    'action_required': (
+                        f'Create a matching {discipline.acronym} batch for '
+                        f'year {batch_year}'
+                    ),
+                })
+                continue
+
+            for batch in candidates:
+                existing_batches.append({
+                    'requested_discipline': discipline_reference,
+                    'discipline': discipline.name,
+                    'discipline_id': discipline.id,
+                    'acronym': discipline.acronym,
+                    'batch_id': batch.id,
+                    'batch_name': batch.name,
+                    'curriculum_assigned': batch.curriculum is not None,
+                    'curriculum_name': (
+                        batch.curriculum.name if batch.curriculum else None
+                    ),
+                    'total_seats': batch.total_seats,
+                })
 
         can_upload_students = len(missing_batches) == 0
         
         return JsonResponse({
             'success': True,
             'can_upload_students': can_upload_students,
-            'academic_year': academic_year,
+            'academic_year': batch_year,
             'existing_batches': existing_batches,
             'missing_batches': missing_batches,
             'message': 'All required batches exist' if can_upload_students else 'Some batches are missing',

@@ -2,6 +2,7 @@ import datetime
 from decimal import Decimal
 
 from django.db import models
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 from applications.academic_information.models import Course, Student, Curriculum
@@ -356,6 +357,35 @@ class Bonafide(models.Model):
     class Meta:
         db_table = 'Bonafide'
 
+
+class BonafideCertificate(models.Model):
+    PURPOSE_CHOICES = (
+        ('Scholarship', 'Scholarship'),
+        ('Railway Pass', 'Railway Pass'),
+        ('Education Loan', 'Education Loan'),
+        ('Higher Studies', 'Higher Studies'),
+        ('Staff Benefit Fund', 'Staff Benefit Fund'),
+        ('Bihar Student Credit Card', 'Bihar Student Credit Card'),
+        ('Internship', 'Internship'),
+        ('VISA Purpose', 'VISA Purpose'),
+        ('Other', 'Other'),
+    )
+
+    student = models.ForeignKey(
+        Student, on_delete=models.PROTECT, related_name='bonafide_certificates')
+    purpose = models.CharField(max_length=40, choices=PURPOSE_CHOICES)
+    custom_purpose = models.CharField(max_length=150, blank=True)
+    reference_number = models.CharField(max_length=120, db_index=True, null=True)
+    pdf_content = models.BinaryField(blank=True, null=True, editable=False)
+    issued_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+        related_name='issued_bonafide_certificates')
+    issued_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'BonafideCertificate'
+        ordering = ('-issued_at',)
+
 class AssistantshipClaim(models.Model):
     Month_Choices = [
         ('Jan', 'January'),
@@ -623,7 +653,11 @@ class course_registration(models.Model):
         return str(self.semester_id.semester_no)
     class Meta:
         db_table = 'course_registration'
-        unique_together = ('course_id', 'student_id', 'semester_id', 'registration_type')
+        # A summer registration is a registration of its own, so the term is
+        # part of what makes a row unique -- without it a summer repeat of a
+        # course collides with the regular one and is silently discarded.
+        unique_together = ('course_id', 'student_id', 'semester_id',
+                           'registration_type', 'semester_type')
 
 
 class InitialRegistration(models.Model):
