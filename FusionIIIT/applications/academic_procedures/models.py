@@ -1344,9 +1344,12 @@ class ThesisSubmission(models.Model):
         ('director_review', 'Pending Director Prioritization'),
         ('dean_invite_pending', 'Pending Dean Invitation'),
         ('in_review', 'In External Review'),
-        ('completed', 'Review Completed'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
+        ('examiner_reports_ready', 'Examiner Reports Ready'),
+        ('supervisor_reports_review', 'Pending Supervisor Review'),
+        ('student_revision_pending', 'Pending Student Revision'),
+        ('supervisor_revision_review', 'Pending Supervisor & RPC Consent'),
+        ('dean_final_review', 'Pending Dean Final Review'),
+        ('approved_for_defense', 'Approved for Defense'),
     ]
 
     thesis         = models.OneToOneField(ThesisTopic, on_delete=models.CASCADE, related_name='submission')
@@ -1368,6 +1371,17 @@ class ThesisSubmission(models.Model):
     director_remarks = models.TextField(blank=True)
     status         = models.CharField(max_length=30, choices=STATUS_CHOICES, default='submitted', db_index=True)
     updated_at     = models.DateTimeField(auto_now=True)
+
+    # Post-evaluation workflow (see ThesisRevisionRound for the actual
+    # revise/RPC-consent content) -- each field marks when its stage's actor
+    # acted, mirroring supervisor_approved_at/dean_approved_at/etc. above.
+    examiner_reports_ready_at = models.DateTimeField(null=True, blank=True)
+    reports_forwarded_at      = models.DateTimeField(null=True, blank=True)
+    revision_requested_at     = models.DateTimeField(null=True, blank=True)
+    revision_submitted_at     = models.DateTimeField(null=True, blank=True)
+    revision_consented_at     = models.DateTimeField(null=True, blank=True)
+    final_review_requested_at = models.DateTimeField(null=True, blank=True)
+    defense_approved_at       = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['-submitted_at']
@@ -1402,6 +1416,10 @@ class ReviewInvitation(models.Model):
     prof_email      = models.EmailField(db_index=True)
     prof_time_ranking = models.PositiveSmallIntegerField(null=True, blank=True)
     priority        = models.PositiveSmallIntegerField(default=0, db_index=True)
+    # Bumped each time the Dean sends a revised thesis back to this same
+    # examiner for reconfirmation (unlimited rounds). ThesisReview.round_number
+    # mirrors whichever value was current when that round's review was submitted.
+    revision_round  = models.PositiveSmallIntegerField(default=1)
     token           = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
     status          = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', db_index=True)
     last_sent       = models.DateTimeField(null=True, blank=True)
@@ -1442,7 +1460,12 @@ class ThesisReview(models.Model):
         ('reject', 'Rejected -- thesis does not contain novel work'),
     ]
 
-    invitation = models.OneToOneField(ReviewInvitation, on_delete=models.CASCADE, related_name='review')
+    # A reconfirmation round after a revision creates a new review for the
+    # same invitation rather than overwriting the previous one, so the
+    # earlier round's report stays on record -- hence FK + round_number
+    # instead of a plain OneToOne.
+    invitation = models.ForeignKey(ReviewInvitation, on_delete=models.CASCADE, related_name='reviews')
+    round_number = models.PositiveSmallIntegerField(default=1)
 
     # A. General features of thesis
     originality_presentation = models.TextField(blank=True, default='')
@@ -1463,8 +1486,12 @@ class ThesisReview(models.Model):
 
     submitted_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('invitation', 'round_number')
+        ordering = ['invitation', 'round_number']
+
     def __str__(self):
-        return f"Review by {self.invitation.prof_name} ({self.recommendation})"
+        return f"Review by {self.invitation.prof_name} ({self.recommendation}, round {self.round_number})"
 
 
 class ExaminerBankDetails(models.Model):
@@ -1491,8 +1518,40 @@ class ExaminerBankDetails(models.Model):
     def __str__(self):
         return f"Bank details for {self.invitation.prof_name}"
 
+
+class ThesisRevisionRound(models.Model):
+    """One cycle of the post-evaluation revise-and-reconfirm loop: the
+    student's resubmitted thesis for this round, and the RPC's collective
+    consent on it before the Supervisor forwards it to the Dean.
+    """
+    submission   = models.ForeignKey(ThesisSubmission, on_delete=models.CASCADE, related_name='revision_rounds')
+    round_number = models.PositiveSmallIntegerField()
+
+    revised_thesis = models.FileField(upload_to=upload_report, null=True, blank=True)
+    revised_at     = models.DateTimeField(null=True, blank=True)
+
+    supervisor_consented_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('submission', 'round_number')
+        ordering = ['submission', 'round_number']
+
     def __str__(self):
-        return f"{self.prof_name} - {self.submission.thesis.research_theme} ({self.status})"
+        return f"Revision round {self.round_number} for {self.submission}"
+
+
+class ThesisRevisionConsent(models.Model):
+    """An RPC member's individual consent on a thesis revision round."""
+    round     = models.ForeignKey(ThesisRevisionRound, on_delete=models.CASCADE, related_name='consents')
+    member    = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    consented = models.BooleanField(default=False)
+    remarks   = models.TextField(blank=True, default='')
+    timestamp = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('round', 'member')
 
 
 def upload_pg_synopsis(instance, filename):

@@ -294,21 +294,30 @@ urlpatterns = [
     # Student
     url(r'^thesis/submit/$', views.thesis_submit, name='thesis_submit'),
     url(r'^thesis/submission-status/$', views.thesis_submission_status, name='thesis_submission_status'),
+    url(r'^thesis/submit-revision/$', views.student_submit_revision, name='student_submit_revision'),
 
     # Supervisor
     url(r'^thesis/supervisor-dashboard/$', views.supervisor_dashboard, name='supervisor_dashboard'),
     url(r'^thesis/submission-detail/(?P<submission_id>\d+)/$', views.supervisor_submission_detail, name='supervisor_submission_detail'),
     url(r'^thesis/supervisor-assign/$', views.supervisor_assign, name='supervisor_assign'),
     url(r'^thesis/supervisor-review-reports/$', views.supervisor_review_reports, name='supervisor_review_reports'),
+    url(r'^thesis/supervisor-reports-decision/$', views.supervisor_reports_decision, name='supervisor_reports_decision'),
+    url(r'^thesis/supervisor-finalize-revision/$', views.supervisor_finalize_revision, name='supervisor_finalize_revision'),
 
-    # Dean (panel approval + invitation dispatch)
+    # Dean (panel approval + invitation dispatch + post-evaluation)
     url(r'^thesis/dean-dashboard/$', views.dean_panel_dashboard, name='dean_panel_dashboard'),
     url(r'^thesis/dean-panel-approve/$', views.dean_panel_approve, name='dean_panel_approve'),
     url(r'^thesis/dean-send-invitations/$', views.dean_send_invitations, name='dean_send_invitations'),
+    url(r'^thesis/dean-forward-reports/$', views.dean_forward_reports, name='dean_forward_reports'),
+    url(r'^thesis/dean-final-review/$', views.dean_final_review_action, name='dean_final_review_action'),
 
     # Director
     url(r'^thesis/director-dashboard/$', views.director_dashboard, name='director_dashboard'),
     url(r'^thesis/director-approve/$', views.director_approve, name='director_approve'),
+
+    # RPC (thesis revision consent)
+    url(r'^thesis/revision-rpc/$', views.thesis_revision_rpc_list, name='thesis_revision_rpc_list'),
+    url(r'^thesis/revision-rpc/consent/$', views.thesis_revision_rpc_consent, name='thesis_revision_rpc_consent'),
 
     # Professor Invitation (External reviewers)
     url(r'^invitation/(?P<token>[0-9a-f-]+)/(?P<action>accept|reject)/$',

@@ -1999,56 +1999,61 @@ class UploadGradesProfAPI(APIView):
                     )
 
             from applications.academic_information.models import Student, resolve_offering
-            ug_programmes = ['B.Tech', 'B.Des']
-            pg_programmes = ['M.Tech', 'M.Des', 'PhD']
+            # Reuse the canonical name lists (PROGRAMME_NAMES_BY_SCOPE) instead of a
+            # separate hardcoded copy -- PhD student rows are spelled inconsistently
+            # ("PhD" vs "Ph.D") in the data, and only the canonical source has both.
+            # PG here means only M.Tech/M.Des; PhD is its own separate bucket, matching
+            # PROGRAMME_TYPE_BUCKETS elsewhere in this file.
+            ug_programmes = list(PROGRAMME_NAMES_BY_SCOPE['UG'])
+            pg_programmes = list(PROGRAMME_NAMES_BY_SCOPE['PG'])
+            phd_programmes = list(PROGRAMME_NAMES_BY_SCOPE['PHD'])
 
             ug_student_ids = Student.objects.filter(programme__in=ug_programmes).values_list('id', flat=True)
             pg_student_ids = Student.objects.filter(programme__in=pg_programmes).values_list('id', flat=True)
+            phd_student_ids = Student.objects.filter(programme__in=phd_programmes).values_list('id', flat=True)
 
             course_has_ug = regs.filter(student_id__in=ug_student_ids).exists()
             course_has_pg = regs.filter(student_id__in=pg_student_ids).exists()
+            course_has_phd = regs.filter(student_id__in=phd_student_ids).exists()
+            bucket_student_ids = {'UG': ug_student_ids, 'PG': pg_student_ids, 'PHD': phd_student_ids}
+            buckets_present = {
+                'UG': course_has_ug, 'PG': course_has_pg, 'PHD': course_has_phd,
+            }
 
             if programme_type:
-                if programme_type.upper() == 'UG':
-                    if not course_has_ug:
-                        return Response(
-                            {"error": "No UG students registered in this course."},
-                            status=status.HTTP_400_BAD_REQUEST
-                        )
-                    regs = regs.filter(student_id__in=ug_student_ids)
-                elif programme_type.upper() == 'PG':
-                    if not course_has_pg:
-                        return Response(
-                            {"error": "No PG students registered in this course."},
-                            status=status.HTTP_400_BAD_REQUEST
-                        )
-                    regs = regs.filter(student_id__in=pg_student_ids)
-                else:
+                bucket = programme_type.upper()
+                if bucket not in bucket_student_ids:
                     return Response(
-                        {"error": "Invalid programme_type. Must be 'UG' or 'PG'."},
+                        {"error": "Invalid programme_type. Must be 'UG', 'PG', or 'PHD'."},
                         status=status.HTTP_400_BAD_REQUEST
                     )
+                if not buckets_present[bucket]:
+                    return Response(
+                        {"error": f"No {bucket} students registered in this course."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                regs = regs.filter(student_id__in=bucket_student_ids[bucket])
             else:
-                if course_has_ug and course_has_pg:
+                present = [name for name, has in buckets_present.items() if has]
+                if len(present) > 1:
                     return Response(
                         {
-                            "error": "This course has both UG and PG students. Please specify programme_type as 'UG' or 'PG'.",
+                            "error": "This course has students from more than one programme type (%s). "
+                                     "Please specify programme_type as one of them." % ", ".join(present),
                             "course_info": {
                                 "course_code": course.code,
                                 "course_name": course.name,
                                 "has_ug": course_has_ug,
                                 "has_pg": course_has_pg,
+                                "has_phd": course_has_phd,
                                 "total_registrations": regs.count()
                             }
                         },
                         status=status.HTTP_400_BAD_REQUEST
                     )
-                elif course_has_ug and not course_has_pg:
-                    programme_type = 'UG'
-                    regs = regs.filter(student_id__in=ug_student_ids)
-                elif course_has_pg and not course_has_ug:
-                    programme_type = 'PG'
-                    regs = regs.filter(student_id__in=pg_student_ids)
+                elif len(present) == 1:
+                    programme_type = present[0]
+                    regs = regs.filter(student_id__in=bucket_student_ids[programme_type])
 
             regs = scope_via_student(regs, scopes, 'student_id')
 
@@ -2057,31 +2062,19 @@ class UploadGradesProfAPI(APIView):
                 academic_year=academic_year,
                 semester_type=semester_type
             )
-            
+
             if programme_type:
-                if programme_type.upper() == 'UG':
-                    ug_student_rolls = [reg.student_id_id for reg in regs]
-                    existing_ug_grades = existing_query.filter(roll_no__in=ug_student_rolls)
+                bucket = programme_type.upper()
+                bucket_student_rolls = [reg.student_id_id for reg in regs]
+                existing_bucket_grades = existing_query.filter(roll_no__in=bucket_student_rolls)
 
-                    if existing_ug_grades.exists():
-                        non_resubmit_ug = existing_ug_grades.filter(reSubmit=False)
-                        if non_resubmit_ug.exists():
-                            return Response(
-                                {"error": "THIS COURSE HAS ALREADY BEEN SUBMITTED FOR UG STUDENTS."},
-                                status=status.HTTP_400_BAD_REQUEST
-                            )
-                            
-                elif programme_type.upper() == 'PG':
-                    pg_student_rolls = [reg.student_id_id for reg in regs]
-                    existing_pg_grades = existing_query.filter(roll_no__in=pg_student_rolls)
-
-                    if existing_pg_grades.exists():
-                        non_resubmit_pg = existing_pg_grades.filter(reSubmit=False)
-                        if non_resubmit_pg.exists():
-                            return Response(
-                                {"error": "THIS COURSE HAS ALREADY BEEN SUBMITTED FOR PG STUDENTS."},
-                                status=status.HTTP_400_BAD_REQUEST
-                            )
+                if existing_bucket_grades.exists():
+                    non_resubmit_bucket = existing_bucket_grades.filter(reSubmit=False)
+                    if non_resubmit_bucket.exists():
+                        return Response(
+                            {"error": f"THIS COURSE HAS ALREADY BEEN SUBMITTED FOR {bucket} STUDENTS."},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
             else:
                 existing = existing_query.first()
                 if existing and not existing.reSubmit:
@@ -2163,14 +2156,13 @@ class UploadGradesProfAPI(APIView):
                     # Check if student belongs to the specified programme type
                     if programme_type:
                         student_programme = stud.programme
-                        if programme_type.upper() == 'UG' and student_programme not in ug_programmes:
+                        bucket = programme_type.upper()
+                        bucket_programmes = {
+                            'UG': ug_programmes, 'PG': pg_programmes, 'PHD': phd_programmes,
+                        }.get(bucket, [])
+                        if student_programme not in bucket_programmes:
                             errors.append(
-                                f"Row {idx}: Student {roll_no} is not a UG student (programme: {student_programme})."
-                            )
-                            continue
-                        elif programme_type.upper() == 'PG' and student_programme not in pg_programmes:
-                            errors.append(
-                                f"Row {idx}: Student {roll_no} is not a PG student (programme: {student_programme})."
+                                f"Row {idx}: Student {roll_no} is not a {bucket} student (programme: {student_programme})."
                             )
                             continue
 
