@@ -2384,6 +2384,44 @@ def delete_preregistration(request):
         )
 
 
+def _registration_type_for_allotment(
+        roll_no, student, course, semester, semester_type):
+    previous = course_registration.objects.filter(
+        student_id=student,
+        course_id=course,
+    )
+    if not previous.exists():
+        return 'Regular'
+
+    grade = latest_grade(roll_no, course)
+    if not grade:
+        existing = previous.order_by('-id').first()
+        raise ValueError(
+            f"{roll_no} already holds {course.code} as "
+            f"{existing.semester_type} / {existing.registration_type} and has no grade yet."
+        )
+
+    registration_type = registration_type_for_grade(grade.grade)
+    if registration_type == 'Regular':
+        raise ValueError(
+            f"{roll_no} already completed {course.code} with grade {grade.grade}; "
+            "the course is not eligible for repeat registration."
+        )
+
+    clash = previous.filter(
+        semester_id=semester,
+        semester_type=semester_type,
+        registration_type=registration_type,
+    ).first()
+    if clash:
+        raise ValueError(
+            f"{roll_no} already holds {course.code} in semester "
+            f"{semester.semester_no} as {clash.semester_type} / {clash.registration_type}."
+        )
+
+    return registration_type
+
+
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -2428,6 +2466,7 @@ def allot_courses(request):
             checks, pre_regs, final_regs, course_regs = [], [], [], []
             row_errors = []
             seen = set()
+            queued_registrations = set()
 
             for i in range(1, sheet.nrows):
 
@@ -2453,6 +2492,25 @@ def allot_courses(request):
                         raise ValueError(
                             f"'{code}' is not one of the courses in slot '{slot_name}' "
                             f"(semester {sem_no}); add it to the slot or name the slot that holds it.")
+                    reg_type = _registration_type_for_allotment(
+                        roll_no, student, course, sem, sem_type
+                    )
+                    registration_key = (
+                        student.pk,
+                        course.pk,
+                        sem.pk,
+                        sem_type,
+                        reg_type,
+                    )
+                    if registration_key in queued_registrations:
+                        raise ValueError(
+                            f"Duplicate row for {roll_no} and {code} in this upload."
+                        )
+
+                    offering = resolve_offering(
+                        student, course, working_year, sem_type
+                    )
+                    queued_registrations.add(registration_key)
                     if roll_no not in seen:
                         checks.append(StudentRegistrationChecks(
                             student_id=student,
@@ -2467,35 +2525,17 @@ def allot_courses(request):
                         course_slot_id=slot,
                         course_id=course,
                         semester_id=sem,
-                        priority=1
+                        priority=1,
+                        registration_type=reg_type,
                     ))
                     final_regs.append(FinalRegistration(
                         student_id=student,
                         course_slot_id=slot,
                         course_id=course,
                         semester_id=sem,
-                        verified=True
+                        verified=True,
+                        registration_type=reg_type,
                     ))
-                    # A repeat within the same term has to say which kind of
-                    # repeat it is, or it collides with the original; the grade
-                    # on record decides that. Across terms the term itself
-                    # already separates the rows.
-                    held = course_registration.objects.filter(
-                        student_id=student, course_id=course, semester_id=sem,
-                        semester_type=sem_type)
-                    reg_type = 'Regular'
-                    if held.exists():
-                        sg = latest_grade(roll_no, course)
-                        reg_type = registration_type_for_grade(sg.grade) if sg else 'Regular'
-                        clash = held.filter(registration_type=reg_type).first()
-                        if clash:
-                            raise ValueError(
-                                f"{roll_no} already holds {code} in semester {sem_no} as "
-                                f"{clash.semester_type} / {clash.registration_type}"
-                                + (f", and has no grade in it yet, so this repeat has no type to take."
-                                   if not sg else "."))
-
-                    offering = resolve_offering(student, course, working_year, sem_type)
                     course_regs.append(course_registration(
                         session=academic_year,
                         working_year = working_year,
