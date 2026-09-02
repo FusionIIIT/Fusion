@@ -50,6 +50,14 @@ def _father_name(value):
     return re.sub(r'^(mr\.?|shri|sri)\s+', '', (value or '').strip(), flags=re.IGNORECASE)
 
 
+def superscript_ordinal(value):
+    """Render '4th' as 4 with the suffix raised, for reportlab markup."""
+    match = re.fullmatch(r'(\d+)(st|nd|rd|th)', (value or '').strip())
+    if not match:
+        return escape(value or '')
+    return f'{match.group(1)}<super>{escape(match.group(2))}</super>'
+
+
 def _programme_duration(student):
     batch = student.batch_id
     category = ''
@@ -205,8 +213,8 @@ def render_bonafide_pdf(
         f'(Roll No. {escape(context["roll_number"])}) '
         f'{escape(context["relation"])} '
         f'<b>MR. {escape(context["father_name"])}</b> is a student of '
-        f'<b>{escape(context["year_ordinal"])} Year</b> '
-        f'({escape(context["semester_ordinal"])} Semester) '
+        f'<b>{superscript_ordinal(context["year_ordinal"])} Year</b> '
+        f'({superscript_ordinal(context["semester_ordinal"])} Semester) '
         f'<b>{escape(context["programme"])}</b> in '
         f'<b>{escape(context["discipline"])}</b> '
         f'({escape(context["duration_text"])} course duration: '
