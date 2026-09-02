@@ -153,27 +153,27 @@ def render_bonafide_pdf(
         author=settings.BONAFIDE_INSTITUTE_NAME,
     )
     header_style = ParagraphStyle(
-        'Header', fontName='Helvetica-Bold', fontSize=11.5,
-        leading=15, alignment=TA_LEFT,
+        'Header', fontName='Helvetica-Bold', fontSize=13.5,
+        leading=18, alignment=TA_LEFT,
     )
     header_right_style = ParagraphStyle(
         'HeaderRight', parent=header_style, alignment=TA_RIGHT,
     )
     heading_style = ParagraphStyle(
-        'Heading', fontName='Helvetica-Bold', fontSize=13,
-        leading=16, alignment=TA_CENTER,
+        'Heading', fontName='Helvetica-Bold', fontSize=15,
+        leading=19, alignment=TA_CENTER,
     )
     body_style = ParagraphStyle(
-        'Body', fontName='Helvetica', fontSize=11.5,
-        leading=18, alignment=TA_JUSTIFY,
+        'Body', fontName='Helvetica', fontSize=13.5,
+        leading=22, alignment=TA_JUSTIFY,
     )
     signature_style = ParagraphStyle(
-        'Signature', fontName='Helvetica-Bold', fontSize=11.5,
-        leading=15, alignment=TA_LEFT,
+        'Signature', fontName='Helvetica-Bold', fontSize=13.5,
+        leading=18, alignment=TA_LEFT,
     )
     note_style = ParagraphStyle(
-        'Note', fontName='Helvetica', fontSize=11.5,
-        leading=18, alignment=TA_JUSTIFY,
+        'Note', fontName='Helvetica', fontSize=13.5,
+        leading=22, alignment=TA_JUSTIFY,
     )
 
     header = Table(
