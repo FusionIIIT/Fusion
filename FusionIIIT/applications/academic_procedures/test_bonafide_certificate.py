@@ -70,7 +70,7 @@ class BonafideCertificateTests(TestCase):
         self.assertEqual(response.status_code, 200)
         student = response.data['student']
         self.assertEqual(student['name'], 'Ananya Priyadarshini Venkateshwarlu')
-        self.assertEqual(student['salutation'], 'Ms.')
+        self.assertEqual(student['salutation'], 'MS.')
         self.assertEqual(student['relation'], 'D/o')
         self.assertEqual(student['father_name'], 'Rajesh Venkateshwarlu')
         self.assertEqual(student['year_ordinal'], '2nd')
@@ -110,7 +110,7 @@ class BonafideCertificateTests(TestCase):
         self.student.id.sex = 'M'
         context = build_certificate_context(self.student)
 
-        self.assertEqual(context['salutation'], 'Mr.')
+        self.assertEqual(context['salutation'], 'MR.')
         self.assertEqual(context['relation'], 'S/o')
         self.assertEqual(context['pronoun'], 'his')
 
@@ -175,7 +175,7 @@ class BonafideCertificateTests(TestCase):
         self.assertAlmostEqual(float(page.mediaBox.getHeight()), 841.89, places=1)
         text = ' '.join(page.extractText().split())
         self.assertIn('Ananya Priyadarshini Venkateshwarlu', text)
-        self.assertIn('D/o Mr. Rajesh Venkateshwarlu', text)
+        self.assertIn('D/o MR. Rajesh Venkateshwarlu', text)
         self.assertIn('Bachelor of Technology in Computer Science and Engineering', text)
         self.assertIn('2026 to 2030', text)
         self.assertIn(
