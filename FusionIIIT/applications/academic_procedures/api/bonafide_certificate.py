@@ -117,7 +117,7 @@ def build_certificate_context(student):
         'name': name,
         'roll_number': student.id.user.username,
         'gender': 'Female' if is_female else 'Male' if gender == 'M' else '',
-        'salutation': 'Ms.' if is_female else 'Mr.' if gender == 'M' else '',
+        'salutation': 'MS.' if is_female else 'MR.' if gender == 'M' else '',
         'relation': 'D/o' if is_female else 'S/o' if gender == 'M' else '',
         'pronoun': 'her' if is_female else 'his' if gender == 'M' else '',
         'father_name': father_name,
@@ -204,7 +204,7 @@ def render_bonafide_pdf(
         f'<b>{escape(context["salutation"])} {escape(context["name"])}</b> '
         f'(Roll No. {escape(context["roll_number"])}) '
         f'{escape(context["relation"])} '
-        f'<b>Mr. {escape(context["father_name"])}</b> is a student of '
+        f'<b>MR. {escape(context["father_name"])}</b> is a student of '
         f'<b>{escape(context["year_ordinal"])} Year</b> '
         f'({escape(context["semester_ordinal"])} Semester) '
         f'<b>{escape(context["programme"])}</b> in '
