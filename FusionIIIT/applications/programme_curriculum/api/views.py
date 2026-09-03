@@ -20,6 +20,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.forms.models import model_to_dict
 import json, xlrd
+from decimal import Decimal, InvalidOperation
 from django.db.models import F
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
@@ -1391,6 +1392,217 @@ def edit_curriculum_form(request, curriculum_id):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     return JsonResponse({'error': 'Invalid request method.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+# Bulk "Add Courses": one spreadsheet row per course.
+BULK_COURSE_COLUMNS = {
+    'course code': 'code',
+    'course name': 'name',
+    'credits': 'credit',
+    'version': 'version',
+    'lecture hours': 'lecture_hours',
+    'tutorial hours': 'tutorial_hours',
+    'practical hours': 'pratical_hours',
+    'discussion hours': 'discussion_hours',
+    'project hours': 'project_hours',
+    'pre-requisites': 'pre_requisits',
+    'syllabus': 'syllabus',
+    'reference books': 'ref_books',
+    'max seats': 'max_seats',
+    'disciplines': 'disciplines',
+}
+
+
+def _bulk_course_rows(upload):
+    """Rows of a .xlsx, .xls or .csv upload as a list of header-keyed dicts."""
+    name = (upload.name or '').lower()
+    raw = upload.read()
+
+    if name.endswith('.csv'):
+        import csv, io
+        reader = csv.reader(io.StringIO(raw.decode('utf-8-sig', errors='replace')))
+        table = [row for row in reader]
+    elif name.endswith('.xlsx'):
+        import io
+        from openpyxl import load_workbook
+        sheet = load_workbook(io.BytesIO(raw), data_only=True).worksheets[0]
+        table = [['' if c is None else c for c in row]
+                 for row in sheet.iter_rows(values_only=True)]
+    else:
+        book = xlrd.open_workbook(file_contents=raw)
+        sheet = book.sheet_by_index(0)
+        table = [sheet.row_values(i) for i in range(sheet.nrows)]
+
+    table = [row for row in table if any(str(cell).strip() for cell in row)]
+    if not table:
+        return [], []
+
+    header = [str(cell).strip().lower().rstrip('*').strip() for cell in table[0]]
+    fields, unknown = [], []
+    for label in header:
+        field = BULK_COURSE_COLUMNS.get(label)
+        if field is None and label:
+            unknown.append(label)
+        fields.append(field)
+
+    rows = []
+    for line_no, row in enumerate(table[1:], start=2):
+        record = {'__row__': line_no}
+        for field, cell in zip(fields, row):
+            if field:
+                record[field] = str(cell).strip() if cell is not None else ''
+        rows.append(record)
+    return rows, unknown
+
+
+def _bulk_course_from_row(record):
+    """A saved Course for one row, or a ValueError naming what is wrong."""
+    code = (record.get('code') or '').strip()
+    name = (record.get('name') or '').strip()
+    if not code:
+        raise ValueError('Course Code is blank.')
+    if not name:
+        raise ValueError(f'{code}: Course Name is blank.')
+    if len(code) > 10:
+        raise ValueError(f'{code}: Course Code is longer than 10 characters.')
+    if len(name) > 100:
+        raise ValueError(f'{code}: Course Name is longer than 100 characters.')
+
+    def whole(field, label, default=None):
+        text = (record.get(field) or '').strip()
+        if not text:
+            return default
+        try:
+            value = int(float(text))
+        except ValueError:
+            raise ValueError(f"{code}: {label} '{text}' is not a number.")
+        if value < 0:
+            raise ValueError(f'{code}: {label} cannot be negative.')
+        return value
+
+    credit = whole('credit', 'Credits')
+    if credit is None:
+        raise ValueError(f'{code}: Credits is blank.')
+
+    max_seats = whole('max_seats', 'Max Seats')
+    if max_seats is None:
+        raise ValueError(f'{code}: Max Seats is blank.')
+
+    # One cell lists every discipline; ';' avoids CSV comma quoting.
+    wanted = [w.strip() for w in re.split(r'[;,|]', record.get('disciplines') or '')
+              if w.strip()]
+    if not wanted:
+        raise ValueError(f'{code}: Disciplines is blank.')
+
+    def _discipline_key(text):
+        # 'Des.', 'des' and 'DES' all name the same discipline.
+        return re.sub(r'[^a-z0-9]', '', (text or '').lower())
+
+    by_key = {}
+    for discipline in Discipline.objects.all():
+        by_key.setdefault(_discipline_key(discipline.acronym), discipline)
+        by_key.setdefault(_discipline_key(discipline.name), discipline)
+
+    found, missing = [], []
+    for label in wanted:
+        discipline = by_key.get(_discipline_key(label))
+        if discipline is None:
+            missing.append(label)
+        elif discipline not in found:
+            found.append(discipline)
+    if missing:
+        raise ValueError(f"{code}: no discipline named {', '.join(missing)}.")
+
+    version_text = (record.get('version') or '').strip() or '1.0'
+    try:
+        version = Decimal(version_text)
+    except (InvalidOperation, ValueError):
+        raise ValueError(f"{code}: Version '{version_text}' is not a number.")
+    if version < Decimal('1.0'):
+        raise ValueError(f'{code}: Version cannot be below 1.0.')
+
+    if Course.objects.filter(code=code, version=version).exists():
+        raise ValueError(f'{code} v{version} already exists.')
+
+    course = Course(
+        code=code,
+        name=name,
+        credit=credit,
+        version=version,
+        lecture_hours=whole('lecture_hours', 'Lecture Hours'),
+        tutorial_hours=whole('tutorial_hours', 'Tutorial Hours'),
+        pratical_hours=whole('pratical_hours', 'Practical Hours'),
+        discussion_hours=whole('discussion_hours', 'Discussion Hours'),
+        project_hours=whole('project_hours', 'Project Hours'),
+        pre_requisits=(record.get('pre_requisits') or '').strip(),
+        syllabus=(record.get('syllabus') or '').strip(),
+        ref_books=(record.get('ref_books') or '').strip(),
+        max_seats=max_seats,
+    )
+    course.save()
+    course.disciplines.set(found)
+    return course
+
+
+@csrf_exempt
+@require_designation("acadadmin", "Dean Academic")
+def add_courses_bulk(request):
+    """Create many courses from one spreadsheet."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method. Use POST.'}, status=405)
+
+    upload = request.FILES.get('courses_file')
+    if not upload:
+        return JsonResponse(
+            {'success': False, 'message': 'No file was provided.'}, status=400)
+
+    try:
+        rows, unknown_columns = _bulk_course_rows(upload)
+    except Exception as e:
+        return JsonResponse(
+            {'success': False,
+             'message': f'The file could not be read as a spreadsheet: {e}'},
+            status=400)
+
+    if not rows:
+        return JsonResponse(
+            {'success': False, 'message': 'The file has a header but no rows.'},
+            status=400)
+
+    created, row_errors = [], []
+    for record in rows:
+        try:
+            with transaction.atomic():
+                course = _bulk_course_from_row(record)
+                if request.user.is_authenticated and not request.user.is_anonymous:
+                    create_course_audit_log(
+                        course=course, user=request.user, action='CREATE',
+                        old_data=None,
+                        new_data={'code': course.code, 'name': course.name,
+                                  'credit': course.credit, 'version': course.version},
+                        version_bump_type='MAJOR', old_version=None,
+                        new_version=course.version, admin_override=False,
+                        reason='Created from a bulk course upload')
+            created.append(course.code)
+        except Exception as e:
+            row_errors.append({'row': record.get('__row__'), 'error': str(e)})
+
+    payload = {
+        'success': bool(created),
+        'created_count': len(created),
+        'created': created[:50],
+        'failed_count': len(row_errors),
+        'failed_rows': row_errors[:25],
+        'reasons': sorted({e['error'] for e in row_errors})[:5],
+        'unknown_columns': unknown_columns,
+    }
+    if not created:
+        payload['message'] = 'No course could be created from this file.'
+        return JsonResponse(payload, status=400)
+    payload['message'] = (
+        f'{len(created)} course(s) created'
+        + (f', {len(row_errors)} row(s) skipped.' if row_errors else '.'))
+    return JsonResponse(payload, status=207 if row_errors else 201)
+
+
 @csrf_exempt
 @require_designation("acadadmin", "Dean Academic")
 def add_course_form(request):
