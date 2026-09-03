@@ -35,6 +35,7 @@ urlpatterns = [
     path('admin_add_discipline/', views.add_discipline_form, name='add_discipline_form'),
     path('admin_add_curriculum/', views.add_curriculum_form, name='add_curriculum_form'),
     path('admin_add_course/', views.add_course_form, name='add_course_form'),
+    path('admin_add_courses_bulk/', views.add_courses_bulk, name='add_courses_bulk'),
     path('admin_add_courseslot/', views.add_courseslot_form, name='add_courseslot_form'),
     path('admin_add_course/', views.add_course_form, name='add_course_form'),
     path('admin_add_batch/', views_student_management.create_batch, name='admin_add_batch'),
