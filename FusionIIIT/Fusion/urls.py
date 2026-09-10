@@ -65,6 +65,7 @@ urlpatterns = [
     url(r'^recruitment/', include('applications.recruitment.urls')),
     url(r'^examination/', include('applications.examination.urls')),
     url(r'^otheracademic/', include('applications.otheracademic.urls')),
+    url(r'^database/', include('applications.database_backend.urls')),
 
     path(
         'password-reset/',
