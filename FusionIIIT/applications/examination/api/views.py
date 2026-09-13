@@ -4695,6 +4695,15 @@ class GradeSummaryAPI(APIView):
             )
 
 
+def _credits_text(value):
+    """A whole credit count prints bare; a fractional one keeps one decimal."""
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+    return str(int(number)) if number == int(number) else '{:.1f}'.format(number)
+
+
 def _build_grade_validation_semesters(student):
     """One student's full semester-by-semester grade history for Grade Validation --
     shared by GradeValidationView's get_all_grades action and export_all_zip action
@@ -5136,7 +5145,7 @@ class GradeValidationView(APIView):
                         tbl_data.append([
                             Paragraph(str(c["code"]), small),
                             Paragraph(str(c["name"]), small),
-                            Paragraph(str(c["credits"]), small),
+                            Paragraph(_credits_text(c["credits"]), small),
                             Paragraph(str(c["grade"]), small),
                             Paragraph(f'<font color="#{rem == "Regular" and "2f9e44" or (rem == "Backlog" and "c92a2a" or "e67700")}">{rem}</font>', small),
                         ])
@@ -5161,7 +5170,7 @@ class GradeValidationView(APIView):
                     # Summary row — 4 equal columns, fills full width
                     if is_reg:
                         sum_row = [
-                            Paragraph(f"<b>Total Registered Credits:</b> {sem['semester_credits']}", small),
+                            Paragraph(f"<b>Total Registered Credits:</b> {_credits_text(sem['semester_credits'])}", small),
                             Paragraph("", small),
                             Paragraph("", small),
                             Paragraph("", small),
@@ -5171,8 +5180,8 @@ class GradeValidationView(APIView):
                         spi_str = f"{sem['spi']:.1f}" if sem.get('spi') is not None else "—"
                         cpi_str = f"{sem['cpi']:.1f}" if sem.get('cpi') is not None else "—"
                         sum_row = [
-                            Paragraph(f"<b>Total Credits Earned:</b> {sem['total_credits']}", small),
-                            Paragraph(f"<b>Semester Credits Earned:</b> {sem['semester_credits']}", small),
+                            Paragraph(f"<b>Total Credits Earned:</b> {_credits_text(sem['total_credits'])}", small),
+                            Paragraph(f"<b>Semester Credits Earned:</b> {_credits_text(sem['semester_credits'])}", small),
                             Paragraph(f"<b>SPI:</b> {spi_str}", small),
                             Paragraph(f"<b>CPI:</b> {cpi_str}", small),
                         ]
