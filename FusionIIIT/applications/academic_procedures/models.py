@@ -1205,6 +1205,127 @@ class CommitteeMember(models.Model):
         return f"{self.member} on {self.thesis}"
 
 
+class ThesisTopicChangeRequest(models.Model):
+    """Student-initiated request to change an already dean_approved ThesisTopic's
+    topic (category/broad_area/research_theme) and/or supervisor/co-supervisor.
+
+    Follows the same consent -> HOD -> Dean chain as the original ThesisTopic
+    submission, plus consent from any newly-proposed supervisor/co-supervisor
+    (the outgoing supervisor/co-supervisor, if any, is covered by the
+    current_* consent -- they're always asked to sign off on the change,
+    whatever it is). On Dean approval the changes are applied directly to the
+    live ThesisTopic (and its CommitteeMember rows kept in sync); this record
+    stays behind as the audit trail. Rejection at any stage is terminal -- the
+    student submits a fresh request to retry, rather than editing this one in
+    place (unlike ThesisTopic itself, which supports resubmission-in-place).
+    """
+    STATUS_CHOICES = [
+        ('pending_consents', 'Pending Consents'),
+        ('declined',         'Declined by a Consenter'),
+        ('hod_pending',      'Pending with HOD'),
+        ('hod_rejected',     'Rejected by HOD'),
+        ('dean_pending',     'Pending with Dean'),
+        ('dean_rejected',    'Rejected by Dean'),
+        ('approved',         'Approved'),
+    ]
+
+    thesis = models.ForeignKey(ThesisTopic, related_name='change_requests', on_delete=models.CASCADE)
+
+    # Topic-change fields -- blank means "no change requested" for that field.
+    new_category = models.CharField(max_length=20, blank=True, choices=[
+        ('Regular', 'Regular'),
+        ('Sponsored', 'Sponsored'),
+        ('External', 'External'),
+    ])
+    new_broad_area = models.CharField(max_length=200, blank=True)
+    new_research_theme = models.TextField(blank=True)
+
+    # Supervisor-change fields -- null means "no change requested".
+    new_supervisor = models.ForeignKey(
+        Faculty, related_name='thesis_change_requests_as_new_supervisor',
+        on_delete=models.CASCADE, null=True, blank=True,
+    )
+    new_co_supervisor = models.ForeignKey(
+        Faculty, related_name='thesis_change_requests_as_new_co_supervisor',
+        on_delete=models.CASCADE, null=True, blank=True,
+    )
+
+    # Consents. current_* apply to the thesis's supervisor/co-supervisor as of
+    # the request -- always required (current_co_supervisor_consented is only
+    # actually checked if the thesis has a co-supervisor). new_* are only
+    # checked if that field is actually being changed on this request.
+    current_supervisor_consented = models.BooleanField(default=False)
+    current_co_supervisor_consented = models.BooleanField(default=False)
+    new_supervisor_consented = models.BooleanField(default=False)
+    new_co_supervisor_consented = models.BooleanField(default=False)
+    decline_remarks = models.TextField(blank=True)
+    declined_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='thesis_change_declines',
+    )
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_consents')
+    hod_remarks = models.TextField(blank=True)
+    hod_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='thesis_change_hod_reviews',
+    )
+    hod_at = models.DateTimeField(null=True, blank=True)
+    dean_remarks = models.TextField(blank=True)
+    dean_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='thesis_change_dean_reviews',
+    )
+    dean_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Change request for {self.thesis} ({self.status})"
+
+
+class ThesisCommitteeChangeRequest(models.Model):
+    """Supervisor-initiated request to change the RPC committee membership
+    for an already dean_approved ThesisTopic. The supervisor proposes a
+    complete new committee (replacing the current one, supervisor/
+    co-supervisor always kept as members regardless of what's submitted) ->
+    HOD -> Dean Academic approval, which applies the new membership to
+    CommitteeMember. Rejection (HOD or Dean) sends it back to the supervisor
+    to edit and resubmit the same record in place -- mirrors ThesisTopic's
+    own resubmission semantics, not a fresh request like
+    ThesisTopicChangeRequest.
+    """
+    STATUS_CHOICES = [
+        ('hod_pending',   'Pending with HOD'),
+        ('hod_rejected',  'Rejected by HOD, Returned to Supervisor'),
+        ('dean_pending',  'Pending with Dean'),
+        ('dean_rejected', 'Rejected by Dean, Returned to Supervisor'),
+        ('approved',      'Approved'),
+    ]
+
+    thesis = models.ForeignKey(ThesisTopic, related_name='committee_change_requests', on_delete=models.CASCADE)
+    members = models.ManyToManyField(Faculty, related_name='thesis_committee_change_requests')
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='hod_pending')
+    hod_remarks = models.TextField(blank=True)
+    hod_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='thesis_committee_change_hod_reviews',
+    )
+    hod_at = models.DateTimeField(null=True, blank=True)
+    dean_remarks = models.TextField(blank=True)
+    dean_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='thesis_committee_change_dean_reviews',
+    )
+    dean_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Committee change request for {self.thesis} ({self.status})"
+
+
 class ProgressSeminarEntry(models.Model):
     """PhD Seminar reports with versioning and RPC approval."""
     thesis     = models.ForeignKey(ThesisTopic, on_delete=models.CASCADE, related_name='seminars')

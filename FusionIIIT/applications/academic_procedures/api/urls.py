@@ -190,6 +190,25 @@ urlpatterns = [
     url(r'^dean/thesis/(?P<pk>\d+)/review/$', views.dean_review_api, name='dean-thesis-review'),
     url(r'^dean/thesis/(?P<pk>\d+)/generate/$', views.dean_generate_pdf_api, name='dean-thesis-generate'),
 
+    # Thesis Topic Change Request endpoints
+    url(r'^stu/thesis/change-requests/$', views.student_thesis_change_requests, name='student-thesis-change-requests'),
+    url(r'^stu/thesis/change-request/$', views.student_thesis_change_request_create, name='student-thesis-change-request-create'),
+    url(r'^faculty/thesis/change-requests/pending-consent/$', views.faculty_thesis_change_requests_pending_consent, name='faculty-thesis-change-requests-pending-consent'),
+    url(r'^faculty/thesis/change-request/(?P<pk>\d+)/consent/$', views.thesis_change_request_consent, name='thesis-change-request-consent'),
+    url(r'^hod/thesis/change-requests/$', views.hod_thesis_change_request_dashboard, name='hod-thesis-change-request-dashboard'),
+    url(r'^hod/thesis/change-request/(?P<pk>\d+)/review/$', views.hod_thesis_change_request_review, name='hod-thesis-change-request-review'),
+    url(r'^dean/thesis/change-requests/$', views.dean_thesis_change_request_dashboard, name='dean-thesis-change-request-dashboard'),
+    url(r'^dean/thesis/change-request/(?P<pk>\d+)/review/$', views.dean_thesis_change_request_review, name='dean-thesis-change-request-review'),
+
+    # Thesis Committee (RPC) Change Request endpoints
+    url(r'^supervisor/thesis/committee-change-requests/$', views.supervisor_committee_change_requests, name='supervisor-committee-change-requests'),
+    url(r'^supervisor/thesis/(?P<thesis_pk>\d+)/committee-change/propose/$', views.supervisor_propose_committee_change, name='supervisor-propose-committee-change'),
+    url(r'^supervisor/thesis/committee-change/(?P<pk>\d+)/resubmit/$', views.supervisor_resubmit_committee_change, name='supervisor-resubmit-committee-change'),
+    url(r'^hod/thesis/committee-change-requests/$', views.hod_committee_change_dashboard, name='hod-committee-change-dashboard'),
+    url(r'^hod/thesis/committee-change/(?P<pk>\d+)/review/$', views.hod_committee_change_review, name='hod-committee-change-review'),
+    url(r'^dean/thesis/committee-change-requests/$', views.dean_committee_change_dashboard, name='dean-committee-change-dashboard'),
+    url(r'^dean/thesis/committee-change/(?P<pk>\d+)/review/$', views.dean_committee_change_review, name='dean-committee-change-review'),
+
     # PhD Seminar endpoints
 
     # Student

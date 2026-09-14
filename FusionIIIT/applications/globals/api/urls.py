@@ -18,6 +18,12 @@ urlpatterns = [
     re_path(r'^update-role/', views.update_last_selected_role, name='update_last_selected_role'),
 
     # Profile endpoints
+    # bank-details must be listed before the (?P<username>.+) pattern below,
+    # since that pattern has no end anchor and would otherwise swallow this
+    # route as if "bank-details" were a username (same reasoning as
+    # notification/unread-count/ vs notification/ further down).
+    re_path(r'^profile/bank-details/(?P<roll_no>.+)/', views.acadadmin_student_bank_details, name='acadadmin-student-bank-details'),
+    re_path(r'^profile/bank-details/', views.student_bank_details, name='student-bank-details'),
     re_path(r'^profile/(?P<username>.+)/', views.profile, name='profile-api'),
     re_path(r'^profile/', views.profile, name='profile-api'),
     re_path(r'^profile_update/', views.profile_update, name='update-profile-api'),
