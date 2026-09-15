@@ -2936,9 +2936,11 @@ def course_registration_view(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
 
-        # Check if PhD student - they don't have course registrations like UG/PG
+        # PhD students who have course_registration rows (e.g. registered through
+        # the admin/course-registration flow) should still see those courses.
+        # Only skip to the empty-response shortcut when no such rows exist.
         is_phd_student = student.programme and student.programme.upper() == 'PHD'
-        if is_phd_student:
+        if is_phd_student and not course_registration.objects.filter(student_id=student).exists():
             return Response({
                 "reg_data": [],
                 "sem_no": 1,
@@ -7925,6 +7927,873 @@ def dean_generate_pdf_api(request, pk):
     return response
 
 
+# ===========================================================================
+# Thesis Topic Change Request (post-approval amendment)
+# ===========================================================================
+# Workflow: once a ThesisTopic is dean_approved, the student may request a
+# change to the topic (category/broad_area/research_theme) and/or
+# supervisor/co-supervisor. The current supervisor (and current co-supervisor,
+# if any) must always consent -- whatever is being changed, they're signing
+# off on it, which also covers an outgoing supervisor/co-supervisor being
+# replaced. If a NEW supervisor/co-supervisor is being proposed, they must
+# also separately consent to take on the role. Once every required consent is
+# in, it goes to the HOD, then Dean Academic for final approval, which applies
+# the change directly to the live ThesisTopic (and keeps CommitteeMember in
+# sync). A decline (at consent stage) or rejection (HOD/Dean) is terminal --
+# the student submits a fresh request to retry.
+
+def _thesis_change_request_to_dict(cr):
+    thesis = cr.thesis
+    return {
+        'id': cr.id,
+        'thesis_id': thesis.id,
+        'student_roll': thesis.student.id.id,
+        'student_name': thesis.student.id.user.get_full_name(),
+        'student_discipline': thesis.student.specialization,
+        'current_category': thesis.category,
+        'current_broad_area': thesis.broad_area,
+        'current_research_theme': thesis.research_theme,
+        'current_supervisor': {'id': thesis.supervisor.id.id, 'name': str(thesis.supervisor)},
+        'current_co_supervisor': (
+            {'id': thesis.co_supervisor.id.id, 'name': str(thesis.co_supervisor)}
+            if thesis.co_supervisor else None
+        ),
+        'new_category': cr.new_category,
+        'new_broad_area': cr.new_broad_area,
+        'new_research_theme': cr.new_research_theme,
+        'new_supervisor': (
+            {'id': cr.new_supervisor.id.id, 'name': str(cr.new_supervisor)}
+            if cr.new_supervisor else None
+        ),
+        'new_co_supervisor': (
+            {'id': cr.new_co_supervisor.id.id, 'name': str(cr.new_co_supervisor)}
+            if cr.new_co_supervisor else None
+        ),
+        'current_supervisor_consented': cr.current_supervisor_consented,
+        'current_co_supervisor_consented': cr.current_co_supervisor_consented,
+        'new_supervisor_consented': cr.new_supervisor_consented,
+        'new_co_supervisor_consented': cr.new_co_supervisor_consented,
+        'status': cr.status,
+        'hod_remarks': cr.hod_remarks,
+        'dean_remarks': cr.dean_remarks,
+        'decline_remarks': cr.decline_remarks,
+        'created_at': cr.created_at.isoformat(),
+    }
+
+
+def _thesis_change_request_active_rpc_blocked(thesis):
+    """Mirrors supervisor_review_api's committee-edit freeze: block while any
+    Comprehensive Exam / Open Seminar / Progress Seminar attempt tied to this
+    student is actively awaiting RPC consent."""
+    return (
+        ComprehensiveExamAttempt.objects.filter(exam__student=thesis.student, status='rpc_pending').exists()
+        or OpenSeminarAttempt.objects.filter(open_seminar__student=thesis.student, status='rpc_pending').exists()
+        or ProgressSeminarEntry.objects.filter(thesis=thesis, status='rpc_pending').exists()
+    )
+
+
+def _thesis_change_request_role(cr, user):
+    """Which of the (up to 4) consent roles `user` plays for this change
+    request, or None. Checked in a fixed order; a user can only match one."""
+    thesis = cr.thesis
+    user_ex = user.username
+    if thesis.supervisor_id == user_ex:
+        return 'current_supervisor'
+    if thesis.co_supervisor_id and thesis.co_supervisor_id == user_ex:
+        return 'current_co_supervisor'
+    if cr.new_supervisor_id and cr.new_supervisor_id == user_ex:
+        return 'new_supervisor'
+    if cr.new_co_supervisor_id and cr.new_co_supervisor_id == user_ex:
+        return 'new_co_supervisor'
+    return None
+
+
+def _thesis_change_request_all_consents_given(cr):
+    thesis = cr.thesis
+    if not cr.current_supervisor_consented:
+        return False
+    if thesis.co_supervisor_id and not cr.current_co_supervisor_consented:
+        return False
+    if cr.new_supervisor_id and not cr.new_supervisor_consented:
+        return False
+    if cr.new_co_supervisor_id and not cr.new_co_supervisor_consented:
+        return False
+    return True
+
+
+# 1. Student
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def student_thesis_change_requests(request):
+    """GET /stu/thesis/change-requests/ -> the requesting student's own thesis's change requests, most recent first."""
+    try:
+        student = Student.objects.get(id=request.user.extrainfo)
+    except Student.DoesNotExist:
+        return JsonResponse({'error': 'Student record not found'}, status=404)
+
+    thesis = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+    if not thesis:
+        return JsonResponse({'change_requests': []}, status=200)
+
+    qs = ThesisTopicChangeRequest.objects.filter(thesis=thesis).order_by('-created_at')
+    return JsonResponse({
+        'change_requests': [_thesis_change_request_to_dict(cr) for cr in qs],
+    }, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def student_thesis_change_request_create(request):
+    """
+    POST /stu/thesis/change-request/
+    Body: { new_category, new_broad_area, new_research_theme, new_supervisor_id, new_co_supervisor_id }
+    All fields optional -- at least one must actually differ from the current
+    thesis. Only allowed once the thesis is fully dean_approved, with no other
+    change request already active, and not while an RPC review is in progress.
+    """
+    try:
+        student = Student.objects.get(id=request.user.extrainfo)
+    except Student.DoesNotExist:
+        return JsonResponse({'error': 'Student record not found'}, status=404)
+
+    thesis = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+    if not thesis or thesis.status != 'dean_approved':
+        return JsonResponse(
+            {'error': 'Thesis topic must be fully approved before requesting a change.'}, status=403,
+        )
+
+    if ThesisTopicChangeRequest.objects.filter(
+        thesis=thesis, status__in=['pending_consents', 'hod_pending', 'dean_pending'],
+    ).exists():
+        return JsonResponse({'error': 'A change request is already in progress for this thesis.'}, status=400)
+
+    if _thesis_change_request_active_rpc_blocked(thesis):
+        return JsonResponse({
+            'error': 'Cannot request a change while a Comprehensive Exam, Open Seminar, or '
+                     'Progress Seminar is awaiting RPC consent.',
+        }, status=403)
+
+    data = request.data
+    new_category = data.get('new_category') or ''
+    new_broad_area = data.get('new_broad_area') or ''
+    new_research_theme = data.get('new_research_theme') or ''
+    new_supervisor_id = data.get('new_supervisor_id') or None
+    new_co_supervisor_id = data.get('new_co_supervisor_id') or None
+
+    if new_category and new_category == thesis.category:
+        new_category = ''
+    if new_broad_area and new_broad_area == thesis.broad_area:
+        new_broad_area = ''
+    if new_research_theme and new_research_theme == thesis.research_theme:
+        new_research_theme = ''
+    if new_supervisor_id and new_supervisor_id == thesis.supervisor_id:
+        new_supervisor_id = None
+    if new_co_supervisor_id and thesis.co_supervisor_id and new_co_supervisor_id == thesis.co_supervisor_id:
+        new_co_supervisor_id = None
+
+    if not any([new_category, new_broad_area, new_research_theme, new_supervisor_id, new_co_supervisor_id]):
+        return JsonResponse({'error': 'No actual change requested.'}, status=400)
+
+    new_supervisor = None
+    if new_supervisor_id:
+        try:
+            new_supervisor = Faculty.objects.get(pk=new_supervisor_id)
+        except Faculty.DoesNotExist:
+            return JsonResponse({'error': 'Invalid new supervisor'}, status=400)
+        if not new_supervisor.id.user.is_active:
+            return JsonResponse({'error': 'Selected new supervisor is not an active faculty member'}, status=400)
+
+    new_co_supervisor = None
+    if new_co_supervisor_id:
+        try:
+            new_co_supervisor = Faculty.objects.get(pk=new_co_supervisor_id)
+        except Faculty.DoesNotExist:
+            return JsonResponse({'error': 'Invalid new co-supervisor'}, status=400)
+        if not new_co_supervisor.id.user.is_active:
+            return JsonResponse(
+                {'error': 'Selected new co-supervisor is not an active faculty member'}, status=400,
+            )
+
+    effective_supervisor_id = new_supervisor_id or thesis.supervisor_id
+    effective_co_supervisor_id = new_co_supervisor_id or thesis.co_supervisor_id
+    if effective_co_supervisor_id and effective_co_supervisor_id == effective_supervisor_id:
+        return JsonResponse({'error': 'Co-supervisor must be different from supervisor'}, status=400)
+
+    cr = ThesisTopicChangeRequest.objects.create(
+        thesis=thesis,
+        new_category=new_category,
+        new_broad_area=new_broad_area,
+        new_research_theme=new_research_theme,
+        new_supervisor_id=new_supervisor_id,
+        new_co_supervisor_id=new_co_supervisor_id,
+    )
+
+    _thesis_notify(
+        sender=request.user,
+        recipient=thesis.supervisor.id.user,
+        verb='Thesis topic change request awaiting your consent',
+        description=f"{student.id.user.get_full_name()} has requested a change to their thesis "
+                    f"topic/supervisor and needs your consent.",
+    )
+    if thesis.co_supervisor:
+        _thesis_notify(
+            sender=request.user,
+            recipient=thesis.co_supervisor.id.user,
+            verb='Thesis topic change request awaiting your consent',
+            description=f"{student.id.user.get_full_name()} has requested a change to their thesis "
+                        f"topic/supervisor and needs your consent.",
+        )
+    if new_supervisor:
+        _thesis_notify(
+            sender=request.user,
+            recipient=new_supervisor.id.user,
+            verb='You have been proposed as a new thesis supervisor',
+            description=f"{student.id.user.get_full_name()} has proposed you as their new thesis "
+                        f"supervisor and needs your consent.",
+        )
+    if new_co_supervisor:
+        _thesis_notify(
+            sender=request.user,
+            recipient=new_co_supervisor.id.user,
+            verb='You have been proposed as a new thesis co-supervisor',
+            description=f"{student.id.user.get_full_name()} has proposed you as their new thesis "
+                        f"co-supervisor and needs your consent.",
+        )
+
+    return JsonResponse(_thesis_change_request_to_dict(cr), status=201)
+
+
+# 2. Consent (current supervisor, current co-supervisor, new supervisor, new co-supervisor)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def faculty_thesis_change_requests_pending_consent(request):
+    """
+    GET /faculty/thesis/change-requests/pending-consent/
+    Change requests (status='pending_consents') where the requester plays one
+    of the 4 consent roles and hasn't consented yet -- covers a newly-proposed
+    supervisor/co-supervisor too, who wouldn't otherwise see this thesis
+    anywhere (they aren't the supervisor of record yet).
+    """
+    user_ex = request.user.username
+    qs = ThesisTopicChangeRequest.objects.filter(status='pending_consents').filter(
+        Q(thesis__supervisor_id=user_ex, current_supervisor_consented=False)
+        | Q(thesis__co_supervisor_id=user_ex, current_co_supervisor_consented=False)
+        | Q(new_supervisor_id=user_ex, new_supervisor_consented=False)
+        | Q(new_co_supervisor_id=user_ex, new_co_supervisor_consented=False)
+    ).select_related(
+        'thesis__student__id__user', 'thesis__supervisor__id__user', 'thesis__co_supervisor__id__user',
+        'new_supervisor__id__user', 'new_co_supervisor__id__user',
+    ).distinct()
+
+    results = []
+    for cr in qs:
+        payload = _thesis_change_request_to_dict(cr)
+        payload['my_role'] = _thesis_change_request_role(cr, request.user)
+        results.append(payload)
+    return JsonResponse({'pending': results}, status=200)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def thesis_change_request_consent(request, pk):
+    """
+    GET  /faculty/thesis/change-request/<pk>/ -> detail + which of the (up to
+         4) consent roles the requester plays, if any.
+    POST /faculty/thesis/change-request/<pk>/consent/
+    Body: { consent: true|false, remarks (if declining) }
+    Any required consenter may call this. Declining is terminal for the whole
+    request (status='declined') -- the student must submit a fresh request.
+    """
+    cr = get_object_or_404(ThesisTopicChangeRequest, pk=pk)
+    role = _thesis_change_request_role(cr, request.user)
+
+    if request.method == 'GET':
+        if not role:
+            return JsonResponse({'error': 'Not authorized'}, status=403)
+        payload = _thesis_change_request_to_dict(cr)
+        payload['my_role'] = role
+        return JsonResponse(payload, status=200)
+
+    if not role:
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+    if cr.status != 'pending_consents':
+        return JsonResponse({'error': 'Not awaiting consent at this stage'}, status=403)
+
+    consent_field = f'{role}_consented'
+    if getattr(cr, consent_field):
+        return JsonResponse({'error': 'Already consented'}, status=400)
+
+    data = request.data
+    thesis = cr.thesis
+    student_name = thesis.student.id.user.get_full_name()
+
+    if not data.get('consent'):
+        cr.status = 'declined'
+        cr.decline_remarks = data.get('remarks', '')
+        cr.declined_by = request.user
+        cr.save()
+        for recipient in filter(None, [thesis.student.id.user, thesis.supervisor.id.user]):
+            _thesis_notify(
+                sender=request.user,
+                recipient=recipient,
+                verb='Thesis topic change request declined',
+                description=f"{request.user.get_full_name()} declined the requested change to "
+                            f"{student_name}'s thesis topic. Remarks: {cr.decline_remarks or '—'}",
+            )
+        return JsonResponse({'status': cr.status}, status=200)
+
+    setattr(cr, consent_field, True)
+
+    if _thesis_change_request_all_consents_given(cr):
+        cr.status = 'hod_pending'
+        cr.save()
+        acronym = (
+            thesis.student.batch_id.discipline.acronym
+            if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+        )
+        _thesis_notify(
+            sender=request.user,
+            recipient=_hod_users_for_discipline(acronym),
+            verb='Thesis topic change request pending your review',
+            description=f"All required consents are in for {student_name}'s thesis topic change "
+                        f"request; awaiting HOD review.",
+        )
+    else:
+        cr.save()
+
+    return JsonResponse(_thesis_change_request_to_dict(cr), status=200)
+
+
+# 3. HOD
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def hod_thesis_change_request_dashboard(request):
+    """GET /hod/thesis/change-requests/ -> change requests pending HOD review, scoped to the HOD's own discipline."""
+    hod_disciplines = get_hod_disciplines(request.user)
+    qs = ThesisTopicChangeRequest.objects.filter(status='hod_pending').select_related(
+        'thesis__student__id__user', 'thesis__student__batch_id__discipline', 'thesis__supervisor__id__user',
+    )
+    pending = []
+    for cr in qs:
+        student = cr.thesis.student
+        acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
+        if acronym and acronym in hod_disciplines:
+            pending.append(_thesis_change_request_to_dict(cr))
+    return JsonResponse({'pending': pending}, status=200)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def hod_thesis_change_request_review(request, pk):
+    """
+    GET  /hod/thesis/change-request/<pk>/review/
+    POST /hod/thesis/change-request/<pk>/review/ Body: { approve: true|false, remarks }
+    """
+    cr = get_object_or_404(ThesisTopicChangeRequest, pk=pk)
+    thesis = cr.thesis
+    acronym = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+    is_hod = is_hod_of_discipline(request.user, acronym)
+
+    if request.method == 'GET':
+        if not is_hod:
+            return JsonResponse({'error': 'Not authorized'}, status=403)
+        return JsonResponse(_thesis_change_request_to_dict(cr), status=200)
+
+    if not is_hod or cr.status != 'hod_pending':
+        return JsonResponse({'error': 'Forbidden or invalid stage'}, status=403)
+
+    data = request.data
+    cr.hod_by = request.user
+    cr.hod_at = timezone.now()
+    student_name = thesis.student.id.user.get_full_name()
+
+    if data.get('approve'):
+        cr.hod_remarks = ''
+        cr.status = 'dean_pending'
+        cr.save()
+        _thesis_notify(
+            sender=request.user,
+            recipient=_dean_academic_users(),
+            verb='Thesis topic change request pending your final approval',
+            description=f"{student_name}'s thesis topic change request has been approved by the "
+                        f"HOD and is awaiting your final approval.",
+        )
+    else:
+        cr.hod_remarks = data.get('remarks', '')
+        cr.status = 'hod_rejected'
+        cr.save()
+        for recipient in filter(None, [thesis.supervisor.id.user, thesis.student.id.user]):
+            _thesis_notify(
+                sender=request.user,
+                recipient=recipient,
+                verb='Thesis topic change request rejected by HOD',
+                description=f"The HOD rejected {student_name}'s thesis topic change request. "
+                            f"Remarks: {cr.hod_remarks or '—'}",
+            )
+
+    return JsonResponse({'status': cr.status}, status=200)
+
+
+# 4. Dean Academic
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_thesis_change_request_dashboard(request):
+    """GET /dean/thesis/change-requests/ -> change requests pending Dean Academic final approval."""
+    qs = ThesisTopicChangeRequest.objects.filter(status='dean_pending').select_related(
+        'thesis__student__id__user', 'thesis__supervisor__id__user',
+    )
+    return JsonResponse({'pending': [_thesis_change_request_to_dict(cr) for cr in qs]}, status=200)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_thesis_change_request_review(request, pk):
+    """
+    GET  /dean/thesis/change-request/<pk>/review/
+    POST /dean/thesis/change-request/<pk>/review/ Body: { approve: true|false, remarks }
+    Approving applies the change directly to the live ThesisTopic and syncs
+    CommitteeMember (only touching the supervisor/co-supervisor slots being
+    replaced, leaving the rest of the RPC untouched).
+    """
+    cr = get_object_or_404(ThesisTopicChangeRequest, pk=pk)
+    thesis = cr.thesis
+
+    if request.method == 'GET':
+        return JsonResponse(_thesis_change_request_to_dict(cr), status=200)
+
+    if cr.status != 'dean_pending':
+        return JsonResponse({'error': 'Forbidden or invalid stage'}, status=403)
+
+    data = request.data
+    cr.dean_by = request.user
+    cr.dean_at = timezone.now()
+    student_name = thesis.student.id.user.get_full_name()
+    acronym = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+
+    if data.get('approve'):
+        cr.dean_remarks = ''
+        cr.status = 'approved'
+        cr.save()
+
+        if cr.new_category:
+            thesis.category = cr.new_category
+        if cr.new_broad_area:
+            thesis.broad_area = cr.new_broad_area
+        if cr.new_research_theme:
+            thesis.research_theme = cr.new_research_theme
+
+        if cr.new_supervisor_id and cr.new_supervisor_id != thesis.supervisor_id:
+            CommitteeMember.objects.filter(thesis=thesis, member_id=thesis.supervisor_id).delete()
+            thesis.supervisor_id = cr.new_supervisor_id
+            CommitteeMember.objects.get_or_create(thesis=thesis, member_id=thesis.supervisor_id)
+
+        if cr.new_co_supervisor_id and cr.new_co_supervisor_id != thesis.co_supervisor_id:
+            if thesis.co_supervisor_id:
+                CommitteeMember.objects.filter(thesis=thesis, member_id=thesis.co_supervisor_id).delete()
+            thesis.co_supervisor_id = cr.new_co_supervisor_id
+            CommitteeMember.objects.get_or_create(thesis=thesis, member_id=thesis.co_supervisor_id)
+
+        thesis.save()
+
+        recipients = [thesis.student.id.user, thesis.supervisor.id.user]
+        if thesis.co_supervisor:
+            recipients.append(thesis.co_supervisor.id.user)
+        for recipient in recipients:
+            _thesis_notify(
+                sender=request.user,
+                recipient=recipient,
+                verb='Thesis topic change approved',
+                description=f"Dean Academic approved the requested change to {student_name}'s "
+                            f"thesis topic.",
+            )
+        _thesis_notify(
+            sender=request.user,
+            recipient=_hod_users_for_discipline(acronym),
+            verb='Thesis topic change approved',
+            description=f"Dean Academic approved the requested change to {student_name}'s "
+                        f"thesis topic.",
+        )
+    else:
+        cr.dean_remarks = data.get('remarks', '')
+        cr.status = 'dean_rejected'
+        cr.save()
+        _thesis_notify(
+            sender=request.user,
+            recipient=_hod_users_for_discipline(acronym),
+            verb='Thesis topic change request rejected by Dean Academic',
+            description=f"Dean Academic rejected {student_name}'s thesis topic change request. "
+                        f"Remarks: {cr.dean_remarks or '—'}",
+        )
+
+    return JsonResponse({'status': cr.status}, status=200)
+
+
+# ===========================================================================
+# Thesis Committee (RPC) Change Request
+# ===========================================================================
+# Workflow: the current supervisor (only -- not the co-supervisor, mirroring
+# the original committee-edit permission in supervisor_review_api) proposes a
+# complete new committee for an already dean_approved ThesisTopic -> HOD ->
+# Dean Academic approval, which applies the new membership to CommitteeMember
+# (supervisor/co-supervisor are always kept as members regardless of what's
+# submitted). Rejection (HOD or Dean) sends it back to the supervisor to edit
+# and resubmit the SAME record -- mirrors ThesisTopic's own resubmission
+# semantics, unlike ThesisTopicChangeRequest's terminal-decline design.
+
+def _is_thesis_current_supervisor(user, thesis):
+    return thesis.supervisor_id == user.username
+
+
+def _thesis_committee_change_to_dict(cr):
+    thesis = cr.thesis
+    return {
+        'id': cr.id,
+        'thesis_id': thesis.id,
+        'student_roll': thesis.student.id.id,
+        'student_name': thesis.student.id.user.get_full_name(),
+        'student_discipline': thesis.student.specialization,
+        'supervisor': {'id': thesis.supervisor.id.id, 'name': str(thesis.supervisor)},
+        'co_supervisor': (
+            {'id': thesis.co_supervisor.id.id, 'name': str(thesis.co_supervisor)}
+            if thesis.co_supervisor else None
+        ),
+        'current_committee': [
+            {
+                'id': cm.member.id.id,
+                'name': str(cm.member),
+                'discipline': (cm.member.id.department.name if cm.member.id.department else ''),
+            }
+            for cm in thesis.committee.all()
+        ],
+        'proposed_committee': [
+            {
+                'id': m.id.id,
+                'name': str(m),
+                'discipline': (m.id.department.name if m.id.department else ''),
+            }
+            for m in cr.members.all()
+        ],
+        'status': cr.status,
+        'hod_remarks': cr.hod_remarks,
+        'dean_remarks': cr.dean_remarks,
+        'created_at': cr.created_at.isoformat(),
+    }
+
+
+def _validate_committee_members(thesis, member_ids):
+    """Returns (Faculty queryset, error_response_or_None). Always folds in
+    supervisor/co-supervisor and enforces the >=3 minimum, matching the
+    original committee-edit rule in supervisor_review_api."""
+    member_ids = set(member_ids or [])
+    member_ids.add(thesis.supervisor_id)
+    if thesis.co_supervisor_id:
+        member_ids.add(thesis.co_supervisor_id)
+
+    if len(member_ids) < 3:
+        return None, JsonResponse(
+            {'error': 'Need at least 3 RPC members (including supervisor/co-supervisor).'}, status=400,
+        )
+
+    members_qs = Faculty.objects.filter(pk__in=member_ids)
+    if members_qs.count() != len(member_ids):
+        return None, JsonResponse({'error': 'One or more selected members are invalid.'}, status=400)
+
+    return members_qs, None
+
+
+# 1. Supervisor
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def supervisor_committee_change_requests(request):
+    """GET /supervisor/thesis/committee-change-requests/ -> committee change
+    requests for theses the requester currently supervises, most recent first."""
+    try:
+        faculty = Faculty.objects.get(id__user=request.user)
+    except Faculty.DoesNotExist:
+        return JsonResponse({'error': 'Faculty record not found'}, status=404)
+
+    qs = ThesisCommitteeChangeRequest.objects.filter(thesis__supervisor=faculty).select_related(
+        'thesis__student__id__user', 'thesis__supervisor__id__user', 'thesis__co_supervisor__id__user',
+    ).order_by('-created_at')
+    return JsonResponse({
+        'requests': [_thesis_committee_change_to_dict(cr) for cr in qs],
+    }, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def supervisor_propose_committee_change(request, thesis_pk):
+    """
+    POST /supervisor/thesis/<thesis_pk>/committee-change/propose/
+    Body: { members: [faculty_id, ...] }
+    Only the current supervisor may propose. Only allowed once the thesis is
+    fully dean_approved, when no other committee change request is currently
+    in progress (an 'approved' or nonexistent prior request is fine -- a
+    rejected one must be resubmitted instead, not re-proposed), and not while
+    an RPC review is in progress.
+    """
+    thesis = get_object_or_404(ThesisTopic, pk=thesis_pk)
+    if not _is_thesis_current_supervisor(request.user, thesis):
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+    if thesis.status != 'dean_approved':
+        return JsonResponse(
+            {'error': 'Thesis topic must be fully approved before requesting a committee change.'}, status=403,
+        )
+
+    latest = ThesisCommitteeChangeRequest.objects.filter(thesis=thesis).order_by('-created_at').first()
+    if latest and latest.status != 'approved':
+        return JsonResponse({
+            'error': 'A committee change request is already in progress for this thesis -- '
+                     'edit and resubmit it instead of proposing a new one.',
+        }, status=400)
+
+    if _thesis_change_request_active_rpc_blocked(thesis):
+        return JsonResponse({
+            'error': 'Cannot request a committee change while a Comprehensive Exam, Open Seminar, '
+                     'or Progress Seminar is awaiting RPC consent.',
+        }, status=403)
+
+    members_qs, err = _validate_committee_members(thesis, request.data.get('members'))
+    if err:
+        return err
+
+    cr = ThesisCommitteeChangeRequest.objects.create(thesis=thesis)
+    cr.members.set(members_qs)
+
+    acronym = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+    _thesis_notify(
+        sender=request.user,
+        recipient=_hod_users_for_discipline(acronym),
+        verb='Thesis committee change request pending your review',
+        description=f"{thesis.student.id.user.get_full_name()}'s supervisor has proposed a "
+                    f"committee membership change, awaiting your review.",
+    )
+
+    return JsonResponse(_thesis_committee_change_to_dict(cr), status=201)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def supervisor_resubmit_committee_change(request, pk):
+    """
+    POST /supervisor/thesis/committee-change/<pk>/resubmit/
+    Body: { members: [faculty_id, ...] }
+    Only after a HOD/Dean rejection, only by the current supervisor.
+    """
+    cr = get_object_or_404(ThesisCommitteeChangeRequest, pk=pk)
+    thesis = cr.thesis
+    if not _is_thesis_current_supervisor(request.user, thesis):
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+    if cr.status not in ('hod_rejected', 'dean_rejected'):
+        return JsonResponse({'error': 'Cannot edit at this stage'}, status=403)
+
+    if _thesis_change_request_active_rpc_blocked(thesis):
+        return JsonResponse({
+            'error': 'Cannot resubmit a committee change while a Comprehensive Exam, Open Seminar, '
+                     'or Progress Seminar is awaiting RPC consent.',
+        }, status=403)
+
+    members_qs, err = _validate_committee_members(thesis, request.data.get('members'))
+    if err:
+        return err
+
+    cr.members.set(members_qs)
+    cr.status = 'hod_pending'
+    cr.hod_remarks = ''
+    cr.dean_remarks = ''
+    cr.save()
+
+    acronym = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+    _thesis_notify(
+        sender=request.user,
+        recipient=_hod_users_for_discipline(acronym),
+        verb='Thesis committee change request resubmitted',
+        description=f"{thesis.student.id.user.get_full_name()}'s supervisor has resubmitted a "
+                    f"committee membership change, awaiting your review.",
+    )
+
+    return JsonResponse(_thesis_committee_change_to_dict(cr), status=200)
+
+
+# 2. HOD
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def hod_committee_change_dashboard(request):
+    """GET /hod/thesis/committee-change-requests/ -> requests pending HOD review, scoped to the HOD's own discipline."""
+    hod_disciplines = get_hod_disciplines(request.user)
+    qs = ThesisCommitteeChangeRequest.objects.filter(status='hod_pending').select_related(
+        'thesis__student__id__user', 'thesis__student__batch_id__discipline', 'thesis__supervisor__id__user',
+    )
+    pending = []
+    for cr in qs:
+        student = cr.thesis.student
+        acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
+        if acronym and acronym in hod_disciplines:
+            pending.append(_thesis_committee_change_to_dict(cr))
+    return JsonResponse({'pending': pending}, status=200)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def hod_committee_change_review(request, pk):
+    """
+    GET  /hod/thesis/committee-change/<pk>/review/
+    POST /hod/thesis/committee-change/<pk>/review/ Body: { approve: true|false, remarks }
+    """
+    cr = get_object_or_404(ThesisCommitteeChangeRequest, pk=pk)
+    thesis = cr.thesis
+    acronym = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+    is_hod = is_hod_of_discipline(request.user, acronym)
+
+    if request.method == 'GET':
+        if not is_hod:
+            return JsonResponse({'error': 'Not authorized'}, status=403)
+        return JsonResponse(_thesis_committee_change_to_dict(cr), status=200)
+
+    if not is_hod or cr.status != 'hod_pending':
+        return JsonResponse({'error': 'Forbidden or invalid stage'}, status=403)
+
+    data = request.data
+    cr.hod_by = request.user
+    cr.hod_at = timezone.now()
+    student_name = thesis.student.id.user.get_full_name()
+
+    if data.get('approve'):
+        cr.hod_remarks = ''
+        cr.status = 'dean_pending'
+        cr.save()
+        _thesis_notify(
+            sender=request.user,
+            recipient=_dean_academic_users(),
+            verb='Thesis committee change request pending your final approval',
+            description=f"{student_name}'s committee change request has been approved by the "
+                        f"HOD and is awaiting your final approval.",
+        )
+        _thesis_notify(
+            sender=request.user,
+            recipient=thesis.supervisor.id.user,
+            verb='Thesis committee change request approved by HOD',
+            description=f"{student_name}'s committee change request has been approved by the "
+                        f"HOD and forwarded to Dean Academic.",
+        )
+    else:
+        cr.hod_remarks = data.get('remarks', '')
+        cr.status = 'hod_rejected'
+        cr.save()
+        _thesis_notify(
+            sender=request.user,
+            recipient=thesis.supervisor.id.user,
+            verb='Thesis committee change request rejected by HOD',
+            description=f"The HOD rejected {student_name}'s committee change request. "
+                        f"Remarks: {cr.hod_remarks or '—'}",
+        )
+
+    return JsonResponse({'status': cr.status}, status=200)
+
+
+# 3. Dean Academic
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_committee_change_dashboard(request):
+    """GET /dean/thesis/committee-change-requests/ -> requests pending Dean Academic final approval."""
+    qs = ThesisCommitteeChangeRequest.objects.filter(status='dean_pending').select_related(
+        'thesis__student__id__user', 'thesis__supervisor__id__user',
+    )
+    return JsonResponse({'pending': [_thesis_committee_change_to_dict(cr) for cr in qs]}, status=200)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_committee_change_review(request, pk):
+    """
+    GET  /dean/thesis/committee-change/<pk>/review/
+    POST /dean/thesis/committee-change/<pk>/review/ Body: { approve: true|false, remarks }
+    Approving replaces the thesis's CommitteeMember rows with the proposed
+    membership (supervisor/co-supervisor always included).
+    """
+    cr = get_object_or_404(ThesisCommitteeChangeRequest, pk=pk)
+    thesis = cr.thesis
+
+    if request.method == 'GET':
+        return JsonResponse(_thesis_committee_change_to_dict(cr), status=200)
+
+    if cr.status != 'dean_pending':
+        return JsonResponse({'error': 'Forbidden or invalid stage'}, status=403)
+
+    data = request.data
+    cr.dean_by = request.user
+    cr.dean_at = timezone.now()
+    student_name = thesis.student.id.user.get_full_name()
+    acronym = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+
+    if data.get('approve'):
+        cr.dean_remarks = ''
+        cr.status = 'approved'
+        cr.save()
+
+        CommitteeMember.objects.filter(thesis=thesis).delete()
+        for member in cr.members.all():
+            CommitteeMember.objects.get_or_create(thesis=thesis, member=member)
+
+        for recipient in filter(None, [thesis.student.id.user, thesis.supervisor.id.user]):
+            _thesis_notify(
+                sender=request.user,
+                recipient=recipient,
+                verb='Thesis committee change approved',
+                description=f"Dean Academic approved the requested committee change for "
+                            f"{student_name}'s thesis.",
+            )
+        _thesis_notify(
+            sender=request.user,
+            recipient=_hod_users_for_discipline(acronym),
+            verb='Thesis committee change approved',
+            description=f"Dean Academic approved the requested committee change for "
+                        f"{student_name}'s thesis.",
+        )
+    else:
+        cr.dean_remarks = data.get('remarks', '')
+        cr.status = 'dean_rejected'
+        cr.save()
+        _thesis_notify(
+            sender=request.user,
+            recipient=thesis.supervisor.id.user,
+            verb='Thesis committee change request rejected by Dean Academic',
+            description=f"Dean Academic rejected {student_name}'s committee change request. "
+                        f"Remarks: {cr.dean_remarks or '—'}",
+        )
+
+    return JsonResponse({'status': cr.status}, status=200)
+
+
 # Seminar Views
 # 1. STUDENT
 
@@ -9326,7 +10195,7 @@ def dean_final_review_action(request):
 # Thesis Slot Semester-Level Registration
 # ===========================================================================
 from applications.academic_procedures.models import (
-    ThesisTopic, CommitteeMember, ProgressSeminarEntry,
+    ThesisTopic, ThesisTopicChangeRequest, ThesisCommitteeChangeRequest, CommitteeMember, ProgressSeminarEntry,
     ProgressSeminarConsent, ProgressSeminarComment,
     ThesisRegistration, ProgressSeminarRegistration, TeachingCreditRegistration,
     ThesisEvaluation, ProgressSeminarEvaluation,

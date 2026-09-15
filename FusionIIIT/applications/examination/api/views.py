@@ -499,6 +499,41 @@ def is_valid_grade(grade: str, course_code: str) -> bool:
     return grade in ALLOWED_GRADES
 
 
+SPECIAL_NUMERIC_GRADE_CODES = {"PR4001", "PR4002", "BTP4001"}
+LETTER_GRADE_SCHEME = {"O", "A+", "A", "B+", "B", "C+", "C", "D+", "D", "F", "CD"}
+PASS_FAIL_GRADE_SCHEME = {"S", "X"}
+SCHEME_LABELS = {
+    "letter": "letter grades (O/A+/A/.../F/CD)",
+    "pass_fail": "pass/fail grades (S/X)",
+}
+
+
+def grade_scheme(grade):
+    """Classify a grade string as 'letter' or 'pass_fail'. Returns None for an
+    unrecognized value, or for a PR4001/PR4002/BTP4001 numeric grade -- those use
+    their own separate scheme (checked entirely by is_valid_grade's course-code
+    branch) and aren't subject to the letter-vs-pass/fail consistency check."""
+    g = (grade or "").strip().upper()
+    if g in LETTER_GRADE_SCHEME:
+        return "letter"
+    if g in PASS_FAIL_GRADE_SCHEME:
+        return "pass_fail"
+    return None
+
+
+def established_grade_scheme(course_id, academic_year, semester_type):
+    """The letter/pass-fail scheme already on file for this course+year+semester
+    (from any existing graded Student_grades row), or None if nothing is graded
+    yet -- in which case the first valid row of a new upload sets the scheme."""
+    existing = (
+        Student_grades.objects
+        .filter(course_id=course_id, academic_year=academic_year, semester_type=semester_type)
+        .exclude(grade__isnull=True).exclude(grade='')
+        .first()
+    )
+    return grade_scheme(existing.grade) if existing else None
+
+
 # Remark shown next to a grade once a course has more than one linked attempt:
 # R = repeat of the same course, qualified by why -- BL after a fail, CD when the
 # earlier attempt was dropped, IM on an already-cleared course; S = substitute,
@@ -2131,6 +2166,10 @@ class UploadGradesProfAPI(APIView):
                 )
 
             # 10) ATOMIC PROCESSING
+            is_special_numeric_course = course.code.strip().upper() in SPECIAL_NUMERIC_GRADE_CODES
+            csv_scheme = None if is_special_numeric_course else established_grade_scheme(
+                course_id, academic_year, semester_type
+            )
             errors = []
             with transaction.atomic():
                 # Reset reSubmit only for this submission's roster (already scoped
@@ -2208,6 +2247,19 @@ class UploadGradesProfAPI(APIView):
                             f"Row {idx}: Invalid grade '{grade}' for course '{course.code}'. Allowed: {allowed}."
                         )
                         continue
+
+                    # c2) SAME SCHEME AS THE REST OF THIS COURSE? (no mixing letter
+                    # grades with pass/fail S/X within one course+year+semester)
+                    if not is_special_numeric_course:
+                        row_scheme = grade_scheme(grade)
+                        if csv_scheme is None:
+                            csv_scheme = row_scheme
+                        elif row_scheme != csv_scheme:
+                            errors.append(
+                                f"Row {idx}: Grade scheme mismatch for {roll_no} — this course is using "
+                                f"{SCHEME_LABELS[csv_scheme]}, but '{grade}' is a {SCHEME_LABELS[row_scheme]} value."
+                            )
+                            continue
 
                     # d) DETERMINE SEMESTER & BATCH
                     semester = sem_csv or stud.curr_semester_no
@@ -3321,6 +3373,11 @@ class PreviewGradesAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        try:
+            course_obj = Courses.objects.get(id=course_id)
+        except Courses.DoesNotExist:
+            return Response({"error": "Invalid course ID."}, status=status.HTTP_400_BAD_REQUEST)
+
         # Faculty may only preview grades for courses they teach; acadadmin/Dean: any.
         if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
             try:
@@ -3404,21 +3461,45 @@ class PreviewGradesAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        is_special_numeric_course = course_obj.code.strip().upper() in SPECIAL_NUMERIC_GRADE_CODES
+        seen_scheme = None if is_special_numeric_course else established_grade_scheme(
+            course_id, academic_year, semester_type
+        )
+
         preview_rows = []
         for row in reader:
             roll_no = row["roll_no"]
             # Check if the current roll number is registered.
             is_registered = roll_no in registered_rollnos
+            grade_val = row["grade"]
+
+            grade_valid = True
+            grade_error = None
+            if not is_valid_grade(grade_val, course_obj.code):
+                grade_valid = False
+                grade_error = f"Invalid grade '{grade_val}'."
+            elif not is_special_numeric_course:
+                row_scheme = grade_scheme(grade_val)
+                if seen_scheme is None:
+                    seen_scheme = row_scheme
+                elif row_scheme != seen_scheme:
+                    grade_valid = False
+                    grade_error = (
+                        f"Grade scheme mismatch: this course is using {SCHEME_LABELS[seen_scheme]}, "
+                        f"but '{grade_val}' is a {SCHEME_LABELS[row_scheme]} value."
+                    )
 
             # Add additional data (e.g. name, grades, remarks, semester, branch) as in CSV
             preview_rows.append({
                 "roll_no": roll_no,
                 "name": row["name"],
                 "branch": row.get("branch", ""),
-                "grades": row["grade"],
+                "grades": grade_val,
                 "remarks": row["remarks"],
                 "semester": row["semester"],
-                "is_registered": is_registered
+                "is_registered": is_registered,
+                "grade_valid": grade_valid,
+                "grade_error": grade_error,
             })
 
         return Response({"preview": preview_rows}, status=status.HTTP_200_OK)

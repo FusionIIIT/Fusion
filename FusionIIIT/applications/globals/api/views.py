@@ -2,7 +2,8 @@ from django.contrib.auth import get_user_model
 from applications.academic_information.models import Student
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
-                                                Project, Publication, Skill)
+                                                Project, Publication, Skill,
+                                                StudentBankDetails)
 from applications.programme_curriculum.models import (
     Course as CurriculumCourse, CourseSlot, CourseInstructor
 )
@@ -417,6 +418,52 @@ def profile_delete(request, id):
         patent.delete()
         return Response({'message': 'Patent deleted successfully'}, status=status.HTTP_200_OK)
     return Response({'error': 'Wrong attribute'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def student_bank_details(request):
+    """
+    GET  /profile/bank-details/ -> the requesting student's own bank details ({} if none saved yet)
+    POST /profile/bank-details/ -> create/update (one record per student)
+    Kept as its own endpoint, deliberately separate from the general
+    profile()/profile_update() blob -- bank details are sensitive and must
+    never be exposed via the unauthenticated-for-other-users profile lookup.
+    """
+    try:
+        student = Student.objects.get(id=request.user.extrainfo)
+    except Student.DoesNotExist:
+        return Response({'error': 'Only students have bank details on their profile'}, status=status.HTTP_403_FORBIDDEN)
+
+    if request.method == 'GET':
+        details = StudentBankDetails.objects.filter(unique_id=student).first()
+        if not details:
+            return Response({}, status=status.HTTP_200_OK)
+        return Response(serializers.StudentBankDetailsSerializer(details).data, status=status.HTTP_200_OK)
+
+    serializer_instance = StudentBankDetails.objects.filter(unique_id=student).first()
+    serializer = serializers.StudentBankDetailsSerializer(
+        instance=serializer_instance, data=request.data, partial=True,
+    )
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer.save(unique_id=student)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def acadadmin_student_bank_details(request, roll_no):
+    """GET /profile/bank-details/<roll_no>/ -> Academic Office view of a specific student's bank details."""
+    student = get_object_or_404(Student, id=roll_no)
+    details = StudentBankDetails.objects.filter(unique_id=student).first()
+    if not details:
+        return Response({}, status=status.HTTP_200_OK)
+    return Response(serializers.StudentBankDetailsSerializer(details).data, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

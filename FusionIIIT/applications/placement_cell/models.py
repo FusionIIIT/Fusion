@@ -280,6 +280,24 @@ class Extracurricular(models.Model):
         return '{} - {}'.format(self.unique_id.id, self.event_name)
 
 
+class StudentBankDetails(models.Model):
+    """A student's own bank account details, for stipend/scholarship/refund
+    disbursement. One record per student -- kept as its own model (like
+    academic_procedures.ExaminerBankDetails) rather than folded into a list
+    of profile sub-records, since it's a single set of sensitive fields, not
+    a many-entries-over-time thing like Education/Experience/etc."""
+    unique_id = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='bank_details')
+    account_holder_name = models.CharField(max_length=200, default='')
+    bank_name = models.CharField(max_length=200, default='')
+    branch_name = models.CharField(max_length=200, default='', blank=True)
+    account_number = models.CharField(max_length=30, default='')
+    ifsc_code = models.CharField(max_length=20, default='')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Bank details for {self.unique_id.id}"
+
+
 class MessageOfficer(models.Model):
     message = models.CharField(max_length=100, default='')
     timestamp = models.DateTimeField(auto_now=True)
