@@ -101,21 +101,13 @@ def resolve_programme_list(programme_type):
 
 # Helper function to format semester display for PDFs
 def format_semester_display(semester_no, semester_type=None, semester_label=None):
+    # A summer term is numbered from the even semester right before it, for
+    # any semester count -- not just the first four.
     if semester_label and 'summer' in semester_label.lower():
         return semester_label
     if semester_type and 'summer' in semester_type.lower():
-        if semester_no == 2:
-            return "Summer 1"
-        elif semester_no == 4:
-            return "Summer 2" 
-        elif semester_no == 6:
-            return "Summer 3"
-        elif semester_no == 8:
-            return "Summer 4"
-        else:
-            return f"Summer {semester_no // 2}"
-    else:
-        return str(semester_no)
+        return f"Summer {semester_no // 2}"
+    return str(semester_no)
 
 def round_from_last_decimal(number, decimal_places=1):
     """Round a number to `decimal_places` using ROUND_HALF_UP."""
