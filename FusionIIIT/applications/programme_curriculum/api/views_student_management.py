@@ -2435,8 +2435,7 @@ def update_student_status(request):
             except Exception as e:
                 transfer_message = f"Status updated but transfer failed: {str(e)}"
         
-        # REVERT: Remove from main tables when status becomes NOT_REPORTED
-        elif reported_status in ['NOT_REPORTED', 'PENDING'] and old_status == 'REPORTED':
+        elif reported_status in ['NOT_REPORTED', 'PENDING', 'WITHDRAWAL'] and old_status == 'REPORTED':
             try:
                 from applications.globals.models import ExtraInfo
                 from applications.academic_information.models import Student as AcademicStudent
@@ -2533,7 +2532,7 @@ def update_student_status(request):
         # Prepare descriptive response message
         if reported_status == 'REPORTED' and old_status != 'REPORTED':
             main_message = f'Student status updated to {reported_status} and transferred to main academic system'
-        elif reported_status in ['NOT_REPORTED', 'PENDING'] and old_status == 'REPORTED':
+        elif reported_status in ['NOT_REPORTED', 'PENDING', 'WITHDRAWAL'] and old_status == 'REPORTED':
             main_message = f'Student status reverted to {reported_status} and removed from main academic system'
         else:
             main_message = f'Student status updated to {reported_status}'
