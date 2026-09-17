@@ -2134,6 +2134,8 @@ def update_student_status(request):
                                     ).first()
                                     
                                     if not batch_obj:
+                                        student.reported_status = old_status
+                                        student.save()
                                         return JsonResponse({
                                             'success': False,
                                             'message': f'No batch found for {batch_name} {discipline.name} Year-{student.year}. Please create the required batch first.',
@@ -2194,6 +2196,8 @@ def update_student_status(request):
                                         discipline = batch_obj.discipline
 
                                 if not batch_obj:
+                                    student.reported_status = old_status
+                                    student.save()
                                     return JsonResponse({
                                         'success': False,
                                         'message': f'No batch found for {programme_name} {discipline.name} Year-{student.year} with specialization {student.specialization}. Please create the required batch manually first.',
@@ -2433,6 +2437,8 @@ def update_student_status(request):
                         transfer_message = "Transfer skipped: No roll number assigned"
                         
             except Exception as e:
+                student.reported_status = old_status
+                student.save()
                 transfer_message = f"Status updated but transfer failed: {str(e)}"
         
         elif reported_status in ['NOT_REPORTED', 'PENDING', 'WITHDRAWAL'] and old_status == 'REPORTED':
@@ -2530,21 +2536,28 @@ def update_student_status(request):
             pass
         
         # Prepare descriptive response message
-        if reported_status == 'REPORTED' and old_status != 'REPORTED':
+        transfer_failed = (
+            reported_status == 'REPORTED'
+            and old_status != 'REPORTED'
+            and not transfer_success
+        )
+        if transfer_failed:
+            main_message = f'Failed to report student, nothing was changed: {transfer_message}'
+        elif reported_status == 'REPORTED' and old_status != 'REPORTED':
             main_message = f'Student status updated to {reported_status} and transferred to main academic system'
         elif reported_status in ['NOT_REPORTED', 'PENDING', 'WITHDRAWAL'] and old_status == 'REPORTED':
             main_message = f'Student status reverted to {reported_status} and removed from main academic system'
         else:
             main_message = f'Student status updated to {reported_status}'
-        
+
         response_data = {
-            'success': True,
+            'success': not transfer_failed,
             'message': main_message,
             'data': {
                 'student_id': student.id,
                 'roll_number': student.roll_number,
                 'old_status': old_status,
-                'new_status': reported_status,
+                'new_status': student.reported_status,
                 'transfer_success': transfer_success,
                 'transfer_message': transfer_message,
                 'user_created': user_created,
