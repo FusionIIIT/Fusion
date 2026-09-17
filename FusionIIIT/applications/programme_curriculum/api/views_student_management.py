@@ -4827,6 +4827,7 @@ def get_batch_students(request, batch_id):
 
             academic_student_records = AcademicStudent.objects.filter(
                 batch=batch.year,
+                batch_id=batch.id,
                 programme__icontains=programme_type.upper()
             )
 
