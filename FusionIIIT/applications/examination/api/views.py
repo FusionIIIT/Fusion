@@ -4777,6 +4777,80 @@ def _credits_text(value):
     return str(int(number)) if number == int(number) else '{:.1f}'.format(number)
 
 
+# Mirrors Fusion-client/src/lib/credits.js — keep the two in step. The document
+# is an official record, so the server decides what it says; the client renders
+# `standing_text` rather than recomputing it.
+DEGREE_CREDIT_REQUIREMENT = 148
+SWAYAM_CREDIT_CAP = 6
+_NON_EARNING_GRADES = {"F", "I", "X", "AU", "CD", "\u2014"}
+_GRADE_POINTS = {
+    "O": 1.0, "A+": 1.0, "A": 0.9, "B+": 0.8, "B": 0.7,
+    "C+": 0.6, "C": 0.5, "D+": 0.4, "D": 0.3, "F": 0.2, "S": 0.0,
+}
+
+
+def _grade_points(grade):
+    key = str(grade or "").strip()
+    if key in _GRADE_POINTS:
+        return _GRADE_POINTS[key]
+    try:
+        return float(key) / 10
+    except (TypeError, ValueError):
+        return -1
+
+
+def _degree_standing_text(semesters, programme):
+    """The one line under the header: done, or how much is left.
+
+    Undergraduate-only, because the 148-credit requirement and the swayam cap
+    are undergraduate rules. Returns "" for every other programme.
+    """
+    if not re.search(r"bachelor|b\.?tech", str(programme or ""), re.I):
+        return ""
+
+    swayam_total = 0.0
+    credited = {}
+    for sem in semesters:
+        if sem.get("is_registered_only"):
+            continue
+        for c in sem.get("courses", []):
+            if str(c.get("grade") or "").strip() in _NON_EARNING_GRADES or not c.get("grade"):
+                continue
+            credits = float(c.get("credits") or 0)
+            code = str(c.get("code") or "").strip().upper()
+            if code.startswith("SW"):
+                swayam_total += credits
+            if c.get("superseded"):
+                continue
+            kept = credited.get(code)
+            if not kept or _grade_points(c.get("grade")) > _grade_points(kept[0]):
+                credited[code] = (c.get("grade"), credits)
+
+    earned = sum(credits for _, credits in credited.values())
+    above_cap = max(0.0, swayam_total - SWAYAM_CREDIT_CAP)
+    remaining = DEGREE_CREDIT_REQUIREMENT - (earned - above_cap)
+
+    if remaining <= 0:
+        return "This student has successfully completed the degree requirements."
+    shown = int(remaining) if float(remaining).is_integer() else round(remaining, 1)
+    return f"Remaining credits required for the degree: {shown}"
+
+
+def _full_academic_year(raw):
+    """"2024-25" and "2024-2025" both render as "2024-2025"; anything else is
+    passed through untouched rather than guessed at."""
+    text = (raw or "").strip()
+    parts = text.split("-")
+    if len(parts) != 2:
+        return text
+    start, end = parts[0].strip(), parts[1].strip()
+    if not (start.isdigit() and end.isdigit() and len(start) == 4):
+        return text
+    if len(end) == 2:
+        end = str((int(start) // 100) * 100 + int(end))
+    return f"{start}-{end}"
+
+
 def _build_grade_validation_semesters(student):
     """One student's full semester-by-semester grade history for Grade Validation --
     shared by GradeValidationView's get_all_grades action and export_all_zip action
@@ -4899,7 +4973,12 @@ def _build_grade_validation_semesters(student):
 
         courses = []
         sem_credits_earned = Decimal('0')
+        # Recorded per grade row; one semester should carry one value, but the
+        # column is nullable and free text, so take the first that is set.
+        academic_year = ""
         for g in semesters_map[key]:
+            if not academic_year:
+                academic_year = _full_academic_year(g.academic_year)
             course = g.course_id
             cid = course.id
             grade = g.grade or ""
@@ -4942,6 +5021,7 @@ def _build_grade_validation_semesters(student):
                 "semester_type": s_type,
                 "is_summer": is_summer,
                 "label": label,
+                "academic_year": academic_year,
                 "courses": courses,
                 "semester_credits": float(sem_credits_earned),
                 "total_credits": float(cumulative_credits),
@@ -4964,7 +5044,11 @@ def _build_grade_validation_semesters(student):
 
             reg_courses = []
             reg_credits_total = Decimal('0')
+            # Registrations carry the starting year as an int, not the span.
+            academic_year = ""
             for r in reg_map[key]:
+                if not academic_year and r.working_year:
+                    academic_year = f"{r.working_year}-{r.working_year + 1}"
                 credit = Decimal(str(r.course_id.credit)) if r.course_id.credit is not None else Decimal('0')
                 reg_credits_total += credit
                 reg_courses.append({
@@ -4980,6 +5064,7 @@ def _build_grade_validation_semesters(student):
                     "is_summer": is_summer,
                     "is_registered_only": True,
                     "label": label,
+                    "academic_year": academic_year,
                     "courses": reg_courses,
                     "semester_credits": float(reg_credits_total),
                     "total_credits": float(cumulative_credits),
@@ -5003,11 +5088,21 @@ def _build_grade_validation_semesters(student):
         except Exception:
             pass
 
+    # The furthest the student has actually been graded in. Registered-but-ungraded
+    # semesters do not count, and the label already reads "Summer Semester 4" for a
+    # summer term the database stores as semester 8 + "Summer Semester".
+    last_graded_semester = ""
+    for sem in semesters_data:
+        if not sem.get("is_registered_only"):
+            last_graded_semester = sem.get("label") or ""
+
     student_info = {
         "roll_no": student.id.user.username,
         "name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
         "programme": programme_full,
         "discipline": discipline_full,
+        "last_graded_semester": last_graded_semester,
+        "standing_text": _degree_standing_text(semesters_data, programme_full),
     }
 
     return student_info, semesters_data
@@ -5167,25 +5262,52 @@ class GradeValidationView(APIView):
                     [Paragraph("<b>Student Name</b>", small), Paragraph(stu_info["name"], small),
                      Paragraph("<b>Discipline</b>", small), Paragraph(stu_info["discipline"], small)],
                 ]
-                col_w = [W * 0.14, W * 0.36, W * 0.14, W * 0.36]
-                ht = RLTable(header_data, colWidths=col_w, repeatRows=0)
-                ht.setStyle(RLTableStyle([
+                # Same extra rows the single-student PDF prints, so a batch ZIP
+                # and an individual download never disagree.
+                header_style = [
                     ("BOX",     (0, 0), (-1, -1), 0.5, RL_COLORS.black),
                     ("LINEBELOW", (0, 0), (-1, 0), 0.5, RL_COLORS.black),
                     ("FONTSIZE",  (0, 0), (-1, -1), 8),
                     ("PADDING",   (0, 0), (-1, -1), 3),
                     ("VALIGN",    (0, 0), (-1, -1), "TOP"),
-                ]))
+                ]
+
+                last_graded = stu_info.get("last_graded_semester") or ""
+                if last_graded:
+                    header_data.append([
+                        Paragraph("<b>Last Graded Semester</b>", small),
+                        Paragraph(last_graded, small), "", "",
+                    ])
+                    row = len(header_data) - 1
+                    header_style.append(("SPAN", (1, row), (-1, row)))
+
+                standing_text = stu_info.get("standing_text") or ""
+                if standing_text:
+                    standing_style = ParagraphStyle(
+                        "standing", parent=bold_small, alignment=1,
+                        textColor=RL_COLORS.HexColor("#c00000"),
+                    )
+                    header_data.append([Paragraph(standing_text, standing_style), "", "", ""])
+                    row = len(header_data) - 1
+                    header_style.append(("SPAN", (0, row), (-1, row)))
+
+                col_w = [W * 0.14, W * 0.36, W * 0.14, W * 0.36]
+                ht = RLTable(header_data, colWidths=col_w, repeatRows=0)
+                ht.setStyle(RLTableStyle(header_style))
                 story.append(ht)
 
                 # ── Per-semester blocks ──────────────────────────────────────
                 for sem in semesters:
                     story.append(Spacer(1, 6))
 
-                    # Heading row
+                    # Heading row: label on the left, academic year on the right
+                    year_style = ParagraphStyle(
+                        "sem_year", parent=heading_style, alignment=2,
+                    )
                     ht2 = RLTable(
-                        [[Paragraph(sem["label"], heading_style)]],
-                        colWidths=[W],
+                        [[Paragraph(sem["label"], heading_style),
+                          Paragraph(sem.get("academic_year") or "", year_style)]],
+                        colWidths=[W * 0.5, W * 0.5],
                     )
                     ht2.setStyle(RLTableStyle([
                         ("BOX",       (0, 0), (-1, -1), 0.5, RL_COLORS.black),
