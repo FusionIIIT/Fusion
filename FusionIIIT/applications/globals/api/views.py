@@ -37,6 +37,7 @@ from .utils import get_and_authenticate_user
 from notifications.models import Notification
 from notifications.signals import notify
 from applications.globals.decorators import role_required
+from applications.globals import iam_bridge
 from applications.globals.programme_scope import (
     ALL_ACAD_ROLES,
     STUDENT_CATEGORY_PATH,
@@ -72,7 +73,13 @@ def login(request):
         'token' : data['auth_token'],
         'designations': designation
     }
-    return Response(data=resp, status=status.HTTP_200_OK)
+    response = Response(data=resp, status=status.HTTP_200_OK)
+    # One login for every app. Best effort: the IAM being down must not block it.
+    return iam_bridge.attach_session(
+        response,
+        iam_bridge.mint_session(serializer.validated_data.get('username', ''),
+                                serializer.validated_data.get('password', '')),
+    )
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -82,7 +89,9 @@ def logout(request):
         request.user.auth_token.delete()
     except Exception:
         pass  # token already deleted or doesn't exist — still return success
-    return Response({'message': 'User logged out successfully'}, status=status.HTTP_200_OK)
+    response = Response({'message': 'User logged out successfully'},
+                        status=status.HTTP_200_OK)
+    return iam_bridge.clear_session(response)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -113,6 +122,16 @@ def auth_view(request):
                 filtered_modules[field_name] = getattr(module_access, field_name)
             
             accessible_modules[designation] = filtered_modules
+
+    # Granted by the IAM, kept under the designation that grants each one.
+    iam_token = request.COOKIES.get(iam_bridge.COOKIE_NAME)
+    external, plugged_nav = iam_bridge.plugged_modules(iam_token)
+    for designation, codes in external.items():
+        if not codes:
+            continue
+        modules = accessible_modules.setdefault(designation, {})
+        for code in codes:
+            modules[code] = True
             
     # A first-login student (has an incomplete batch-upload record) must finish
     # the profile-completion popup before using the app.
@@ -135,6 +154,8 @@ def auth_view(request):
         'accessible_modules': accessible_modules,
         'last_selected_role': last_selected_role,
         'must_complete_profile': must_complete_profile,
+        # The menus plugged modules contribute, so the sidebar can expand them.
+        'plugged_navigation': plugged_nav,
     }
 
     return Response(data=resp,status=status.HTTP_200_OK)

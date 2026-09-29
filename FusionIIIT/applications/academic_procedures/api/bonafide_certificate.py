@@ -27,6 +27,9 @@ from applications.academic_procedures.models import BonafideCertificate
 from applications.globals.decorators import role_required
 from applications.globals.programme_scope import programme_display_name
 
+#: Both certificates share the table; each screen lists only its own kind.
+CERTIFICATE_TYPE = 'bonafide'
+
 NUMBER_WORDS = {
     1: 'One', 2: 'Two', 3: 'Three', 4: 'Four', 5: 'Five',
     6: 'Six', 7: 'Seven', 8: 'Eight', 9: 'Nine', 10: 'Ten',
@@ -58,20 +61,28 @@ def superscript_ordinal(value):
     return f'{match.group(1)}<super>{escape(match.group(2))}</super>'
 
 
-def _programme_duration(student):
+def programme_category(student):
+    """UG, PG or PHD — the unit fees and durations are actually set against."""
     batch = student.batch_id
     category = ''
     if batch and batch.curriculum and batch.curriculum.programme:
         category = (batch.curriculum.programme.category or '').upper()
+    if category:
+        return category
 
     canonical = (student.programme or '').upper().replace('.', '')
-    if not category:
-        if canonical in {'BTECH', 'BDES'}:
-            category = 'UG'
-        elif canonical in {'MTECH', 'MDES'}:
-            category = 'PG'
-        elif canonical == 'PHD':
-            category = 'PHD'
+    if canonical in {'BTECH', 'BDES'}:
+        return 'UG'
+    if canonical in {'MTECH', 'MDES'}:
+        return 'PG'
+    if canonical == 'PHD':
+        return 'PHD'
+    return ''
+
+
+def _programme_duration(student):
+    batch = student.batch_id
+    category = programme_category(student)
 
     durations = {
         'UG': settings.BONAFIDE_UG_DURATION_YEARS,
@@ -416,6 +427,7 @@ def generate_bonafide_pdf(request):
     with transaction.atomic():
         certificate = BonafideCertificate.objects.create(
             student=student,
+            certificate_type=CERTIFICATE_TYPE,
             purpose=purpose,
             custom_purpose=custom_purpose if purpose == 'Other' else '',
             issued_by=request.user,
@@ -459,7 +471,9 @@ def bonafide_certificates(request):
         page_size = 20
     page_size = min(max(page_size, 1), 100)
 
-    queryset = BonafideCertificate.objects.select_related(
+    queryset = BonafideCertificate.objects.filter(
+        certificate_type=CERTIFICATE_TYPE,
+    ).select_related(
         'student__id__user',
     ).order_by('-issued_at', '-pk')
     queryset = _search_certificates(queryset, search).distinct()
@@ -493,7 +507,9 @@ def bonafide_certificates(request):
 @role_required(['acadadmin'])
 def bonafide_certificate_pdf(request, certificate_id):
     certificate = get_object_or_404(
-        BonafideCertificate.objects.select_related(
+        BonafideCertificate.objects.filter(
+            certificate_type=CERTIFICATE_TYPE,
+        ).select_related(
             'student__id__user', 'student__id__department',
             'student__batch_id__discipline',
             'student__batch_id__curriculum__programme',

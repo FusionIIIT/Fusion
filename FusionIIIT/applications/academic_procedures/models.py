@@ -382,9 +382,112 @@ class BonafideCertificate(models.Model):
         related_name='issued_bonafide_certificates')
     issued_at = models.DateTimeField(auto_now_add=True)
 
+    TYPE_CHOICES = (
+        ('bonafide', 'Bonafide Certificate'),
+        ('fee', 'Paid / Unpaid Fee Certificate'),
+    )
+
+    certificate_type = models.CharField(
+        max_length=16, choices=TYPE_CHOICES, default='bonafide', db_index=True)
+    #: The semester rows exactly as printed, so a reissue matches the original.
+    fee_rows = models.JSONField(default=list, blank=True)
+
     class Meta:
         db_table = 'BonafideCertificate'
         ordering = ('-issued_at',)
+
+
+class FeeStructure(models.Model):
+    """The published fee structure for a category, for one academic session.
+
+    Stored as the heads the institute publishes rather than as per-semester
+    totals, because the totals are derived from them: the first semester adds
+    the one-time heads, every semester carries the academic and tuition heads,
+    and mess is added on top. Keeping the heads means the certificate can show
+    a figure the office can reconcile against its own circular.
+    """
+
+    CATEGORY_CHOICES = (('UG', 'Undergraduate'), ('PG', 'Post Graduate'),
+                        ('PHD', 'Doctor of Philosophy'))
+
+    #: Fees are published per category, not per programme: one table covers
+    #: B.Tech and B.Des, another every M.Tech specialisation.
+    programme_category = models.CharField(
+        max_length=3, choices=CATEGORY_CHOICES, db_index=True)
+    #: 2026 means the 2026-27 session, and matches the batch's own year.
+    start_year = models.PositiveSmallIntegerField(db_index=True)
+
+    #: Each head is {"head": str, "general": str, "concession": str}.
+    one_time_heads = models.JSONField(default=list, blank=True)
+    semester_heads = models.JSONField(default=list, blank=True)
+    tuition_hostel_heads = models.JSONField(default=list, blank=True)
+    #: Never part of the grand total; added to every semester on the certificate.
+    mess_advance_per_semester = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0)
+
+    #: Data, not a constant, so a change of programme length needs no deploy.
+    semester_count = models.PositiveSmallIntegerField(default=8)
+    #: The two column headings the circular prints.
+    general_label = models.CharField(max_length=40, default='Gen/OBC/EWS')
+    concession_label = models.CharField(max_length=40, default='PWD/SC/ST')
+    #: Footnotes printed under the table, in order.
+    notes = models.JSONField(default=list, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'FeeStructure'
+        ordering = ('programme_category', '-start_year')
+        constraints = [
+            models.UniqueConstraint(fields=['programme_category', 'start_year'],
+                                    name='fee_structure_one_per_session'),
+        ]
+
+    @property
+    def academic_year(self):
+        return f'{self.start_year}-{str(self.start_year + 1)[-2:]}'
+
+    @staticmethod
+    def _amount(head, column, semester):
+        """A head's value for one semester.
+
+        A list is per semester, because PG tuition rises after the second;
+        anything shorter than the programme holds its last value. NIL is what
+        the circular prints where a category pays nothing.
+        """
+        raw = head.get(column, head.get('general', ''))
+        if isinstance(raw, list):
+            raw = raw[min(semester - 1, len(raw) - 1)] if raw else ''
+        raw = str(raw or '').strip()
+        if raw.upper() in ('', 'NIL', '-'):
+            return Decimal('0')
+        return Decimal(raw)
+
+    def _sum(self, heads, column, semester):
+        return sum((self._amount(head, column, semester) for head in heads or []),
+                   Decimal('0'))
+
+    def semester_amount(self, column, semester, with_mess=True):
+        """What this semester costs: A only in the first, then B and C.
+
+        The circular's Grand Total stops there; the certificate adds mess, so
+        the screen and the certificate ask for different answers.
+        """
+        amount = (self._sum(self.semester_heads, column, semester)
+                  + self._sum(self.tuition_hostel_heads, column, semester))
+        if semester == 1:
+            amount += self._sum(self.one_time_heads, column, semester)
+        if with_mess:
+            amount += Decimal(self.mess_advance_per_semester or 0)
+        return amount
+
+    def section_total(self, section, column, semester=1):
+        """One section's total, as the published table shows it."""
+        return self._sum(getattr(self, section) or [], column, semester)
+
+    def __str__(self):
+        return f'{self.programme_category} {self.academic_year}'
 
 class AssistantshipClaim(models.Model):
     Month_Choices = [

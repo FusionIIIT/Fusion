@@ -9,6 +9,9 @@ class Migration(migrations.Migration):
     
     dependencies = [
         ('programme_curriculum', '0025_update_minority_values'),
+        # The indexed table and every column named below belong to that app;
+        # without this the order is undefined and a fresh database fails here.
+        ('academic_procedures', '0010_populate_session_and_type'),
     ]
 
     operations = [
