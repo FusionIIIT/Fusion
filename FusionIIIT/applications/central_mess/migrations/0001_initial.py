@@ -204,20 +204,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='Payments',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('amount_paid', models.IntegerField(default=0)),
-                ('payment_month', models.CharField(default=applications.central_mess.models.current_month, max_length=20)),
-                ('payment_year', models.IntegerField(default=applications.central_mess.models.current_year)),
-                ('payment_date', models.DateField(default=datetime.date(2024, 7, 16))),
-                ('student_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='academic_information.student')),
-            ],
-            options={
-                'unique_together': {('student_id', 'payment_date')},
-            },
-        ),
-        migrations.CreateModel(
             name='Monthly_bill',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
