@@ -1,6 +1,6 @@
 from django.conf.urls import url
 from . import views
-from . import bonafide_certificate
+from . import bonafide_certificate, fee_certificate, fee_structure
 from .. import views as procedures_views
 
 
@@ -19,6 +19,24 @@ urlpatterns = [
     url(r'^acad/bonafide/certificates/(?P<certificate_id>\d+)/pdf/$',
         bonafide_certificate.bonafide_certificate_pdf,
         name='bonafide-certificate-pdf'),
+    url(r'^acad/fee-certificate/student/$', fee_certificate.fee_student,
+        name='fee-certificate-student'),
+    url(r'^acad/fee-certificate/pdf/$', fee_certificate.generate_fee_pdf,
+        name='fee-certificate-pdf'),
+    url(r'^acad/fee-certificate/certificates/$',
+        fee_certificate.fee_certificates,
+        name='fee-certificates'),
+    url(r'^acad/fee-certificate/certificates/(?P<certificate_id>\d+)/pdf/$',
+        fee_certificate.fee_certificate_pdf,
+        name='fee-certificate-pdf-detail'),
+    url(r'^acad/fee-structures/$', fee_structure.fee_structures,
+        name='fee-structures'),
+    url(r'^acad/fee-structures/template/$',
+        fee_structure.fee_structure_template, name='fee-structure-template'),
+    url(r'^acad/fee-structures/(?P<structure_id>\d+)/$',
+        fee_structure.fee_structure_detail, name='fee-structure-detail'),
+    url(r'^acad/fee-structures/(?P<structure_id>\d+)/replicate/$',
+        fee_structure.replicate_fee_structure, name='fee-structure-replicate'),
     # url(r'^stu/details', views.academic_procedures_student, name='student_procedures'),
     # url(r'^stu/pre_registration' , views.student_pre_registration , name = 'pre_registration'),
     url(r'^stu/final_registration' , views.final_registration , name = 'final_registration'),
