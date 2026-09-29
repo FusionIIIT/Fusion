@@ -125,7 +125,7 @@ def auth_view(request):
 
     # Granted by the IAM, kept under the designation that grants each one.
     iam_token = request.COOKIES.get(iam_bridge.COOKIE_NAME)
-    external = iam_bridge.granted_modules(iam_token)
+    external, plugged_nav = iam_bridge.plugged_modules(iam_token)
     for designation, codes in external.items():
         if not codes:
             continue
@@ -155,7 +155,7 @@ def auth_view(request):
         'last_selected_role': last_selected_role,
         'must_complete_profile': must_complete_profile,
         # The menus plugged modules contribute, so the sidebar can expand them.
-        'plugged_navigation': iam_bridge.granted_navigation(iam_token),
+        'plugged_navigation': plugged_nav,
     }
 
     return Response(data=resp,status=status.HTTP_200_OK)

@@ -80,24 +80,9 @@ def _me(token):
         return None
 
 
-def granted_navigation(token):
-    """The menu each plugged module contributes, already permission-filtered.
 
-    Sent through so this portal's sidebar can draw a plugged module's screens
-    without holding a second copy of them.
-    """
+def plugged_modules(token):
+    """(modules by designation, navigation) from the other services, in one call."""
     payload = _me(token) or {}
-    return list(payload.get("navigation") or [])
-
-
-def granted_modules(token):
-    """Which modules the OTHER Fusion apps grant, per designation.
-
-    Per designation, not as one list: a module granted to somebody's acadadmin
-    role must not follow them into their student role.
-
-    An empty mapping is the honest answer whenever the IAM cannot be reached —
-    the sidebar then shows this portal's own modules and nothing is broken.
-    """
-    payload = _me(token) or {}
-    return dict(payload.get("modules_by_role") or {})
+    return (dict(payload.get("modules_by_role") or {}),
+            list(payload.get("navigation") or []))
