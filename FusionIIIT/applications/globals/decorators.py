@@ -32,12 +32,16 @@ def active_designation(user):
     office outranks the basic role, which is the rule the IAM applies too — so
     somebody who has never touched the role switcher is not locked out of the
     post they hold.
+
+    Falling through to the basic role matters: most people hold nothing else,
+    and treating "no office" as "no role" refuses every student their own
+    screens.
     """
     held = held_designations(user)
     chosen = getattr(getattr(user, 'extrainfo', None), 'last_selected_role', None)
     if chosen and chosen.lower() in held:
         return chosen.lower()
-    return next(iter(sorted(held - BASIC_ROLES)), None)
+    return next(iter(sorted(held - BASIC_ROLES)), None) or next(iter(sorted(held)), None)
 
 
 def role_required(allowed_roles):
