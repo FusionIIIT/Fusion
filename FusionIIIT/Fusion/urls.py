@@ -26,6 +26,24 @@ from django.urls import path
 from applications.globals.views import RateLimitedPasswordResetView
 
 
+def serve_media(request, path, document_root=None):
+    """Hand an uploaded file over as a download, never as a page.
+
+    Uploads share this origin with the portal and with every module framed
+    inside it, so anything served inline here runs as the application: an
+    uploaded .html or .svg would execute in the app's own origin and could read
+    the API token the client keeps. Forcing a download and refusing content-type
+    sniffing takes that away whatever the file claims to be.
+    """
+    from django.views.static import serve
+
+    response = serve(request, path, document_root=document_root)
+    response['Content-Disposition'] = 'attachment'
+    response['X-Content-Type-Options'] = 'nosniff'
+    response['Content-Security-Policy'] = "default-src 'none'; sandbox"
+    return response
+
+
 urlpatterns = [
     url(r'^', include('applications.globals.urls')),
     url(r'^feeds/', include('applications.feeds.urls')),
@@ -94,4 +112,5 @@ urlpatterns = [
         ),
         name='password_reset_complete',
     ),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT,
+           view=serve_media)
