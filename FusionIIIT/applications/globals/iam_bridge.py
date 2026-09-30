@@ -24,7 +24,18 @@ COOKIE_NAME = os.environ.get("IAM_AUTH_COOKIE_NAME", "auth_token")
 #: Blank in development; set to .iiitdmj.ac.in in production.
 COOKIE_DOMAIN = os.environ.get("IAM_AUTH_COOKIE_DOMAIN", "")
 COOKIE_MAX_AGE = int(os.environ.get("IAM_AUTH_COOKIE_MAX_AGE", str(12 * 60 * 60)))
-COOKIE_SECURE = os.environ.get("IAM_AUTH_COOKIE_SECURE", "0") == "1"
+def _cookie_secure():
+    """Secure unless this is a debug server, and overridable either way.
+
+    Defaulting it off meant one plain-HTTP request put the session on the wire,
+    and a cookie that still works is a thing nobody notices.
+    """
+    override = os.environ.get("IAM_AUTH_COOKIE_SECURE")
+    if override is not None:
+        return override == "1"
+    from django.conf import settings
+
+    return not getattr(settings, "DEBUG", False)
 
 
 def _url(path):
@@ -51,7 +62,7 @@ def attach_session(response, token):
     if not token:
         return response
     kwargs = {"max_age": COOKIE_MAX_AGE, "httponly": True,
-              "samesite": "Lax", "secure": COOKIE_SECURE, "path": "/"}
+              "samesite": "Lax", "secure": _cookie_secure(), "path": "/"}
     if COOKIE_DOMAIN:
         kwargs["domain"] = COOKIE_DOMAIN
     response.set_cookie(COOKIE_NAME, token, **kwargs)
@@ -82,7 +93,7 @@ def _me(token):
 
 
 def plugged_modules(token):
-    """(modules by designation, navigation) from the other services, in one call."""
+    """(modules, navigation) from the other services, both keyed by designation."""
     payload = _me(token) or {}
     return (dict(payload.get("modules_by_role") or {}),
-            list(payload.get("navigation") or []))
+            dict(payload.get("navigation_by_role") or {}))
