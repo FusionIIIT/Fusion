@@ -98,11 +98,11 @@ class ActingRoleTests(TestCase):
         """The column is null for anyone who has not used the switcher."""
         self.assertEqual(active_designation(self.user), 'acadadmin')
 
-    def test_a_role_that_is_no_longer_held_is_ignored(self):
+    def test_a_role_that_is_no_longer_held_falls_back_to_one_that_is(self):
         self._act_as('acadadmin')
         HoldsDesignation.objects.filter(
             designation__name='acadadmin').delete()
-        self.assertIsNone(active_designation(self.user))
+        self.assertEqual(active_designation(self.user), 'student')
 
     def test_a_stand_in_is_authorised_and_the_absent_holder_is_not(self):
         """`working` is the occupant; `user` is the substantive holder."""
@@ -151,3 +151,21 @@ class ExpiringTokenTests(TestCase):
         with self.assertRaises(AuthenticationFailed):
             self.auth.authenticate_credentials(self.token.key)
         self.assertFalse(Token.objects.filter(pk=self.token.pk).exists())
+
+
+class PlainStudentTests(TestCase):
+    """Most people hold no office at all. They must keep their own screens."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='student1')
+        ExtraInfo.objects.create(id='student1', user=self.user, user_type='student')
+        HoldsDesignation.objects.create(
+            user=self.user, working=self.user,
+            designation=Designation.objects.create(name='student'))
+
+    def test_a_student_holding_only_the_basic_role_still_acts_in_it(self):
+        self.assertEqual(active_designation(self.user), 'student')
+
+    def test_somebody_holding_nothing_acts_in_nothing(self):
+        bare = User.objects.create_user(username='nobody')
+        self.assertIsNone(active_designation(bare))
