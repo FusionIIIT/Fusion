@@ -16,6 +16,7 @@ import hmac
 import logging
 import secrets
 import re
+import threading
 from datetime import timedelta
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -36,7 +37,7 @@ from applications.globals.models import (ExtraInfo, HoldsDesignation, ModuleAcce
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
 from notifications.signals import notify
-from applications.globals.decorators import role_required
+from applications.globals.decorators import held_designations, role_required
 from applications.globals import iam_bridge
 from applications.globals.programme_scope import (
     ALL_ACAD_ROLES,
@@ -154,7 +155,8 @@ def auth_view(request):
         'accessible_modules': accessible_modules,
         'last_selected_role': last_selected_role,
         'must_complete_profile': must_complete_profile,
-        # The menus plugged modules contribute, so the sidebar can expand them.
+        # The menus plugged modules contribute, under the designation that grants
+        # each one, so a role never draws another role's screens.
         'plugged_navigation': plugged_nav,
     }
 
@@ -222,6 +224,12 @@ def update_last_selected_role(request):
 
     if new_role is None:
         return Response({'error': 'last_selected_role is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Only a post this person actually holds may be acted in; authorisation
+    # reads this column, so an unchecked write here is a free promotion.
+    if not held_designations(request.user) & {str(new_role).strip().lower()}:
+        return Response({'error': 'You do not hold that role.'},
+                        status=status.HTTP_403_FORBIDDEN)
 
     extra_info = get_object_or_404(ExtraInfo, user=request.user)
 
@@ -718,6 +726,16 @@ def _otp_hash(otp: str) -> str:
 def _token_hash(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
+
+def _deliver_otp_email(email, username):
+    """Run in a thread; a delivery failure must never reach the caller, who is
+    told the same thing whether or not the address exists."""
+    try:
+        email.send()
+    except Exception:
+        _security_log.exception("OTP email delivery failed | user=%s", username)
+
+
 _safe_eq = hmac.compare_digest
 
 _SEND_OTP_OK = {
@@ -837,8 +855,11 @@ def password_reset_send_otp(request):
         )
         
         email.attach_alternative(html_content, "text/html")
-        email.send()
-        
+        # Off the request path: the OTP is already saved and the reply is the
+        # same either way, so the caller was only ever waiting on SMTP.
+        threading.Thread(target=_deliver_otp_email, args=(email, user.username),
+                         daemon=True).start()
+
     except Exception:
         _security_log.exception("OTP email delivery failed | user=%s", user.username)
 
