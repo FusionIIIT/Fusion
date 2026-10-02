@@ -385,6 +385,8 @@ class BonafideCertificate(models.Model):
     TYPE_CHOICES = (
         ('bonafide', 'Bonafide Certificate'),
         ('fee', 'Paid / Unpaid Fee Certificate'),
+        ('demand', 'Demand Letter'),
+        ('fee_structure', 'Fee Structure Certificate'),
     )
 
     certificate_type = models.CharField(
@@ -488,6 +490,25 @@ class FeeStructure(models.Model):
 
     def __str__(self):
         return f'{self.programme_category} {self.academic_year}'
+
+
+class DemandLetterBankAccounts(models.Model):
+    academic_fee_account = models.JSONField(default=dict, blank=True)
+    mess_fee_account = models.JSONField(default=dict, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'DemandLetterBankAccounts'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
 
 class AssistantshipClaim(models.Model):
     Month_Choices = [
