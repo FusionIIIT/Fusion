@@ -14,7 +14,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from applications.academic_procedures.models import FeeStructure
+from applications.academic_procedures.models import DemandLetterBankAccounts, FeeStructure
 from applications.globals.decorators import role_required
 
 SECTIONS = ('one_time_heads', 'semester_heads', 'tuition_hostel_heads')
@@ -56,6 +56,16 @@ def _clean_amount(value):
         return str(Decimal(text.replace(',', '')))
     except InvalidOperation as exc:
         raise ValueError(f'{value!r} is not an amount.') from exc
+
+
+BANK_FIELDS = ('name', 'number', 'ifsc', 'bank_branch', 'account_type')
+BANK_FIELD_LIMITS = {'name': 120, 'number': 30, 'ifsc': 11, 'bank_branch': 120,
+                     'account_type': 40}
+
+
+def _clean_bank_account(account):
+    return {field: str((account or {}).get(field) or '').strip()[:BANK_FIELD_LIMITS[field]]
+            for field in BANK_FIELDS}
 
 
 def _clean_heads(rows, label):
@@ -263,3 +273,26 @@ def fee_structure_template(request):
         ],
         **{section: _blank_heads(section) for section in SECTIONS},
     })
+
+
+def _serialise_bank_accounts(accounts):
+    return {
+        'academic_fee_account': accounts.academic_fee_account,
+        'mess_fee_account': accounts.mess_fee_account,
+        'updated_at': accounts.updated_at.strftime('%d.%m.%Y'),
+    }
+
+
+@api_view(['GET', 'PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def demand_letter_bank_accounts(request):
+    accounts = DemandLetterBankAccounts.load()
+    if request.method == 'PUT':
+        accounts.academic_fee_account = _clean_bank_account(
+            request.data.get('academic_fee_account'))
+        accounts.mess_fee_account = _clean_bank_account(
+            request.data.get('mess_fee_account'))
+        accounts.save()
+    return Response(_serialise_bank_accounts(accounts))

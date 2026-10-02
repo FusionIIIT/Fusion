@@ -1,6 +1,7 @@
 from django.conf.urls import url
 from . import views
-from . import bonafide_certificate, fee_certificate, fee_structure
+from . import (bonafide_certificate, demand_letter, fee_certificate,
+               fee_structure, fee_structure_certificate)
 from .. import views as procedures_views
 
 
@@ -29,6 +30,26 @@ urlpatterns = [
     url(r'^acad/fee-certificate/certificates/(?P<certificate_id>\d+)/pdf/$',
         fee_certificate.fee_certificate_pdf,
         name='fee-certificate-pdf-detail'),
+    url(r'^acad/demand-letter/student/$', demand_letter.demand_letter_student,
+        name='demand-letter-student'),
+    url(r'^acad/demand-letter/pdf/$', demand_letter.generate_demand_letter_pdf,
+        name='demand-letter-pdf'),
+    url(r'^acad/demand-letter/certificates/$', demand_letter.demand_letters,
+        name='demand-letters'),
+    url(r'^acad/demand-letter/certificates/(?P<certificate_id>\d+)/pdf/$',
+        demand_letter.demand_letter_pdf, name='demand-letter-pdf-detail'),
+    url(r'^acad/fee-structure-certificate/student/$',
+        fee_structure_certificate.fee_structure_certificate_student,
+        name='fee-structure-certificate-student'),
+    url(r'^acad/fee-structure-certificate/pdf/$',
+        fee_structure_certificate.generate_fee_structure_pdf,
+        name='fee-structure-certificate-pdf'),
+    url(r'^acad/fee-structure-certificate/certificates/$',
+        fee_structure_certificate.fee_structure_certificates,
+        name='fee-structure-certificates'),
+    url(r'^acad/fee-structure-certificate/certificates/(?P<certificate_id>\d+)/pdf/$',
+        fee_structure_certificate.fee_structure_certificate_pdf,
+        name='fee-structure-certificate-pdf-detail'),
     url(r'^acad/fee-structures/$', fee_structure.fee_structures,
         name='fee-structures'),
     url(r'^acad/fee-structures/template/$',
@@ -37,6 +58,8 @@ urlpatterns = [
         fee_structure.fee_structure_detail, name='fee-structure-detail'),
     url(r'^acad/fee-structures/(?P<structure_id>\d+)/replicate/$',
         fee_structure.replicate_fee_structure, name='fee-structure-replicate'),
+    url(r'^acad/demand-letter-bank-accounts/$',
+        fee_structure.demand_letter_bank_accounts, name='demand-letter-bank-accounts'),
     # url(r'^stu/details', views.academic_procedures_student, name='student_procedures'),
     # url(r'^stu/pre_registration' , views.student_pre_registration , name = 'pre_registration'),
     url(r'^stu/final_registration' , views.final_registration , name = 'final_registration'),
