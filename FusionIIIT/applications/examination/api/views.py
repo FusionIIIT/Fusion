@@ -4675,6 +4675,82 @@ class GenerateGradeSheetForm(APIView):
         }, status=status.HTTP_200_OK)
 
 
+class GenerateFullGradeSheetForm(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        role = request.GET.get("role")
+        if not user_holds_any_role(request.user, ALL_ACAD_ROLES):
+            return Response(
+                {"error": "Access denied. Invalid or missing role."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        batches_queryset = scope_batches(
+            Batch.objects.filter(running_batch=True), scopes_for(request.user))
+        batch_list = [
+            {"id": batch.id, "label": f"{batch.name} - {batch.discipline} {batch.year}"}
+            for batch in batches_queryset
+        ]
+        specializations = Student.objects.exclude(specialization__isnull=True)\
+                                         .exclude(specialization__exact="")\
+                                         .values_list('specialization', flat=True)\
+                                         .distinct()
+        return Response({
+            "batches": batch_list,
+            "specializations": list(specializations),
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        if not user_holds_any_role(request.user, ALL_ACAD_ROLES):
+            return Response(
+                {"error": "Access denied. Invalid or missing role."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        batch = request.data.get('batch')
+        specialization = request.data.get('specialization')
+        if not batch:
+            return Response({"error": "batch is a required field."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not batch_in_scope(Batch.objects.filter(id=batch).first(), scopes_for(request.user)):
+            return Response({"error": "Batch not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        students = Student.objects.filter(batch_id=batch)
+        if specialization:
+            students = students.filter(specialization=specialization)
+        students = students.order_by('id')
+
+        return Response({"students": list(students.values())}, status=status.HTTP_200_OK)
+
+
+class GenerateFullGradeSheetData(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not user_holds_role(request.user, "acadadmin"):
+            return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+
+        student_id = request.data.get("student")
+        if not student_id:
+            return Response({"error": "Student ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            student = Student.objects.select_related(
+                "id__user", "id__department", "batch_id__discipline"
+            ).get(id_id=student_id)
+        except Student.DoesNotExist:
+            return Response({"error": "Student ID does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+        student_info, semesters_data = _build_grade_validation_semesters(student)
+        graded_semesters = [s for s in semesters_data if not s.get("is_registered_only")]
+
+        return Response({
+            "student_info": student_info,
+            "semesters": graded_semesters,
+        }, status=status.HTTP_200_OK)
+
+
 class GradeSummaryAPI(APIView):
     """
     API to get grade summary statistics for all courses in a given academic year and semester type.
