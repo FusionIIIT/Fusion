@@ -312,7 +312,7 @@ class Batch(models.Model):
     total_seats = models.PositiveIntegerField(default=60, null=False, blank=False)
 
     class Meta:
-        unique_together = ('name', 'discipline', 'year',)
+        unique_together = ('name', 'discipline', 'year', 'curriculum',)
 
     def __str__(self):
         return str(self.name) + " " + str(self.discipline.acronym) + " " + str(self.year)
