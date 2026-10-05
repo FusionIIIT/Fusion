@@ -29,6 +29,7 @@ from .bonafide_certificate import (
     _search_certificates,
     _student_queryset,
     build_certificate_context,
+    superscript_ordinal,
 )
 from .demand_letter import financial_year_for
 from .fee_certificate import _is_concession, fee_structure_for, indian_currency
@@ -83,6 +84,16 @@ def build_structure_rows(student, structure, odd_semester):
 
 def _column_total(rows, key):
     return sum((Decimal(row[key]) for row in rows), Decimal('0'))
+
+
+def financial_year_choices(student, structure):
+    if not structure:
+        return []
+    choices = []
+    for odd in range(1, structure.semester_count + 1, 2):
+        _, label = financial_year_for(student, odd)
+        choices.append({'value': odd, 'label': label})
+    return choices
 
 
 def render_fee_structure_pdf(context, structure, odd_semester, academic_year_label,
@@ -163,7 +174,8 @@ def render_fee_structure_pdf(context, structure, odd_semester, academic_year_lab
              value_cell(f'Mr. {context["father_name"]}'), '', ''],
             [label_cell('Roll No:'), value_cell(context['roll_number']),
              label_cell('Branch:'), value_cell(context['discipline'])],
-            [label_cell('Semester:'), value_cell(context['semester_ordinal']),
+            [label_cell('Semester:'),
+             Paragraph(superscript_ordinal(context['semester_ordinal']), value_style),
              label_cell('Programme:'), value_cell(context['programme_short'])],
             [label_cell('Financial Year:'), value_cell(academic_year_label), '', ''],
         ],
@@ -276,13 +288,24 @@ def fee_structure_certificate_student(request):
 
     rows = []
     academic_year_label = ''
+    odd_semester = None
     if structure is None:
         batch_label = context.get('programme') or 'unrecognised'
         errors.append(
             f'No fee structure is recorded for {batch_label} programmes. '
             'Add one before issuing this certificate.')
-    elif context['semester']:
-        odd_semester, _ = session_semesters(context['semester'])
+    else:
+        default_odd_semester = (
+            session_semesters(context['semester'])[0] if context['semester'] else 1)
+        valid_odds = list(range(1, structure.semester_count + 1, 2))
+        semester_param = request.query_params.get('semester')
+        try:
+            odd_semester = int(semester_param) if semester_param else default_odd_semester
+        except (TypeError, ValueError):
+            odd_semester = default_odd_semester
+        if odd_semester not in valid_odds:
+            odd_semester = (default_odd_semester if default_odd_semester in valid_odds
+                            else valid_odds[0])
         rows = build_structure_rows(student, structure, odd_semester)
         _, academic_year_label = financial_year_for(student, odd_semester)
 
@@ -293,6 +316,8 @@ def fee_structure_certificate_student(request):
 
     return Response({
         'student': {**context, 'is_ready': not errors, 'validation_errors': errors},
+        'financial_years': financial_year_choices(student, structure),
+        'selected_semester': odd_semester,
         'structure': {
             'rows': rows,
             'academic_year_label': academic_year_label,
@@ -318,6 +343,7 @@ def fee_structure_certificate_student(request):
 @role_required(['acadadmin'])
 def generate_fee_structure_pdf(request):
     student_id = request.data.get('student_id')
+    semester_raw = request.data.get('semester')
     if not student_id:
         return Response({'error': 'student_id is required.'},
                         status=status.HTTP_400_BAD_REQUEST)
@@ -337,7 +363,19 @@ def generate_fee_structure_pdf(request):
             {'error': 'No fee structure is recorded for this programme.'},
             status=status.HTTP_400_BAD_REQUEST)
 
-    odd_semester, _ = session_semesters(context['semester'])
+    default_odd_semester = (
+        session_semesters(context['semester'])[0] if context['semester'] else 1)
+    try:
+        odd_semester = (int(semester_raw) if semester_raw not in (None, '')
+                        else default_odd_semester)
+    except (TypeError, ValueError):
+        return Response({'error': 'Select a valid financial year.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if odd_semester not in range(1, structure.semester_count + 1, 2):
+        return Response(
+            {'error': 'Financial year is outside the published fee structure.'},
+            status=status.HTTP_400_BAD_REQUEST)
+
     rows = build_structure_rows(student, structure, odd_semester)
     _, academic_year_label = financial_year_for(student, odd_semester)
 
