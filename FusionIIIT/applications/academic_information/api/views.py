@@ -1395,7 +1395,14 @@ def import_calendar(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required([
+    'acadadmin',
+    'Associate Professor',
+    'Professor',
+    'Assistant Professor',
+    'Dean Academic',
+    'Student',
+])
 def available_courses(request):
     """
     GET /api/available-courses/?academic_year=2024-25&semester_type=Odd+Semester&programme_type=UG
