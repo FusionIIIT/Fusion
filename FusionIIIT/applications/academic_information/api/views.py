@@ -1838,6 +1838,91 @@ def database_semester_registrations(request):
     })
 
 
+def _credits_earned_row(student):
+    """One student's regular / backlog-improvement / swayam credit split.
+    Runs _build_grade_validation_semesters's ~26 queries per call, so the view
+    fans this out across a thread pool rather than running it per student in
+    series -- each call opens its own DB connection, so it must close it."""
+    from django.db import connection
+    from applications.examination.api.views import (
+        _build_grade_validation_semesters, grade_conversion,
+    )
+
+    NON_EARN = {"F", "I", "X", "AU", "CD", "—", ""}
+    try:
+        _, semesters_data = _build_grade_validation_semesters(student)
+        graded_sems = [s for s in semesters_data if not s.get('is_registered_only')]
+
+        best_by_code = {}
+        for gs in graded_sems:
+            for c in gs.get('courses', []):
+                code = str(c.get('code', '')).strip().upper()
+                if not code or c.get('superseded'):
+                    continue
+                grade = (c.get('grade') or '').strip()
+                if grade in NON_EARN:
+                    continue
+                prev = best_by_code.get(code)
+                if prev is None or (grade_conversion.get(grade, -1)
+                                    > grade_conversion.get(prev[0], -1)):
+                    best_by_code[code] = (
+                        grade, float(c.get('credits') or 0), c.get('remark', 'Regular'))
+
+        regular = backlog_imp = swayam = 0.0
+        for code, (grade, credit, remark) in best_by_code.items():
+            if code.startswith('SW'):
+                swayam += credit
+            elif remark in ('Backlog', 'Improvement'):
+                backlog_imp += credit
+            else:
+                regular += credit
+
+        user = student.id.user
+        return {
+            'roll_no': student.id_id,
+            'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'regular_credits': regular,
+            'backlog_improvement_credits': backlog_imp,
+            'swayam_credits': swayam,
+            'total_credits_earned': regular + backlog_imp + swayam,
+        }
+    finally:
+        connection.close()
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_credits_earned(request):
+    """Each student's earned credits to date, split regular / backlog-improvement / swayam."""
+    from concurrent.futures import ThreadPoolExecutor
+    from applications.globals.programme_scope import scopes_for, scope_students
+
+    batch = (request.query_params.get('batch') or '').strip()
+    if not batch:
+        return Response({'detail': 'Required: batch.'}, status=400)
+    try:
+        batch_year = int(batch)
+    except ValueError:
+        return Response({'detail': f"Batch '{batch}' is not a year."}, status=400)
+
+    students = list(scope_students(
+        Student.objects.filter(batch=batch_year),
+        scopes_for(request.user),
+    ).select_related('id__user').order_by('id_id'))
+
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        rows = list(pool.map(_credits_earned_row, students))
+
+    return Response({
+        'count': len(rows),
+        'students': len(rows),
+        'credits': sum(r['total_credits_earned'] for r in rows),
+        'rows': rows,
+    })
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])

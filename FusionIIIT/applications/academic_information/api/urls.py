@@ -40,6 +40,8 @@ urlpatterns = [
         name='database_swayam_registrations'),
     url(r'^database/semester-registrations/$', views.database_semester_registrations,
         name='database_semester_registrations'),
+    url(r'^database/credits-earned/$', views.database_credits_earned,
+        name='database_credits_earned'),
     url(r'^export-all-courses-zip/$', views.export_all_courses_zip, name='export-all-courses-zip'),
     url(r'^generate_preregistration_report',views.generate_preregistration_report, name = "generate_preregistration_report"),
     url(r'^calendar/$',        views.list_calendar,   name='list_calendar'),
