@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
@@ -109,37 +109,37 @@ def render_demand_letter_pdf(context, semester, academic_year_label, due_date,
     document = SimpleDocTemplate(
         output,
         pagesize=A4,
-        topMargin=2.5 * cm,
+        topMargin=3.5 * cm,
         rightMargin=1.5 * cm,
-        bottomMargin=2.5 * cm,
+        bottomMargin=2 * cm,
         leftMargin=1.5 * cm,
         title='Demand Letter',
         author=settings.BONAFIDE_INSTITUTE_NAME,
     )
     header_style = ParagraphStyle(
-        'Header', fontName='Helvetica-Bold', fontSize=12,
-        leading=16, alignment=TA_LEFT,
+        'Header', fontName='Caladea-Bold', fontSize=11,
+        leading=15, alignment=TA_JUSTIFY,
     )
     header_right_style = ParagraphStyle(
         'HeaderRight', parent=header_style, alignment=TA_RIGHT,
     )
     heading_style = ParagraphStyle(
-        'Heading', fontName='Helvetica-Bold', fontSize=13.5,
-        leading=17, alignment=TA_CENTER,
+        'Heading', fontName='Caladea-Bold', fontSize=11,
+        leading=15, alignment=TA_CENTER,
     )
     body_style = ParagraphStyle(
-        'Body', fontName='Helvetica', fontSize=12,
-        leading=18, alignment=TA_JUSTIFY,
+        'Body', fontName='Caladea', fontSize=12,
+        leading=17, alignment=TA_JUSTIFY,
     )
     sub_heading_style = ParagraphStyle(
-        'SubHeading', fontName='Helvetica-Bold', fontSize=12,
-        leading=16, alignment=TA_CENTER,
+        'SubHeading', fontName='Caladea-Bold', fontSize=11,
+        leading=15, alignment=TA_CENTER,
     )
     cell_style = ParagraphStyle(
-        'Cell', fontName='Helvetica', fontSize=11, leading=14, alignment=TA_LEFT,
+        'Cell', fontName='Caladea', fontSize=11, leading=14, alignment=TA_JUSTIFY,
     )
     cell_bold_style = ParagraphStyle(
-        'CellBold', parent=cell_style, fontName='Helvetica-Bold',
+        'CellBold', parent=cell_style, fontName='Caladea-Bold',
     )
     cell_center_style = ParagraphStyle(
         'CellCenter', parent=cell_style, alignment=TA_CENTER,
@@ -148,14 +148,16 @@ def render_demand_letter_pdf(context, semester, academic_year_label, due_date,
         'CellBoldRight', parent=cell_bold_style, alignment=TA_RIGHT,
     )
     bank_label_style = ParagraphStyle(
-        'BankLabel', fontName='Helvetica-Bold', fontSize=11, leading=14,
+        'BankLabel', fontName='Caladea-Bold', fontSize=11, leading=14,
+        alignment=TA_JUSTIFY,
     )
     bank_value_style = ParagraphStyle(
-        'BankValue', fontName='Helvetica', fontSize=11, leading=14,
+        'BankValue', fontName='Caladea', fontSize=11, leading=14,
+        alignment=TA_JUSTIFY,
     )
     signature_style = ParagraphStyle(
-        'Signature', fontName='Helvetica-Bold', fontSize=12,
-        leading=16, alignment=TA_LEFT,
+        'Signature', fontName='Caladea-Bold', fontSize=11,
+        leading=15, alignment=TA_JUSTIFY,
     )
 
     header = Table(

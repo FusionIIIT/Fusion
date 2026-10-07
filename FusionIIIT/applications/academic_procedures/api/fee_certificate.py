@@ -17,7 +17,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
@@ -149,44 +149,44 @@ def render_fee_pdf(context, purpose, reference_number, issued_on, rows,
     document = SimpleDocTemplate(
         output,
         pagesize=A4,
-        topMargin=2.5 * cm,
+        topMargin=3.5 * cm,
         rightMargin=1.5 * cm,
-        bottomMargin=2.5 * cm,
+        bottomMargin=2 * cm,
         leftMargin=1.5 * cm,
         title='Fee Certificate',
         author=settings.BONAFIDE_INSTITUTE_NAME,
     )
     header_style = ParagraphStyle(
-        'Header', fontName='Helvetica-Bold', fontSize=13.5,
-        leading=18, alignment=TA_LEFT,
+        'Header', fontName='Caladea-Bold', fontSize=11,
+        leading=15, alignment=TA_JUSTIFY,
     )
     header_right_style = ParagraphStyle(
         'HeaderRight', parent=header_style, alignment=TA_RIGHT,
     )
     heading_style = ParagraphStyle(
-        'Heading', fontName='Helvetica-Bold', fontSize=15,
-        leading=19, alignment=TA_CENTER,
+        'Heading', fontName='Caladea-Bold', fontSize=11,
+        leading=15, alignment=TA_CENTER,
     )
     body_style = ParagraphStyle(
-        'Body', fontName='Helvetica', fontSize=13.5,
-        leading=19, alignment=TA_LEFT,
+        'Body', fontName='Caladea', fontSize=12,
+        leading=17, alignment=TA_JUSTIFY,
     )
     bullet_style = ParagraphStyle(
-        'Bullet', parent=body_style, fontName='Helvetica-Bold',
-        leftIndent=0.6 * cm, bulletIndent=0.1 * cm,
+        'Bullet', parent=body_style, fontName='Caladea-Bold', fontSize=11,
+        leading=15, leftIndent=0.6 * cm, bulletIndent=0.1 * cm,
     )
     note_style = ParagraphStyle(
-        'Note', parent=body_style, fontName='Helvetica',
-        leftIndent=0.6 * cm, bulletIndent=0.1 * cm, leading=18,
+        'Note', parent=body_style, fontName='Carlito', fontSize=11,
+        leftIndent=0.6 * cm, bulletIndent=0.1 * cm, leading=15,
     )
     cell_style = ParagraphStyle(
         # Room for the raised ordinal suffix, which overflows a tighter line.
-        'Cell', fontName='Helvetica', fontSize=12.5, leading=16,
-        alignment=TA_LEFT,
+        'Cell', fontName='Caladea', fontSize=11, leading=15,
+        alignment=TA_JUSTIFY,
     )
     signature_style = ParagraphStyle(
-        'Signature', fontName='Helvetica-Bold', fontSize=13.5,
-        leading=18, alignment=TA_LEFT,
+        'Signature', fontName='Caladea-Bold', fontSize=11,
+        leading=15, alignment=TA_JUSTIFY,
     )
 
     header = Table(
