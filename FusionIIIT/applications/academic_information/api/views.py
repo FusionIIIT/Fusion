@@ -1850,42 +1850,64 @@ def _credits_earned_row(student):
 
     NON_EARN = {"F", "I", "X", "AU", "CD", "—", ""}
     try:
-        _, semesters_data = _build_grade_validation_semesters(student)
-        graded_sems = [s for s in semesters_data if not s.get('is_registered_only')]
+        try:
+            _, semesters_data = _build_grade_validation_semesters(student)
+            graded_sems = [s for s in semesters_data if not s.get('is_registered_only')]
 
-        best_by_code = {}
-        for gs in graded_sems:
-            for c in gs.get('courses', []):
-                code = str(c.get('code', '')).strip().upper()
-                if not code or c.get('superseded'):
-                    continue
-                grade = (c.get('grade') or '').strip()
-                if grade in NON_EARN:
-                    continue
-                prev = best_by_code.get(code)
-                if prev is None or (grade_conversion.get(grade, -1)
-                                    > grade_conversion.get(prev[0], -1)):
-                    best_by_code[code] = (
-                        grade, float(c.get('credits') or 0), c.get('remark', 'Regular'))
+            best_by_code = {}
+            for gs in graded_sems:
+                for c in gs.get('courses', []):
+                    code = str(c.get('code', '')).strip().upper()
+                    if not code or c.get('superseded'):
+                        continue
+                    grade = (c.get('grade') or '').strip()
+                    if grade in NON_EARN:
+                        continue
+                    prev = best_by_code.get(code)
+                    if prev is None or (grade_conversion.get(grade, -1)
+                                        > grade_conversion.get(prev[0], -1)):
+                        best_by_code[code] = (
+                            grade, float(c.get('credits') or 0), c.get('remark', 'Regular'))
 
-        regular = backlog_imp = swayam = 0.0
-        for code, (grade, credit, remark) in best_by_code.items():
-            if code.startswith('SW'):
-                swayam += credit
-            elif remark in ('Backlog', 'Improvement'):
-                backlog_imp += credit
-            else:
-                regular += credit
+            regular = backlog_imp = swayam = 0.0
+            for code, (grade, credit, remark) in best_by_code.items():
+                if code.startswith('SW'):
+                    swayam += credit
+                elif remark in ('Backlog', 'Improvement'):
+                    backlog_imp += credit
+                else:
+                    regular += credit
 
-        user = student.id.user
-        return {
-            'roll_no': student.id_id,
-            'student_name': f'{user.first_name} {user.last_name}'.strip(),
-            'regular_credits': regular,
-            'backlog_improvement_credits': backlog_imp,
-            'swayam_credits': swayam,
-            'total_credits_earned': regular + backlog_imp + swayam,
-        }
+            user = student.id.user
+            return {
+                'roll_no': student.id_id,
+                'student_name': f'{user.first_name} {user.last_name}'.strip(),
+                'regular_credits': regular,
+                'backlog_improvement_credits': backlog_imp,
+                'swayam_credits': swayam,
+                'total_credits_earned': regular + backlog_imp + swayam,
+            }
+        except Exception:
+            import traceback as _tb
+            try:
+                with open('/tmp/fusion_credits_earned_error.log', 'a') as _f:
+                    _f.write(f'roll_no={student.id_id}\n{_tb.format_exc()}\n')
+            except Exception:
+                pass
+            try:
+                user = student.id.user
+                student_name = f'{user.first_name} {user.last_name}'.strip()
+            except Exception:
+                student_name = str(student.id_id)
+            return {
+                'roll_no': student.id_id,
+                'student_name': student_name,
+                'regular_credits': 0.0,
+                'backlog_improvement_credits': 0.0,
+                'swayam_credits': 0.0,
+                'total_credits_earned': 0.0,
+                'error': True,
+            }
     finally:
         connection.close()
 
