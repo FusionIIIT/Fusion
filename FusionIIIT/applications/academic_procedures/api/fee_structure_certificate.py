@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
@@ -37,6 +37,15 @@ from .fee_certificate import _is_concession, fee_structure_for, indian_currency
 CERTIFICATE_TYPE = 'fee_structure'
 
 ONE_TIME_LABEL = 'One-time payment is paid only once at the time of admission'
+
+ROMAN_NUMERALS = {
+    1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI',
+    7: 'VII', 8: 'VIII', 9: 'IX', 10: 'X', 11: 'XI', 12: 'XII',
+}
+
+
+def semester_roman(semester):
+    return ROMAN_NUMERALS.get(semester, str(semester))
 
 
 def session_semesters(semester):
@@ -102,40 +111,44 @@ def render_fee_structure_pdf(context, structure, odd_semester, academic_year_lab
     document = SimpleDocTemplate(
         output,
         pagesize=A4,
-        topMargin=2.5 * cm,
+        topMargin=3.5 * cm,
         rightMargin=1.5 * cm,
-        bottomMargin=2.5 * cm,
+        bottomMargin=2 * cm,
         leftMargin=1.5 * cm,
         title='Fee Structure Certificate',
         author=settings.BONAFIDE_INSTITUTE_NAME,
     )
     header_style = ParagraphStyle(
-        'Header', fontName='Helvetica-Bold', fontSize=12, leading=16,
+        'Header', fontName='Caladea-Bold', fontSize=11, leading=15,
+        alignment=TA_JUSTIFY,
     )
     header_right_style = ParagraphStyle(
         'HeaderRight', parent=header_style, alignment=2,
     )
     label_style = ParagraphStyle(
-        'Label', fontName='Helvetica-Bold', fontSize=12, leading=18,
+        'Label', fontName='Caladea-Bold', fontSize=11, leading=15,
+        alignment=TA_JUSTIFY,
     )
     value_style = ParagraphStyle(
-        'Value', fontName='Helvetica', fontSize=12, leading=18,
+        'Value', fontName='Caladea', fontSize=11, leading=15,
+        alignment=TA_JUSTIFY,
     )
     note_style = ParagraphStyle(
-        'Note', fontName='Helvetica-Bold', fontSize=12, leading=16,
+        'Note', fontName='Caladea-Bold', fontSize=11, leading=15,
+        alignment=TA_JUSTIFY,
     )
     cell_style = ParagraphStyle(
-        'Cell', fontName='Helvetica', fontSize=12, leading=15, alignment=TA_LEFT,
+        'Cell', fontName='Caladea', fontSize=11, leading=15, alignment=TA_JUSTIFY,
     )
     cell_center_style = ParagraphStyle(
         'CellCenter', parent=cell_style, alignment=TA_CENTER,
     )
     cell_bold_style = ParagraphStyle(
-        'CellBold', parent=cell_style, fontName='Helvetica-Bold',
+        'CellBold', parent=cell_style, fontName='Caladea-Bold',
     )
     signature_style = ParagraphStyle(
-        'Signature', fontName='Helvetica-Bold', fontSize=12,
-        leading=16, alignment=TA_LEFT,
+        'Signature', fontName='Caladea-Bold', fontSize=11,
+        leading=15, alignment=TA_JUSTIFY,
     )
 
     header = Table(
@@ -210,8 +223,8 @@ def render_fee_structure_pdf(context, structure, odd_semester, academic_year_lab
         [[
             Paragraph('S.No.', cell_bold_style),
             Paragraph('Fee Head(s)', cell_bold_style),
-            Paragraph('Semester-I', cell_bold_style),
-            Paragraph('Semester-II', cell_bold_style),
+            Paragraph(f'Semester-{semester_roman(odd_semester)}', cell_bold_style),
+            Paragraph(f'Semester-{semester_roman(odd_semester + 1)}', cell_bold_style),
             Paragraph('Total', cell_bold_style),
         ]] + table_rows,
         colWidths=[1.8 * cm, 6.2 * cm, 2.7 * cm, 3.3 * cm, 3 * cm], hAlign='LEFT',
