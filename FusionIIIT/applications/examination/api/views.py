@@ -1250,6 +1250,56 @@ class GenerateResultAPI(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    @staticmethod
+    def _ordinal_suffix(n):
+        """Return ordinal string for integer n, e.g. 1 → '1st', 6 → '6th'."""
+        n = int(n)
+        if 11 <= (n % 100) <= 13:
+            return f"{n}th"
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+        return f"{n}{suffix}"
+
+    @staticmethod
+    def _derive_academic_year(batch_year, semester_no, semester_type, batch_pk, semester_type_param):
+        """
+        Derive the academic year string (e.g. "2025-26") for the approval sheet heading.
+
+        Preferred: read the actual value stored in Student_grades for the selected
+        batch / semester / semester_type — this is the ground truth.
+        Fallback: compute from batch admission year + number of years elapsed.
+        """
+        # Primary source: actual grade records
+        ay = (
+            Student_grades.objects
+            .filter(
+                batch=batch_year,
+                semester=semester_no,
+                semester_type=semester_type_param,
+            )
+            .exclude(academic_year__isnull=True)
+            .exclude(academic_year="")
+            .values_list("academic_year", flat=True)
+            .first()
+        )
+        if ay:
+            return ay
+
+        # Fallback: derive from batch admission year + years elapsed.
+        #
+        # Academic year mapping for a batch admitted in `batch_year`:
+        #   Sem 1 (Odd)  → AY batch_year   to batch_year+1   (e.g. 2023-24)
+        #   Sem 2 (Even) → AY batch_year   to batch_year+1   (same AY as sem 1)
+        #   Sem 3 (Odd)  → AY batch_year+1 to batch_year+2
+        #   Sem 4 (Even) → AY batch_year+1 to batch_year+2   (same AY as sem 3)
+        #   …
+        # In each pair, the Odd semester runs in the first half of that AY and the
+        # Even semester runs in the second half — both share the same AY string.
+        # year_offset tells us how many full years have elapsed since admission:
+        #   sem 1-2 → 0,  sem 3-4 → 1,  sem 5-6 → 2,  sem 7-8 → 3
+        year_offset = (int(semester_no) - 1) // 2  # 0-based years since admission
+        ay_start = int(batch_year) + year_offset
+        return f"{ay_start}-{str(ay_start + 1)[-2:]}"
+
     def post(self, request):
         try:
             role = request.data.get("Role")
@@ -1283,8 +1333,27 @@ class GenerateResultAPI(APIView):
                 semester_type = semester_type
             ).exclude(grade__isnull=True).exclude(grade="").values_list('course_id_id', flat=True).distinct()
             
-            courses = Courses.objects.filter(id__in=course_ids)
-            courses_map = {course.id: course.credit for course in courses}
+            # REQ-3: Sort courses by code for deterministic, sequential numbering.
+            courses = Courses.objects.filter(id__in=course_ids).order_by('code')
+            courses_list = list(courses)  # evaluate once; order is now stable
+            courses_map = {course.id: course.credit for course in courses_list}
+
+            # ----------------------------------------------------------------
+            # REQ-1: Build dynamic heading components
+            # ----------------------------------------------------------------
+            batch_label = batch_obj.name                                     # e.g. "UG2023"
+            branch_label = branch if branch else batch_obj.discipline.acronym  # e.g. "CSE"
+            sem_no = int(semester)
+            sem_ordinal = self._ordinal_suffix(sem_no)                       # e.g. "6th"
+            sem_label = f"SEM-{sem_ordinal}"                                 # e.g. "SEM-6th"
+            academic_year = self._derive_academic_year(
+                batch_obj.year, sem_no, semester_type, batch_id, semester_type
+            )  # e.g. "2025-26"
+            heading = (
+                f"Approval sheet for {semester_type} AY{academic_year} "
+                f"({batch_label} Batch ({branch_label}) - {sem_label})"
+            )
+            # ----------------------------------------------------------------
 
             wb = Workbook()
             ws = wb.active
@@ -1292,117 +1361,173 @@ class GenerateResultAPI(APIView):
 
             # Define a fill style for header cells: light grey background.
             header_fill = PatternFill(start_color="D3D3D3", end_color="D3D3D3", fill_type="solid")
+            title_fill  = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
             thin_border = Border(
                 left=Side(style="thin"), right=Side(style="thin"),
                 top=Side(style="thin"), bottom=Side(style="thin")
             )
+            center_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
+            # ----------------------------------------------------------------
+            # REQ-1: Title rows
+            # Row 1: Institute name (full-width merge)
+            # Row 2: Approval-sheet heading (full-width merge)
+            # ----------------------------------------------------------------
 
-            # Setup header rows: S. No, Roll No and Name in columns A, B and C.
-            ws["A1"] = "S. No"
-            ws["B1"] = "Roll No"
-            ws["C1"] = "Name"
-            for col in ("A", "B"):
-                cell = ws[col + "1"]
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+            # We need the total number of columns to know the merge extent.
+            # Total cols = 3 (S.No / Roll No / Name) + 2*len(courses) + 6 (SPI/CPI/SU/TU/SP/TP)
+            total_cols = 3 + 2 * len(courses_list) + 6
+            last_col_letter = get_column_letter(max(total_cols, 1))
+
+            # Row 1 — Institute name
+            ws.merge_cells(f"A1:{last_col_letter}1")
+            title_cell = ws["A1"]
+            title_cell.value = "Indian Institute of Information Technology, Design and Manufacturing Jabalpur"
+            title_cell.font = Font(bold=True, size=14, color="FFFFFF")
+            title_cell.alignment = center_align
+            title_cell.fill = title_fill
+            ws.row_dimensions[1].height = 24
+
+            # Row 2 — Dynamic approval-sheet heading
+            ws.merge_cells(f"A2:{last_col_letter}2")
+            heading_cell = ws["A2"]
+            heading_cell.value = heading
+            heading_cell.font = Font(bold=True, size=12)
+            heading_cell.alignment = center_align
+            heading_cell.fill = header_fill
+            heading_cell.border = thin_border
+            ws.row_dimensions[2].height = 22
+
+            # ----------------------------------------------------------------
+            # Header rows now start at row 3 (shifted down by 2 from original).
+            # Layout:
+            #   Row 3  — S.No / Roll No / Name / Subject-No (per course) / SPI / CPI / SU / TU / SP / TP
+            #   Row 4  — (merged A-C) / Course code (per course) / (merged SPI etc.)
+            #   Row 5  — (merged A-C) / Course name (per course) / (merged SPI etc.)
+            #   Row 6  — (merged A-C) / Course credit (per course) / (merged SPI etc.)
+            #   Row 7  — (merged A-C) / Grade | Remarks (per course) / (merged SPI etc.)
+            #
+            # The first 3 columns (S.No/Roll No/Name) are merged across rows 3-7.
+            # REQ-3: Row 3, cols 4+ contain sequential subject numbers (1, 2, 3 …).
+            # REQ-2: All header cells have center alignment; first 3 cols merged rows 3-7.
+            # ----------------------------------------------------------------
+            HDR_START = 3   # first header row
+            HDR_END   = 7   # last header row (5 rows total: sno / code / name / credit / grade)
+            DATA_START = HDR_END + 1  # student data begins at row 8
+
+            # First three columns — merge rows HDR_START:HDR_END and set labels
+            for col_num, label in enumerate(["S. No", "Roll No", "Name"], start=1):
+                ws.merge_cells(
+                    start_row=HDR_START, start_column=col_num,
+                    end_row=HDR_END,     end_column=col_num
+                )
+                cell = ws.cell(row=HDR_START, column=col_num)
+                cell.value = label
+                cell.alignment = center_align
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
-            cell = ws["C1"]
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-            ws.column_dimensions[get_column_letter(1)].width = 12
+
+            ws.column_dimensions[get_column_letter(1)].width = 8
             ws.column_dimensions[get_column_letter(2)].width = 18
             ws.column_dimensions[get_column_letter(3)].width = 30
 
-            # Starting from column 4, add headers for each course (each course uses 2 columns for Grade and Remarks).
+            # Starting from column 4, add headers for each course.
+            # Each course uses 2 columns (Grade and Remarks).
             col_idx = 4
-            for course in courses:
-                # Merge cells for the course code header.
-                ws.merge_cells(start_row=1, start_column=col_idx, end_row=1, end_column=col_idx+1)
-                cell = ws.cell(row=1, column=col_idx)
+            for subject_no, course in enumerate(courses_list, start=1):
+                # REQ-3: Row HDR_START — sequential subject number
+                ws.merge_cells(
+                    start_row=HDR_START, start_column=col_idx,
+                    end_row=HDR_START,   end_column=col_idx + 1
+                )
+                cell = ws.cell(row=HDR_START, column=col_idx)
+                cell.value = subject_no
+                cell.alignment = center_align
+                cell.font = Font(bold=True)
+                cell.fill = header_fill
+
+                # Row HDR_START+1 — course code
+                ws.merge_cells(
+                    start_row=HDR_START + 1, start_column=col_idx,
+                    end_row=HDR_START + 1,   end_column=col_idx + 1
+                )
+                cell = ws.cell(row=HDR_START + 1, column=col_idx)
                 cell.value = course.code
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.alignment = center_align
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
 
-                ws.merge_cells(start_row=2, start_column=col_idx, end_row=2, end_column=col_idx+1)
-                cell = ws.cell(row=2, column=col_idx)
+                # Row HDR_START+2 — course name
+                ws.merge_cells(
+                    start_row=HDR_START + 2, start_column=col_idx,
+                    end_row=HDR_START + 2,   end_column=col_idx + 1
+                )
+                cell = ws.cell(row=HDR_START + 2, column=col_idx)
                 cell.value = course.name
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.alignment = center_align
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
 
-                ws.merge_cells(start_row=3, start_column=col_idx, end_row=3, end_column=col_idx+1)
-                cell = ws.cell(row=3, column=col_idx)
+                # Row HDR_START+3 — course credit
+                ws.merge_cells(
+                    start_row=HDR_START + 3, start_column=col_idx,
+                    end_row=HDR_START + 3,   end_column=col_idx + 1
+                )
+                cell = ws.cell(row=HDR_START + 3, column=col_idx)
                 cell.value = course.credit
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.alignment = center_align
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
 
-                cell = ws.cell(row=4, column=col_idx)
+                # Row HDR_END (HDR_START+4) — Grade / Remarks
+                cell = ws.cell(row=HDR_END, column=col_idx)
                 cell.value = "Grade"
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.alignment = center_align
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
 
-                cell = ws.cell(row=4, column=col_idx+1)
+                cell = ws.cell(row=HDR_END, column=col_idx + 1)
                 cell.value = "Remarks"
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.alignment = center_align
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
 
                 ws.column_dimensions[get_column_letter(col_idx)].width = 25
-                ws.column_dimensions[get_column_letter(col_idx+1)].width = 25
+                ws.column_dimensions[get_column_letter(col_idx + 1)].width = 25
                 col_idx += 2
 
-            # Append headers for SPI and CPI.
-            cell = ws.cell(row=1, column=col_idx)
-            cell.value = "SPI"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
+            # SPI / CPI / SU / TU / SP / TP — merge rows HDR_START:HDR_END for each
+            for label in ("SPI", "CPI", "SU", "TU", "SP", "TP"):
+                ws.merge_cells(
+                    start_row=HDR_START, start_column=col_idx,
+                    end_row=HDR_END,     end_column=col_idx
+                )
+                cell = ws.cell(row=HDR_START, column=col_idx)
+                cell.value = label
+                cell.alignment = center_align
+                cell.font = Font(bold=True)
+                cell.fill = header_fill
+                ws.column_dimensions[get_column_letter(col_idx)].width = 10
+                col_idx += 1
 
-            cell = ws.cell(row=1, column=col_idx+1)
-            cell.value = "CPI"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-
-            cell = ws.cell(row=1, column=col_idx+2)
-            cell.value = "SU"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-
-            cell = ws.cell(row=1, column=col_idx+3)
-            cell.value = "TU"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-
-            cell = ws.cell(row=1, column=col_idx+4)
-            cell.value = "SP"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-
-            cell = ws.cell(row=1, column=col_idx+5)
-            cell.value = "TP"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-
-            # Ensure full header rows (1 to 4) are highlighted.
+            # REQ-2: Apply fill, border, and center alignment to every header cell
+            # (rows HDR_START through HDR_END). This ensures the mass-fill pass does
+            # not leave any header cell without alignment — covers merged and non-merged.
             max_col = ws.max_column
-            for row in range(1, 5):
+            for row in range(HDR_START, HDR_END + 1):
                 for col in range(1, max_col + 1):
                     cell = ws.cell(row=row, column=col)
                     cell.fill = header_fill
                     cell.border = thin_border
+                    # Only set alignment when not already explicitly set on a merged anchor.
+                    # openpyxl preserves alignment on the top-left cell of a merged range,
+                    # but non-anchor cells in the range return a default Alignment object.
+                    # Setting it unconditionally is safe — merged-cell anchors simply get
+                    # their alignment re-confirmed.
+                    cell.alignment = center_align
 
-            # Fill in student rows, starting from row 5.
-            row_idx = 5
+            # Fill in student rows, starting from DATA_START.
+            row_idx = DATA_START
             User = get_user_model()
             for idx, student in enumerate(students, start=1):
                 ws.cell(row=row_idx, column=1).value = idx
@@ -1426,7 +1551,7 @@ class GenerateResultAPI(APIView):
                 )
                 grades_map = {g.course_id_id: g for g in student_grades}
                 col_ptr = 4
-                for course in courses:
+                for course in courses_list:
                     grade_entry = grades_map.get(course.id)
                     grade_val = grade_entry.grade if grade_entry else '-'
 
