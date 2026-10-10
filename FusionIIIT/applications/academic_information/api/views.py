@@ -2247,8 +2247,8 @@ def database_batch_wise_student_count(request):
     students = scope_via_student(
         Student.objects.all(), scopes_for(request.user), 'id'
     )
-    # Filter for batches 2020 to 2026
-    students = students.filter(batch__gte=2020, batch__lte=2026)
+    # Filter for batches 2020 onwards
+    students = students.filter(batch__gte=2020)
     
     counts = students.values('batch').annotate(
         male=Count('id', filter=Q(id__sex='M')),
@@ -2279,7 +2279,8 @@ def database_branch_wise_student_count(request):
     students = scope_via_student(
         Student.objects.all(), scopes_for(request.user), 'id'
     )
-    students = students.filter(batch__gte=2020, batch__lte=2026)
+    # Filter for batches 2020 onwards
+    students = students.filter(batch__gte=2020)
     
     counts = students.values('batch', 'programme', 'batch_id__discipline__acronym').annotate(
         male=Count('id', filter=Q(id__sex='M')),
