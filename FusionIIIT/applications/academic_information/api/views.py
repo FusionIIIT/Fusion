@@ -2234,3 +2234,69 @@ def assign_section(request):
     return Response({'detail': f'Section updated for {updated} student(s).',
                      'updated': updated,
                      'section': section or None})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_batch_wise_student_count(request):
+    """Batch wise student count showing male, female, and total for batches."""
+    from applications.globals.programme_scope import scopes_for, scope_via_student
+    from django.db.models import Count, Q
+
+    students = scope_via_student(
+        Student.objects.all(), scopes_for(request.user), 'id'
+    )
+    # Filter for batches 2020 to 2026
+    students = students.filter(batch__gte=2020, batch__lte=2026)
+    
+    counts = students.values('batch').annotate(
+        male=Count('id', filter=Q(id__sex='M')),
+        female=Count('id', filter=Q(id__sex='F')),
+        total=Count('id')
+    ).order_by('batch')
+
+    rows = []
+    for count in counts:
+        batch = count['batch']
+        rows.append({
+            'batch': f"{batch}-{str(batch+1)[2:]}",
+            'male': count['male'],
+            'female': count['female'],
+            'total': count['total'],
+        })
+    return Response({'rows': rows, 'batches': list(counts.values_list('batch', flat=True))})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_branch_wise_student_count(request):
+    """Branch wise student count showing male, female, and total for each batch and branch."""
+    from applications.globals.programme_scope import scopes_for, scope_via_student
+    from django.db.models import Count, Q
+
+    students = scope_via_student(
+        Student.objects.all(), scopes_for(request.user), 'id'
+    )
+    students = students.filter(batch__gte=2020, batch__lte=2026)
+    
+    counts = students.values('batch', 'programme', 'batch_id__discipline__acronym').annotate(
+        male=Count('id', filter=Q(id__sex='M')),
+        female=Count('id', filter=Q(id__sex='F')),
+        total=Count('id')
+    ).order_by('batch', 'programme', 'batch_id__discipline__acronym')
+
+    rows = []
+    for count in counts:
+        batch = count['batch']
+        programme = count['programme'] or 'Unknown'
+        discipline = count['batch_id__discipline__acronym'] or 'General'
+        rows.append({
+            'batch': f"{batch}-{str(batch+1)[2:]}",
+            'branch': f"{programme} {discipline}",
+            'male': count['male'],
+            'female': count['female'],
+            'total': count['total'],
+        })
+    return Response({'rows': rows})

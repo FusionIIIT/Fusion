@@ -69,5 +69,6 @@ urlpatterns = [
 
     # url(r'^grades',views.grades_api,name='grades-get-api'),
 
-    # url(r'^spi',views.spi_api,name='spi-get-api')
+    url(r'^database/batch-wise-student-count/$', views.database_batch_wise_student_count, name='database_batch_wise_student_count'),
+    url(r'^database/branch-wise-student-count/$', views.database_branch_wise_student_count, name='database_branch_wise_student_count'),
 ]
