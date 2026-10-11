@@ -1,28 +1,29 @@
-version: "3.9"
 services:
   db:
-    image: postgres:13-alpine
-    restart: always
-    volumes:
-      - ~/private/var/lib/postgresql:/var/lib/postgresql/data
+    image: postgres:16-alpine
     environment:
-      - PGDATA=/var/lib/postgresql/data/some_name/ 
-      - POSTGRES_DB=fusionlab
-      - POSTGRES_USER=fusion_admin
-      - POSTGRES_PASSWORD=hello123
-    ports:
-      - "5432:5432"
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    volumes:
-      - .:/home/app
-    ports:
-      - 8000:8000
-    command: /bin/bash docker-entrypoint.sh
-    environment:
-      - DB_HOST=db
-    depends_on:
-      - db
+      POSTGRES_DB: fusion_integrated
+      POSTGRES_USER: fusion_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    ports: ["5432:5432"]
+    volumes: ["fusion_integrated_pg:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fusion_admin -d fusion_integrated"]
+      interval: 5s
+      retries: 10
+
+  # Cache. Eviction here is fine — that is what a cache is for.
+  redis-cache:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports: ["6379:6379"]
+
+  # Broker. noeviction is NOT optional: an LRU broker silently drops queued
+  # Celery tasks with no error and no trace.
+  redis-broker:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 256mb --maxmemory-policy noeviction
+    ports: ["6380:6379"]
+
+volumes:
+  fusion_integrated_pg:

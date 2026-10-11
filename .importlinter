@@ -1,0 +1,68 @@
+[importlinter]
+root_packages =
+    config
+    core
+    fusion_auth
+    modules
+# Required because the domain contract forbids external packages
+# (django, rest_framework, celery).
+include_external_packages = True
+
+[importlinter:contract:modules-only-touch-contracts]
+name = Modules may reach each other ONLY through contracts.py
+type = forbidden
+source_modules =
+    modules.placement
+    modules.directory
+    modules.accesscontrol
+forbidden_modules =
+    modules.placement.models
+    modules.placement.services
+    modules.placement.selectors
+    modules.placement.api
+    modules.placement.domain
+    modules.directory.models
+    modules.directory.services
+    modules.directory.api
+    modules.accesscontrol.models
+# DIRECT imports only. contracts.py legitimately imports its OWN module's
+# models and services, so following the chain transitively would make this
+# contract impossible to satisfy. What we forbid is a module reaching straight
+# into another module's internals.
+allow_indirect_imports = true
+# contracts.py is deliberately absent from the list above — it is the door.
+
+[importlinter:contract:domain-is-pure-python]
+name = domain/ must not import Django, DRF or Celery
+type = forbidden
+source_modules =
+# Every module's domain, not just the first one written.
+    modules.placement.domain
+forbidden_modules =
+    django
+    rest_framework
+    celery
+
+# NOTE on `devtools`: it is intentionally NOT listed as a module anywhere in
+# this file. Seeding fixtures is cross-cutting by nature — it touches placement
+# and directory at once — so it is a tool, not a bounded context. It
+# is installed in dev/test settings only. Declaring the exemption here keeps it
+# visible instead of it quietly becoming a back door.
+
+[importlinter:contract:core-is-a-leaf]
+name = core/ must not import any module
+type = forbidden
+source_modules = core
+forbidden_modules =
+    modules
+    fusion_auth
+
+[importlinter:contract:placement-layers]
+name = Layering inside placement
+type = layers
+layers =
+    modules.placement.api
+    modules.placement.services
+    modules.placement.selectors
+    modules.placement.models
+    modules.placement.domain

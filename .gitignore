@@ -1,78 +1,49 @@
-# Byte-compiled / optimized / DLL files
+# --- Secrets ------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# --- User data ------------------------------------------------------------------
+# Uploaded documents: real resumes and certificates. Never in version control.
+var/
+media/
+
+# --- Python ---------------------------------------------------------------------
+.venv/
+venv/
 __pycache__/
 *.py[cod]
-*$py.class
-
-# IDEs #
-.vscode
-.idea
-
-# Distribution / packaging
-.Python
-env/
-build/
-media
-develop-eggs/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
 *.egg-info/
-.installed.cfg
-*.egg
-
-# Swap files
-*.swp
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.import_linter_cache/
 htmlcov/
-.tox/
 .coverage
 .coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*,cover
-.hypothesis/
+staticfiles/
+*.sqlite3
+*.sql
+*.dump
 
-# Flask stuff:
-instance/.webassets-cache
-
-# PyBuilder
-target/
-
-# pyenv
-.python-version
-
-# celery beat schedule file
-celerybeat-schedule
-
-# dotenv
-.env
-
-# virtualenv: ignore environment folder ending with env. e.g. env, venv, myenv, fusionenv, etc
-*env/
-
-# Rope project settings
-.ropeproject
-
-# VSCode Settings
-#.vscode/settings.json
-
-# Node Modules
+# --- Node / client ----------------------------------------------------------------
 node_modules/
+client/dist/
+client/screenshots/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log
 
-FusionIIIT/static/
-package-lock.json
+# --- Generated docs ---------------------------------------------------------------
+# Rebuilt by `make module-structure`; shared as a file, not carried in the repo.
+docs/module-structure.pdf
+docs/module-structure.html
 
-
+# --- Editors and OS ---------------------------------------------------------------
 .DS_Store
-**/generated.pdf
+.idea/
+.vscode/
+*.swp

@@ -1,272 +1,203 @@
-# FusionIIIT (Backend)
+# Fusion-Integrated
 
-**FusionIIIT** is the automation of various functionalities, modules and tasks of/for **PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur** being developed in `python3.8` and using `Django` Webframework.
+The non-academic platform. **Placement Cell** first; more modules later.
+**Independent modules, one login.**
 
-## Critical Prerequisites & Software Requirements
+This service holds **no user table**. Identity, RBAC and common directory data
+(student info, faculty info, staff info) all come from
+**Fusion_System_Administrator**, which is the IAM.
 
-**You MUST strictly use the following versions:**
-
-* Python `3.8.10`
-* pip `21.1.1`
-* PostgreSQL `14`
-* Git
-
-## System Configuration
-
-* Ubuntu `20.04` **(Recommended)**
-* *OR* WSL for Windows `10` \(Follow the guide below\) :[Windows Subsystem for Linux Installation Guide for Windows 10](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
-* *OR* Windows `7/8/8.1/10`
-
-## Module-Wise Sync Targets
-
-For production synchronization targets, refer to: [Fusion-README](https://github.com/FusionIIIT/Fusion-README)
-
-## Contributing Guidelines
-
-For contributing to this repository, you have to follow the guidelines given in [CONTRIBUTING.md](./CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) for smooth workflow of contributions and changes inside repository.
-
-## Full-Stack Module-Wise Git Workflow Guide
-
-This section outlines the repository setup, branch management, and contribution workflow for teams working on the Fusion ERP Backend.
-
-### Phase 1: Team Lead Setup
-
-1. **Fork the Main Repository:**
-
-   * Go to [https://github.com/FusionIIIT/Fusion](https://github.com/FusionIIIT/Fusion) and click **Fork, Uncheck** the **Checkbox,** and click **Create fork.**
-2. **Share:**
-
-   * Distribute your forked repository URL to your team members
-
-### Phase 2: Team Member Setup
-
-1. **Fork the Team Lead's Repository:**
-
-   * Navigate to your Team Lead's fork and fork it to your own GitHub account
-2. **Clone Locally:**
-
-   ```sh
-   git clone https://github.com/<Your-Username>/Fusion.git
-   ```
-3. **Set Upstream:**
-
-   ```sh
-   cd Fusion
-   git remote add upstream https://github.com/<TeamLead-Username>/Fusion.git
-   ```
-
-### Phase 3: Module-Wise Branch Switching
-
-**Note:** v1 (MANUAL : Work on Existing Codebase) and v2 (AI : Work from Scracth according to documnets and Fusion README) - If you are assigned to the AI group, replace `v1` with `v2` in the commands below.
-
-Fetch upstream data first:
-
-```sh
-cd Fusion
-git fetch upstream
+```
+        Fusion_System_Administrator   ( = the IAM )
+        owns fusion_system_db
+        · identity  — authenticates ALL users
+        · RBAC      — roles, permissions, module grants
+        · directory — student / faculty / staff info
+        · its OWN console at /sysadmin/, its own operator login
+                 │
+                 │  HTTP   /api/iam/v1/*
+                 ▼
+        Fusion-Integrated                ← this repo
+        owns fusion_integrated
+        backend  →  placement  (more modules later)
+        client   →  the shell: one login, one sidebar
+        holds only user_id references — no user table
 ```
 
-Then run your specific module command:
+## Two logins, on purpose
 
-* **Examination:** `git checkout -b examination-v1 upstream/examination-v1`
-* **LMS:** `git checkout -b lms-v1 upstream/lms-v1`
-* **Award & Scholarship:** `git checkout -b scholarships-v1 upstream/scholarships-v1`
-* **Department:** `git checkout -b department-v1 upstream/department-v1`
-* **Other Academic Procedure:** `git checkout -b academic-procedures-v1 upstream/academic-procedures-v1`
-* **Announcements:** `git checkout -b announcements-v1 upstream/announcements-v1`
-* **Placement Cell + PBI:** `git checkout -b placement-pbi-v1 upstream/placement-pbi-v1`
-* **Gymkhana:** `git checkout -b gymkhana-v1 upstream/gymkhana-v1`
-* **Primary Health Center:** `git checkout -b health-center-v1 upstream/health-center-v1`
-* **Hostel Management:** `git checkout -b hostel-management-v1 upstream/hostel-management-v1`
-* **Mess Management:** `git checkout -b mess-management-v1 upstream/mess-management-v1`
-* **Visitor Hostel:** `git checkout -b visitor-hostel-v1 upstream/visitor-hostel-v1`
-* **Visitor Management System:** `git checkout -b visitor-management-v1 upstream/visitor-management-v1`
-* **Dashboards:** `git checkout -b dashboards-v1 upstream/dashboards-v1`
-* **File Tracking System:** `git checkout -b file-tracking-v1 upstream/file-tracking-v1`
-* **RSPC:** `git checkout -b rspc-v1 upstream/rspc-v1`
-* **P&S Management:** `git checkout -b ps-management-v1 upstream/ps-management-v1`
-* **HR (EIS):** `git checkout -b hr-eis-v1 upstream/hr-eis-v1`
-* **Patent Management System:** `git checkout -b patent-management-v1 upstream/patent-management-v1`
-* **Institute Works Department:** `git checkout -b institute-works-v1 upstream/institute-works-v1`
-* **Internal Audit and Accounts:** `git checkout -b audit-accounts-v1 upstream/audit-accounts-v1`
-* **Complaint Management:** `git checkout -b complaint-management-v1 upstream/complaint-management-v1`
+|  | Who | Where | Against |
+|---|---|---|---|
+| **User login** | students, faculty, staff | this app's shell | the ERP user pool, via IAM |
+| **Operator login** | sysadmin operators | `/sysadmin/`, its own URL | the console's own account pool |
 
-## How to get started
+Users get **one** login for every module they are granted. Operators keep a
+separate door to the admin console — different audience, different account set.
+Both are backed by the same identity service; they are not the same login page.
 
-* on **Ubuntu**:
+---
 
-  ```sh
-  // Install the required packages using the following command:
+## Quick start
 
-  sudo apt install python3-pip python3-dev python3-venv libpq-dev build-essential git
-  sudo -H pip3 install --upgrade pip
-  ```
-* on **Windows**:
-
-  * Get Python 3.8.10 from [here](https://www.python.org/downloads/release/python-3810/)
-  * Git from [here](https://git-scm.com/download/win)
-  * Install both using the downloaded `exe` files
-    **Important:** Make sure to check the box that says **Add Python 3.x to PATH** to ensure that the interpreter will be placed in your execution path
-
-### Setting up environment
-
-* Create a virtual environment, run below command inside Fusion Directory or root.
-  * on **Ubuntu**: `python3 -m venv env`
-  * on **Windows PowerShell**: `python -m venv env OR py -3.8 -m venv env`
-* Activate the *env*
-  * on **Ubuntu**: `source env/bin/activate`
-  * on **Windows PowerShell**: `.\env\Scripts\Activate.ps1`
-    **Note** : On Windows, it may be required to enable the Activate.ps1 script by setting the execution policy for the user. You can do this by issuing the following command: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
-
-### Installing Packages
-
-Navigate to the Fusion directory and install requirements:
-
-```sh
-cd Fusion
-pip install -r requirements.txt
+```bash
+make install          # uv venv + dependencies
+make up               # postgres + 2× redis (cache and broker, separately)
+cp .env.example .env
+make migrate seed     # schema, module registry, demo data
+make dev              # http://127.0.0.1:8002
+make check            # everything CI runs
 ```
 
-### Running server
+Requires Python 3.12, [uv](https://docs.astral.sh/uv/) and Docker.
 
-* Change directory to **FusionIIIT** `cd FusionIIIT`
-* Run the server `python manage.py runserver`
+---
 
-## Phase 4: Syncing, Committing, and PRs
+## What "independent module" actually means here
 
-### Production Sync Targets
+Not a naming convention — four rules, each enforced by a CI job that has been
+tested against a deliberate violation:
 
-* **Backend Production Branch:** `prod/acad-react`
+| Rule | Enforced by |
+|---|---|
+| A module may reach another **only** through its `contracts.py` | `lint-imports` |
+| **No foreign key crosses a module boundary** | `ops/checks/no_cross_module_fk.py` |
+| `domain/` may not import Django, DRF or Celery | `lint-imports` |
+| Cross-module getters are **plural** — they take a sequence of ids | `ops/checks/contracts_are_plural.py` |
 
-### Workflow
+The payoff is concrete: every module owns its own tables and its own migration
+file, so lifting one out into its own service later means changing one file's
+implementation, not doing schema surgery.
 
-1. **Sync with Production:**
+The plural rule is the sneaky-useful one. There is no `get_employment(user_id)`
+anywhere, only `get_employments(user_ids)` — which makes the N+1 not merely
+discouraged but *unwritable*.
 
-   * Frequently pull the latest changes from your specific module's production branch to avoid merge conflicts later
-   * Team lead syncs first, then team members sync from the team lead's fork
+### Anatomy of a module
 
-   ```sh
-   git pull upstream <your-assigned-branch>
-   ```
-2. **Make Changes:**
+```
+modules/placement/
+├── apps.py          Django app config
+├── registry.py      its sidebar entry — seeded by `manage.py seed_modules`
+├── contracts.py     THE ONLY thing other modules may import
+├── models.py        its own tables, its own migrations
+├── domain/          pure Python. rules, state machine. no Django.
+├── selectors/       all reads.  ownership filtering lives here
+├── services/        all writes. transactions, audit rows, domain→HTTP translation
+├── api/             thin: serializers, views, urls
+└── tests/
+```
 
-   * Make your code changes and commit them locally to your active module branch
-3. **Migrating Database Changes:**
+Adding a module: create the directory, add one line to `DOMAIN_MODULES` in
+`config/settings/base.py`, write `registry.py`, run `make seed`. Nothing central
+to edit — no menu array, no boolean column, no shadow model.
 
-   * Make migrations: `python manage.py makemigrations`
-   * Migrate the changes to the database: `python manage.py migrate`
-4. **Committing:**
+---
 
-   ```sh
-   git add .
-   git commit -m "Your descriptive commit message"
-   ```
-5. **Pushing:**
+## How a request is authorized
 
-   ```sh
-   git push origin <your-assigned-branch>
-   ```
-6. **Create Pull Request:**
+Two gates, both server-side, on **every** request:
 
-   * Go to `https://github.com/<your_user_name>/Fusion/tree/<your-assigned-branch>` and create a Pull Request
-   * **Important:** Target the Team Lead's fork, NOT the main FusionIIIT repository
+```python
+permission_classes = [
+    HasModuleGrant("placement_cell"),               # is this module yours at all?
+    HasPermission("placement_cell.application.view"),  # may you do this?
+]
+```
 
-## Working with Code \(Alternative\)
+Both must pass; the default is deny. `fusion_auth` resolves the caller's session
+against IAM (cookie or `Authorization: Token`), builds a `Principal`, and every
+check reads that.
 
-* **(Recommended)** Use [Visual Studio Code](https://code.visualstudio.com/) as a text editor. Go through the [Tutorial](https://code.visualstudio.com/docs/python/python-tutorial) for getting started with **Visual Studio Code for Python**.**Note** : Use the following guide if using **WSL** for Development([https://code.visualstudio.com/docs/remote/wsl](https://code.visualstudio.com/docs/remote/wsl))
-* Use the inbuilt **Source Control** feature for checking out, committing, pushing, pulling changes. You can also use [Github Desktop](https://desktop.github.com/) **_\(Windows/Mac only\)_**.
-* Refer to below link for best practices regarding commit messages :
-  ([https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53](https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53))
+**The sidebar is server-driven.** `GET /api/v1/me` returns `navigation` already
+filtered and already in render shape — the client does zero filtering, so it
+cannot draw a module the server did not send. This replaces the legacy pattern
+of a hardcoded client array whose ids had to exactly match database *column*
+names.
 
-## Testing Procedure:
+Ownership is enforced by filtering the queryset in the selector, never by
+fetching-then-checking, which is why a foreign id naturally yields **404** and
+not 403 (403 would leak existence and turn any id column into an enumeration
+oracle).
 
-### Selenium-webdriver
+---
 
-Selenium is a browser automation library. Most often used for testing
-web-applications, Selenium may be used for any task that requires automating
-interaction with the browser.
+## Layout
 
-### Installation
+```
+config/          settings (base/dev/test/prod), urls, celery
+core/            shared kernel — error envelope, pagination, request-id, mixins
+fusion_auth/     the IAM client, Principal, authentication, the two permission gates
+modules/
+  directory/     local projection of IAM's user data (a cache with a table)
+  accesscontrol/ module registry + the server-driven sidebar
+  placement/     companies, postings, applications, eligibility, state machine
+ops/checks/      the boundary enforcement scripts
+client/          the shell — Vite + React 18 + TS + Mantine 7.13
+```
 
-You can visit Selenium Official website and can download the language-specific client drivers(Java in our case)
+`core/` may not import `modules` — it is a leaf, and CI checks that too.
 
-[https://selenium-release.storage.googleapis.com/3.141/selenium-java-3.141.59.zip](https://selenium-release.storage.googleapis.com/3.141/selenium-java-3.141.59.zip)
+---
 
-You will need to download additional components to work with each of the major
-browsers. The drivers for Chrome, Firefox, and Microsoft's IE and Edge web
-browsers are all standalone executables that should be placed on your system
-[PATH]. Apple's safaridriver is shipped with Safari 10 for OS X El Capitan and
-macOS Sierra. You will need to enable Remote Automation in the Develop menu of
-Safari 10 before testing.
+## Testing
 
-| Browser           | Component                                                                              |
-| ----------------- | -------------------------------------------------------------------------------------- |
-| Chrome            | [ChromeDriver](https://chromedriver.storage.googleapis.com/index.html?path=83.0.4103.39/) |
-| Internet Explorer | [IEDriverServer](http://selenium-release.storage.googleapis.com/index.html?path=2.39/)    |
-| Firefox           | [GeckoDriver](https://chromedriver.storage.googleapis.com/index.html?path=83.0.4103.39/)  |
+```bash
+make test          # 40 tests, ~0.6s
+```
 
-### Add the Cucumber Eclipse Plugin for BDD testing
+Domain tests are pure Python with no database, which is why they run in
+milliseconds — that is the whole point of the no-Django-in-`domain/` rule. The
+IAM is never contacted: `conftest.py` swaps in an in-memory fake, so the suite
+needs no network and no running Fusion_System_Administrator.
 
-* Install the Cucumber Eclipse Plugin from Eclipse MarketPlace under help
+---
 
-### Getting Started
+## The client
 
-* Open the Test folder in Eclipse IDE(You are free to use any IDE)
+```bash
+cd client && npm install && npm run dev      # :5173, proxies /api to :8002
+```
 
-  * Open the pom.xml and build the project
-  * Change the driver path in System.setProperty in line 16 of Step_defination.java
-* Under the src/main/resources we have main.feature file to define Scenarios and Steps
-* Give the step defination of the defined scenarios and steps in Step_Defination.java under src/main/java
+Vite + React 18 + TypeScript (strict) + Mantine **7.13.4, pinned to match the
+sysadmin client** so the two apps look like one product. `theme.ts` and
+`AppShellLayout.module.css` are ports of that client's files, not a redesign.
 
-## Different modules included
+Routes are built **only** for modules the server granted, so an ungranted module
+has no route — deep-linking it hits NotFound rather than an empty shell. Module
+pages are lazy chunks (`PostingsPage`, `ApplicationsPage` build separately).
 
-* Academic database management
-* Academic workflows
-* Finance and Accounting
-* Placement Cell
-* Mess management
-* Gymkhana Activities
-* Scholarship and Awards Portal
-* Employee Management
-* Course Management
-* Complaint System
-* File Tracking System
-* Health Centre Mangement
-* Visitor's Hostel Management
-* Leave Module
+## Extracting a module into its own repo
 
-## Notifications Support
+This is what "independent" is for. Removing `hr` and `leave` from this codebase
+touched **five files**, none of them in `placement`:
 
-The project now supports notifications across all modules. To implement notifications in your module refer to the instructions below.
+```
+config/settings/base.py     one line in DOMAIN_MODULES
+config/urls.py              one include()
+devtools/…/seed_demo.py     fixtures
+.importlinter               contract membership
+modules/<name>/             the directory itself
+```
 
-* Create your notification class in [**`./FusionIIIT/notifications/views.py`**](https://github.com/FusionIIIT/Fusion/blob/master/FusionIIIT/notification/views.py)
-  ```
-  def module_notif(sender, recipient, type):
-    url='slug:slug'
-    module='ModuleName'
-    sender = sender
-    recipient = recipient
-    verb = ''
+Nothing in `placement`, `directory`, `accesscontrol`, `core` or `fusion_auth`
+referenced them, because the boundary rules make that impossible. The same holds
+in reverse: lifting a module into a separate repo means taking its directory and
+its migrations, then replacing its `contracts.py` callers with HTTP.
 
-    // Type conditioned verb
-    if type == 'A':
-        verb = "A Verb"
-    elif type == 'B':
-        verb = "B Verb "
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
-  ```
-* Import your Notification class in your module into **`your_module/views.py`**
-  ```
-  from notification.views import module_notif
-  ```
-* To create a Notification, simply call the class and pass user objects for sender, receiver and a string type.
-  ```
-  module_notif(sender, receiver, type)
-  ```
-* The Notifications should then appear in the dashboard for the recipient
+## Status
 
-## Setting up Fusion using Docker
+Working today: the module system, both authorization gates, the server-driven
+sidebar, the directory projection, the placement application state machine with
+an append-only audit trail, and the client shell with login.
 
-- Make sure you have docker & docker-compose setup properly.
-- Run `docker-compose up`
-- Once the server starts, run `sudo docker exec -i fusion_db_1 psql -U fusion_admin -d fusionlab < path_to_db_dump`
+**Blocking next step — the IAM side.** `Fusion_System_Administrator` currently
+authenticates operators only; its own router says so: *"this is what makes admin
+operators a separate account set from the 3277 managed ERP users."* It needs
+ERP-user authentication plus `/api/iam/v1/{auth/login, auth/logout, me,
+directory/users}`. The client for those is written and tested against a fake —
+the expected contract is in `fusion_auth/client.py`.
+
+Then: offers and selection rounds, the declared-CPI integration.
+
+Design documents — architecture, ADRs, the RBAC model, the placement domain and
+the academic-snapshot contract — are in [`docs/`](docs/).
