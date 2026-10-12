@@ -1,7 +1,8 @@
 from django.conf.urls import url
 from . import views
 from . import (bonafide_certificate, demand_letter, fee_certificate,
-               fee_structure, fee_structure_certificate)
+               fee_structure, fee_structure_certificate,
+               medium_of_instruction_certificate)
 from .. import views as procedures_views
 
 
@@ -20,6 +21,18 @@ urlpatterns = [
     url(r'^acad/bonafide/certificates/(?P<certificate_id>\d+)/pdf/$',
         bonafide_certificate.bonafide_certificate_pdf,
         name='bonafide-certificate-pdf'),
+    url(r'^acad/medium-of-instruction/student/$',
+        medium_of_instruction_certificate.medium_of_instruction_student,
+        name='medium-of-instruction-student'),
+    url(r'^acad/medium-of-instruction/pdf/$',
+        medium_of_instruction_certificate.generate_medium_of_instruction_pdf,
+        name='medium-of-instruction-pdf'),
+    url(r'^acad/medium-of-instruction/certificates/$',
+        medium_of_instruction_certificate.medium_of_instruction_certificates,
+        name='medium-of-instruction-certificates'),
+    url(r'^acad/medium-of-instruction/certificates/(?P<certificate_id>\d+)/pdf/$',
+        medium_of_instruction_certificate.medium_of_instruction_certificate_pdf,
+        name='medium-of-instruction-certificate-pdf'),
     url(r'^acad/fee-certificate/student/$', fee_certificate.fee_student,
         name='fee-certificate-student'),
     url(r'^acad/fee-certificate/pdf/$', fee_certificate.generate_fee_pdf,
