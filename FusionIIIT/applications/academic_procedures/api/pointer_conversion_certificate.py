@@ -34,7 +34,41 @@ from .bonafide_certificate import (
     register_certificate_fonts,
 )
 
+from applications.examination.api.views import calculate_cpi_for_student
+
 CERTIFICATE_TYPE = 'pointer_conv'
+
+
+def resolve_student_cpi(student):
+    """
+    Dynamically calculate student's CPI using the canonical calculate_cpi_for_student()
+    function (from examination) that calculates live weighted CPI across all completed
+    course grades. If current semester grades are not submitted yet, checks prior semesters.
+    Falls back to student.cpi if positive.
+    """
+    curr_sem = student.curr_semester_no or 1
+    # 1. Try calculate_cpi_for_student for current semester
+    try:
+        cpi_val, _, _ = calculate_cpi_for_student(student, curr_sem, None)
+        if cpi_val and float(cpi_val) > 0:
+            return float(cpi_val), curr_sem
+    except Exception:
+        pass
+
+    # 2. Check previous semesters descending
+    for sem in range(curr_sem - 1, 0, -1):
+        try:
+            cpi_val, _, _ = calculate_cpi_for_student(student, sem, None)
+            if cpi_val and float(cpi_val) > 0:
+                return float(cpi_val), sem
+        except Exception:
+            pass
+
+    # 3. Fallback to student.cpi if positive
+    if student.cpi and float(student.cpi) > 0:
+        return float(student.cpi), None
+
+    return 0.0, None
 
 
 def build_pointer_conversion_context(student):
@@ -62,15 +96,14 @@ def build_pointer_conversion_context(student):
     if not discipline:
         errors.append('Discipline is unavailable.')
 
-    cpi_val = student.cpi
+    cpi_val, till_sem = resolve_student_cpi(student)
     if cpi_val and cpi_val > 0:
-        cpi_str = str(cpi_val)
-        if len(cpi_str.split('.')[-1]) > 2:
-            cpi_display = f"{cpi_val:.2f}"
-        else:
-            cpi_display = cpi_str
+        cpi_str = f"{cpi_val:.2f}"
+        if cpi_str.endswith('0'):
+            cpi_str = f"{cpi_val:.1f}"
+        cpi_display = cpi_str
     else:
-        cpi_display = '……………'
+        cpi_display = ''
 
     return {
         'student_id': student.pk,
@@ -176,7 +209,7 @@ def render_pointer_conversion_pdf(
         [
             Paragraph('CPI', detail_label_style),
             Paragraph(':', detail_label_style),
-            Paragraph(escape(str(cpi_text)), detail_val_style),
+            Paragraph(escape(str(cpi_text or '……………')), detail_val_style),
         ],
     ]
     detail_table = Table(detail_rows, colWidths=[2.5 * cm, 0.6 * cm, 13 * cm])
@@ -280,7 +313,7 @@ def generate_pointer_conversion_pdf(request):
 
     cpi_text = request.data.get('cpi_text')
     if not cpi_text:
-        cpi_text = context['cpi_display']
+        cpi_text = context['cpi_display'] or '……………'
     cpi_text = str(cpi_text).strip()
 
     min_cpi = request.data.get('min_cpi')
