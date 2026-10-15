@@ -1,7 +1,8 @@
 from django.conf.urls import url
 from . import views
 from . import (bonafide_certificate, demand_letter, fee_certificate,
-               fee_structure, fee_structure_certificate)
+               fee_structure, fee_structure_certificate,
+               pointer_conversion_certificate)
 from .. import views as procedures_views
 
 
@@ -50,6 +51,18 @@ urlpatterns = [
     url(r'^acad/fee-structure-certificate/certificates/(?P<certificate_id>\d+)/pdf/$',
         fee_structure_certificate.fee_structure_certificate_pdf,
         name='fee-structure-certificate-pdf-detail'),
+    url(r'^acad/pointer-conversion/student/$',
+        pointer_conversion_certificate.pointer_conversion_student,
+        name='pointer-conversion-student'),
+    url(r'^acad/pointer-conversion/pdf/$',
+        pointer_conversion_certificate.generate_pointer_conversion_pdf,
+        name='pointer-conversion-pdf'),
+    url(r'^acad/pointer-conversion/certificates/$',
+        pointer_conversion_certificate.pointer_conversion_certificates,
+        name='pointer-conversion-certificates'),
+    url(r'^acad/pointer-conversion/certificates/(?P<certificate_id>\d+)/pdf/$',
+        pointer_conversion_certificate.pointer_conversion_certificate_pdf,
+        name='pointer-conversion-certificate-pdf-detail'),
     url(r'^acad/fee-structures/$', fee_structure.fee_structures,
         name='fee-structures'),
     url(r'^acad/fee-structures/template/$',
