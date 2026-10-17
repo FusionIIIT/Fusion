@@ -109,6 +109,36 @@ def format_semester_display(semester_no, semester_type=None, semester_label=None
         return f"Summer {semester_no // 2}"
     return str(semester_no)
 
+
+def get_expected_completion_year(student):
+    """
+    Dynamically compute the calendar year in which the student's final-semester
+    result is expected to be declared (July/August of that year).
+
+    Source of truth (no hardcoded values):
+      - student.batch_id.year                    → admission year
+      - student.batch_id.curriculum.no_of_semester → programme length in semesters
+
+    Formula:
+      expected_completion_year = batch.year + (no_of_semester // 2)
+
+    Returns an int, or None when the required data is not available (the
+    certificate sentence is then omitted from the PDF rather than broken).
+    """
+    try:
+        batch = student.batch_id
+        if batch and batch.curriculum_id:
+            curriculum = batch.curriculum
+            if curriculum and curriculum.no_of_semester:
+                return int(batch.year) + (curriculum.no_of_semester // 2)
+        # Fallback: curriculum FK is null — use legacy Student.batch integer + 4
+        if hasattr(student, 'batch') and student.batch:
+            return int(student.batch) + 4
+    except Exception:
+        pass
+    return None
+
+
 def round_from_last_decimal(number, decimal_places=1):
     """Round a number to `decimal_places` using ROUND_HALF_UP."""
     d = Decimal(str(number))
@@ -1223,7 +1253,8 @@ class GenerateTranscript(APIView):
             "department": student.id.department.name if student.id.department else "",
             "semester": student.curr_semester_no,
             "academicYear": academic_year or "",
-            "academic_year": academic_year or ""
+            "academic_year": academic_year or "",
+            "expected_completion_year": get_expected_completion_year(student),
         }
 
         response_data = {
@@ -2852,9 +2883,63 @@ class GeneratePDFAPI(APIView):
                 alignment=1,  # Center
                 fontName='Times-Italic'
             )
-            
+
             from datetime import datetime
             current_date = datetime.now().strftime("%d/%m/%Y")
+
+            # Certificate sentence — expected final-semester result declaration.
+            # Year is derived dynamically from batch.year + curriculum.no_of_semester // 2.
+            # The sentence is only added when the year can be determined; if the student's
+            # batch/curriculum data is missing the PDF still generates without it.
+            _completion_year = student_info.get("expected_completion_year")
+            if not _completion_year:
+                try:
+                    _roll = student_info.get("rollNumber") or student_info.get("roll_number")
+                    if _roll:
+                        _stu = Student.objects.filter(id_id=_roll).select_related(
+                            "batch_id__curriculum"
+                        ).first()
+                        if _stu:
+                            _completion_year = get_expected_completion_year(_stu)
+                except Exception:
+                    pass
+
+            if _completion_year:
+                _final_sem = student_info.get("final_sem_no")
+                if not _final_sem:
+                    try:
+                        _roll = student_info.get("rollNumber") or student_info.get("roll_number")
+                        if _roll:
+                            _stu2 = Student.objects.filter(id_id=_roll).select_related(
+                                "batch_id__curriculum"
+                            ).first()
+                            if _stu2 and _stu2.batch_id and _stu2.batch_id.curriculum:
+                                _final_sem = _stu2.batch_id.curriculum.no_of_semester
+                    except Exception:
+                        pass
+                _final_sem = _final_sem or 8  # safe default for B.Tech
+
+                def _ord(n):
+                    n = int(n)
+                    if 11 <= (n % 100) <= 13:
+                        return f"{n}th"
+                    return f"{n}{['th','st','nd','rd','th'][min(n % 10, 4)]}"
+
+                certificate_style = ParagraphStyle(
+                    'Certificate',
+                    parent=styles['Normal'],
+                    fontSize=9,
+                    alignment=1,
+                    fontName='Times-Italic',
+                    spaceAfter=6,
+                )
+                story.append(Paragraph(
+                    f"It is expected that {_ord(_final_sem)} semester result will be "
+                    f"declared in the month of July/August {_completion_year}.",
+                    certificate_style
+                ))
+                story.append(Spacer(1, 8))
+
             story.append(Paragraph(f"This is a computer-generated document. Generated on {current_date}", footer_style))
             
             # Build PDF
@@ -3306,7 +3391,8 @@ class CheckResultView(APIView):
             "department": student.id.department.name if student.id.department else "",  # Backend uses department
             "semester": student.curr_semester_no,
             "academicYear": academic_year or "",  # Frontend uses camelCase
-            "academic_year": academic_year or ""   # Backend uses snake_case
+            "academic_year": academic_year or "",  # Backend uses snake_case
+            "expected_completion_year": get_expected_completion_year(student),
         }
 
         courses_list = [
@@ -4175,7 +4261,8 @@ class GenerateStudentResultPDFAPI(APIView):
                     "department": student.id.department.name if student.id.department else "",
                     "semester": student.curr_semester_no,
                     "academicYear": academic_year or "",
-                    "academic_year": academic_year or ""
+                    "academic_year": academic_year or "",
+                    "expected_completion_year": get_expected_completion_year(student),
                 }
 
                 # Build courses list like CheckResultView (grade_conversion/Decimal/
@@ -4397,9 +4484,63 @@ class GenerateStudentResultPDFAPI(APIView):
                 alignment=1,  # Center
                 fontName='Times-Italic'
             )
-            
+
             from datetime import datetime
             current_date = datetime.now().strftime("%d/%m/%Y")
+
+            # Certificate sentence — expected final-semester result declaration.
+            # Year is derived dynamically from batch.year + curriculum.no_of_semester // 2.
+            # The sentence is only added when the year can be determined; if the student's
+            # batch/curriculum data is missing the PDF still generates without it.
+            _completion_year = student_info.get("expected_completion_year")
+            if not _completion_year:
+                try:
+                    _roll = student_info.get("rollNumber") or student_info.get("roll_number")
+                    if _roll:
+                        _stu = Student.objects.filter(id_id=_roll).select_related(
+                            "batch_id__curriculum"
+                        ).first()
+                        if _stu:
+                            _completion_year = get_expected_completion_year(_stu)
+                except Exception:
+                    pass
+
+            if _completion_year:
+                _final_sem = student_info.get("final_sem_no")
+                if not _final_sem:
+                    try:
+                        _roll = student_info.get("rollNumber") or student_info.get("roll_number")
+                        if _roll:
+                            _stu2 = Student.objects.filter(id_id=_roll).select_related(
+                                "batch_id__curriculum"
+                            ).first()
+                            if _stu2 and _stu2.batch_id and _stu2.batch_id.curriculum:
+                                _final_sem = _stu2.batch_id.curriculum.no_of_semester
+                    except Exception:
+                        pass
+                _final_sem = _final_sem or 8  # safe default for B.Tech
+
+                def _ord(n):
+                    n = int(n)
+                    if 11 <= (n % 100) <= 13:
+                        return f"{n}th"
+                    return f"{n}{['th','st','nd','rd','th'][min(n % 10, 4)]}"
+
+                certificate_style = ParagraphStyle(
+                    'Certificate',
+                    parent=styles['Normal'],
+                    fontSize=9,
+                    alignment=1,
+                    fontName='Times-Italic',
+                    spaceAfter=6,
+                )
+                story.append(Paragraph(
+                    f"It is expected that {_ord(_final_sem)} semester result will be "
+                    f"declared in the month of July/August {_completion_year}.",
+                    certificate_style
+                ))
+                story.append(Spacer(1, 8))
+
             story.append(Paragraph(f"This is a computer-generated document. Generated on {current_date}", footer_style))
             
             # Build PDF
