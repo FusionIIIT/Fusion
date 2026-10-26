@@ -37,6 +37,16 @@ from rest_framework.parsers    import MultiPartParser, FormParser
 
 from applications.globals.models import Faculty, HoldsDesignation, Designation, ExtraInfo
 from applications.globals.decorators import role_required
+from applications.globals.programme_scope import (
+    ALL_ACAD_ROLES,
+    batch_in_scope,
+    scope_batches,
+    scope_students,
+    scope_via_student,
+    scoped_ids,
+    scopes_for,
+    student_in_scope,
+)
 from notifications.signals import notify
 from applications.programme_curriculum.models import ( CourseInstructor, CourseSlot, Course as Courses, Batch, Discipline, Semester)
 # from applications.programme_curriculum.models import Course
@@ -54,12 +64,13 @@ from applications.academic_procedures.views import (get_user_semester, get_acad_
                                                     Constants, get_faculty_list,
                                                     get_registration_courses, get_add_course_options,
                                                     get_final_registration_eligibility,
+                                                    get_final_registration_window,
                                                     get_add_or_drop_course_date_eligibility,
                                                     get_detailed_sem_courses,
                                                     InitialRegistration)
 
 from applications.academic_procedures.views import get_sem_courses, get_student_registrtion_check, get_cpi, academics_module_notif, get_final_registration_choices, get_currently_registered_course, get_add_course_options, get_drop_course_options, get_replace_course_options
-from applications.examination.api.views import parse_academic_year
+from applications.examination.api.views import parse_academic_year, calculate_cpi_for_student
 
 from . import serializers
 
@@ -129,7 +140,7 @@ demo_date = timezone.now()
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_all_courses(request):
     try:
         obj = Courses.objects.all()
@@ -213,11 +224,31 @@ def get_all_courses(request):
 #         print(e)
 #         return Response(data = str(e) , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+def block_pg_phd(view_func):
+    """403 for PG/PhD students; these UG-only flows are hidden from them in the UI."""
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        try:
+            student = Student.objects.select_related('batch_id__curriculum').get(
+                id__user=request.user
+            )
+        except Student.DoesNotExist:
+            return JsonResponse({'error': 'Student record not found'}, status=404)
+        if _is_phd_student(student):
+            return JsonResponse(
+                {'error': 'This section is not available for PG/PhD students'},
+                status=403,
+            )
+        return view_func(request, *args, **kwargs)
+    return _wrapped
+
+
 # API for student to add BL courses
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 @role_required(['student'])
+@block_pg_phd
 def add_course(request):
     try:
         student = Student.objects.select_related('batch_id__curriculum').get(
@@ -357,6 +388,7 @@ def add_course(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 @role_required(['student'])
+@block_pg_phd
 def get_student_add_course_slots(request):
     try:
         current_user = request.user
@@ -448,6 +480,7 @@ def get_student_add_course_slots(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 @role_required(['student'])
+@block_pg_phd
 def get_student_add_courses(request):
     try:
         current_user = request.user
@@ -503,47 +536,50 @@ def get_student_add_courses(request):
         session, sem_type = generate_current_session(cur_year, current_sem_no)
         working_year = parse_academic_year(academic_year=session, semester_type=sem_type)[0]
         student_section = student.section or ''
-        from applications.academic_information.models import resolve_offering
+        from applications.academic_information.models import offerings_by_course, pick_offering
 
         courses_list = []
 
-        for slot in bl_slots:
-            courses = slot.courses.all()
+        # One query each for slots+courses, registrations and offerings, instead of
+        # three per course: the BL slots of a big semester hold hundreds of electives.
+        slot_courses = [
+            (slot, course)
+            for slot in bl_slots.prefetch_related('courses')
+            for course in slot.courses.all()
+        ]
+        course_ids = [course.id for _, course in slot_courses]
+        registered_ids = set(course_registration.objects.filter(
+            student_id=student, course_id__in=course_ids,
+        ).values_list('course_id', flat=True))
+        offerings_of = offerings_by_course(course_ids, working_year, sem_type)
 
-            for course in courses:
-                already_registered = course_registration.objects.filter(
-                    course_id=course,
-                    student_id=student
-                ).exists()
-
-                # Sections where this course is running this term. If the student's
-                # own section isn't among them, they pick one of these (backlog/improvement).
-                offerings = CourseInstructor.objects.filter(
-                    course_id=course, year=working_year, semester_type=sem_type,
-                ).select_related('instructor_id__id__user')
-                sections = []
-                for o in offerings:
-                    u = o.instructor_id.id.user
-                    sections.append({
-                        'course_instructor_id': o.id,
-                        'section': o.section_label or '',
-                        'instructor': f"{u.first_name} {u.last_name}".strip(),
-                    })
-                # Auto-resolvable (own section, or a single/unsectioned offering) -> no pick needed; only genuinely sectioned courses missing the student's section prompt one.
-                own_section_running = resolve_offering(student, course, working_year, sem_type) is not None
-
-                courses_list.append({
-                    'id': course.id,
-                    'code': course.code,
-                    'name': course.name,
-                    'credit': course.credit,
-                    'slot': slot.name,
-                    'slot_id': slot.id,
-                    'already_registered': already_registered,
-                    'sections': sections,
-                    'own_section_running': own_section_running,
-                    'student_section': student_section,
+        for slot, course in slot_courses:
+            # Sections where this course is running this term. If the student's
+            # own section isn't among them, they pick one of these (backlog/improvement).
+            offerings = offerings_of.get(course.id, [])
+            sections = []
+            for o in offerings:
+                u = o.instructor_id.id.user
+                sections.append({
+                    'course_instructor_id': o.id,
+                    'section': o.section_label or '',
+                    'instructor': f"{u.first_name} {u.last_name}".strip(),
                 })
+            # Auto-resolvable (own section, or a single/unsectioned offering) -> no pick needed; only genuinely sectioned courses missing the student's section prompt one.
+            own_section_running = pick_offering(student, offerings) is not None
+
+            courses_list.append({
+                'id': course.id,
+                'code': course.code,
+                'name': course.name,
+                'credit': course.credit,
+                'slot': slot.name,
+                'slot_id': slot.id,
+                'already_registered': course.id in registered_ids,
+                'sections': sections,
+                'own_section_running': own_section_running,
+                'student_section': student_section,
+            })
 
         return Response(courses_list, status=status.HTTP_200_OK)
         
@@ -754,6 +790,7 @@ def student_view_registration(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def final_registration(request):
     try:
         with transaction.atomic():
@@ -885,7 +922,7 @@ def student_final_registration(request):
 # with this acad admin can fetch the list of courses for any batch , semester and brach
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_course_list(request):
     
     programme = request.data['programme']
@@ -908,7 +945,7 @@ def get_course_list(request):
 #  with this api acad person can see the list of students who have completed their pre and final registrations for any semester
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def acad_view_reigstrations(request):
     try:
         semester = request.data["semester"]
@@ -1123,7 +1160,7 @@ def get_next_sem_courses(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def verify_registration(request):
     data = json.loads(request.body)
     if data.get('status_req') == "accept" :
@@ -1132,12 +1169,12 @@ def verify_registration(request):
         batch = student.batch_id
         curr_id = batch.curriculum
         
-        if(student.curr_semester_no+1 >= 9):
-            # print('----------------------------------------------------------------' , student.curr_semester_no)
+        # Verify whichever semester the student actually registered for: a fresh
+        # intake registers into the semester it is already in, so assuming the
+        # next one would find nothing to verify and promote it a semester early.
+        sem_no = pre_registration_target_semester(student)
+        if sem_no >= 9:
             sem_no = 8
-        else:
-            # print('----------------------------------------------------------------' , student.curr_semester_no)
-            sem_no = student.curr_semester_no+1
         sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
         # print('----------------------------------------------------------------' , student.curr_semester_no)
         
@@ -1178,7 +1215,9 @@ def verify_registration(request):
             # course_registration.objects.bulk_create(ver_reg)
             academics_module_notif(request.user, student.id.user, 'registration_approved')
 
-            Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
+            # Only a registration for a later semester moves the student on.
+            if sem_no > student.curr_semester_no:
+                Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
             return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
          
     elif data.get('status_req') == "reject" :
@@ -1206,7 +1245,7 @@ def verify_registration(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def verify_course(request):
     roll_no = request.data.get("rollno")
     if not roll_no:
@@ -1245,6 +1284,10 @@ def verify_course(request):
         "roll_no": roll_no,
         "firstname": user_obj.first_name or "",
         "lastname": user_obj.last_name or "",
+        "programme_category": _student_programme_category(student),
+        "batch": str(student.batch_id.year) if student.batch_id else "",
+        "branch": (student.batch_id.discipline.acronym
+                   if student.batch_id and student.batch_id.discipline else ""),
     }
 
     # current curriculum & semester - handle None batch_id case
@@ -1340,12 +1383,25 @@ def verify_course(request):
     else:
         current_semester_type = "Even Semester"
 
+    # CPI as of the semester before each one on offer, so a receipt printed for
+    # any semester carries the right figure. Same helper as the transcript.
+    from applications.examination.api.views import previous_term_cpi
+    prev_sem_cpi = {}
+    for sem in {d["sem"] for d in details}:
+        try:
+            value = previous_term_cpi(student, sem)
+        except Exception:
+            continue
+        if value is not None:
+            prev_sem_cpi[str(sem)] = value
+
     return Response({
         "details": details,
         "dict2": dict2,
         "course_list": course_list,
         "semester_list": semester_list,
         "courseslot_list": courseslot_list,
+        "prev_sem_cpi": prev_sem_cpi,
         "date": {"year": yearr, "semflag": semflag},
         "current_semester": {
             "semester_no": student.curr_semester_no,
@@ -1780,6 +1836,7 @@ def verify_course(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def final_registration_page(request):
     try:
         current_user = request.user
@@ -1801,8 +1858,12 @@ def final_registration_page(request):
             final_registration = serializers.FinalRegistrationSerializer(final_registration, many=True).data
         else:
             final_registration = None
+        frd_window = get_final_registration_window()
         resp = {
             'frd': final_registration_date_flag,
+            'frd_configured': frd_window is not None,
+            'frd_from': frd_window.from_date if frd_window else None,
+            'frd_to': frd_window.to_date if frd_window else None,
             'final_registration_flag': final_registration_flag,
             'final_registration': final_registration,
         }
@@ -1814,7 +1875,7 @@ def final_registration_page(request):
 @api_view(['GET', 'POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def student_list(request):
     if request.method == 'POST':
         excel_export = request.GET.get("excel_export", "false")
@@ -1828,6 +1889,9 @@ def student_list(request):
         queryflag = 1
 
         batch_id = Batch.objects.get(id=batch)
+        if not batch_in_scope(batch_id, scopes_for(request.user)):
+            return Response({'detail': 'Batch not found.'},
+                            status=status.HTTP_404_NOT_FOUND)
         student_obj = FeePayments.objects.all().select_related('student_id').filter(student_id__batch_id=batch_id)
 
         if excel_export == "false":
@@ -1899,7 +1963,7 @@ def student_list(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def course_list(request):
     request_body = json.loads(request.body)
     student_id = request_body['student_id']
@@ -1920,7 +1984,7 @@ def course_list(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def dropcourseadmin(request):
     try:
         reg_id = request.data.get('id')
@@ -1940,7 +2004,7 @@ def dropcourseadmin(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def acad_add_course(request):
     data = request.data
     for fld in ("roll_no", "semester_id", "courseslot_id", "course_id", "academic_year", "registration_type", "semester_type"):
@@ -2004,7 +2068,7 @@ def acad_add_course(request):
             course_instructor = offering,
         )
         if old_id:
-            old = course_registration.objects.filter(id=old_id).first()
+            old = course_registration.objects.filter(id=old_id, student_id=student).first()
             if old:
                 course_replacement.objects.create(
                     old_course_registration = old,
@@ -2012,6 +2076,220 @@ def acad_add_course(request):
                 )
 
     return Response({ "message": "Course added successfully" }, status=status.HTTP_200_OK)
+
+
+# ===========================================================================
+# Admin manual "Add Thesis / Progress Seminar / Teaching Credit" for one
+# student -- the same manual-override spirit as acad_add_course above, and
+# following the exact same Slot -> Course two-step shape (get_add_course_slots
+# / get_add_course_courses / acad_add_course), just against the three
+# slot-based PhD/PG registration models instead of CourseSlot/Courses. Each
+# of these skips the eligibility gate the student self-registration flow
+# enforces (dean-approved topic for Thesis/Seminar, comprehensive exam passed
+# for Teaching Credit) since admin is trusted to only use this when
+# appropriate, and lands the registration as already 'verified' -- same as
+# acad_add_course creating a course_registration directly rather than a
+# pending request.
+# ===========================================================================
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def get_thesis_slots(request):
+    sem_id = request.query_params.get('semester_id')
+    if not sem_id:
+        return Response({'error': 'semester_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    get_object_or_404(Semester, id=sem_id)
+    slots = ThesisSlot.objects.filter(semester_id=sem_id).values('id', 'name', 'evaluation_type')
+    return Response(list(slots), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def get_thesis_courses(request):
+    slot_id = request.query_params.get('slot_id')
+    if not slot_id:
+        return Response({'error': 'slot_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    slot = get_object_or_404(ThesisSlot, id=slot_id)
+    return Response(list(slot.theses.all().values('id', 'code', 'name', 'credit')), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def get_progress_seminar_slots(request):
+    sem_id = request.query_params.get('semester_id')
+    if not sem_id:
+        return Response({'error': 'semester_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    get_object_or_404(Semester, id=sem_id)
+    slots = ProgressSeminarSlot.objects.filter(semester_id=sem_id).values('id', 'name')
+    return Response(list(slots), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def get_progress_seminar_courses(request):
+    slot_id = request.query_params.get('slot_id')
+    if not slot_id:
+        return Response({'error': 'slot_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    slot = get_object_or_404(ProgressSeminarSlot, id=slot_id)
+    return Response(list(slot.seminars.all().values('id', 'code', 'name', 'credit')), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def get_teaching_credit_slots(request):
+    sem_id = request.query_params.get('semester_id')
+    if not sem_id:
+        return Response({'error': 'semester_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    get_object_or_404(Semester, id=sem_id)
+    slots = TeachingCreditSlot.objects.filter(semester_id=sem_id).values('id', 'name')
+    return Response(list(slots), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def get_teaching_credit_courses(request):
+    slot_id = request.query_params.get('slot_id')
+    if not slot_id:
+        return Response({'error': 'slot_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    slot = get_object_or_404(TeachingCreditSlot, id=slot_id)
+    return Response(list(slot.teaching_credits.all().values('id', 'code', 'name', 'credit')), status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def admin_add_thesis(request):
+    roll_no = request.data.get('roll_no')
+    semester_id = request.data.get('semester_id')
+    thesis_slot_id = request.data.get('thesis_slot_id')
+    thesis_id = request.data.get('thesis_id')
+    if not roll_no or not semester_id or not thesis_slot_id or not thesis_id:
+        return Response({'error': 'roll_no, semester_id, thesis_slot_id and thesis_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    student = get_object_or_404(Student, id=roll_no.upper())
+    semester = get_object_or_404(Semester, id=semester_id)
+    thesis_slot = get_object_or_404(ThesisSlot, id=thesis_slot_id)
+    thesis = get_object_or_404(thesis_slot.theses, id=thesis_id)
+
+    if ThesisRegistration.objects.filter(student=student, semester=semester).exists():
+        return Response({'error': 'Student is already registered for this semester'}, status=status.HTTP_400_BAD_REQUEST)
+
+    ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
+    try:
+        credits = int(request.data.get('credits', 6))
+    except (TypeError, ValueError):
+        credits = 6
+    if credits not in ALLOWED_THESIS_CREDITS:
+        return Response({'error': f'Invalid credit value. Choose from {ALLOWED_THESIS_CREDITS}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # PG students have a fixed credit value per evaluation_type -- no free
+    # choice: 3 for a block-graded (S/X) semester, 12 for the decimal-graded
+    # semester. Enforced here too (not just in the frontend's locked Select)
+    # since this endpoint is reachable directly.
+    if _student_programme_category(student) == 'PG':
+        expected = 3 if thesis_slot.evaluation_type == 'blocks_sx' else 12
+        if credits != expected:
+            return Response({'error': f'PG students in a {thesis_slot.evaluation_type} slot must register for {expected} credits'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = _dt.datetime.now()
+    session = f"{now.year}-{str(now.year + 1)[2:]}" if now.month >= 7 else f"{now.year - 1}-{str(now.year)[2:]}"
+    topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+
+    with transaction.atomic():
+        reg = ThesisRegistration.objects.create(
+            student=student, thesis_slot=thesis_slot, thesis=thesis, thesis_topic=topic,
+            semester=semester, credits=credits, working_year=now.year,
+            academic_session=session, status='verified', verified_on=now,
+        )
+        # Mirrors admin_verify_enrollments' side-effect -- see that function.
+        if thesis_slot.evaluation_type == 'decimal':
+            evaluation, _created = ThesisEvaluation.objects.get_or_create(registration=reg, block_number=1)
+            ThesisEvaluationScore.objects.get_or_create(evaluation=evaluation)
+        else:
+            for blk in range(1, credits // 3 + 1):
+                ThesisEvaluation.objects.get_or_create(registration=reg, block_number=blk)
+
+    return Response({
+        'id': reg.id, 'student': roll_no.upper(), 'semester_no': semester.semester_no,
+        'thesis': thesis.code, 'credits': credits, 'status': reg.status,
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def admin_add_progress_seminar(request):
+    roll_no = request.data.get('roll_no')
+    semester_id = request.data.get('semester_id')
+    seminar_slot_id = request.data.get('seminar_slot_id')
+    seminar_id = request.data.get('seminar_id')
+    if not roll_no or not semester_id or not seminar_slot_id or not seminar_id:
+        return Response({'error': 'roll_no, semester_id, seminar_slot_id and seminar_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    student = get_object_or_404(Student, id=roll_no.upper())
+    semester = get_object_or_404(Semester, id=semester_id)
+    slot = get_object_or_404(ProgressSeminarSlot, id=seminar_slot_id)
+    seminar = get_object_or_404(slot.seminars, id=seminar_id)
+
+    if ProgressSeminarRegistration.objects.filter(student=student, semester=semester).exists():
+        return Response({'error': 'Student is already registered for this semester'}, status=status.HTTP_400_BAD_REQUEST)
+
+    reg = ProgressSeminarRegistration.objects.create(
+        student=student, progress_seminar_slot=slot, seminar=seminar, semester=semester,
+        working_year=_dt.datetime.now().year, status='verified',
+    )
+    return Response({
+        'id': reg.id, 'student': roll_no.upper(), 'semester_no': semester.semester_no,
+        'seminar': seminar.code, 'status': reg.status,
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def admin_add_teaching_credit(request):
+    roll_no = request.data.get('roll_no')
+    semester_id = request.data.get('semester_id')
+    teaching_credit_slot_id = request.data.get('teaching_credit_slot_id')
+    teaching_credit_id = request.data.get('teaching_credit_id')
+    if not roll_no or not semester_id or not teaching_credit_slot_id or not teaching_credit_id:
+        return Response({'error': 'roll_no, semester_id, teaching_credit_slot_id and teaching_credit_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    student = get_object_or_404(Student, id=roll_no.upper())
+    semester = get_object_or_404(Semester, id=semester_id)
+    slot = get_object_or_404(TeachingCreditSlot, id=teaching_credit_slot_id)
+    teaching_credit = get_object_or_404(slot.teaching_credits, id=teaching_credit_id)
+
+    if TeachingCreditRegistration.objects.filter(student=student, semester=semester).exists():
+        return Response({'error': 'Student is already registered for this semester'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = _dt.datetime.now()
+    session = f"{now.year}-{str(now.year + 1)[2:]}" if now.month >= 7 else f"{now.year - 1}-{str(now.year)[2:]}"
+
+    reg = TeachingCreditRegistration.objects.create(
+        student=student, teaching_credit_slot=slot, teaching_credit=teaching_credit, semester=semester,
+        working_year=now.year, academic_session=session, status='verified',
+    )
+    return Response({
+        'id': reg.id, 'student': roll_no.upper(), 'semester_no': semester.semester_no,
+        'teaching_credit': teaching_credit.code, 'status': reg.status,
+    }, status=status.HTTP_201_CREATED)
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -2051,11 +2329,14 @@ def academic_procedures_faculty_api(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def search_preregistration(request):
     try:
         roll_no=request.data.get("roll_no")
         sem_no=request.data.get("sem_no")
+        looked_up = Student.objects.filter(id_id=roll_no).first()
+        if looked_up and not student_in_scope(looked_up, scopes_for(request.user)):
+            return JsonResponse({'error': 'Student record not found'}, status=400)
         initial_registrations = InitialRegistration.objects.filter(
             student_id_id=roll_no, semester_id__semester_no=sem_no
         )
@@ -2078,12 +2359,15 @@ def search_preregistration(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def delete_preregistration(request):
     try:
         # Extract roll_no and sem_no from the request
         roll_no = request.data.get("roll_no")
         sem_no = request.data.get("sem_no")
+        target = Student.objects.filter(id_id=roll_no).first()
+        if target and not student_in_scope(target, scopes_for(request.user)):
+            return JsonResponse({'error': 'Student record not found'}, status=400)
 
         # Validate input data
         if not roll_no or not sem_no:
@@ -2116,25 +2400,68 @@ def delete_preregistration(request):
         )
 
 
+def _registration_type_for_allotment(
+        roll_no, student, course, semester, semester_type):
+    previous = course_registration.objects.filter(
+        student_id=student,
+        course_id=course,
+    )
+    if not previous.exists():
+        return 'Regular'
+
+    grade = latest_grade(roll_no, course)
+    if not grade:
+        existing = previous.order_by('-id').first()
+        raise ValueError(
+            f"{roll_no} already holds {course.code} as "
+            f"{existing.semester_type} / {existing.registration_type} and has no grade yet."
+        )
+
+    registration_type = registration_type_for_grade(grade.grade)
+    if registration_type == 'Regular':
+        raise ValueError(
+            f"{roll_no} already completed {course.code} with grade {grade.grade}; "
+            "the course is not eligible for repeat registration."
+        )
+
+    clash = previous.filter(
+        semester_id=semester,
+        semester_type=semester_type,
+        registration_type=registration_type,
+    ).first()
+    if clash:
+        raise ValueError(
+            f"{roll_no} already holds {course.code} in semester "
+            f"{semester.semester_no} as {clash.semester_type} / {clash.registration_type}."
+        )
+
+    return registration_type
+
+
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def allot_courses(request):
     if 'allotedCourses' not in request.FILES:
         return Response({'error': 'Excel file not provided.'},
                         status=status.HTTP_400_BAD_REQUEST)
 
     batch_id = request.data.get('batch')
+    if batch_id and not batch_in_scope(
+            Batch.objects.filter(id=batch_id).first(), scopes_for(request.user)):
+        return Response({'detail': 'Batch not found.'},
+                        status=status.HTTP_404_NOT_FOUND)
     sem_no = request.data.get('semester')
     sem_type = request.data.get('semester_type')
     academic_year = request.data.get('academic_year')
-    working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=sem_type)
     from applications.academic_information.models import resolve_offering
 
     if not all([batch_id, sem_no, sem_type, academic_year]):
         return Response({'error': 'Missing required fields.'},
                         status=status.HTTP_400_BAD_REQUEST)
+
+    working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=sem_type)
 
     try:
         sem_no = int(sem_no)
@@ -2155,6 +2482,7 @@ def allot_courses(request):
             checks, pre_regs, final_regs, course_regs = [], [], [], []
             row_errors = []
             seen = set()
+            queued_registrations = set()
 
             for i in range(1, sheet.nrows):
 
@@ -2163,10 +2491,42 @@ def allot_courses(request):
                     slot_name = sheet.cell_value(i,1).strip()
                     code = sheet.cell_value(i,2).strip()
 
-                    # user = User.objects.get(username=roll_no)
-                    student = Student.objects.get(id__user__username=roll_no)
-                    slot = CourseSlot.objects.get(name=slot_name, semester=sem)
-                    course = slot.courses.get(code=code)
+                    # Each lookup names what is wrong, so the office can read
+                    # the failed rows without guessing which column is at fault.
+                    try:
+                        student = Student.objects.get(id__user__username=roll_no)
+                    except Exception:
+                        raise ValueError(f"No student with roll number {roll_no}.")
+                    try:
+                        slot = CourseSlot.objects.get(name=slot_name, semester=sem)
+                    except Exception:
+                        raise ValueError(
+                            f"Semester {sem_no} of this batch's curriculum has no slot named '{slot_name}'.")
+                    try:
+                        course = slot.courses.get(code=code)
+                    except Exception:
+                        raise ValueError(
+                            f"'{code}' is not one of the courses in slot '{slot_name}' "
+                            f"(semester {sem_no}); add it to the slot or name the slot that holds it.")
+                    reg_type = _registration_type_for_allotment(
+                        roll_no, student, course, sem, sem_type
+                    )
+                    registration_key = (
+                        student.pk,
+                        course.pk,
+                        sem.pk,
+                        sem_type,
+                        reg_type,
+                    )
+                    if registration_key in queued_registrations:
+                        raise ValueError(
+                            f"Duplicate row for {roll_no} and {code} in this upload."
+                        )
+
+                    offering = resolve_offering(
+                        student, course, working_year, sem_type
+                    )
+                    queued_registrations.add(registration_key)
                     if roll_no not in seen:
                         checks.append(StudentRegistrationChecks(
                             student_id=student,
@@ -2181,16 +2541,17 @@ def allot_courses(request):
                         course_slot_id=slot,
                         course_id=course,
                         semester_id=sem,
-                        priority=1
+                        priority=1,
+                        registration_type=reg_type,
                     ))
                     final_regs.append(FinalRegistration(
                         student_id=student,
                         course_slot_id=slot,
                         course_id=course,
                         semester_id=sem,
-                        verified=True
+                        verified=True,
+                        registration_type=reg_type,
                     ))
-                    offering = resolve_offering(student, course, working_year, sem_type)
                     course_regs.append(course_registration(
                         session=academic_year,
                         working_year = working_year,
@@ -2199,6 +2560,7 @@ def allot_courses(request):
                         student_id=student,
                         course_slot_id=slot,
                         semester_type = sem_type,
+                        registration_type = reg_type,
                         course_instructor = offering
                     ))
                 except Exception as e:
@@ -2215,6 +2577,7 @@ def allot_courses(request):
                 return Response(
                     {
                         'error': 'No valid rows were found in the uploaded file.',
+                        'reasons': sorted({e['error'] for e in row_errors})[:5],
                         'failed_rows': row_errors[:25],
                         'failed_rows_count': len(row_errors)
                     },
@@ -2224,13 +2587,20 @@ def allot_courses(request):
             StudentRegistrationChecks.objects.bulk_create(checks, ignore_conflicts=True)
             InitialRegistration.objects.bulk_create(pre_regs, ignore_conflicts=True)
             FinalRegistration.objects.bulk_create(final_regs, ignore_conflicts=True)
+            # bulk_create drops conflicting rows without saying so, so the count
+            # reported has to come from the table, not from the list length.
+            before = course_registration.objects.count()
             course_registration.objects.bulk_create(course_regs, ignore_conflicts=True)
+            inserted = course_registration.objects.count() - before
+            dropped = len(course_regs) - inserted
 
-        if row_errors:
+        if row_errors or dropped:
             return Response({
                 'message': 'Upload completed with partial success.',
                 'inserted_rows': inserted,
+                'already_registered_rows': dropped,
                 'failed_rows_count': len(row_errors),
+                'reasons': sorted({e['error'] for e in row_errors})[:5],
                 'failed_rows': row_errors[:25]
             }, status=status.HTTP_207_MULTI_STATUS)
 
@@ -2239,6 +2609,269 @@ def allot_courses(request):
         return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
     except Semester.DoesNotExist:
         return Response({'error': 'Invalid semester or type.'}, status=status.HTTP_400_BAD_REQUEST)
+    except xlrd.XLRDError:
+        return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': f'Processing error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ===========================================================================
+# Bulk "Allot Thesis / Progress Seminar / Teaching Credit" -- same manual-
+# override spirit as allot_courses above (one Excel row per student, lands
+# directly as 'verified'), for the three slot-based PhD/PG registration
+# models. Same 4-column row shape as allot_courses (RollNo | Slot | Code |
+# Name), just against ThesisSlot/SeminarSlot/TeachingCreditSlot + their
+# catalog entries instead of CourseSlot/Courses.
+# ===========================================================================
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def allot_thesis(request):
+    if 'allotedThesis' not in request.FILES:
+        return Response({'error': 'Excel file not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    batch_id = request.data.get('batch')
+    if batch_id and not batch_in_scope(
+            Batch.objects.filter(id=batch_id).first(), scopes_for(request.user)):
+        return Response({'detail': 'Batch not found.'},
+                        status=status.HTTP_404_NOT_FOUND)
+    sem_no = request.data.get('semester')
+    if not batch_id or not sem_no:
+        return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        sem_no = int(sem_no)
+    except ValueError:
+        return Response({'error': 'Semester must be integer.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = _dt.datetime.now()
+    session = f"{now.year}-{str(now.year + 1)[2:]}" if now.month >= 7 else f"{now.year - 1}-{str(now.year)[2:]}"
+    ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
+
+    try:
+        with transaction.atomic():
+            batch = Batch.objects.get(id=batch_id)
+            semester = Semester.objects.get(curriculum=batch.curriculum, semester_no=sem_no)
+
+            book = xlrd.open_workbook(file_contents=request.FILES['allotedThesis'].read())
+            sheet = book.sheet_by_index(0)
+
+            inserted = 0
+            row_errors = []
+            for i in range(1, sheet.nrows):
+                roll_no = str(sheet.cell_value(i, 0)).split('.')[0].strip()
+                if not roll_no:
+                    continue
+                try:
+                    slot_name = sheet.cell_value(i, 1).strip()
+                    code = sheet.cell_value(i, 2).strip()
+
+                    student = Student.objects.get(id__user__username=roll_no)
+                    thesis_slot = ThesisSlot.objects.get(name=slot_name, semester=semester)
+                    thesis = thesis_slot.theses.get(code=code)
+
+                    if ThesisRegistration.objects.filter(student=student, semester=semester).exists():
+                        raise ValueError('Already registered for this semester')
+
+                    raw = sheet.cell_value(i, 4) if sheet.ncols > 4 else ''
+                    credits = int(raw) if raw != '' else 6
+                    if credits not in ALLOWED_THESIS_CREDITS:
+                        raise ValueError(f'Invalid credits {credits}; choose from {ALLOWED_THESIS_CREDITS}')
+
+                    if _student_programme_category(student) == 'PG':
+                        expected = 3 if thesis_slot.evaluation_type == 'blocks_sx' else 12
+                        if credits != expected:
+                            raise ValueError(f'PG students in a {thesis_slot.evaluation_type} slot must register for {expected} credits')
+
+                    topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+                    reg = ThesisRegistration.objects.create(
+                        student=student, thesis_slot=thesis_slot, thesis=thesis, thesis_topic=topic,
+                        semester=semester, credits=credits, working_year=now.year,
+                        academic_session=session, status='verified', verified_on=now,
+                    )
+                    if thesis_slot.evaluation_type == 'decimal':
+                        evaluation, _created = ThesisEvaluation.objects.get_or_create(registration=reg, block_number=1)
+                        ThesisEvaluationScore.objects.get_or_create(evaluation=evaluation)
+                    else:
+                        for blk in range(1, credits // 3 + 1):
+                            ThesisEvaluation.objects.get_or_create(registration=reg, block_number=blk)
+                    inserted += 1
+                except Exception as e:
+                    row_errors.append({'row': i + 1, 'roll_no': roll_no, 'error': str(e)})
+
+            if inserted == 0:
+                return Response({
+                    'error': 'No valid rows were found in the uploaded file.',
+                    'failed_rows': row_errors[:25], 'failed_rows_count': len(row_errors),
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        if row_errors:
+            return Response({
+                'message': 'Upload completed with partial success.',
+                'inserted_rows': inserted, 'failed_rows_count': len(row_errors),
+                'failed_rows': row_errors[:25],
+            }, status=status.HTTP_207_MULTI_STATUS)
+        return Response({'message': 'Successfully uploaded!', 'inserted_rows': inserted})
+    except Batch.DoesNotExist:
+        return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Semester.DoesNotExist:
+        return Response({'error': 'Invalid semester.'}, status=status.HTTP_400_BAD_REQUEST)
+    except xlrd.XLRDError:
+        return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': f'Processing error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def allot_progress_seminar(request):
+    if 'allotedSeminar' not in request.FILES:
+        return Response({'error': 'Excel file not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    batch_id = request.data.get('batch')
+    if batch_id and not batch_in_scope(
+            Batch.objects.filter(id=batch_id).first(), scopes_for(request.user)):
+        return Response({'detail': 'Batch not found.'},
+                        status=status.HTTP_404_NOT_FOUND)
+    sem_no = request.data.get('semester')
+    if not batch_id or not sem_no:
+        return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        sem_no = int(sem_no)
+    except ValueError:
+        return Response({'error': 'Semester must be integer.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        with transaction.atomic():
+            batch = Batch.objects.get(id=batch_id)
+            semester = Semester.objects.get(curriculum=batch.curriculum, semester_no=sem_no)
+
+            book = xlrd.open_workbook(file_contents=request.FILES['allotedSeminar'].read())
+            sheet = book.sheet_by_index(0)
+
+            inserted = 0
+            row_errors = []
+            for i in range(1, sheet.nrows):
+                roll_no = str(sheet.cell_value(i, 0)).split('.')[0].strip()
+                if not roll_no:
+                    continue
+                try:
+                    slot_name = sheet.cell_value(i, 1).strip()
+                    code = sheet.cell_value(i, 2).strip()
+
+                    student = Student.objects.get(id__user__username=roll_no)
+                    slot = ProgressSeminarSlot.objects.get(name=slot_name, semester=semester)
+                    seminar = slot.seminars.get(code=code)
+
+                    if ProgressSeminarRegistration.objects.filter(student=student, semester=semester).exists():
+                        raise ValueError('Already registered for this semester')
+                    ProgressSeminarRegistration.objects.create(
+                        student=student, progress_seminar_slot=slot, seminar=seminar, semester=semester,
+                        working_year=_dt.datetime.now().year, status='verified',
+                    )
+                    inserted += 1
+                except Exception as e:
+                    row_errors.append({'row': i + 1, 'roll_no': roll_no, 'error': str(e)})
+
+            if inserted == 0:
+                return Response({
+                    'error': 'No valid rows were found in the uploaded file.',
+                    'failed_rows': row_errors[:25], 'failed_rows_count': len(row_errors),
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        if row_errors:
+            return Response({
+                'message': 'Upload completed with partial success.',
+                'inserted_rows': inserted, 'failed_rows_count': len(row_errors),
+                'failed_rows': row_errors[:25],
+            }, status=status.HTTP_207_MULTI_STATUS)
+        return Response({'message': 'Successfully uploaded!', 'inserted_rows': inserted})
+    except Batch.DoesNotExist:
+        return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Semester.DoesNotExist:
+        return Response({'error': 'Invalid semester.'}, status=status.HTTP_400_BAD_REQUEST)
+    except xlrd.XLRDError:
+        return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': f'Processing error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def allot_teaching_credit(request):
+    if 'allotedTeachingCredit' not in request.FILES:
+        return Response({'error': 'Excel file not provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    batch_id = request.data.get('batch')
+    if batch_id and not batch_in_scope(
+            Batch.objects.filter(id=batch_id).first(), scopes_for(request.user)):
+        return Response({'detail': 'Batch not found.'},
+                        status=status.HTTP_404_NOT_FOUND)
+    sem_no = request.data.get('semester')
+    if not batch_id or not sem_no:
+        return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        sem_no = int(sem_no)
+    except ValueError:
+        return Response({'error': 'Semester must be integer.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    now = _dt.datetime.now()
+    session = f"{now.year}-{str(now.year + 1)[2:]}" if now.month >= 7 else f"{now.year - 1}-{str(now.year)[2:]}"
+
+    try:
+        with transaction.atomic():
+            batch = Batch.objects.get(id=batch_id)
+            semester = Semester.objects.get(curriculum=batch.curriculum, semester_no=sem_no)
+
+            book = xlrd.open_workbook(file_contents=request.FILES['allotedTeachingCredit'].read())
+            sheet = book.sheet_by_index(0)
+
+            inserted = 0
+            row_errors = []
+            for i in range(1, sheet.nrows):
+                roll_no = str(sheet.cell_value(i, 0)).split('.')[0].strip()
+                if not roll_no:
+                    continue
+                try:
+                    slot_name = sheet.cell_value(i, 1).strip()
+                    code = sheet.cell_value(i, 2).strip()
+
+                    student = Student.objects.get(id__user__username=roll_no)
+                    slot = TeachingCreditSlot.objects.get(name=slot_name, semester=semester)
+                    teaching_credit = slot.teaching_credits.get(code=code)
+
+                    if TeachingCreditRegistration.objects.filter(student=student, semester=semester).exists():
+                        raise ValueError('Already registered for this semester')
+                    TeachingCreditRegistration.objects.create(
+                        student=student, teaching_credit_slot=slot, teaching_credit=teaching_credit, semester=semester,
+                        working_year=now.year, academic_session=session, status='verified',
+                    )
+                    inserted += 1
+                except Exception as e:
+                    row_errors.append({'row': i + 1, 'roll_no': roll_no, 'error': str(e)})
+
+            if inserted == 0:
+                return Response({
+                    'error': 'No valid rows were found in the uploaded file.',
+                    'failed_rows': row_errors[:25], 'failed_rows_count': len(row_errors),
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        if row_errors:
+            return Response({
+                'message': 'Upload completed with partial success.',
+                'inserted_rows': inserted, 'failed_rows_count': len(row_errors),
+                'failed_rows': row_errors[:25],
+            }, status=status.HTTP_207_MULTI_STATUS)
+        return Response({'message': 'Successfully uploaded!', 'inserted_rows': inserted})
+    except Batch.DoesNotExist:
+        return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Semester.DoesNotExist:
+        return Response({'error': 'Invalid semester.'}, status=status.HTTP_400_BAD_REQUEST)
     except xlrd.XLRDError:
         return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
@@ -2303,9 +2936,11 @@ def course_registration_view(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
 
-        # Check if PhD student - they don't have course registrations like UG/PG
+        # PhD students who have course_registration rows (e.g. registered through
+        # the admin/course-registration flow) should still see those courses.
+        # Only skip to the empty-response shortcut when no such rows exist.
         is_phd_student = student.programme and student.programme.upper() == 'PHD'
-        if is_phd_student:
+        if is_phd_student and not course_registration.objects.filter(student_id=student).exists():
             return Response({
                 "reg_data": [],
                 "sem_no": 1,
@@ -2363,7 +2998,14 @@ def _check_registration_window(description, action_label):
     try:
         event = Calendar.objects.get(description=description)
     except Calendar.DoesNotExist:
-        return JsonResponse({"error": f"{action_label} date is not yet decided"}, status=400)
+        # Name the event that is missing: the window is keyed by an exact
+        # calendar description, and "not yet decided" gave the office no way to
+        # tell a missing event from one entered under another name.
+        return JsonResponse({
+            "error": f"{action_label} date is not yet decided",
+            "detail": f"No academic calendar event named \"{description}\".",
+            "expected_event": description,
+        }, status=400)
     start, end = _calendar_window_bounds(event)
     now = datetime.datetime.now()
     if now < start:
@@ -2381,16 +3023,38 @@ def get_drop_registration_eligibility(current_date, user_sem, year = datetime.da
 def get_replace_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
     return _check_registration_window(f"Replace {user_sem} {year}", "Replace course")
 
+def pre_registration_target_semester(student):
+    """The semester a student's pre-registration belongs to.
+
+    Continuing students choose courses for the semester after the one they are
+    in. A newly admitted batch has nothing registered in its first semester yet,
+    so it registers into that semester rather than skipping past it.
+    """
+    current = student.curr_semester_no or 0
+    if current <= 1 and not course_registration.objects.filter(
+            student_id=student, semester_id__semester_no=current).exists():
+        return current
+    return current + 1
+
+
 def get_pre_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
+    # Keyed by the semester being registered into, so a newly admitted batch --
+    # which registers into the semester it is already in -- opens on
+    # "Pre Registration 1", and every later cohort on its own target semester.
     return _check_registration_window(f"Pre Registration {user_sem} {year}", "Pre Registration")
 
 def get_swayam_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
     return _check_registration_window(f"Swayam {user_sem} {year}", "Swayam Registration")
 
 def get_pg_phd_registration_eligibility(current_date, category, user_sem, year=datetime.datetime.now().year):
-    # PG and PhD have separate windows: "PG Registration {sem} {year}" / "PhD Registration {sem} {year}".
-    label = "PhD" if str(category).upper() == "PHD" else "PG"
-    return _check_registration_window(f"{label} Registration {user_sem} {year}", f"{label} registration")
+    # PhD runs Odd AND Even intakes, so the same sem number recurs across terms in one calendar year -> key by current term (from the date) + academic year. PG is single-intake, keyed by sem + year.
+    if str(category).upper() == "PHD":
+        if current_date.month >= 7:
+            term, ay = "Odd", f"{current_date.year}-{str(current_date.year + 1)[-2:]}"
+        else:
+            term, ay = "Even", f"{current_date.year - 1}-{str(current_date.year)[-2:]}"
+        return _check_registration_window(f"PhD Registration {term} {user_sem} {ay}", "PhD registration")
+    return _check_registration_window(f"PG Registration {user_sem} {year}", "PG registration")
 
 def get_student_registrtion_check(student, sem):
     return StudentRegistrationChecks.objects.filter(student_id=student, semester_id=sem).first()
@@ -2415,6 +3079,7 @@ def get_student_registrations(student, semester):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def get_preregistration_data(request):
     """
     Returns the list of course slots available for the student's next semester,
@@ -2427,7 +3092,7 @@ def get_preregistration_data(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
-        next_sem_no = semester_no+1
+        next_sem_no = pre_registration_target_semester(student)
         try:
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
@@ -2523,6 +3188,7 @@ def get_preregistration_data(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def submit_preregistration(request):
     """
     Expects a POST request with JSON data containing an array "registrations".
@@ -2541,13 +3207,21 @@ def submit_preregistration(request):
 
     registrations = data.get("registrations", [])
     backlog_registrations = data.get("backlog_registrations", [])
+
+    # Marking pre-registration complete for an empty submission saved nothing and
+    # then locked the student out, since the page returns an existing
+    # registration before it offers the form again.
+    if not registrations and not backlog_registrations:
+        return JsonResponse(
+            {"error": "Select at least one course before submitting your pre-registration."},
+            status=400)
+
     try:
         current_user = request.user
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
-        # Here you may want to use next_sem_no = semester_no + 1 if that is the logic.
-        next_sem_no = semester_no+1
+        next_sem_no = pre_registration_target_semester(student)
         try:
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
@@ -2572,11 +3246,30 @@ def submit_preregistration(request):
             timestamp=timezone.now()
         )
 
+    # The replaced registration is taken from the request body, so check it is
+    # this student's before any row is written.
+    backlog_entries = []
     for reg in backlog_registrations:
+        prev_registration_id = reg.get("prev_registration_id")
+        prev_reg = None
+        if prev_registration_id:
+            prev_reg = course_registration.objects.filter(
+                id=prev_registration_id, student_id=student
+            ).first()
+            if not prev_reg:
+                return JsonResponse(
+                    {"error": "The course being repeated is not one of your registrations."},
+                    status=400)
+        backlog_entries.append((reg, prev_reg))
+
+    for reg, prev_reg in backlog_entries:
         slot_id = reg.get("slot_id")
         course_id = reg.get("course_id")
         priority = reg.get("priority")
-        prev_registration_id = reg.get("prev_registration_id")
+
+        # The repeated course carries the grade, so it decides backlog vs improvement.
+        _sg = latest_grade(student.id_id, prev_reg.course_id) if prev_reg else None
+        reg_type = registration_type_for_grade(_sg.grade if _sg else None)
 
         InitialRegistration.objects.create(
             course_id_id=course_id,
@@ -2584,8 +3277,8 @@ def submit_preregistration(request):
             student_id=student,
             course_slot_id_id=slot_id,
             priority=priority,
-            registration_type='Backlog',
-            old_course_registration_id = prev_registration_id,
+            registration_type=(reg_type if reg_type != 'Regular' else 'Backlog'),
+            old_course_registration=prev_reg,
             timestamp=timezone.now()
         )
 
@@ -2601,10 +3294,79 @@ def submit_preregistration(request):
     return JsonResponse({"status": "success"}, status=201)
 
 
+# A replacement is only for an unsatisfactory grade, so these bar one.
+SATISFACTORY_GRADES = ['O', 'A+', 'A', 'B+', 'B', 'C+', 'S']
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def swayam_availability(request):
+    """How many Swayam slots the student has left, and which path can still use them."""
+    from django.db.models import Q
+
+    try:
+        student = Student.objects.get(id=request.user.extrainfo)
+        semester = Semester.objects.filter(
+            curriculum=student.batch_id.curriculum,
+            semester_no=student.curr_semester_no,
+        ).first()
+        if not semester:
+            return JsonResponse({"error": "Not Eligible for Swayam Registration"}, status=400)
+
+        all_slots = CourseSlot.objects.filter(semester=semester, name__startswith="SW")
+        # Slots are per semester, so only this semester's requests can consume them.
+        requests = SwayamReplacementRequest.objects.filter(
+            student=student, semester=semester,
+            request_type__in=['Extra_Credits', 'Swayam_Replace'])
+        used_by = {'Extra_Credits': set(), 'Swayam_Replace': set()}
+        for req in requests:
+            if req.new_course_slot_id:
+                used_by[req.request_type].add(req.new_course_slot_id)
+
+        registered = set(course_registration.objects.filter(
+            student_id=student, semester_id=semester
+        ).exclude(course_slot_id__isnull=True).values_list('course_slot_id', flat=True))
+
+        total = all_slots.count()
+        taken = used_by['Extra_Credits'] | used_by['Swayam_Replace'] | registered
+        free = all_slots.exclude(id__in=taken).count()
+
+        # A frozen source needs only one new course, so one free slot is enough.
+        frozen_source = course_registration.objects.filter(
+            Q(course_slot_id__name__startswith="OE")
+            | Q(course_slot_id__name__startswith="BL"),
+            student_id=student,
+            semester_id=semester,
+            course_id__code__startswith="SW",
+        ).exists()
+        replace_needs = 1 if frozen_source else 2
+
+        return JsonResponse({
+            "total_slots": total,
+            "free_slots": free,
+            "used_extra_credits": len(used_by['Extra_Credits']),
+            "used_replace": len(used_by['Swayam_Replace']),
+            # False when the semester has no Swayam slots at all, which is not
+            # the same as having spent them; the panels explain that case.
+            "applicable": total > 0,
+            # A replacement names two new Swayam courses, or one when this
+            # semester's Swayam is frozen as the source.
+            "can_extra_credit": free >= 1,
+            "can_replace": free >= replace_needs,
+            "replace_slots_needed": replace_needs,
+        })
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "Student not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def get_swayam_registration_data(request):
     """
     Returns the list of course slots available for Swayam registration for the student's next semester,
@@ -2682,6 +3444,7 @@ def get_swayam_registration_data(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def submit_swayam_registration(request):
     """
     Accepts a POST request with JSON data for Swayam Extra Credits registration.
@@ -2719,7 +3482,8 @@ def submit_swayam_registration(request):
     registrations = payload.get("registrations", [])
     errors = []
     success_count = 0
-    
+    chosen_course_ids = set()
+
     for reg in registrations:
         slot_id = reg.get("slot_id")
         course_id = reg.get("course_id")
@@ -2753,6 +3517,18 @@ def submit_swayam_registration(request):
         if existing_request:
             errors.append(f"Already have a pending/approved request for slot {course_slot.name}")
             continue
+
+        # One course cannot fill two slots, in this submission or an earlier one.
+        if course.id in chosen_course_ids:
+            errors.append(f"{course.code} is selected in more than one slot")
+            continue
+
+        if SwayamReplacementRequest.objects.filter(
+                student=student,
+                new_course=course,
+                status__in=['Pending', 'Approved']).exists():
+            errors.append(f"Already have a pending/approved request for {course.code}")
+            continue
         
         try:
             SwayamReplacementRequest.objects.create(
@@ -2768,6 +3544,7 @@ def submit_swayam_registration(request):
                 status='Pending'
             )
             success_count += 1
+            chosen_course_ids.add(course.id)
         except Exception as e:
             errors.append(f"Failed to register for {course.code}: {str(e)}")
     
@@ -2787,7 +3564,10 @@ def submit_swayam_registration(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_replace_check(request):
+    from django.db.models import Q
+
     try:
         current_user = request.user
         user_details = current_user.extrainfo
@@ -2808,10 +3588,11 @@ def swayam_replace_check(request):
 
         existing_request = SwayamReplacementRequest.objects.filter(
             student=student,
+            semester=current_semester,
             request_type='Swayam_Replace',
             status__in=['Pending', 'Approved']
         ).first()
-        
+
         if existing_request:
             return JsonResponse({
                 "has_existing": False,
@@ -2819,12 +3600,16 @@ def swayam_replace_check(request):
                 "request_status": existing_request.status,
             })
         
+        # Replaceable either way: a Swayam that took an elective slot (OE) or one
+        # being re-done as a backlog (BL).
         existing_sw = course_registration.objects.filter(
+            Q(course_slot_id__name__startswith="OE")
+            | Q(course_slot_id__name__startswith="BL"),
             student_id=student,
             semester_id=current_semester,
             course_id__code__startswith="SW",
-            course_slot_id__name__startswith="OE"
-        ).select_related('course_id', 'course_slot_id').first()
+        ).select_related('course_id', 'course_slot_id').order_by(
+            'course_slot_id__name', 'course_id__code').first()
         
         if existing_sw:
             all_sw_slots = CourseSlot.objects.filter(
@@ -2876,12 +3661,19 @@ def swayam_replace_check(request):
                         semester_no=sem_no
                     )
 
-                    has_oe_courses = course_registration.objects.filter(
-                        student_id=student,
-                        semester_id=sem,
-                        course_slot_id__name__startswith="OE"
-                    ).exists()
-                    
+                    # A semester holding only passed electives has nothing to
+                    # offer, so leave it out rather than open an empty list.
+                    has_oe_courses = False
+                    for reg in course_registration.objects.filter(
+                            student_id=student,
+                            semester_id=sem,
+                            course_slot_id__name__startswith="OE",
+                    ).select_related('course_id'):
+                        grade = latest_grade(current_user.username, reg.course_id)
+                        if grade and grade.grade not in SATISFACTORY_GRADES:
+                            has_oe_courses = True
+                            break
+
                     if has_oe_courses:
                         available_semesters.append({
                             "semester_no": sem_no,
@@ -2939,6 +3731,7 @@ def swayam_replace_check(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_replace_slots(request):
     try:
         semester_no = request.GET.get('semester_no')
@@ -2977,6 +3770,7 @@ def swayam_replace_slots(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_target_slots(request):
     try:
         semester_no = request.GET.get('semester_no')
@@ -3015,6 +3809,7 @@ def swayam_target_slots(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_replace_courses(request):
     try:
         slot_id = request.GET.get('slot_id')
@@ -3044,21 +3839,15 @@ def swayam_replace_courses(request):
             course_slot_id=slot_id
         ).select_related('course_id')
 
-        # Exclude courses where student already has a satisfactory grade (not eligible for replacement)
-        # Grades are stored in online_cms_student_grades (Student_grades model) by roll_no (username)
-        blocked_grades = ['O', 'A+', 'A', 'B+', 'B', 'C+']
+        # Offer only what a replacement can actually be registered against: an
+        # unsatisfactory grade that is already on record.
         roll_no = current_user.username
         courses_list = []
         for reg in registrations:
             course = reg.course_id
-            # Check if this course has a published good grade in Student_grades
-            has_good_grade = Student_grades.objects.filter(
-                roll_no=roll_no,
-                course_id=course,
-                grade__in=blocked_grades
-            ).exists()
-            if has_good_grade:
-                continue  # Skip — this course has a satisfactory grade and cannot be replaced
+            grade = latest_grade(roll_no, course)
+            if grade is None or grade.grade in SATISFACTORY_GRADES:
+                continue
             courses_list.append({
                 'id': course.id,
                 'code': course.code,
@@ -3075,6 +3864,7 @@ def swayam_replace_courses(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_target_courses(request):
     try:
         slot_id = request.GET.get('slot_id')
@@ -3125,6 +3915,7 @@ def swayam_target_courses(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_current_courses(request):
     try:
         slot_id = request.GET.get('slot_id')
@@ -3174,6 +3965,7 @@ def swayam_current_courses(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def swayam_replace_submit(request):
     try:
         current_user = request.user
@@ -3257,17 +4049,28 @@ def swayam_replace_submit(request):
             }, status=400)
         
         # Validate grade: source course must NOT have a satisfactory grade (O, A+, A, B+, B, C+)
-        blocked_grades = ['O', 'A+', 'A', 'B+', 'B', 'C+', 'S']
         roll_no = current_user.username
         has_blocked_grade = Student_grades.objects.filter(
             roll_no=roll_no,
             course_id=old_course,
-            grade__in=blocked_grades
+            grade__in=SATISFACTORY_GRADES
         ).exists()
         
         if has_blocked_grade:
             return JsonResponse({
                 "error": "You are not eligible for replacement of this course. Replacement is only allowed for courses with unsatisfactory grades."
+            }, status=400)
+
+        # Backlog and improvement both come off the source grade, so without one
+        # there is nothing to register against. Only this semester's Swayam in an
+        # elective slot is exempt, because that registers as extra credit.
+        slot_name = old_course_slot.name if old_course_slot else ''
+        extra_credit_path = is_current_semester and slot_name.startswith('OE')
+        if not extra_credit_path and not latest_grade(roll_no, old_course):
+            return JsonResponse({
+                "error": "This course has no grade on record yet, so it cannot be "
+                         "replaced as a backlog or improvement. Please contact the "
+                         "academic section once the grade is published."
             }, status=400)
 
         if is_current_semester:
@@ -3326,6 +4129,7 @@ def swayam_replace_submit(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def student_swayam_requests(request):
     try:
         current_user = request.user
@@ -3333,8 +4137,14 @@ def student_swayam_requests(request):
         student = Student.objects.get(id=user_details)
 
         request_type = request.GET.get('request_type')
-        requests_query = SwayamReplacementRequest.objects.filter(student=student)
-        
+        academic_year, semester_type = generate_current_session(
+            timezone.now().year, student.curr_semester_no)
+        requests_query = SwayamReplacementRequest.objects.filter(
+            student=student,
+            academic_year=academic_year,
+            semester_type=semester_type,
+        )
+
         if request_type:
             requests_query = requests_query.filter(request_type=request_type)
         
@@ -3368,7 +4178,8 @@ def student_swayam_requests(request):
                 'submitted_at': req.submitted_at.isoformat() if req.submitted_at else None,
                 'processed_at': req.processed_at.isoformat() if req.processed_at else None,
                 'academic_year': req.academic_year,
-                'semester_type': req.semester_type
+                'semester_type': req.semester_type,
+                'semester_no': req.semester.semester_no if req.semester else None
             })
         
         return JsonResponse({'requests': requests_data}, status=200)
@@ -3383,7 +4194,7 @@ def student_swayam_requests(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_swayam_list_requests(request):
     try:
         request_type = request.GET.get('request_type')
@@ -3394,13 +4205,18 @@ def admin_swayam_list_requests(request):
         queryset = SwayamReplacementRequest.objects.select_related(
             'student',
             'student__id__user',
+            'student__batch_id',
             'old_course',
             'new_course',
             'new_course_slot',
             'semester'
         ).order_by('-submitted_at')
 
-        count_queryset = SwayamReplacementRequest.objects.all()
+        scopes = scopes_for(request.user)
+        queryset = scope_via_student(queryset, scopes, 'student')
+
+        count_queryset = scope_via_student(
+            SwayamReplacementRequest.objects.all(), scopes, 'student')
         
         if request_type:
             count_queryset = count_queryset.filter(request_type=request_type)
@@ -3477,7 +4293,7 @@ def admin_swayam_list_requests(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_swayam_approve(request):
     try:
         request_id = request.data.get('request_id')
@@ -3485,6 +4301,8 @@ def admin_swayam_approve(request):
             return JsonResponse({"error": "request_id is required"}, status=400)
         
         req_obj = SwayamReplacementRequest.objects.get(id=request_id)
+        if not student_in_scope(req_obj.student, scopes_for(request.user)):
+            return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
         
         if req_obj.status != 'Pending':
             return JsonResponse({"error": "Only pending requests can be approved"}, status=400)
@@ -3522,15 +4340,15 @@ def admin_swayam_approve(request):
             ).first()
 
             roll_no = req_obj.student.id.user.username
-            if req_obj.is_current_semester:
+            source_slot = req_obj.course_slot.name if req_obj.course_slot else ''
+            # Only a Swayam that took an elective slot this semester is extra
+            # credit; a backlog one, or an earlier semester, goes by the grade.
+            if req_obj.is_current_semester and source_slot.startswith('OE'):
                 new_registration_type = 'Extra Credits'
             else:
                 backlog_grades = ['F', 'CD', 'X']
                 improvement_grades = ['D', 'D+', 'C']
-                src_grade_obj = Student_grades.objects.filter(
-                    roll_no=roll_no,
-                    course_id=req_obj.old_course
-                ).first()
+                src_grade_obj = latest_grade(roll_no, req_obj.old_course)
                 if src_grade_obj and src_grade_obj.grade in backlog_grades:
                     new_registration_type = 'Backlog'
                 elif src_grade_obj and src_grade_obj.grade in improvement_grades:
@@ -3659,7 +4477,7 @@ def admin_swayam_approve(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_swayam_reject(request):
     try:
         request_id = request.data.get('request_id')
@@ -3667,6 +4485,8 @@ def admin_swayam_reject(request):
             return JsonResponse({"error": "request_id is required"}, status=400)
         
         req_obj = SwayamReplacementRequest.objects.get(id=request_id)
+        if not student_in_scope(req_obj.student, scopes_for(request.user)):
+            return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
         
         if req_obj.status != 'Pending':
             return JsonResponse({"error": "Only pending requests can be rejected"}, status=400)
@@ -3687,7 +4507,7 @@ def admin_swayam_reject(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_swayam_revert(request):
     try:
         request_id = request.data.get('request_id')
@@ -3695,6 +4515,8 @@ def admin_swayam_revert(request):
             return JsonResponse({"error": "request_id is required"}, status=400)
         
         req_obj = SwayamReplacementRequest.objects.get(id=request_id)
+        if not student_in_scope(req_obj.student, scopes_for(request.user)):
+            return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
         
         if req_obj.status != 'Rejected':
             return JsonResponse({"error": "Only rejected requests can be reverted"}, status=400)
@@ -3715,7 +4537,7 @@ def admin_swayam_revert(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_swayam_delete(request):
     try:
         request_id = request.data.get('request_id')
@@ -3723,6 +4545,8 @@ def admin_swayam_delete(request):
             return JsonResponse({"error": "request_id is required"}, status=400)
         
         req_obj = SwayamReplacementRequest.objects.get(id=request_id)
+        if not student_in_scope(req_obj.student, scopes_for(request.user)):
+            return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
         req_obj.delete()
         
         return JsonResponse({"message": "Request deleted successfully"}, status=200)
@@ -3737,7 +4561,7 @@ def admin_swayam_delete(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_add_course_slots(request):
     """
     GET /api/course-slots/?semester_id=<id>
@@ -3761,7 +4585,7 @@ def get_add_course_slots(request):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def get_add_course_courses(request):
     """
     GET /api/courses/?courseslot_id=<id>
@@ -3893,6 +4717,13 @@ def upload_excel_replacement(request):
                     old_course_registration=old_reg,
                     new_course_registration=new_reg
                 )
+                # The replaced course carries the grade, so it decides whether
+                # the new one counts as a backlog or an improvement.
+                _sg = latest_grade(old_reg.student_id.id_id, old_reg.course_id)
+                reg_type = registration_type_for_grade(_sg.grade if _sg else None)
+                if reg_type != 'Regular' and new_reg.registration_type != reg_type:
+                    new_reg.registration_type = reg_type
+                    new_reg.save(update_fields=['registration_type'])
     except Exception as e:
         return Response({'error': str(e)}, status=400)
 
@@ -4189,6 +5020,7 @@ def ta_stipends(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def registered_slots(request):
     try:
         current_user = request.user
@@ -4242,6 +5074,7 @@ def registered_slots(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def batch_create_requests(request):
     try:
         current_user = request.user
@@ -4325,18 +5158,22 @@ def batch_create_requests(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_list_requests(request):
     qs = CourseReplacementRequest.objects.select_related(
-        'student', 'student__id__user', 'course_slot', 'old_course', 'new_course'
+        'student', 'student__id__user', 'course_slot', 'course_slot__semester', 'old_course', 'new_course'
     ).all().order_by('-created_at')
+    qs = scope_via_student(qs, scopes_for(request.user), 'student')
     
     year = request.GET.get('academic_year')
     sem  = request.GET.get('semester_type')
+    status_filter = request.GET.get('status')
     if year:
         qs = qs.filter(academic_year=year)
     if sem:
         qs = qs.filter(semester_type=sem)
+    if status_filter:
+        qs = qs.filter(status__iexact=status_filter)
 
     out = []
     for r in qs:
@@ -4345,6 +5182,7 @@ def admin_list_requests(request):
             'student': r.student.id.user.username,
             'student_name': r.student.id.user.get_full_name() or r.student.id.user.username,
             'slot': r.course_slot.name if r.course_slot else 'N/A',
+            'semester': (r.course_slot.semester.semester_no if r.course_slot and r.course_slot.semester_id else None),
             'old_course': r.old_course.code if r.old_course else 'N/A',
             'old_course_name': r.old_course.name if r.old_course else 'N/A',
             'new_course': r.new_course.code if r.new_course else 'N/A',
@@ -4362,6 +5200,7 @@ def admin_list_requests(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def student_list_requests(request):
     current_user = request.user
     user_details = current_user.extrainfo
@@ -4394,19 +5233,24 @@ def student_list_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def allocate_all(request):
     import json
     try:
         body = json.loads(request.body)
         year = body.get('academic_year')
         sem  = body.get('semester_type')
+        request_ids = body.get('request_ids') or []
+        request_ids = scoped_ids(CourseReplacementRequest, request_ids, scopes_for(request.user))
     except:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     pending = CourseReplacementRequest.objects.select_for_update().filter(
         status="Pending", academic_year=year, semester_type=sem
     )
+    # When specific requests are selected, allot only those.
+    if request_ids:
+        pending = pending.filter(id__in=request_ids)
     by_course = defaultdict(list)
     for cr in pending:
         by_course[cr.new_course].append(cr)
@@ -4435,26 +5279,25 @@ def allocate_all(request):
 
             # Always pick one request at a time (FIFO)
             cr = reqs[0]
+            # Find the existing registration to replace; if missing, skip without approving so the batch still runs.
+            old_reg = course_registration.objects.select_for_update().filter(
+                student_id=cr.student,
+                course_slot_id=cr.course_slot,
+                session=cr.academic_year,
+                semester_type=cr.semester_type,
+            ).first()
+            if old_reg is None:
+                by_course[course].remove(cr)
+                results.append({'id': cr.id, 'status': 'Skipped',
+                                'reason': 'No existing registration in this slot to replace.'})
+                continue
+
             cr.status = "Approved"
             cr.processed_at = timezone.now()
             cr.save(update_fields=['status', 'processed_at'])
             results.append({'id': cr.id, 'status': 'Approved'})
-            # print(
-            #     "Looking for old_reg with:",
-            #     "student_id=", cr.student,
-            #     "course_slot_id=", cr.course_slot,
-            #     "session=", cr.academic_year,
-            #     "semester_type=", cr.semester_type
-            # )
-            # swap registrations
-            old_reg = course_registration.objects.select_for_update().get(
-                student_id=cr.student,
-                course_slot_id=cr.course_slot,
-                session=cr.academic_year,
-                semester_type=cr.semester_type
-            )
+
             old_course = old_reg.course_id
-            # print(old_course)
             semester_id = old_reg.semester_id
             old_reg.delete()
 
@@ -4492,7 +5335,7 @@ def allocate_all(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def revert_replacement_to_pending(request):
     import json
     import logging
@@ -4501,6 +5344,7 @@ def revert_replacement_to_pending(request):
     try:
         body = json.loads(request.body)
         request_ids = body.get('request_ids', [])
+        request_ids = scoped_ids(CourseReplacementRequest, request_ids, scopes_for(request.user))
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
     except Exception as e:
@@ -4544,7 +5388,7 @@ def revert_replacement_to_pending(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def delete_replacement_requests(request):
     import json
     import logging
@@ -4553,6 +5397,7 @@ def delete_replacement_requests(request):
     try:
         body = json.loads(request.body)
         request_ids = body.get('request_ids', [])
+        request_ids = scoped_ids(CourseReplacementRequest, request_ids, scopes_for(request.user))
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
     except Exception as e:
@@ -4587,6 +5432,7 @@ def delete_replacement_requests(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def student_registrations_for_drop(request):
     """
     GET /api/student/registrations/
@@ -4643,6 +5489,7 @@ def student_registrations_for_drop(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def drop_course(request):
     """
     POST /api/student/drop-course/
@@ -4745,8 +5592,11 @@ def student_calendar_view(request):
 
     result = [
         {
+            "id": entry.id,
             "from_date": entry.from_date,
             "to_date": entry.to_date,
+            "from_time": entry.from_time,
+            "to_time": entry.to_time,
             "description": entry.description,
         }
         for entry in calendar_entries
@@ -4758,6 +5608,7 @@ def student_calendar_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def student_list_drop_requests(request):
     try:
         current_user = request.user
@@ -4791,6 +5642,7 @@ def student_list_drop_requests(request):
             {
                 'id': r.id,
                 'slot': r.course_slot.name,
+                'semester': r.course_slot.semester.semester_no if r.course_slot and r.course_slot.semester_id else None,
                 'course': r.course.code,
                 'course_name': r.course.name,
                 'status': r.status,
@@ -4812,25 +5664,58 @@ def student_list_drop_requests(request):
         logger.error(f"Error listing drop requests for {request.user.username}: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'An error occurred while fetching requests'}, status=500)
 
+# Counts the queues the acadadmin home page reports, without serialising rows.
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(list(ALL_ACAD_ROLES))
+def admin_pending_counts(request):
+    scopes = scopes_for(request.user)
+    pending = lambda model: scope_via_student(
+        model.objects.filter(status__iexact='pending'), scopes, 'student').count()
+    return JsonResponse({'counts': {
+        'swayam': pending(SwayamReplacementRequest),
+        'add': pending(CourseAddRequest),
+        'drop': pending(CourseDropRequest),
+        'replacement': pending(CourseReplacementRequest),
+        'phdCourses': pending(PhDCourseRegistrationRequest),
+        'thesisEnrolments': pending(ThesisRegistration),
+        'progressSeminars': pending(ProgressSeminarRegistration),
+        'teachingCredits': pending(TeachingCreditRegistration),
+    }}, status=200)
+
+
  # Lists all course drop requests with optional filtering
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_list_drop_requests(request):
     try:
         qs = CourseDropRequest.objects.select_related(
             'student__id__user',
             'course',
-            'course_slot'
+            'course_slot',
+            'course_slot__semester'
         ).all().order_by('-created_at')
+        qs = scope_via_student(qs, scopes_for(request.user), 'student')
 
         year = request.GET.get('academic_year', '').strip()
         sem = request.GET.get('semester_type', '').strip()
-        
+        status_filter = request.GET.get('status', '').strip()
+
         if year:
             qs = qs.filter(academic_year=year)
         if sem:
             qs = qs.filter(semester_type=sem)
+        # Filter before the cap, so a status query cannot be truncated away.
+        if status_filter:
+            qs = qs.filter(status__iexact=status_filter)
+
+        # Pending first, so the rows needing action survive the cap below.
+        qs = qs.order_by(
+            Case(When(status__iexact='pending', then=0), default=1,
+                 output_field=IntegerField()),
+            '-created_at',
+        )
 
         qs = qs[:500]
 
@@ -4840,6 +5725,7 @@ def admin_list_drop_requests(request):
                 'student': r.student.id.user.username,
                 'student_name': f"{r.student.id.user.first_name} {r.student.id.user.last_name}".strip(),
                 'slot': r.course_slot.name,
+                'semester': r.course_slot.semester.semester_no if r.course_slot and r.course_slot.semester_id else None,
                 'course': r.course.code,
                 'course_name': r.course.name,
                 'status': r.status,
@@ -4863,7 +5749,7 @@ def admin_list_drop_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def approve_drop_requests(request):
     import json
     import logging
@@ -4872,6 +5758,7 @@ def approve_drop_requests(request):
     try:
         body = json.loads(request.body)
         request_ids = body.get('request_ids', [])
+        request_ids = scoped_ids(CourseDropRequest, request_ids, scopes_for(request.user))
         action = body.get('action', 'approve').lower().strip()
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
@@ -4961,7 +5848,7 @@ def approve_drop_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def delete_drop_requests(request):
     import json
     import logging
@@ -4970,6 +5857,7 @@ def delete_drop_requests(request):
     try:
         body = json.loads(request.body)
         request_ids = body.get('request_ids', [])
+        request_ids = scoped_ids(CourseDropRequest, request_ids, scopes_for(request.user))
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
     except Exception as e:
@@ -5007,6 +5895,7 @@ def delete_drop_requests(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
+@block_pg_phd
 def student_list_add_requests(request):
     try:
         current_user = request.user
@@ -5040,6 +5929,7 @@ def student_list_add_requests(request):
             {
                 'id': r.id,
                 'slot': r.course_slot.name,
+                'semester': r.course_slot.semester.semester_no if r.course_slot and r.course_slot.semester_id else None,
                 'course': r.course.code,
                 'course_name': r.course.name,
                 'status': r.status,
@@ -5064,22 +5954,35 @@ def student_list_add_requests(request):
 # Lists all course add requests with optional filtering
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_list_add_requests(request):
     try:
         qs = CourseAddRequest.objects.select_related(
             'student__id__user',
             'course',
-            'course_slot'
+            'course_slot',
+            'course_slot__semester'
         ).all().order_by('-created_at')
+        qs = scope_via_student(qs, scopes_for(request.user), 'student')
 
         year = request.GET.get('academic_year', '').strip()
         sem = request.GET.get('semester_type', '').strip()
-        
+        status_filter = request.GET.get('status', '').strip()
+
         if year:
             qs = qs.filter(academic_year=year)
         if sem:
             qs = qs.filter(semester_type=sem)
+        # Filter before the cap, so a status query cannot be truncated away.
+        if status_filter:
+            qs = qs.filter(status__iexact=status_filter)
+
+        # Pending first, so the rows needing action survive the cap below.
+        qs = qs.order_by(
+            Case(When(status__iexact='pending', then=0), default=1,
+                 output_field=IntegerField()),
+            '-created_at',
+        )
 
         qs = qs[:500]
 
@@ -5089,6 +5992,7 @@ def admin_list_add_requests(request):
                 'student': r.student.id.user.username,
                 'student_name': f"{r.student.id.user.first_name} {r.student.id.user.last_name}".strip(),
                 'slot': r.course_slot.name,
+                'semester': r.course_slot.semester.semester_no if r.course_slot and r.course_slot.semester_id else None,
                 'course': r.course.code,
                 'course_name': r.course.name,
                 'status': r.status,
@@ -5112,7 +6016,7 @@ def admin_list_add_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def approve_add_requests(request):
     import json
     import logging
@@ -5121,6 +6025,7 @@ def approve_add_requests(request):
     try:
         body = json.loads(request.body)
         request_ids = body.get('request_ids', [])
+        request_ids = scoped_ids(CourseAddRequest, request_ids, scopes_for(request.user))
         action = body.get('action', 'approve').lower().strip()
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
@@ -5266,7 +6171,7 @@ def approve_add_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def delete_add_requests(request):
     import json
     import logging
@@ -5275,6 +6180,7 @@ def delete_add_requests(request):
     try:
         body = json.loads(request.body)
         request_ids = body.get('request_ids', [])
+        request_ids = scoped_ids(CourseAddRequest, request_ids, scopes_for(request.user))
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON format'}, status=400)
     except Exception as e:
@@ -5309,13 +6215,13 @@ def delete_add_requests(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def student_search(request):
     roll_no = request.data.get('rollno','').upper()
     if not roll_no:
         return JsonResponse({'error':'rollno is required'},status=400)
     student = Student.objects.filter(id_id=roll_no).first()
-    if not student:
+    if not student or not student_in_scope(student, scopes_for(request.user)):
         return JsonResponse({'error':'Student record not found'},status=400)
     extra = student.id
     user = extra.user
@@ -5787,9 +6693,11 @@ def admin_all_stats(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def list_batches(request):
-    batches = Batch.objects.filter(running_batch=True).select_related("discipline").order_by("year", "name")
+    batches = scope_batches(
+        Batch.objects.filter(running_batch=True), scopes_for(request.user)
+    ).select_related("discipline").order_by("year", "name")
     result = []
     for b in batches:
         label = f"{b.name} {b.discipline.acronym} {b.year}"
@@ -5798,12 +6706,13 @@ def list_batches(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def list_students_in_batch(request):
     batch_id = request.query_params.get("batch_id")
     if not batch_id:
         return Response({"detail": "batch_id required."}, status=status.HTTP_400_BAD_REQUEST)
-    students = Student.objects.filter(batch_id__id=batch_id)
+    students = scope_students(
+        Student.objects.filter(batch_id__id=batch_id), scopes_for(request.user))
     result = []
     for st in students:
         cb = st.batch_id
@@ -5819,7 +6728,7 @@ def list_students_in_batch(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def apply_batch_changes(request):
     data = request.data
     user = request.user
@@ -5835,6 +6744,9 @@ def apply_batch_changes(request):
                 continue
             try:
                 student = Student.objects.get(id=sid)
+                if not student_in_scope(student, scopes_for(request.user)):
+                    errors.append({"index": idx, "detail": f"Student {sid} not found."})
+                    continue
             except Student.DoesNotExist:
                 errors.append({"index": idx, "detail": f"Student {sid} not found."})
                 continue
@@ -5899,24 +6811,30 @@ def apply_batch_changes(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def list_students_in_batch_semester_promotion(request):
     batch_id = request.query_params.get("batch_id")
     if not batch_id:
         return Response({"detail": "batch_id required."}, status=status.HTTP_400_BAD_REQUEST)
-    students = Student.objects.filter(batch_id__id=batch_id).order_by('id_id')
+    students = scope_students(
+        Student.objects.filter(batch_id__id=batch_id), scopes_for(request.user)
+    ).select_related('id__user', 'batch_id__discipline').order_by('id_id')
     result = []
     for st in students:
+        user = st.id.user
         result.append({
             "id": st.id_id,
             "username": str(st.id_id),
+            "name": f"{user.first_name} {user.last_name}".strip(),
+            "discipline": (st.batch_id.discipline.acronym
+                           if st.batch_id and st.batch_id.discipline_id else ''),
             "current_semester_no": st.curr_semester_no,
         })
     return Response(result)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def apply_promotion(request):
     data = request.data  # list of student IDs
     user = request.user
@@ -5925,6 +6843,9 @@ def apply_promotion(request):
         for idx, sid in enumerate(data):
             try:
                 student = Student.objects.get(id=sid)
+                if not student_in_scope(student, scopes_for(request.user)):
+                    errors.append({"index": idx, "detail": f"Student {sid} not found."})
+                    continue
             except Student.DoesNotExist:
                 errors.append({"index": idx, "detail": f"Student {sid} not found."})
                 continue
@@ -5984,7 +6905,7 @@ def apply_promotion(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def apply_demotion(request):
     """Move selected students one semester back (correction for over-promotion).
 
@@ -5997,6 +6918,9 @@ def apply_demotion(request):
         for idx, sid in enumerate(data):
             try:
                 student = Student.objects.get(id=sid)
+                if not student_in_scope(student, scopes_for(request.user)):
+                    errors.append({"index": idx, "detail": f"Student {sid} not found."})
+                    continue
             except Student.DoesNotExist:
                 errors.append({"index": idx, "detail": f"Student {sid} not found."})
                 continue
@@ -7003,6 +7927,873 @@ def dean_generate_pdf_api(request, pk):
     return response
 
 
+# ===========================================================================
+# Thesis Topic Change Request (post-approval amendment)
+# ===========================================================================
+# Workflow: once a ThesisTopic is dean_approved, the student may request a
+# change to the topic (category/broad_area/research_theme) and/or
+# supervisor/co-supervisor. The current supervisor (and current co-supervisor,
+# if any) must always consent -- whatever is being changed, they're signing
+# off on it, which also covers an outgoing supervisor/co-supervisor being
+# replaced. If a NEW supervisor/co-supervisor is being proposed, they must
+# also separately consent to take on the role. Once every required consent is
+# in, it goes to the HOD, then Dean Academic for final approval, which applies
+# the change directly to the live ThesisTopic (and keeps CommitteeMember in
+# sync). A decline (at consent stage) or rejection (HOD/Dean) is terminal --
+# the student submits a fresh request to retry.
+
+def _thesis_change_request_to_dict(cr):
+    thesis = cr.thesis
+    return {
+        'id': cr.id,
+        'thesis_id': thesis.id,
+        'student_roll': thesis.student.id.id,
+        'student_name': thesis.student.id.user.get_full_name(),
+        'student_discipline': thesis.student.specialization,
+        'current_category': thesis.category,
+        'current_broad_area': thesis.broad_area,
+        'current_research_theme': thesis.research_theme,
+        'current_supervisor': {'id': thesis.supervisor.id.id, 'name': str(thesis.supervisor)},
+        'current_co_supervisor': (
+            {'id': thesis.co_supervisor.id.id, 'name': str(thesis.co_supervisor)}
+            if thesis.co_supervisor else None
+        ),
+        'new_category': cr.new_category,
+        'new_broad_area': cr.new_broad_area,
+        'new_research_theme': cr.new_research_theme,
+        'new_supervisor': (
+            {'id': cr.new_supervisor.id.id, 'name': str(cr.new_supervisor)}
+            if cr.new_supervisor else None
+        ),
+        'new_co_supervisor': (
+            {'id': cr.new_co_supervisor.id.id, 'name': str(cr.new_co_supervisor)}
+            if cr.new_co_supervisor else None
+        ),
+        'current_supervisor_consented': cr.current_supervisor_consented,
+        'current_co_supervisor_consented': cr.current_co_supervisor_consented,
+        'new_supervisor_consented': cr.new_supervisor_consented,
+        'new_co_supervisor_consented': cr.new_co_supervisor_consented,
+        'status': cr.status,
+        'hod_remarks': cr.hod_remarks,
+        'dean_remarks': cr.dean_remarks,
+        'decline_remarks': cr.decline_remarks,
+        'created_at': cr.created_at.isoformat(),
+    }
+
+
+def _thesis_change_request_active_rpc_blocked(thesis):
+    """Mirrors supervisor_review_api's committee-edit freeze: block while any
+    Comprehensive Exam / Open Seminar / Progress Seminar attempt tied to this
+    student is actively awaiting RPC consent."""
+    return (
+        ComprehensiveExamAttempt.objects.filter(exam__student=thesis.student, status='rpc_pending').exists()
+        or OpenSeminarAttempt.objects.filter(open_seminar__student=thesis.student, status='rpc_pending').exists()
+        or ProgressSeminarEntry.objects.filter(thesis=thesis, status='rpc_pending').exists()
+    )
+
+
+def _thesis_change_request_role(cr, user):
+    """Which of the (up to 4) consent roles `user` plays for this change
+    request, or None. Checked in a fixed order; a user can only match one."""
+    thesis = cr.thesis
+    user_ex = user.username
+    if thesis.supervisor_id == user_ex:
+        return 'current_supervisor'
+    if thesis.co_supervisor_id and thesis.co_supervisor_id == user_ex:
+        return 'current_co_supervisor'
+    if cr.new_supervisor_id and cr.new_supervisor_id == user_ex:
+        return 'new_supervisor'
+    if cr.new_co_supervisor_id and cr.new_co_supervisor_id == user_ex:
+        return 'new_co_supervisor'
+    return None
+
+
+def _thesis_change_request_all_consents_given(cr):
+    thesis = cr.thesis
+    if not cr.current_supervisor_consented:
+        return False
+    if thesis.co_supervisor_id and not cr.current_co_supervisor_consented:
+        return False
+    if cr.new_supervisor_id and not cr.new_supervisor_consented:
+        return False
+    if cr.new_co_supervisor_id and not cr.new_co_supervisor_consented:
+        return False
+    return True
+
+
+# 1. Student
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def student_thesis_change_requests(request):
+    """GET /stu/thesis/change-requests/ -> the requesting student's own thesis's change requests, most recent first."""
+    try:
+        student = Student.objects.get(id=request.user.extrainfo)
+    except Student.DoesNotExist:
+        return JsonResponse({'error': 'Student record not found'}, status=404)
+
+    thesis = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+    if not thesis:
+        return JsonResponse({'change_requests': []}, status=200)
+
+    qs = ThesisTopicChangeRequest.objects.filter(thesis=thesis).order_by('-created_at')
+    return JsonResponse({
+        'change_requests': [_thesis_change_request_to_dict(cr) for cr in qs],
+    }, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def student_thesis_change_request_create(request):
+    """
+    POST /stu/thesis/change-request/
+    Body: { new_category, new_broad_area, new_research_theme, new_supervisor_id, new_co_supervisor_id }
+    All fields optional -- at least one must actually differ from the current
+    thesis. Only allowed once the thesis is fully dean_approved, with no other
+    change request already active, and not while an RPC review is in progress.
+    """
+    try:
+        student = Student.objects.get(id=request.user.extrainfo)
+    except Student.DoesNotExist:
+        return JsonResponse({'error': 'Student record not found'}, status=404)
+
+    thesis = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+    if not thesis or thesis.status != 'dean_approved':
+        return JsonResponse(
+            {'error': 'Thesis topic must be fully approved before requesting a change.'}, status=403,
+        )
+
+    if ThesisTopicChangeRequest.objects.filter(
+        thesis=thesis, status__in=['pending_consents', 'hod_pending', 'dean_pending'],
+    ).exists():
+        return JsonResponse({'error': 'A change request is already in progress for this thesis.'}, status=400)
+
+    if _thesis_change_request_active_rpc_blocked(thesis):
+        return JsonResponse({
+            'error': 'Cannot request a change while a Comprehensive Exam, Open Seminar, or '
+                     'Progress Seminar is awaiting RPC consent.',
+        }, status=403)
+
+    data = request.data
+    new_category = data.get('new_category') or ''
+    new_broad_area = data.get('new_broad_area') or ''
+    new_research_theme = data.get('new_research_theme') or ''
+    new_supervisor_id = data.get('new_supervisor_id') or None
+    new_co_supervisor_id = data.get('new_co_supervisor_id') or None
+
+    if new_category and new_category == thesis.category:
+        new_category = ''
+    if new_broad_area and new_broad_area == thesis.broad_area:
+        new_broad_area = ''
+    if new_research_theme and new_research_theme == thesis.research_theme:
+        new_research_theme = ''
+    if new_supervisor_id and new_supervisor_id == thesis.supervisor_id:
+        new_supervisor_id = None
+    if new_co_supervisor_id and thesis.co_supervisor_id and new_co_supervisor_id == thesis.co_supervisor_id:
+        new_co_supervisor_id = None
+
+    if not any([new_category, new_broad_area, new_research_theme, new_supervisor_id, new_co_supervisor_id]):
+        return JsonResponse({'error': 'No actual change requested.'}, status=400)
+
+    new_supervisor = None
+    if new_supervisor_id:
+        try:
+            new_supervisor = Faculty.objects.get(pk=new_supervisor_id)
+        except Faculty.DoesNotExist:
+            return JsonResponse({'error': 'Invalid new supervisor'}, status=400)
+        if not new_supervisor.id.user.is_active:
+            return JsonResponse({'error': 'Selected new supervisor is not an active faculty member'}, status=400)
+
+    new_co_supervisor = None
+    if new_co_supervisor_id:
+        try:
+            new_co_supervisor = Faculty.objects.get(pk=new_co_supervisor_id)
+        except Faculty.DoesNotExist:
+            return JsonResponse({'error': 'Invalid new co-supervisor'}, status=400)
+        if not new_co_supervisor.id.user.is_active:
+            return JsonResponse(
+                {'error': 'Selected new co-supervisor is not an active faculty member'}, status=400,
+            )
+
+    effective_supervisor_id = new_supervisor_id or thesis.supervisor_id
+    effective_co_supervisor_id = new_co_supervisor_id or thesis.co_supervisor_id
+    if effective_co_supervisor_id and effective_co_supervisor_id == effective_supervisor_id:
+        return JsonResponse({'error': 'Co-supervisor must be different from supervisor'}, status=400)
+
+    cr = ThesisTopicChangeRequest.objects.create(
+        thesis=thesis,
+        new_category=new_category,
+        new_broad_area=new_broad_area,
+        new_research_theme=new_research_theme,
+        new_supervisor_id=new_supervisor_id,
+        new_co_supervisor_id=new_co_supervisor_id,
+    )
+
+    _thesis_notify(
+        sender=request.user,
+        recipient=thesis.supervisor.id.user,
+        verb='Thesis topic change request awaiting your consent',
+        description=f"{student.id.user.get_full_name()} has requested a change to their thesis "
+                    f"topic/supervisor and needs your consent.",
+    )
+    if thesis.co_supervisor:
+        _thesis_notify(
+            sender=request.user,
+            recipient=thesis.co_supervisor.id.user,
+            verb='Thesis topic change request awaiting your consent',
+            description=f"{student.id.user.get_full_name()} has requested a change to their thesis "
+                        f"topic/supervisor and needs your consent.",
+        )
+    if new_supervisor:
+        _thesis_notify(
+            sender=request.user,
+            recipient=new_supervisor.id.user,
+            verb='You have been proposed as a new thesis supervisor',
+            description=f"{student.id.user.get_full_name()} has proposed you as their new thesis "
+                        f"supervisor and needs your consent.",
+        )
+    if new_co_supervisor:
+        _thesis_notify(
+            sender=request.user,
+            recipient=new_co_supervisor.id.user,
+            verb='You have been proposed as a new thesis co-supervisor',
+            description=f"{student.id.user.get_full_name()} has proposed you as their new thesis "
+                        f"co-supervisor and needs your consent.",
+        )
+
+    return JsonResponse(_thesis_change_request_to_dict(cr), status=201)
+
+
+# 2. Consent (current supervisor, current co-supervisor, new supervisor, new co-supervisor)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def faculty_thesis_change_requests_pending_consent(request):
+    """
+    GET /faculty/thesis/change-requests/pending-consent/
+    Change requests (status='pending_consents') where the requester plays one
+    of the 4 consent roles and hasn't consented yet -- covers a newly-proposed
+    supervisor/co-supervisor too, who wouldn't otherwise see this thesis
+    anywhere (they aren't the supervisor of record yet).
+    """
+    user_ex = request.user.username
+    qs = ThesisTopicChangeRequest.objects.filter(status='pending_consents').filter(
+        Q(thesis__supervisor_id=user_ex, current_supervisor_consented=False)
+        | Q(thesis__co_supervisor_id=user_ex, current_co_supervisor_consented=False)
+        | Q(new_supervisor_id=user_ex, new_supervisor_consented=False)
+        | Q(new_co_supervisor_id=user_ex, new_co_supervisor_consented=False)
+    ).select_related(
+        'thesis__student__id__user', 'thesis__supervisor__id__user', 'thesis__co_supervisor__id__user',
+        'new_supervisor__id__user', 'new_co_supervisor__id__user',
+    ).distinct()
+
+    results = []
+    for cr in qs:
+        payload = _thesis_change_request_to_dict(cr)
+        payload['my_role'] = _thesis_change_request_role(cr, request.user)
+        results.append(payload)
+    return JsonResponse({'pending': results}, status=200)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def thesis_change_request_consent(request, pk):
+    """
+    GET  /faculty/thesis/change-request/<pk>/ -> detail + which of the (up to
+         4) consent roles the requester plays, if any.
+    POST /faculty/thesis/change-request/<pk>/consent/
+    Body: { consent: true|false, remarks (if declining) }
+    Any required consenter may call this. Declining is terminal for the whole
+    request (status='declined') -- the student must submit a fresh request.
+    """
+    cr = get_object_or_404(ThesisTopicChangeRequest, pk=pk)
+    role = _thesis_change_request_role(cr, request.user)
+
+    if request.method == 'GET':
+        if not role:
+            return JsonResponse({'error': 'Not authorized'}, status=403)
+        payload = _thesis_change_request_to_dict(cr)
+        payload['my_role'] = role
+        return JsonResponse(payload, status=200)
+
+    if not role:
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+    if cr.status != 'pending_consents':
+        return JsonResponse({'error': 'Not awaiting consent at this stage'}, status=403)
+
+    consent_field = f'{role}_consented'
+    if getattr(cr, consent_field):
+        return JsonResponse({'error': 'Already consented'}, status=400)
+
+    data = request.data
+    thesis = cr.thesis
+    student_name = thesis.student.id.user.get_full_name()
+
+    if not data.get('consent'):
+        cr.status = 'declined'
+        cr.decline_remarks = data.get('remarks', '')
+        cr.declined_by = request.user
+        cr.save()
+        for recipient in filter(None, [thesis.student.id.user, thesis.supervisor.id.user]):
+            _thesis_notify(
+                sender=request.user,
+                recipient=recipient,
+                verb='Thesis topic change request declined',
+                description=f"{request.user.get_full_name()} declined the requested change to "
+                            f"{student_name}'s thesis topic. Remarks: {cr.decline_remarks or '—'}",
+            )
+        return JsonResponse({'status': cr.status}, status=200)
+
+    setattr(cr, consent_field, True)
+
+    if _thesis_change_request_all_consents_given(cr):
+        cr.status = 'hod_pending'
+        cr.save()
+        acronym = (
+            thesis.student.batch_id.discipline.acronym
+            if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+        )
+        _thesis_notify(
+            sender=request.user,
+            recipient=_hod_users_for_discipline(acronym),
+            verb='Thesis topic change request pending your review',
+            description=f"All required consents are in for {student_name}'s thesis topic change "
+                        f"request; awaiting HOD review.",
+        )
+    else:
+        cr.save()
+
+    return JsonResponse(_thesis_change_request_to_dict(cr), status=200)
+
+
+# 3. HOD
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def hod_thesis_change_request_dashboard(request):
+    """GET /hod/thesis/change-requests/ -> change requests pending HOD review, scoped to the HOD's own discipline."""
+    hod_disciplines = get_hod_disciplines(request.user)
+    qs = ThesisTopicChangeRequest.objects.filter(status='hod_pending').select_related(
+        'thesis__student__id__user', 'thesis__student__batch_id__discipline', 'thesis__supervisor__id__user',
+    )
+    pending = []
+    for cr in qs:
+        student = cr.thesis.student
+        acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
+        if acronym and acronym in hod_disciplines:
+            pending.append(_thesis_change_request_to_dict(cr))
+    return JsonResponse({'pending': pending}, status=200)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def hod_thesis_change_request_review(request, pk):
+    """
+    GET  /hod/thesis/change-request/<pk>/review/
+    POST /hod/thesis/change-request/<pk>/review/ Body: { approve: true|false, remarks }
+    """
+    cr = get_object_or_404(ThesisTopicChangeRequest, pk=pk)
+    thesis = cr.thesis
+    acronym = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+    is_hod = is_hod_of_discipline(request.user, acronym)
+
+    if request.method == 'GET':
+        if not is_hod:
+            return JsonResponse({'error': 'Not authorized'}, status=403)
+        return JsonResponse(_thesis_change_request_to_dict(cr), status=200)
+
+    if not is_hod or cr.status != 'hod_pending':
+        return JsonResponse({'error': 'Forbidden or invalid stage'}, status=403)
+
+    data = request.data
+    cr.hod_by = request.user
+    cr.hod_at = timezone.now()
+    student_name = thesis.student.id.user.get_full_name()
+
+    if data.get('approve'):
+        cr.hod_remarks = ''
+        cr.status = 'dean_pending'
+        cr.save()
+        _thesis_notify(
+            sender=request.user,
+            recipient=_dean_academic_users(),
+            verb='Thesis topic change request pending your final approval',
+            description=f"{student_name}'s thesis topic change request has been approved by the "
+                        f"HOD and is awaiting your final approval.",
+        )
+    else:
+        cr.hod_remarks = data.get('remarks', '')
+        cr.status = 'hod_rejected'
+        cr.save()
+        for recipient in filter(None, [thesis.supervisor.id.user, thesis.student.id.user]):
+            _thesis_notify(
+                sender=request.user,
+                recipient=recipient,
+                verb='Thesis topic change request rejected by HOD',
+                description=f"The HOD rejected {student_name}'s thesis topic change request. "
+                            f"Remarks: {cr.hod_remarks or '—'}",
+            )
+
+    return JsonResponse({'status': cr.status}, status=200)
+
+
+# 4. Dean Academic
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_thesis_change_request_dashboard(request):
+    """GET /dean/thesis/change-requests/ -> change requests pending Dean Academic final approval."""
+    qs = ThesisTopicChangeRequest.objects.filter(status='dean_pending').select_related(
+        'thesis__student__id__user', 'thesis__supervisor__id__user',
+    )
+    return JsonResponse({'pending': [_thesis_change_request_to_dict(cr) for cr in qs]}, status=200)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_thesis_change_request_review(request, pk):
+    """
+    GET  /dean/thesis/change-request/<pk>/review/
+    POST /dean/thesis/change-request/<pk>/review/ Body: { approve: true|false, remarks }
+    Approving applies the change directly to the live ThesisTopic and syncs
+    CommitteeMember (only touching the supervisor/co-supervisor slots being
+    replaced, leaving the rest of the RPC untouched).
+    """
+    cr = get_object_or_404(ThesisTopicChangeRequest, pk=pk)
+    thesis = cr.thesis
+
+    if request.method == 'GET':
+        return JsonResponse(_thesis_change_request_to_dict(cr), status=200)
+
+    if cr.status != 'dean_pending':
+        return JsonResponse({'error': 'Forbidden or invalid stage'}, status=403)
+
+    data = request.data
+    cr.dean_by = request.user
+    cr.dean_at = timezone.now()
+    student_name = thesis.student.id.user.get_full_name()
+    acronym = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+
+    if data.get('approve'):
+        cr.dean_remarks = ''
+        cr.status = 'approved'
+        cr.save()
+
+        if cr.new_category:
+            thesis.category = cr.new_category
+        if cr.new_broad_area:
+            thesis.broad_area = cr.new_broad_area
+        if cr.new_research_theme:
+            thesis.research_theme = cr.new_research_theme
+
+        if cr.new_supervisor_id and cr.new_supervisor_id != thesis.supervisor_id:
+            CommitteeMember.objects.filter(thesis=thesis, member_id=thesis.supervisor_id).delete()
+            thesis.supervisor_id = cr.new_supervisor_id
+            CommitteeMember.objects.get_or_create(thesis=thesis, member_id=thesis.supervisor_id)
+
+        if cr.new_co_supervisor_id and cr.new_co_supervisor_id != thesis.co_supervisor_id:
+            if thesis.co_supervisor_id:
+                CommitteeMember.objects.filter(thesis=thesis, member_id=thesis.co_supervisor_id).delete()
+            thesis.co_supervisor_id = cr.new_co_supervisor_id
+            CommitteeMember.objects.get_or_create(thesis=thesis, member_id=thesis.co_supervisor_id)
+
+        thesis.save()
+
+        recipients = [thesis.student.id.user, thesis.supervisor.id.user]
+        if thesis.co_supervisor:
+            recipients.append(thesis.co_supervisor.id.user)
+        for recipient in recipients:
+            _thesis_notify(
+                sender=request.user,
+                recipient=recipient,
+                verb='Thesis topic change approved',
+                description=f"Dean Academic approved the requested change to {student_name}'s "
+                            f"thesis topic.",
+            )
+        _thesis_notify(
+            sender=request.user,
+            recipient=_hod_users_for_discipline(acronym),
+            verb='Thesis topic change approved',
+            description=f"Dean Academic approved the requested change to {student_name}'s "
+                        f"thesis topic.",
+        )
+    else:
+        cr.dean_remarks = data.get('remarks', '')
+        cr.status = 'dean_rejected'
+        cr.save()
+        _thesis_notify(
+            sender=request.user,
+            recipient=_hod_users_for_discipline(acronym),
+            verb='Thesis topic change request rejected by Dean Academic',
+            description=f"Dean Academic rejected {student_name}'s thesis topic change request. "
+                        f"Remarks: {cr.dean_remarks or '—'}",
+        )
+
+    return JsonResponse({'status': cr.status}, status=200)
+
+
+# ===========================================================================
+# Thesis Committee (RPC) Change Request
+# ===========================================================================
+# Workflow: the current supervisor (only -- not the co-supervisor, mirroring
+# the original committee-edit permission in supervisor_review_api) proposes a
+# complete new committee for an already dean_approved ThesisTopic -> HOD ->
+# Dean Academic approval, which applies the new membership to CommitteeMember
+# (supervisor/co-supervisor are always kept as members regardless of what's
+# submitted). Rejection (HOD or Dean) sends it back to the supervisor to edit
+# and resubmit the SAME record -- mirrors ThesisTopic's own resubmission
+# semantics, unlike ThesisTopicChangeRequest's terminal-decline design.
+
+def _is_thesis_current_supervisor(user, thesis):
+    return thesis.supervisor_id == user.username
+
+
+def _thesis_committee_change_to_dict(cr):
+    thesis = cr.thesis
+    return {
+        'id': cr.id,
+        'thesis_id': thesis.id,
+        'student_roll': thesis.student.id.id,
+        'student_name': thesis.student.id.user.get_full_name(),
+        'student_discipline': thesis.student.specialization,
+        'supervisor': {'id': thesis.supervisor.id.id, 'name': str(thesis.supervisor)},
+        'co_supervisor': (
+            {'id': thesis.co_supervisor.id.id, 'name': str(thesis.co_supervisor)}
+            if thesis.co_supervisor else None
+        ),
+        'current_committee': [
+            {
+                'id': cm.member.id.id,
+                'name': str(cm.member),
+                'discipline': (cm.member.id.department.name if cm.member.id.department else ''),
+            }
+            for cm in thesis.committee.all()
+        ],
+        'proposed_committee': [
+            {
+                'id': m.id.id,
+                'name': str(m),
+                'discipline': (m.id.department.name if m.id.department else ''),
+            }
+            for m in cr.members.all()
+        ],
+        'status': cr.status,
+        'hod_remarks': cr.hod_remarks,
+        'dean_remarks': cr.dean_remarks,
+        'created_at': cr.created_at.isoformat(),
+    }
+
+
+def _validate_committee_members(thesis, member_ids):
+    """Returns (Faculty queryset, error_response_or_None). Always folds in
+    supervisor/co-supervisor and enforces the >=3 minimum, matching the
+    original committee-edit rule in supervisor_review_api."""
+    member_ids = set(member_ids or [])
+    member_ids.add(thesis.supervisor_id)
+    if thesis.co_supervisor_id:
+        member_ids.add(thesis.co_supervisor_id)
+
+    if len(member_ids) < 3:
+        return None, JsonResponse(
+            {'error': 'Need at least 3 RPC members (including supervisor/co-supervisor).'}, status=400,
+        )
+
+    members_qs = Faculty.objects.filter(pk__in=member_ids)
+    if members_qs.count() != len(member_ids):
+        return None, JsonResponse({'error': 'One or more selected members are invalid.'}, status=400)
+
+    return members_qs, None
+
+
+# 1. Supervisor
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def supervisor_committee_change_requests(request):
+    """GET /supervisor/thesis/committee-change-requests/ -> committee change
+    requests for theses the requester currently supervises, most recent first."""
+    try:
+        faculty = Faculty.objects.get(id__user=request.user)
+    except Faculty.DoesNotExist:
+        return JsonResponse({'error': 'Faculty record not found'}, status=404)
+
+    qs = ThesisCommitteeChangeRequest.objects.filter(thesis__supervisor=faculty).select_related(
+        'thesis__student__id__user', 'thesis__supervisor__id__user', 'thesis__co_supervisor__id__user',
+    ).order_by('-created_at')
+    return JsonResponse({
+        'requests': [_thesis_committee_change_to_dict(cr) for cr in qs],
+    }, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def supervisor_propose_committee_change(request, thesis_pk):
+    """
+    POST /supervisor/thesis/<thesis_pk>/committee-change/propose/
+    Body: { members: [faculty_id, ...] }
+    Only the current supervisor may propose. Only allowed once the thesis is
+    fully dean_approved, when no other committee change request is currently
+    in progress (an 'approved' or nonexistent prior request is fine -- a
+    rejected one must be resubmitted instead, not re-proposed), and not while
+    an RPC review is in progress.
+    """
+    thesis = get_object_or_404(ThesisTopic, pk=thesis_pk)
+    if not _is_thesis_current_supervisor(request.user, thesis):
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+    if thesis.status != 'dean_approved':
+        return JsonResponse(
+            {'error': 'Thesis topic must be fully approved before requesting a committee change.'}, status=403,
+        )
+
+    latest = ThesisCommitteeChangeRequest.objects.filter(thesis=thesis).order_by('-created_at').first()
+    if latest and latest.status != 'approved':
+        return JsonResponse({
+            'error': 'A committee change request is already in progress for this thesis -- '
+                     'edit and resubmit it instead of proposing a new one.',
+        }, status=400)
+
+    if _thesis_change_request_active_rpc_blocked(thesis):
+        return JsonResponse({
+            'error': 'Cannot request a committee change while a Comprehensive Exam, Open Seminar, '
+                     'or Progress Seminar is awaiting RPC consent.',
+        }, status=403)
+
+    members_qs, err = _validate_committee_members(thesis, request.data.get('members'))
+    if err:
+        return err
+
+    cr = ThesisCommitteeChangeRequest.objects.create(thesis=thesis)
+    cr.members.set(members_qs)
+
+    acronym = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+    _thesis_notify(
+        sender=request.user,
+        recipient=_hod_users_for_discipline(acronym),
+        verb='Thesis committee change request pending your review',
+        description=f"{thesis.student.id.user.get_full_name()}'s supervisor has proposed a "
+                    f"committee membership change, awaiting your review.",
+    )
+
+    return JsonResponse(_thesis_committee_change_to_dict(cr), status=201)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def supervisor_resubmit_committee_change(request, pk):
+    """
+    POST /supervisor/thesis/committee-change/<pk>/resubmit/
+    Body: { members: [faculty_id, ...] }
+    Only after a HOD/Dean rejection, only by the current supervisor.
+    """
+    cr = get_object_or_404(ThesisCommitteeChangeRequest, pk=pk)
+    thesis = cr.thesis
+    if not _is_thesis_current_supervisor(request.user, thesis):
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+    if cr.status not in ('hod_rejected', 'dean_rejected'):
+        return JsonResponse({'error': 'Cannot edit at this stage'}, status=403)
+
+    if _thesis_change_request_active_rpc_blocked(thesis):
+        return JsonResponse({
+            'error': 'Cannot resubmit a committee change while a Comprehensive Exam, Open Seminar, '
+                     'or Progress Seminar is awaiting RPC consent.',
+        }, status=403)
+
+    members_qs, err = _validate_committee_members(thesis, request.data.get('members'))
+    if err:
+        return err
+
+    cr.members.set(members_qs)
+    cr.status = 'hod_pending'
+    cr.hod_remarks = ''
+    cr.dean_remarks = ''
+    cr.save()
+
+    acronym = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+    _thesis_notify(
+        sender=request.user,
+        recipient=_hod_users_for_discipline(acronym),
+        verb='Thesis committee change request resubmitted',
+        description=f"{thesis.student.id.user.get_full_name()}'s supervisor has resubmitted a "
+                    f"committee membership change, awaiting your review.",
+    )
+
+    return JsonResponse(_thesis_committee_change_to_dict(cr), status=200)
+
+
+# 2. HOD
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def hod_committee_change_dashboard(request):
+    """GET /hod/thesis/committee-change-requests/ -> requests pending HOD review, scoped to the HOD's own discipline."""
+    hod_disciplines = get_hod_disciplines(request.user)
+    qs = ThesisCommitteeChangeRequest.objects.filter(status='hod_pending').select_related(
+        'thesis__student__id__user', 'thesis__student__batch_id__discipline', 'thesis__supervisor__id__user',
+    )
+    pending = []
+    for cr in qs:
+        student = cr.thesis.student
+        acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
+        if acronym and acronym in hod_disciplines:
+            pending.append(_thesis_committee_change_to_dict(cr))
+    return JsonResponse({'pending': pending}, status=200)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def hod_committee_change_review(request, pk):
+    """
+    GET  /hod/thesis/committee-change/<pk>/review/
+    POST /hod/thesis/committee-change/<pk>/review/ Body: { approve: true|false, remarks }
+    """
+    cr = get_object_or_404(ThesisCommitteeChangeRequest, pk=pk)
+    thesis = cr.thesis
+    acronym = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+    is_hod = is_hod_of_discipline(request.user, acronym)
+
+    if request.method == 'GET':
+        if not is_hod:
+            return JsonResponse({'error': 'Not authorized'}, status=403)
+        return JsonResponse(_thesis_committee_change_to_dict(cr), status=200)
+
+    if not is_hod or cr.status != 'hod_pending':
+        return JsonResponse({'error': 'Forbidden or invalid stage'}, status=403)
+
+    data = request.data
+    cr.hod_by = request.user
+    cr.hod_at = timezone.now()
+    student_name = thesis.student.id.user.get_full_name()
+
+    if data.get('approve'):
+        cr.hod_remarks = ''
+        cr.status = 'dean_pending'
+        cr.save()
+        _thesis_notify(
+            sender=request.user,
+            recipient=_dean_academic_users(),
+            verb='Thesis committee change request pending your final approval',
+            description=f"{student_name}'s committee change request has been approved by the "
+                        f"HOD and is awaiting your final approval.",
+        )
+        _thesis_notify(
+            sender=request.user,
+            recipient=thesis.supervisor.id.user,
+            verb='Thesis committee change request approved by HOD',
+            description=f"{student_name}'s committee change request has been approved by the "
+                        f"HOD and forwarded to Dean Academic.",
+        )
+    else:
+        cr.hod_remarks = data.get('remarks', '')
+        cr.status = 'hod_rejected'
+        cr.save()
+        _thesis_notify(
+            sender=request.user,
+            recipient=thesis.supervisor.id.user,
+            verb='Thesis committee change request rejected by HOD',
+            description=f"The HOD rejected {student_name}'s committee change request. "
+                        f"Remarks: {cr.hod_remarks or '—'}",
+        )
+
+    return JsonResponse({'status': cr.status}, status=200)
+
+
+# 3. Dean Academic
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_committee_change_dashboard(request):
+    """GET /dean/thesis/committee-change-requests/ -> requests pending Dean Academic final approval."""
+    qs = ThesisCommitteeChangeRequest.objects.filter(status='dean_pending').select_related(
+        'thesis__student__id__user', 'thesis__supervisor__id__user',
+    )
+    return JsonResponse({'pending': [_thesis_committee_change_to_dict(cr) for cr in qs]}, status=200)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_committee_change_review(request, pk):
+    """
+    GET  /dean/thesis/committee-change/<pk>/review/
+    POST /dean/thesis/committee-change/<pk>/review/ Body: { approve: true|false, remarks }
+    Approving replaces the thesis's CommitteeMember rows with the proposed
+    membership (supervisor/co-supervisor always included).
+    """
+    cr = get_object_or_404(ThesisCommitteeChangeRequest, pk=pk)
+    thesis = cr.thesis
+
+    if request.method == 'GET':
+        return JsonResponse(_thesis_committee_change_to_dict(cr), status=200)
+
+    if cr.status != 'dean_pending':
+        return JsonResponse({'error': 'Forbidden or invalid stage'}, status=403)
+
+    data = request.data
+    cr.dean_by = request.user
+    cr.dean_at = timezone.now()
+    student_name = thesis.student.id.user.get_full_name()
+    acronym = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+
+    if data.get('approve'):
+        cr.dean_remarks = ''
+        cr.status = 'approved'
+        cr.save()
+
+        CommitteeMember.objects.filter(thesis=thesis).delete()
+        for member in cr.members.all():
+            CommitteeMember.objects.get_or_create(thesis=thesis, member=member)
+
+        for recipient in filter(None, [thesis.student.id.user, thesis.supervisor.id.user]):
+            _thesis_notify(
+                sender=request.user,
+                recipient=recipient,
+                verb='Thesis committee change approved',
+                description=f"Dean Academic approved the requested committee change for "
+                            f"{student_name}'s thesis.",
+            )
+        _thesis_notify(
+            sender=request.user,
+            recipient=_hod_users_for_discipline(acronym),
+            verb='Thesis committee change approved',
+            description=f"Dean Academic approved the requested committee change for "
+                        f"{student_name}'s thesis.",
+        )
+    else:
+        cr.dean_remarks = data.get('remarks', '')
+        cr.status = 'dean_rejected'
+        cr.save()
+        _thesis_notify(
+            sender=request.user,
+            recipient=thesis.supervisor.id.user,
+            verb='Thesis committee change request rejected by Dean Academic',
+            description=f"Dean Academic rejected {student_name}'s committee change request. "
+                        f"Remarks: {cr.dean_remarks or '—'}",
+        )
+
+    return JsonResponse({'status': cr.status}, status=200)
+
+
 # Seminar Views
 # 1. STUDENT
 
@@ -7306,7 +9097,10 @@ def rpc_finalize(request, pk):
     return JsonResponse({"message": "Seminar approved."})
 
 
-from applications.academic_procedures.models import ThesisSubmission, ReviewInvitation, ThesisReview, ExaminerBankDetails
+from applications.academic_procedures.models import (
+    ThesisSubmission, ReviewInvitation, ThesisReview, ExaminerBankDetails,
+    ThesisRevisionRound, ThesisRevisionConsent,
+)
 from applications.academic_procedures.utils import (
     send_invitation_email,
     send_review_form_email,
@@ -7314,6 +9108,16 @@ from applications.academic_procedures.utils import (
     advance_invitation,
     INVITATION_TIMEOUT_DAYS,
 )
+
+
+def _current_invitation(sub, examiner_type):
+    """The examiner currently 'holding' this category -- the one who accepted
+    (or is still pending a response) rather than one who rejected/expired and
+    was passed over. There's only ever one non-finalized-out invitation per
+    category once the panel has been sent out."""
+    return ReviewInvitation.objects.filter(
+        submission=sub, examiner_type=examiner_type
+    ).exclude(status__in=['rejected', 'expired']).order_by('priority').first()
 
 # 1. Student submits thesis
 @api_view(['POST'])
@@ -7382,6 +9186,7 @@ def thesis_submission_status(request):
     except ThesisSubmission.DoesNotExist:
         return Response({'submission': None}, status=200)
 
+    current_round = sub.revision_rounds.order_by('-round_number').first()
     return Response({
         'submission': {
             'id': sub.id,
@@ -7392,6 +9197,13 @@ def thesis_submission_status(request):
             'thesis_report_url': sub.thesis_report.url if sub.thesis_report else None,
             'dean_panel_remarks': sub.dean_panel_remarks,
             'director_remarks': sub.director_remarks,
+            # Only meaningful (and only the student's turn) when status is
+            # 'student_revision_pending' -- revised_thesis_url null means
+            # they haven't uploaded yet.
+            'pending_revision_round': (
+                current_round.round_number
+                if sub.status == 'student_revision_pending' and current_round else None
+            ),
         },
     }, status=200)
 
@@ -7493,6 +9305,42 @@ def supervisor_submission_detail(request, submission_id):
     })
 
 
+def _serialize_examiner_reports(sub):
+    """Completed examiners' latest-round reports for a submission. Identity
+    redaction is deliberately not applied here yet -- deferred until the
+    exact rule is confirmed with officials."""
+    completed = (
+        ReviewInvitation.objects
+        .filter(submission=sub, status='completed')
+        .prefetch_related('reviews')
+        .order_by('examiner_type', 'priority')
+    )
+    reviews = []
+    for inv in completed:
+        # Only the latest round's report matters here -- earlier rounds
+        # are superseded once the examiner reconfirms on a revision.
+        latest = inv.reviews.order_by('-round_number').first()
+        if latest is None:
+            continue
+        reviews.append({
+            'examiner_type': inv.examiner_type,
+            'examiner_name': inv.prof_name,
+            'examiner_email': inv.prof_email,
+            'round_number': latest.round_number,
+            'originality_presentation': latest.originality_presentation,
+            'quality_comparable': latest.quality_comparable,
+            'new_ideas_original': latest.new_ideas_original,
+            'correction_severity': latest.correction_severity,
+            'technical_content': latest.technical_content,
+            'highlights': latest.highlights,
+            'suggestions': latest.suggestions,
+            'defense_questions': latest.defense_questions,
+            'recommendation': latest.recommendation,
+            'submitted_at': latest.submitted_at,
+        })
+    return reviews
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def supervisor_review_reports(request):
@@ -7507,30 +9355,7 @@ def supervisor_review_reports(request):
 
     data = []
     for sub in ThesisSubmission.objects.filter(thesis__in=topics):
-        completed = (
-            ReviewInvitation.objects
-            .filter(submission=sub, status='completed')
-            .select_related('review')
-            .order_by('examiner_type', 'priority')
-        )
-        reviews = [
-            {
-                'examiner_type': inv.examiner_type,
-                'examiner_name': inv.prof_name,
-                'examiner_email': inv.prof_email,
-                'originality_presentation': inv.review.originality_presentation,
-                'quality_comparable': inv.review.quality_comparable,
-                'new_ideas_original': inv.review.new_ideas_original,
-                'correction_severity': inv.review.correction_severity,
-                'technical_content': inv.review.technical_content,
-                'highlights': inv.review.highlights,
-                'suggestions': inv.review.suggestions,
-                'defense_questions': inv.review.defense_questions,
-                'recommendation': inv.review.recommendation,
-                'submitted_at': inv.review.submitted_at,
-            }
-            for inv in completed if hasattr(inv, 'review')
-        ]
+        reviews = _serialize_examiner_reports(sub)
         if reviews:
             data.append({
                 'id': sub.id,
@@ -7538,9 +9363,45 @@ def supervisor_review_reports(request):
                 'student_name': sub.thesis.student.id.user.get_full_name(),
                 'student_roll': sub.thesis.student.id.id,
                 'reviews': reviews,
+                'status': sub.status,
+                'status_label': sub.get_status_display(),
+                'reports_forwarded_at': sub.reports_forwarded_at,
+                'current_round': _serialize_revision_round(sub, request),
             })
 
     return Response(data)
+
+
+def _serialize_revision_round(sub, request):
+    """Latest revision round + RPC consent progress, or None if the
+    submission hasn't reached the revision stage."""
+    round_obj = sub.revision_rounds.order_by('-round_number').first()
+    if round_obj is None:
+        return None
+
+    base = request.build_absolute_uri(settings.MEDIA_URL)
+    committee = CommitteeMember.objects.filter(thesis=sub.thesis).select_related('member__id__user')
+    consents = {
+        c.member_id: c
+        for c in ThesisRevisionConsent.objects.filter(round=round_obj)
+    }
+    members = [
+        {
+            'member_name': cm.member.id.user.get_full_name(),
+            'consented': consents[cm.member_id].consented if cm.member_id in consents else False,
+            'remarks': consents[cm.member_id].remarks if cm.member_id in consents else '',
+        }
+        for cm in committee
+    ]
+    return {
+        'round_number': round_obj.round_number,
+        'revised_thesis_url': (base + round_obj.revised_thesis.name) if round_obj.revised_thesis else None,
+        'revised_at': round_obj.revised_at,
+        'supervisor_consented_at': round_obj.supervisor_consented_at,
+        'committee': members,
+        'committee_size': len(members),
+        'consented_count': sum(1 for m in members if m['consented']),
+    }
 
 
 # 3) Supervisor assign examiners
@@ -7626,20 +9487,23 @@ def supervisor_assign(request):
 # 4) Dean panel dashboard: a single "action required" queue covering both
 #    panel approval and invitation-sending, plus a read-only history.
 ACTION_STATUSES = {
-    'dean_panel_review':  ('approve_panel', 'Forward Panel'),
-    'dean_invite_pending': ('send_invitations', 'Send Invitations'),
+    'dean_panel_review':      ('approve_panel', 'Forward Panel'),
+    'dean_invite_pending':    ('send_invitations', 'Send Invitations'),
+    'examiner_reports_ready': ('forward_reports', 'Forward Reports to Supervisor'),
+    'dean_final_review':      ('final_review', 'Final Review'),
 }
 
 # Friendly labels for the Dean's read-only History tab. 'submitted' only
 # reaches history once it has been through dean_panel_review at least once
 # (see the history query below), so here it always means "sent back".
 STATUS_LABELS = {
-    'submitted':      'Sent Back to Supervisor',
-    'director_review': 'With Director',
-    'in_review':      'In External Review',
-    'approved':       'Approved',
-    'rejected':       'Rejected',
-    'completed':      'Completed',
+    'submitted':                  'Sent Back to Supervisor',
+    'director_review':            'With Director',
+    'in_review':                  'In External Review',
+    'supervisor_reports_review':  'With Supervisor',
+    'student_revision_pending':   'Awaiting Student Revision',
+    'supervisor_revision_review': 'Awaiting Supervisor & RPC Consent',
+    'approved_for_defense':       'Approved for Defense',
 }
 
 
@@ -7665,6 +9529,13 @@ def dean_panel_dashboard(request):
             'director_remarks': sub.director_remarks,
             'indian_examiners': indian,
             'foreign_examiners': foreign,
+            'reviews': _serialize_examiner_reports(sub) if sub.status in (
+                'examiner_reports_ready', 'dean_final_review', 'approved_for_defense',
+            ) else [],
+            'current_round': _serialize_revision_round(sub, request) if sub.status in (
+                'student_revision_pending', 'supervisor_revision_review', 'dean_final_review',
+                'approved_for_defense',
+            ) else None,
         }
 
     action_required = []
@@ -7681,6 +9552,15 @@ def dean_panel_dashboard(request):
         elif sub.status == 'dean_invite_pending':
             action, action_label = ACTION_STATUSES[sub.status]
             waiting_since = sub.director_approved_at
+        elif sub.status == 'examiner_reports_ready':
+            action, action_label = ACTION_STATUSES[sub.status]
+            waiting_since = sub.examiner_reports_ready_at
+        elif sub.status == 'dean_final_review':
+            if _dissenting_invitations(sub):
+                action, action_label = 'send_back_to_examiner', 'Send Back to Examiner(s)'
+            else:
+                action, action_label = 'approve_for_defense', 'Approve for Defense'
+            waiting_since = sub.revision_consented_at or sub.final_review_requested_at
         else:
             action, action_label = ACTION_STATUSES[sub.status]
             waiting_since = sub.supervisor_approved_at
@@ -7954,13 +9834,22 @@ def review_detail(request, token):
 
     if request.method == 'GET':
         base = request.build_absolute_uri(settings.MEDIA_URL)
+        # Reconfirmation rounds (revision_round > 1) review the student's
+        # revised thesis from the matching round, not the original upload --
+        # round N here pairs with ThesisRevisionRound N-1's resubmission.
+        report_file = sub.thesis_report
+        if inv.revision_round > 1:
+            prior_round = sub.revision_rounds.filter(round_number=inv.revision_round - 1).first()
+            if prior_round and prior_round.revised_thesis:
+                report_file = prior_round.revised_thesis
         return Response({
             'student_name': topic.student.id.user.get_full_name(),
             'student_roll': topic.student.id.id,
             'student_discipline': topic.student.specialization,
             'thesis_title': topic.research_theme,
             'synopsis_url': base + sub.synopsis.name,
-            'report_url': base + sub.thesis_report.name,
+            'report_url': base + report_file.name,
+            'revision_round': inv.revision_round,
             'examiner_type': inv.examiner_type,
             'examiner': {
                 'name': inv.prof_name,
@@ -7972,11 +9861,10 @@ def review_detail(request, token):
             },
         }, status=200)
 
-    # POST: record the formal evaluation and finalize this examiner's invitation.
-    # Note: this only closes out THIS examiner's invitation -- the other
-    # category's examiner (Indian/Foreign) is untouched and continues its own
-    # lifecycle independently. What happens once both examiners have reviewed
-    # (aggregating outcomes, a final decision, etc.) is not yet implemented.
+    # POST: record the formal evaluation and finalize this examiner's invitation
+    # (for this revision round -- see ReviewInvitation.revision_round). Once
+    # BOTH categories are sitting at 'completed' for their current round, the
+    # submission moves to examiner_reports_ready for the Dean to forward on.
     data = request.data
     if not data.get('recommendation'):
         return Response({'error': 'A specific recommendation is required.'}, status=400)
@@ -7984,6 +9872,7 @@ def review_detail(request, token):
     with transaction.atomic():
         ThesisReview.objects.update_or_create(
             invitation=inv,
+            round_number=inv.revision_round,
             defaults={
                 'originality_presentation': data.get('originality_presentation', ''),
                 'quality_comparable': data.get('quality_comparable'),
@@ -8015,6 +9904,14 @@ def review_detail(request, token):
 
         inv.status = 'completed'
         inv.save(update_fields=['status'])
+
+        indian_inv = _current_invitation(sub, 'indian')
+        foreign_inv = _current_invitation(sub, 'foreign')
+        if (indian_inv and indian_inv.status == 'completed' and
+                foreign_inv and foreign_inv.status == 'completed'):
+            sub.status = 'examiner_reports_ready'
+            sub.examiner_reports_ready_at = timezone.now()
+            sub.save(update_fields=['status', 'examiner_reports_ready_at'])
 
     try:
         send_thank_you_email(inv)
@@ -8067,10 +9964,238 @@ def examiner_honorarium_list(request):
 
 
 # ===========================================================================
+# Post-evaluation workflow: both examiner reports received -> Dean forwards
+# (identity redaction deliberately deferred, per instruction, until officials
+# confirm the exact rule) -> Supervisor decides revision or not -> Student
+# revises -> Supervisor + RPC consent -> Dean's final call, which either
+# approves for defense or sends the revision back to whichever examiner(s)
+# didn't give a clean accept, unlimited rounds, via ReviewInvitation.revision_round.
+# ===========================================================================
+
+# 11) Dean forwards both examiner reports to the Supervisor.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_forward_reports(request):
+    sub = get_object_or_404(ThesisSubmission, id=request.data.get('submission_id'))
+    if sub.status != 'examiner_reports_ready':
+        return Response({'error': 'Examiner reports are not ready to be forwarded.'}, status=400)
+
+    sub.status = 'supervisor_reports_review'
+    sub.reports_forwarded_at = timezone.now()
+    sub.save(update_fields=['status', 'reports_forwarded_at'])
+    return Response({'detail': 'Reports forwarded to the Supervisor.'})
+
+
+def _require_supervisor(request, sub):
+    topic = sub.thesis
+    allowed_users = {topic.supervisor.id.user_id}
+    if topic.co_supervisor:
+        allowed_users.add(topic.co_supervisor.id.user_id)
+    return request.user.id in allowed_users
+
+
+# 12) Supervisor decides whether the reports call for a revision, or approves
+#     straight through to the Dean's final review.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def supervisor_reports_decision(request):
+    sub = get_object_or_404(ThesisSubmission, id=request.data.get('submission_id'))
+    if not _require_supervisor(request, sub):
+        return Response({'error': 'You are not the supervisor or co-supervisor for this thesis.'}, status=403)
+    if sub.status != 'supervisor_reports_review':
+        return Response({'error': 'This submission is not awaiting your decision.'}, status=400)
+
+    action = request.data.get('action')
+    if action not in ('forward_to_student', 'no_revision_needed'):
+        return Response({'error': 'Unknown action.'}, status=400)
+
+    sub.revision_requested_at = timezone.now()
+    if action == 'forward_to_student':
+        next_round = (sub.revision_rounds.aggregate(m=Max('round_number'))['m'] or 0) + 1
+        ThesisRevisionRound.objects.create(submission=sub, round_number=next_round)
+        sub.status = 'student_revision_pending'
+        detail = 'Forwarded to the student for revision.'
+    else:
+        sub.status = 'dean_final_review'
+        sub.final_review_requested_at = timezone.now()
+        detail = 'No revision needed -- forwarded to the Dean for final approval.'
+    sub.save()
+
+    return Response({'detail': detail})
+
+
+# 13) Student uploads the revised thesis for the current round.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def student_submit_revision(request):
+    sub = get_object_or_404(
+        ThesisSubmission, id=request.data.get('submission_id'),
+        thesis__student__id__user=request.user,
+    )
+    if sub.status != 'student_revision_pending':
+        return Response({'error': 'No revision is currently pending for this submission.'}, status=400)
+
+    round_obj = sub.revision_rounds.order_by('-round_number').first()
+    if round_obj is None or round_obj.revised_thesis:
+        return Response({'error': 'No pending revision round found.'}, status=400)
+
+    file = request.FILES.get('revised_thesis')
+    if not file:
+        return Response({'error': 'A revised thesis file is required.'}, status=400)
+    if file.content_type != 'application/pdf':
+        return Response({'error': 'The revised thesis must be a PDF.'}, status=400)
+    if file.size > 25 * 1024 * 1024:
+        return Response({'error': 'File too large.'}, status=400)
+
+    round_obj.revised_thesis = file
+    round_obj.revised_at = timezone.now()
+    round_obj.save(update_fields=['revised_thesis', 'revised_at'])
+
+    sub.status = 'supervisor_revision_review'
+    sub.revision_submitted_at = timezone.now()
+    sub.save(update_fields=['status', 'revision_submitted_at'])
+
+    return Response({'detail': 'Revised thesis submitted.'})
+
+
+# 14) RPC: list revision rounds awaiting the calling faculty member's consent.
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def thesis_revision_rpc_list(request):
+    faculty = get_object_or_404(Faculty, id__user=request.user)
+    rounds = (
+        ThesisRevisionRound.objects
+        .filter(submission__thesis__committee__member=faculty, submission__status='supervisor_revision_review')
+        .distinct()
+        .select_related('submission__thesis__student__id__user')
+    )
+
+    data = []
+    for r in rounds:
+        sub = r.submission
+        base = request.build_absolute_uri(settings.MEDIA_URL)
+        data.append({
+            'round_id': r.id,
+            'submission_id': sub.id,
+            'round_number': r.round_number,
+            'student_name': sub.thesis.student.id.user.get_full_name(),
+            'thesis_title': sub.thesis.research_theme,
+            'revised_thesis_url': (base + r.revised_thesis.name) if r.revised_thesis else None,
+            'revised_at': r.revised_at,
+            'my_consent_given': ThesisRevisionConsent.objects.filter(
+                round=r, member=faculty, consented=True
+            ).exists(),
+        })
+    return Response(data)
+
+
+# 15) RPC: record this faculty member's consent on a revision round.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def thesis_revision_rpc_consent(request):
+    faculty = get_object_or_404(Faculty, id__user=request.user)
+    round_obj = get_object_or_404(ThesisRevisionRound, id=request.data.get('round_id'))
+    if not CommitteeMember.objects.filter(thesis=round_obj.submission.thesis, member=faculty).exists():
+        return Response({'error': 'You are not on this thesis\'s RPC.'}, status=403)
+    if round_obj.submission.status != 'supervisor_revision_review':
+        return Response({'error': 'This round is not awaiting RPC consent.'}, status=400)
+
+    ThesisRevisionConsent.objects.update_or_create(
+        round=round_obj, member=faculty,
+        defaults={'consented': True, 'remarks': request.data.get('remarks', '')},
+    )
+    return Response({'detail': 'Consent recorded.'})
+
+
+# 16) Supervisor forwards the RPC-consented revision to the Dean, once every
+#     current committee member has consented.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def supervisor_finalize_revision(request):
+    sub = get_object_or_404(ThesisSubmission, id=request.data.get('submission_id'))
+    if not _require_supervisor(request, sub):
+        return Response({'error': 'You are not the supervisor or co-supervisor for this thesis.'}, status=403)
+    if sub.status != 'supervisor_revision_review':
+        return Response({'error': 'This submission is not awaiting revision consent.'}, status=400)
+
+    round_obj = sub.revision_rounds.order_by('-round_number').first()
+    committee_ids = list(CommitteeMember.objects.filter(thesis=sub.thesis).values_list('member_id', flat=True))
+    consented = ThesisRevisionConsent.objects.filter(
+        round=round_obj, consented=True, member_id__in=committee_ids
+    ).count()
+    if not committee_ids or consented < len(committee_ids):
+        return Response({'error': 'Not all RPC members have consented yet.'}, status=400)
+
+    round_obj.supervisor_consented_at = timezone.now()
+    round_obj.save(update_fields=['supervisor_consented_at'])
+
+    sub.status = 'dean_final_review'
+    sub.revision_consented_at = timezone.now()
+    sub.final_review_requested_at = timezone.now()
+    sub.save(update_fields=['status', 'revision_consented_at', 'final_review_requested_at'])
+
+    return Response({'detail': 'Forwarded to the Dean for final approval.'})
+
+
+def _dissenting_invitations(sub):
+    """Examiner categories whose latest review wasn't a clean accept -- these
+    are the ones the Dean sends the revision back to for reconfirmation."""
+    dissenting = []
+    for examiner_type in ('indian', 'foreign'):
+        inv = _current_invitation(sub, examiner_type)
+        if inv is None:
+            continue
+        latest = inv.reviews.order_by('-round_number').first()
+        if latest and latest.recommendation != 'accept':
+            dissenting.append(inv)
+    return dissenting
+
+
+# 17) Dean's final call: approve for defense if every examiner is now a clean
+#     accept, otherwise send the revision back to whoever still isn't (unlimited
+#     rounds -- ReviewInvitation.revision_round just keeps incrementing).
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_final_review_action(request):
+    sub = get_object_or_404(ThesisSubmission, id=request.data.get('submission_id'))
+    if sub.status != 'dean_final_review':
+        return Response({'error': 'This submission is not awaiting your final review.'}, status=400)
+
+    dissenting = _dissenting_invitations(sub)
+
+    with transaction.atomic():
+        if dissenting:
+            for inv in dissenting:
+                inv.revision_round += 1
+                inv.status = 'accepted'
+                inv.save(update_fields=['revision_round', 'status'])
+                try:
+                    send_review_form_email(inv)
+                    inv.review_form_sent = timezone.now()
+                    inv.save(update_fields=['review_form_sent'])
+                except Exception:
+                    logger.exception(f"Failed to re-send review-form email for token {inv.token}")
+            sub.status = 'in_review'
+            sub.save(update_fields=['status'])
+            detail = 'Revised thesis sent back to the examiner(s) for reconfirmation.'
+        else:
+            sub.status = 'approved_for_defense'
+            sub.defense_approved_at = timezone.now()
+            sub.dean = request.user
+            sub.save(update_fields=['status', 'defense_approved_at', 'dean'])
+            detail = 'Approved for defense.'
+
+    return Response({'detail': detail})
+
+
+# ===========================================================================
 # Thesis Slot Semester-Level Registration
 # ===========================================================================
 from applications.academic_procedures.models import (
-    ThesisTopic, CommitteeMember, ProgressSeminarEntry,
+    ThesisTopic, ThesisTopicChangeRequest, ThesisCommitteeChangeRequest, CommitteeMember, ProgressSeminarEntry,
     ProgressSeminarConsent, ProgressSeminarComment,
     ThesisRegistration, ProgressSeminarRegistration, TeachingCreditRegistration,
     ThesisEvaluation, ProgressSeminarEvaluation,
@@ -8213,6 +10338,7 @@ def student_thesis_enrollment_api(request):
                     'name': thesis_slot.name,
                     'info': thesis_slot.thesis_slot_info or '',
                     'duration': thesis_slot.duration,
+                    'evaluation_type': thesis_slot.evaluation_type,
                     'theses': [
                         {'id': t.id, 'code': t.code, 'name': t.name, 'credit': t.credit}
                         for t in thesis_slot.theses.all()
@@ -8239,6 +10365,7 @@ def student_thesis_enrollment_api(request):
                 'thesis_slot': slot_data,
                 'registration': reg_data,
                 'evaluations': eval_blocks,
+                'programme_category': _student_programme_category(student),
             }, status=200)
 
     except Exception as e:
@@ -8263,17 +10390,24 @@ def student_thesis_enrollment_api(request):
             status=400,
         )
 
-    # Validate chosen credits
-    ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
-    try:
-        chosen_credits = int(request.data.get('credits', 6))
-    except (TypeError, ValueError):
-        chosen_credits = 6
-    if chosen_credits not in ALLOWED_THESIS_CREDITS:
-        return JsonResponse(
-            {'error': f'Invalid credit value. Choose from {ALLOWED_THESIS_CREDITS}'},
-            status=400,
-        )
+    # PG students have a fixed credit value per evaluation_type -- no free
+    # choice: 3 for a block-graded (S/X) semester, 12 for the decimal-graded
+    # semester. The 12 is fixed regardless of any earlier block-graded
+    # semesters; those are additional thesis credit, not a substitute for
+    # any part of it (PG's total can range from 12 up to 18).
+    if _student_programme_category(student) == 'PG':
+        chosen_credits = 3 if thesis_slot.evaluation_type == 'blocks_sx' else 12
+    else:
+        ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
+        try:
+            chosen_credits = int(request.data.get('credits', 6))
+        except (TypeError, ValueError):
+            chosen_credits = 6
+        if chosen_credits not in ALLOWED_THESIS_CREDITS:
+            return JsonResponse(
+                {'error': f'Invalid credit value. Choose from {ALLOWED_THESIS_CREDITS}'},
+                status=400,
+            )
 
     # Check max registration limit
     current_count = ThesisRegistration.objects.filter(
@@ -8309,7 +10443,7 @@ def student_thesis_enrollment_api(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_thesis_enrollment_list(request):
     """
     GET /acadadmin/thesis-enrollments/?semester=<no>&status=<status>
@@ -8327,7 +10461,7 @@ def admin_thesis_enrollment_list(request):
 
     status_filter = request.GET.get('status')
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
 
     data = []
     for reg in qs:
@@ -9148,7 +11282,7 @@ def student_progress_seminar_enrollment_api(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_progress_seminar_enrollment_list(request):
     """
     GET /acadadmin/progress-seminar-enrollments/?semester=<no>&status=<status>
@@ -9166,7 +11300,7 @@ def admin_progress_seminar_enrollment_list(request):
 
     status_filter = request.GET.get('status')
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
 
     data = []
     for reg in qs:
@@ -9400,7 +11534,7 @@ def student_teaching_credit_enrollment_api(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def admin_teaching_credit_enrollment_list(request):
     """
     GET /acadadmin/teaching-credit-enrollments/?semester=<no>&status=<status>
@@ -9418,7 +11552,7 @@ def admin_teaching_credit_enrollment_list(request):
 
     status_filter = request.GET.get('status')
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
 
     data = [_teaching_credit_enrollment_to_dict(reg) for reg in qs]
     return JsonResponse({'registrations': data}, status=200)
@@ -9568,7 +11702,88 @@ def phd_course_slots(request):
         {'id': s.id, 'name': s.name, 'course_count': s.course_count}
         for s in slots if s.id not in taken_slot_ids
     ]
-    return JsonResponse({'semester_no': semester.semester_no, 'slots': data}, status=200)
+    # Registration window (same Calendar gate enforced at submit) so the form only renders when open.
+    import json as _json
+    _elig = get_pg_phd_registration_eligibility(
+        timezone.now().date(), _student_programme_category(student),
+        student.curr_semester_no, datetime.datetime.now().year)
+    registration_open = _elig is None
+    registration_message = '' if registration_open else _json.loads(_elig.content).get('error', 'Registration is not open.')
+    return JsonResponse({
+        'semester_no': semester.semester_no,
+        'slots': data,
+        'registration_open': registration_open,
+        'registration_message': registration_message,
+    }, status=200)
+
+
+# Same backlog-eligibility rule as the UG add-course flow (add_course): a BL
+# slot course may only be (re)registered if the student's latest grade in it is
+# below C+. PG/PhD have no sections, so only this grade gate carries over.
+_PHD_BL_ALLOWED_GRADES = ['F', 'X', 'CD', 'C', 'D+', 'D']
+
+
+_PHD_BL_BACKLOG_GRADES = {'F', 'X', 'CD'}
+
+
+def registration_type_for_grade(grade):
+    if grade in _PHD_BL_BACKLOG_GRADES:
+        return 'Backlog'
+    if grade in _PHD_BL_ALLOWED_GRADES:
+        return 'Improvement'
+    return 'Regular'
+
+
+def latest_grade(roll_no, course):
+    """The student's most recent grade row in a course, or None."""
+    return Student_grades.objects.filter(
+        roll_no=roll_no, course_id=course
+    ).order_by('-year', '-semester').first()
+
+
+def _phd_bl_grade_status(username, course):
+    """Returns (allowed, grade) for a BL course. grade is None when the student
+    has no recorded grade in the course (also treated as not allowed)."""
+    sg = latest_grade(username, course)
+    if not sg:
+        return False, None
+    return sg.grade in _PHD_BL_ALLOWED_GRADES, sg.grade
+
+
+def _phd_bl_source_courses(student):
+    """The student's own courses eligible to be cleared through a BL slot: the
+    latest grade in each is below C+. A course taken in an OE slot may be
+    swapped for a different one; anything else has to be retaken as it is."""
+    username = student.id.user.username
+    # The latest grade decides, so the filter cannot come first: a course whose
+    # latest attempt cleared it must drop out, not fall back to the older low one.
+    latest = {}
+    for sg in Student_grades.objects.filter(
+        roll_no=username
+    ).select_related('course_id').order_by('year', 'semester'):
+        latest[sg.course_id_id] = sg
+    latest = {course_id: sg for course_id, sg in latest.items()
+              if sg.grade in _PHD_BL_ALLOWED_GRADES}
+
+    oe_course_ids = set(course_registration.objects.filter(
+        student_id=student, course_id__in=latest.keys(),
+        course_slot_id__name__istartswith='OE',
+    ).values_list('course_id', flat=True))
+
+    out = []
+    for course_id, sg in latest.items():
+        course = sg.course_id
+        out.append({
+            'id': course.id,
+            'code': course.code,
+            'name': course.name,
+            'credit': course.credit,
+            'grade': sg.grade,
+            'registration_type': registration_type_for_grade(sg.grade),
+            'replaceable': course_id in oe_course_ids,
+        })
+    out.sort(key=lambda c: c['code'])
+    return out
 
 
 @api_view(['GET'])
@@ -9596,8 +11811,34 @@ def phd_course_slot_courses(request):
     except (Semester.DoesNotExist, CourseSlot.DoesNotExist):
         return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
 
-    courses = slot.courses.all().values('id', 'code', 'name', 'credit')
-    return JsonResponse({'courses': list(courses)}, status=200)
+    # A BL slot clears a past course, so it is driven by the student's own
+    # below-C+ grades rather than the slot list; the slot list is only the pool
+    # a replaceable (OE) course can be swapped for.
+    is_bl = slot.name.startswith('BL')
+    username = student.id.user.username
+    courses = []
+    for c in slot.courses.all():
+        entry = {'id': c.id, 'code': c.code, 'name': c.name, 'credit': c.credit,
+                 'bl_eligible': True, 'bl_grade': None}
+        if is_bl:
+            allowed, grade = _phd_bl_grade_status(username, c)
+            entry['bl_eligible'] = allowed
+            entry['bl_grade'] = grade
+        courses.append(entry)
+
+    payload = {'courses': courses}
+    if is_bl:
+        # A source already in flight through another slot is spoken for, so the
+        # dropdown can leave it out instead of failing on submit.
+        claimed = dict(PhDCourseRegistrationRequest.objects.filter(
+            student=student, semester=semester, status__in=['Pending', 'Approved'],
+            source_course__isnull=False,
+        ).exclude(course_slot=slot).values_list('source_course_id', 'course_slot__name'))
+        sources = _phd_bl_source_courses(student)
+        for source in sources:
+            source['claimed_by'] = claimed.get(source['id'])
+        payload['source_courses'] = sources
+    return JsonResponse(payload, status=200)
 
 
 @api_view(['POST'])
@@ -9622,6 +11863,7 @@ def phd_submit_course_request(request):
 
     slot_id = request.data.get('slot_id')
     course_id = request.data.get('course_id')
+    source_course_id = request.data.get('source_course_id')
     if not slot_id or not course_id:
         return JsonResponse({'error': 'slot_id and course_id are required'}, status=400)
 
@@ -9631,18 +11873,60 @@ def phd_submit_course_request(request):
             semester_no=student.curr_semester_no,
         )
         slot = CourseSlot.objects.get(id=slot_id, semester=semester)
-        course = slot.courses.get(id=course_id)
     except Semester.DoesNotExist:
         return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
     except CourseSlot.DoesNotExist:
         return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
-    except Courses.DoesNotExist:
-        return JsonResponse({'error': 'Course not found in this slot'}, status=404)
+
+    is_bl = slot.name.startswith('BL')
+    source_course = None
+    registration_type = ''
+
+    if is_bl:
+        if not source_course_id:
+            return JsonResponse({'error': 'source_course_id is required for a BL slot'}, status=400)
+        eligible = {c['id']: c for c in _phd_bl_source_courses(student)}
+        source = eligible.get(int(source_course_id))
+        if not source:
+            return JsonResponse({'error': 'That course is not one you can clear: a BL slot needs a course you scored below C+ in.'}, status=400)
+        registration_type = source['registration_type']
+        # An OE course can be cleared by a different course from this slot;
+        # anything else has to be the same course taken again.
+        if source['replaceable']:
+            # a retake is allowed even though it is not one of the stand-ins
+            if int(course_id) == source['id']:
+                course = Courses.objects.get(id=source['id'])
+            else:
+                try:
+                    course = slot.courses.get(id=course_id)
+                except Courses.DoesNotExist:
+                    return JsonResponse({'error': 'Course not found in this slot'}, status=404)
+        elif int(course_id) != source['id']:
+            return JsonResponse({'error': f"{source['code']} was not taken in an open elective slot, so it has to be cleared by retaking the same course."}, status=400)
+        else:
+            course = Courses.objects.get(id=source['id'])
+        source_course = Courses.objects.get(id=source['id'])
+    else:
+        try:
+            course = slot.courses.get(id=course_id)
+        except Courses.DoesNotExist:
+            return JsonResponse({'error': 'Course not found in this slot'}, status=404)
 
     if PhDCourseRegistrationRequest.objects.filter(
         student=student, semester=semester, course_slot=slot, status__in=['Pending', 'Approved']
     ).exists():
         return JsonResponse({'error': 'You already have a request for this slot'}, status=400)
+
+    # One backlog is cleared once: without this a second slot could clear the
+    # same course again and earn its credits twice.
+    if source_course:
+        clash = PhDCourseRegistrationRequest.objects.filter(
+            student=student, semester=semester, source_course=source_course,
+            status__in=['Pending', 'Approved'],
+        ).exclude(course_slot=slot).select_related('course_slot').first()
+        if clash:
+            return JsonResponse({'error': f"{source_course.code} is already being cleared "
+                                          f"through {clash.course_slot.name} this semester."}, status=400)
 
     academic_year, semester_type = generate_current_session(
         datetime.datetime.now().year, student.curr_semester_no
@@ -9656,6 +11940,8 @@ def phd_submit_course_request(request):
             'academic_year': academic_year,
             'semester_type': semester_type,
             'course': course,
+            'source_course': source_course,
+            'registration_type': registration_type,
             'status': 'Pending',
             'remarks': '',
             'requested_at': timezone.now(),
@@ -9694,7 +11980,8 @@ def phd_my_course_requests(request):
         return err
 
     qs = PhDCourseRegistrationRequest.objects.filter(student=student) \
-        .select_related('course', 'course_slot', 'semester').order_by('-requested_at')
+        .select_related('course', 'source_course', 'course_slot', 'semester') \
+        .order_by('-requested_at')
 
     data = [{
         'id': r.id,
@@ -9702,6 +11989,8 @@ def phd_my_course_requests(request):
         'course': r.course.code,
         'course_name': r.course.name,
         'credit': r.course.credit,
+        'source_course': r.source_course.code if r.source_course_id else None,
+        'registration_type': r.registration_type or None,
         'semester_no': r.semester.semester_no,
         'academic_year': r.academic_year,
         'semester_type': r.semester_type,
@@ -9717,7 +12006,7 @@ def phd_my_course_requests(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def phd_admin_list_requests(request):
     """
     GET /acadadmin/phd/course-requests/?academic_year=&semester_type=&semester=&status=
@@ -9726,8 +12015,10 @@ def phd_admin_list_requests(request):
     teaching-credit enrollment list endpoints (used by the merged admin view).
     """
     qs = PhDCourseRegistrationRequest.objects.select_related(
-        'student__id__user', 'course', 'course_slot', 'semester'
+        'student__id__user', 'student__batch_id__discipline', 'course', 'source_course',
+        'course_slot', 'semester'
     ).all().order_by('-requested_at')
+    qs = scope_via_student(qs, scopes_for(request.user), 'student')
 
     year = request.GET.get('academic_year', '').strip()
     sem_type = request.GET.get('semester_type', '').strip()
@@ -9741,7 +12032,14 @@ def phd_admin_list_requests(request):
     if sem_no:
         qs = qs.filter(semester__semester_no=sem_no)
     if status_filter:
-        qs = qs.filter(status=status_filter)
+        qs = qs.filter(status__iexact=status_filter)
+
+    # Pending first, so the rows needing action survive the cap below.
+    qs = qs.order_by(
+        Case(When(status__iexact='pending', then=0), default=1,
+             output_field=IntegerField()),
+        '-requested_at',
+    )
 
     qs = qs[:500]
 
@@ -9749,10 +12047,14 @@ def phd_admin_list_requests(request):
         'id': r.id,
         'student': r.student.id.user.username,
         'student_name': f"{r.student.id.user.first_name} {r.student.id.user.last_name}".strip(),
+        'discipline': (r.student.batch_id.discipline.acronym if r.student.batch_id and r.student.batch_id.discipline_id else ''),
+        'specialization': r.student.specialization or '',
         'slot': r.course_slot.name,
         'course': r.course.code,
         'course_name': r.course.name,
         'credit': r.course.credit,
+        'source_course': r.source_course.code if r.source_course_id else None,
+        'registration_type': r.registration_type or None,
         'semester_no': r.semester.semester_no,
         'academic_year': r.academic_year,
         'semester_type': r.semester_type,
@@ -9769,7 +12071,7 @@ def phd_admin_list_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def phd_admin_process_requests(request):
     """
     POST /acadadmin/phd/course-requests/process/
@@ -9777,6 +12079,8 @@ def phd_admin_process_requests(request):
     Approving creates the real course_registration row; rejecting just marks status.
     """
     request_ids = request.data.get('request_ids', [])
+    request_ids = scoped_ids(
+        PhDCourseRegistrationRequest, request_ids, scopes_for(request.user))
     action = str(request.data.get('action', 'approve')).lower().strip()
     remarks = request.data.get('remarks', '')
 
@@ -9845,13 +12149,29 @@ def phd_admin_process_requests(request):
             results.append({'id': req_id, 'status': 'error', 'detail': 'Already registered'})
             continue
 
+        # A BL request clears its source course, which for a stand-in is not the
+        # course being registered; that source carries the grade and the
+        # registration this one replaces.
+        cleared_course = req.source_course or req.course
+
+        # Registration type from the prior grade (same rule as the UG add approval).
+        _sg = latest_grade(req.student.id.user.username, cleared_course)
+        registration_type = registration_type_for_grade(_sg.grade if _sg else None)
+        if registration_type == 'Regular' and req.registration_type:
+            registration_type = req.registration_type
+
+        # The prior registration of the cleared course (the low attempt) is the one being replaced.
+        old_reg = course_registration.objects.filter(
+            student_id=req.student, course_id=cleared_course,
+        ).order_by('-working_year', '-semester_id__semester_no').first()
+
         try:
             # Nested atomic block (savepoint): a unique-constraint collision
             # here (e.g. two different course_slot requests for the same
             # actual course approved concurrently) must only roll back this
             # one item, not the whole batch's already-applied results.
             with transaction.atomic():
-                course_registration.objects.create(
+                new_reg = course_registration.objects.create(
                     student_id=req.student,
                     course_id=req.course,
                     course_slot_id=req.course_slot,
@@ -9859,8 +12179,14 @@ def phd_admin_process_requests(request):
                     session=req.academic_year,
                     semester_type=req.semester_type,
                     working_year=datetime.datetime.now().year,
-                    registration_type='Regular',
+                    registration_type=registration_type,
                 )
+                # Mirror UG: link the replaced (old) registration to the new one.
+                if old_reg:
+                    course_replacement.objects.create(
+                        old_course_registration=old_reg,
+                        new_course_registration=new_reg,
+                    )
         except IntegrityError:
             req.status = 'Rejected'
             req.remarks = 'Already registered for this course'
@@ -10494,21 +12820,95 @@ def _is_exam_supervisor_or_co(request, exam):
 
 def _can_set_exam_date(request, attempt):
     """Supervisor/co-supervisor or any RPC member may set/update the exam date."""
-    if _is_exam_supervisor_or_co(request, attempt.exam):
+    return _is_exam_supervisor_co_or_rpc_member(request, attempt.exam)
+
+
+def _is_exam_supervisor_co_or_rpc_member(request, exam):
+    """Supervisor/co-supervisor or any RPC committee member -- the Manage
+    Comprehensive Examination modal (supervisor_comprehensive_exam_detail) is
+    shared by both audiences (RPC-only members reach it via the "RPC Member"
+    tab's Consent button, per SupervisorComprehensiveExamDashboard)."""
+    if _is_exam_supervisor_or_co(request, exam):
         return True
     try:
         faculty = Faculty.objects.get(id__user=request.user)
     except Faculty.DoesNotExist:
         return False
-    return _exam_rpc_committee(attempt.exam.student).filter(member=faculty).exists()
+    return _exam_rpc_committee(exam.student).filter(member=faculty).exists()
 
 
 def _student_completed_credits(student):
-    """Sum of credits for courses the student has a passing grade for (SemesterMarks)."""
-    total = SemesterMarks.objects.filter(student_id=student).exclude(
+    """Sum of credits for regular courses the student has a passing grade for.
+    Coursework only -- callers needing PhD Thesis/Progress Seminar/Teaching
+    Credit too should add those separately (see _student_total_credits_completed)
+    or, like _compute_open_seminar_eligibility, report them as their own fields.
+
+    Reads Student_grades (the table the current React grade-submission flow
+    and transcript both actually use), not SemesterMarks -- that table is
+    only ever written by an old, disconnected legacy Django-template grading
+    view (academic_procedures/views.py::course_marks_data) and is empty for
+    students graded through the current flow.
+    """
+    total = Student_grades.objects.filter(roll_no=student.id_id).exclude(
         grade__isnull=True
-    ).exclude(grade__in=['F', 'X']).aggregate(total=Sum('curr_id__credit'))['total']
+    ).exclude(grade__in=['F', 'X']).aggregate(total=Sum('course_id__credit'))['total']
     return total or 0
+
+
+def _progress_seminar_credits_completed(student):
+    """Sum of each of the student's rpc_approved ProgressSeminarEntry records at its
+    own catalog credit value (see resolve_progress_seminar_credit -- do not hardcode
+    this number, it varies by the Seminar catalog row)."""
+    thesis_topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+    if not thesis_topic:
+        return 0
+    approved_seminars = thesis_topic.seminars.filter(status='rpc_approved')
+    return sum(
+        resolve_progress_seminar_credit(student, s.semester) for s in approved_seminars
+    )
+
+
+def _thesis_research_credits_completed(student):
+    """Registered credits (ThesisRegistration.credits) are just what the student
+    signed up for -- actual earned credit only counts once a block is graded
+    Satisfactory and the result announced (each block = 3 credits)."""
+    return ThesisEvaluation.objects.filter(
+        registration__student=student, grade='S', announced=True,
+    ).count() * 3
+
+
+def _teaching_credits_completed(student):
+    """Registering for teaching credit (TeachingCreditRegistration) or being
+    allocated a course (TeachingCreditAllocation) isn't earning the credit --
+    only a semester marked 'completed'/'satisfactory' counts, at that
+    semester's own catalog credit value."""
+    return sum(
+        resolve_teaching_credit_credit(student, alloc.semester)
+        for alloc in TeachingCreditAllocation.objects.filter(
+            student=student, status='completed', result='satisfactory',
+        )
+    )
+
+
+def _student_total_credits_completed(student):
+    """Full credits-completed figure: coursework plus PhD Thesis/Progress
+    Seminar/Teaching Credit -- the same four numbers _compute_open_seminar_eligibility
+    reports separately (to avoid double-counting there), summed into one total for
+    eligibility checks (e.g. Comprehensive Exam) that just need a single figure."""
+    return (
+        _student_completed_credits(student)
+        + _progress_seminar_credits_completed(student)
+        + _thesis_research_credits_completed(student)
+        + _teaching_credits_completed(student)
+    )
+
+
+def _student_current_cpi(student):
+    """Live CPI as of now, via the same canonical calculate_cpi_for_student() the
+    transcript uses. Student.cpi itself is a dead field -- nothing in the codebase
+    ever writes to it after grades are submitted -- so it can't be trusted here."""
+    cpi, _, _ = calculate_cpi_for_student(student, student.curr_semester_no, None)
+    return cpi
 
 
 def comprehensive_exam_to_dict(exam):
@@ -10615,8 +13015,8 @@ def supervisor_student_academic_info(request, roll_no):
         return JsonResponse({'error': 'Student not found'}, status=404)
 
     return JsonResponse({
-        'credits_completed': _student_completed_credits(student),
-        'current_cpi': str(student.cpi) if student.cpi is not None else None,
+        'credits_completed': _student_total_credits_completed(student),
+        'current_cpi': str(_student_current_cpi(student)),
     }, status=200)
 
 
@@ -10665,8 +13065,8 @@ def supervisor_propose_comprehensive_exam(request):
         possible_thesis_title=data.get('possible_thesis_title', ''),
         proposed_exam_date=data.get('proposed_exam_date') or None,
         entry_qualification=entry_qualification,
-        credits_completed=_student_completed_credits(student),
-        current_cpi=student.cpi,
+        credits_completed=_student_total_credits_completed(student),
+        current_cpi=_student_current_cpi(student),
     )
 
     _comprehensive_exam_notify(
@@ -10683,9 +13083,11 @@ def supervisor_propose_comprehensive_exam(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def supervisor_comprehensive_exam_detail(request, pk):
-    """GET /supervisor/comprehensive-exam/<pk>/ -> full detail (also used to prefill a resubmission)."""
+    """GET /supervisor/comprehensive-exam/<pk>/ -> full detail (also used to prefill a
+    resubmission, and shared with the RPC Member "Consent" view -- see
+    _is_exam_supervisor_co_or_rpc_member)."""
     exam = get_object_or_404(ComprehensiveExam, pk=pk)
-    if not _is_exam_supervisor_or_co(request, exam):
+    if not _is_exam_supervisor_co_or_rpc_member(request, exam):
         return JsonResponse({'error': 'Not authorized'}, status=403)
     return JsonResponse(comprehensive_exam_to_dict(exam), status=200)
 
@@ -10715,8 +13117,8 @@ def supervisor_resubmit_proposal(request, pk):
         exam.co_supervisor_id = data['co_supervisor_id'] or None
 
     # Re-derive from the student's own records rather than trusting client input.
-    exam.credits_completed = _student_completed_credits(exam.student)
-    exam.current_cpi = exam.student.cpi
+    exam.credits_completed = _student_total_credits_completed(exam.student)
+    exam.current_cpi = _student_current_cpi(exam.student)
 
     exam.status = 'academic_office_pending'
     exam.credits_verified = False
@@ -10786,7 +13188,17 @@ def academic_office_comprehensive_exam_list(request):
     status_param = request.GET.get('status')
     if status_param:
         qs = qs.filter(status=status_param)
-    return JsonResponse({'exams': [comprehensive_exam_to_dict(e) for e in qs]}, status=200)
+    exams = list(qs)
+    # Still-pending exams may have been proposed before the student earned more
+    # credits / their CPI changed -- refresh from current records (and persist,
+    # so what's shown here matches exactly what the verify action will check)
+    # rather than displaying whatever was snapshotted at proposal time.
+    for exam in exams:
+        if exam.status == 'academic_office_pending':
+            exam.credits_completed = _student_total_credits_completed(exam.student)
+            exam.current_cpi = _student_current_cpi(exam.student)
+            exam.save(update_fields=['credits_completed', 'current_cpi'])
+    return JsonResponse({'exams': [comprehensive_exam_to_dict(e) for e in exams]}, status=200)
 
 
 @api_view(['POST'])
@@ -10800,6 +13212,12 @@ def academic_office_verify_comprehensive_exam(request, pk):
     """
     exam = get_object_or_404(ComprehensiveExam, pk=pk, status='academic_office_pending')
     data = request.data
+
+    # Refresh from the student's current records rather than trusting whatever was
+    # snapshotted at proposal time -- the student may have earned more credits
+    # (or their CPI may have changed) since then.
+    exam.credits_completed = _student_total_credits_completed(exam.student)
+    exam.current_cpi = _student_current_cpi(exam.student)
 
     exam.credits_verified = bool(data.get('credits_verified', False))
     exam.cpi_verified = bool(data.get('cpi_verified', False))
@@ -11353,59 +13771,45 @@ def _is_open_seminar_supervisor_or_co(request, seminar):
 
 def _can_set_seminar_date(request, attempt):
     """Supervisor/co-supervisor or any RPC member may set/update the seminar date."""
-    if _is_open_seminar_supervisor_or_co(request, attempt.open_seminar):
+    return _is_seminar_supervisor_co_or_rpc_member(request, attempt.open_seminar)
+
+
+def _is_seminar_supervisor_co_or_rpc_member(request, seminar):
+    """Supervisor/co-supervisor or any RPC committee member -- the Manage Open
+    Seminar modal (supervisor_open_seminar_detail) is shared by both audiences
+    (RPC-only members reach it via the "RPC Member" tab's Consent button,
+    mirroring the Comprehensive Exam flow's _is_exam_supervisor_co_or_rpc_member)."""
+    if _is_open_seminar_supervisor_or_co(request, seminar):
         return True
     try:
         faculty = Faculty.objects.get(id__user=request.user)
     except Faculty.DoesNotExist:
         return False
-    return _exam_rpc_committee(attempt.open_seminar.student).filter(member=faculty).exists()
+    return _exam_rpc_committee(seminar.student).filter(member=faculty).exists()
 
 
 def _compute_open_seminar_eligibility(student):
     """Auto-derive the Constitution form's credit breakdown + RPC recommendation.
 
-    course_work_credits reuses the same SemesterMarks-based helper as
-    Comprehensive Exam; progress_seminar_credits sums each of the student's
-    rpc_approved ProgressSeminarEntry records at its own catalog credit value (see
-    resolve_progress_seminar_credit -- do not hardcode this number, it varies by the
-    Seminar catalog row); thesis_research_credits sums graded-and-announced
-    ThesisEvaluation blocks; teaching_credits sums each satisfactorily-completed
-    TeachingCreditAllocation semester at its own catalog credit value (see
-    resolve_teaching_credit_credit); rpc_recommended_open_seminar reads the
-    latest approved seminar's rec_open field.
+    The four credit numbers are reported separately here (not summed into one
+    total) -- see _student_completed_credits / _progress_seminar_credits_completed /
+    _thesis_research_credits_completed / _teaching_credits_completed for what each
+    one means. rpc_recommended_open_seminar reads the latest approved seminar's
+    rec_open field.
     """
     course_work_credits = _student_completed_credits(student)
+    progress_seminar_credits = _progress_seminar_credits_completed(student)
+    thesis_research_credits = _thesis_research_credits_completed(student)
+    teaching_credits = _teaching_credits_completed(student)
 
     thesis_topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
-    progress_seminar_credits = 0
     rpc_recommended_open_seminar = False
     if thesis_topic:
-        approved_seminars = thesis_topic.seminars.filter(status='rpc_approved')
-        progress_seminar_credits = sum(
-            resolve_progress_seminar_credit(student, s.semester) for s in approved_seminars
-        )
-        latest_approved = approved_seminars.order_by('-version').first()
+        latest_approved = thesis_topic.seminars.filter(
+            status='rpc_approved'
+        ).order_by('-version').first()
         if latest_approved:
             rpc_recommended_open_seminar = (latest_approved.rec_open == 'Yes')
-
-    # Registered credits (ThesisRegistration.credits) are just what the student
-    # signed up for -- actual earned credit only counts once a block is graded
-    # Satisfactory and the result announced (each block = 3 credits).
-    thesis_research_credits = ThesisEvaluation.objects.filter(
-        registration__student=student, grade='S', announced=True,
-    ).count() * 3
-
-    # Registering for teaching credit (TeachingCreditRegistration) or being
-    # allocated a course (TeachingCreditAllocation) isn't earning the credit --
-    # only a semester marked 'completed'/'satisfactory' counts, at that
-    # semester's own catalog credit value.
-    teaching_credits = sum(
-        resolve_teaching_credit_credit(student, alloc.semester)
-        for alloc in TeachingCreditAllocation.objects.filter(
-            student=student, status='completed', result='satisfactory',
-        )
-    )
 
     return {
         'course_work_credits': course_work_credits,
@@ -11637,9 +14041,11 @@ def supervisor_propose_open_seminar(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def supervisor_open_seminar_detail(request, pk):
-    """GET /supervisor/open-seminar/<pk>/ -> full detail (also used to prefill a resubmission)."""
+    """GET /supervisor/open-seminar/<pk>/ -> full detail (also used to prefill a
+    resubmission, and shared with the RPC Member "Consent" view -- see
+    _is_seminar_supervisor_co_or_rpc_member)."""
     seminar = get_object_or_404(OpenSeminar, pk=pk)
-    if not _is_open_seminar_supervisor_or_co(request, seminar):
+    if not _is_seminar_supervisor_co_or_rpc_member(request, seminar):
         return JsonResponse({'error': 'Not authorized'}, status=403)
     return JsonResponse(open_seminar_to_dict(seminar), status=200)
 

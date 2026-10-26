@@ -81,6 +81,14 @@ class IsAcadAdminOrDean(HasDesignation):
     allowed_roles = ("acadadmin", "Dean Academic")
 
 
+class IsProgrammeAcadAdmin(HasDesignation):
+    """Also admits Acad UG / PG / Ph.D. Use only where the view scopes its data."""
+
+    from applications.globals.programme_scope import ALL_ACAD_ROLES as _acad_roles
+
+    allowed_roles = ("Dean Academic",) + _acad_roles
+
+
 # --- Decorator for PLAIN Django views (non-DRF) -----------------------------
 # Plain function views (e.g. those using @require_http_methods) bypass DRF, so
 # DRF auth/permission don't apply and the token header is ignored. This

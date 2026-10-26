@@ -2,7 +2,8 @@ from django.contrib.auth import get_user_model
 from applications.academic_information.models import Student
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
-                                                Project, Publication, Skill)
+                                                Project, Publication, Skill,
+                                                StudentBankDetails)
 from applications.programme_curriculum.models import (
     Course as CurriculumCourse, CourseSlot, CourseInstructor
 )
@@ -15,6 +16,7 @@ import hmac
 import logging
 import secrets
 import re
+import threading
 from datetime import timedelta
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -35,7 +37,14 @@ from applications.globals.models import (ExtraInfo, HoldsDesignation, ModuleAcce
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
 from notifications.signals import notify
-from applications.globals.decorators import role_required
+from applications.globals.decorators import held_designations, role_required
+from applications.globals import iam_bridge
+from applications.globals.programme_scope import (
+    ALL_ACAD_ROLES,
+    STUDENT_CATEGORY_PATH,
+    scope_recipients,
+    scopes_for,
+)
 _security_log = logging.getLogger("fusion.security")
 
 User = get_user_model()
@@ -65,7 +74,13 @@ def login(request):
         'token' : data['auth_token'],
         'designations': designation
     }
-    return Response(data=resp, status=status.HTTP_200_OK)
+    response = Response(data=resp, status=status.HTTP_200_OK)
+    # One login for every app. Best effort: the IAM being down must not block it.
+    return iam_bridge.attach_session(
+        response,
+        iam_bridge.mint_session(serializer.validated_data.get('username', ''),
+                                serializer.validated_data.get('password', '')),
+    )
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -75,14 +90,16 @@ def logout(request):
         request.user.auth_token.delete()
     except Exception:
         pass  # token already deleted or doesn't exist — still return success
-    return Response({'message': 'User logged out successfully'}, status=status.HTTP_200_OK)
+    response = Response({'message': 'User logged out successfully'},
+                        status=status.HTTP_200_OK)
+    return iam_bridge.clear_session(response)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def auth_view(request):
     user=request.user
-    name = request.user.first_name +"_"+ request.user.last_name
+    name = " ".join(filter(None, [request.user.first_name, request.user.last_name])).strip()
     roll_no = request.user.username
 
     extra_info = get_object_or_404(ExtraInfo, user=user)
@@ -106,15 +123,43 @@ def auth_view(request):
                 filtered_modules[field_name] = getattr(module_access, field_name)
             
             accessible_modules[designation] = filtered_modules
+
+    # Granted by the IAM, kept under the designation that grants each one.
+    iam_token = request.COOKIES.get(iam_bridge.COOKIE_NAME)
+    external, plugged_nav = iam_bridge.plugged_modules(iam_token)
+    for designation, codes in external.items():
+        if not codes:
+            continue
+        modules = accessible_modules.setdefault(designation, {})
+        for code in codes:
+            modules[code] = True
             
+    # A first-login student (has an incomplete batch-upload record) must finish
+    # the profile-completion popup before using the app.
+    must_complete_profile = False
+    try:
+        from applications.programme_curriculum.models_student_management import (
+            StudentBatchUpload, PhdStudentBatchUpload,
+        )
+        must_complete_profile = (
+            StudentBatchUpload.objects.filter(user=user, profile_completed=False).exists()
+            or PhdStudentBatchUpload.objects.filter(user=user, profile_completed=False).exists()
+        )
+    except Exception:
+        must_complete_profile = False
+
     resp={
         'designation_info' : designation_info,
         'name': name,
         'roll_no': roll_no,
         'accessible_modules': accessible_modules,
-        'last_selected_role': last_selected_role
+        'last_selected_role': last_selected_role,
+        'must_complete_profile': must_complete_profile,
+        # The menus plugged modules contribute, under the designation that grants
+        # each one, so a role never draws another role's screens.
+        'plugged_navigation': plugged_nav,
     }
-    
+
     return Response(data=resp,status=status.HTTP_200_OK)
 
 def _notification_role_matches(notification, active_role):
@@ -179,6 +224,12 @@ def update_last_selected_role(request):
 
     if new_role is None:
         return Response({'error': 'last_selected_role is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Only a post this person actually holds may be acted in; authorisation
+    # reads this column, so an unchecked write here is a free promotion.
+    if not held_designations(request.user) & {str(new_role).strip().lower()}:
+        return Response({'error': 'You do not hold that role.'},
+                        status=status.HTTP_403_FORBIDDEN)
 
     extra_info = get_object_or_404(ExtraInfo, user=request.user)
 
@@ -397,6 +448,52 @@ def profile_delete(request, id):
         return Response({'message': 'Patent deleted successfully'}, status=status.HTTP_200_OK)
     return Response({'error': 'Wrong attribute'}, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def student_bank_details(request):
+    """
+    GET  /profile/bank-details/ -> the requesting student's own bank details ({} if none saved yet)
+    POST /profile/bank-details/ -> create/update (one record per student)
+    Kept as its own endpoint, deliberately separate from the general
+    profile()/profile_update() blob -- bank details are sensitive and must
+    never be exposed via the unauthenticated-for-other-users profile lookup.
+    """
+    try:
+        student = Student.objects.get(id=request.user.extrainfo)
+    except Student.DoesNotExist:
+        return Response({'error': 'Only students have bank details on their profile'}, status=status.HTTP_403_FORBIDDEN)
+
+    if request.method == 'GET':
+        details = StudentBankDetails.objects.filter(unique_id=student).first()
+        if not details:
+            return Response({}, status=status.HTTP_200_OK)
+        return Response(serializers.StudentBankDetailsSerializer(details).data, status=status.HTTP_200_OK)
+
+    serializer_instance = StudentBankDetails.objects.filter(unique_id=student).first()
+    serializer = serializers.StudentBankDetailsSerializer(
+        instance=serializer_instance, data=request.data, partial=True,
+    )
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer.save(unique_id=student)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def acadadmin_student_bank_details(request, roll_no):
+    """GET /profile/bank-details/<roll_no>/ -> Academic Office view of a specific student's bank details."""
+    student = get_object_or_404(Student, id=roll_no)
+    details = StudentBankDetails.objects.filter(unique_id=student).first()
+    if not details:
+        return Response({}, status=status.HTTP_200_OK)
+    return Response(serializers.StudentBankDetailsSerializer(details).data, status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -445,6 +542,42 @@ def delete_notification(request):
         )
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def clear_notifications(request):
+    """
+    Bulk-marks the requester's notifications as deleted for a single tab.
+    scope='announcement' clears announcement-flagged items; any other scope
+    clears the regular notifications. Honours the role-visibility rule so a
+    user only ever clears what they can actually see.
+    """
+    try:
+        scope = request.data.get('scope', 'notification')
+        qs = Notification.objects.filter(recipient=request.user, deleted=False)
+        target_ids = []
+        unread_cleared = 0
+        for n in _visible_notifications(request.user, qs):
+            data = n.data if isinstance(n.data, dict) else {}
+            is_announcement = data.get('flag') == 'announcement'
+            if (scope == 'announcement') == is_announcement:
+                target_ids.append(n.id)
+                if n.unread:
+                    unread_cleared += 1
+        Notification.objects.filter(id__in=target_ids).update(deleted=True)
+        return Response(
+            {'message': 'Notifications cleared.',
+             'cleared': len(target_ids),
+             'unread_cleared': unread_cleared},
+            status=status.HTTP_200_OK,
+        )
+    except Exception:
+        return Response(
+            {'error': 'Failed to clear notifications.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
 def resolve_audience_recipients(obj):
     """
     Resolves recipient Users for anything carrying the shared audience_type/
@@ -458,6 +591,9 @@ def resolve_audience_recipients(obj):
             current_designation__designation=obj.target_role).distinct()
     if obj.audience_type == 'department':
         return User.objects.filter(extrainfo__department=obj.target_department)
+    if obj.audience_type == 'programme':
+        return User.objects.filter(**{
+            'extrainfo__student__' + STUDENT_CATEGORY_PATH: obj.target_programme})
     if obj.audience_type == 'batch':
         return User.objects.filter(extrainfo__student__batch_id=obj.target_batch)
     if obj.audience_type == 'individual':
@@ -468,15 +604,24 @@ def resolve_audience_recipients(obj):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def create_announcement(request):
     serializer = serializers.AnnouncementSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    scopes = scopes_for(request.user)
+    if scopes is not None:
+        chosen = (request.data.get('target_programme') or '').upper()
+        if request.data.get('audience_type') == 'programme' and chosen not in scopes:
+            return Response(
+                {'error': 'You may only announce to %s.' % ', '.join(sorted(scopes))},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
     announcement = serializer.save(created_by=request.user.extrainfo)
 
-    recipients = resolve_audience_recipients(announcement)
+    recipients = scope_recipients(resolve_audience_recipients(announcement), scopes)
     notify.send(
         sender=request.user,
         recipient=recipients,
@@ -494,7 +639,7 @@ def create_announcement(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def announcement_audience_options(request):
     roles = serializers.DesignationSerializer(Designation.objects.all(), many=True).data
     departments = serializers.DepartmentInfoSerializer(DepartmentInfo.objects.all(), many=True).data
@@ -504,17 +649,22 @@ def announcement_audience_options(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@role_required(['acadadmin'])
+@role_required(list(ALL_ACAD_ROLES))
 def search_users(request):
     query = request.query_params.get('q', '').strip()
     if not query:
         return Response([], status=status.HTTP_200_OK)
 
-    users = User.objects.filter(
-        Q(username__icontains=query)
-        | Q(first_name__icontains=query)
-        | Q(last_name__icontains=query)
-        | Q(extrainfo__id__icontains=query)
+    # scoped before the slice, so a programme admin cannot pick a student whose
+    # notification would then be dropped on send
+    users = scope_recipients(
+        User.objects.filter(
+            Q(username__icontains=query)
+            | Q(first_name__icontains=query)
+            | Q(last_name__icontains=query)
+            | Q(extrainfo__id__icontains=query)
+        ),
+        scopes_for(request.user),
     ).distinct()[:20]
 
     results = [
@@ -575,6 +725,16 @@ def _otp_hash(otp: str) -> str:
 
 def _token_hash(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
+
+
+def _deliver_otp_email(email, username):
+    """Run in a thread; a delivery failure must never reach the caller, who is
+    told the same thing whether or not the address exists."""
+    try:
+        email.send()
+    except Exception:
+        _security_log.exception("OTP email delivery failed | user=%s", username)
+
 
 _safe_eq = hmac.compare_digest
 
@@ -695,8 +855,11 @@ def password_reset_send_otp(request):
         )
         
         email.attach_alternative(html_content, "text/html")
-        email.send()
-        
+        # Off the request path: the OTP is already saved and the reply is the
+        # same either way, so the caller was only ever waiting on SMTP.
+        threading.Thread(target=_deliver_otp_email, args=(email, user.username),
+                         daemon=True).start()
+
     except Exception:
         _security_log.exception("OTP email delivery failed | user=%s", user.username)
 

@@ -280,3 +280,10 @@ class Director_gold(models.Model):
 
     class Meta:
         db_table = 'Director_gold'
+
+# Registered here so Django picks the assistantship tables up with the app.
+from .models_assistantship import (  # noqa: E402,F401
+    AssistantshipExclusion,
+    AssistantshipRecord,
+    AssistantshipSignatory,
+)

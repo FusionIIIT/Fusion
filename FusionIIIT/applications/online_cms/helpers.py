@@ -30,6 +30,9 @@ def create_thumbnail(course_code,course, row, name, ext, attach_str, thumb_time,
     filepath = settings.MEDIA_ROOT + '/online_cms/' + course_code + '/vid/' + name + ext
     filename = settings.MEDIA_ROOT + '/online_cms/' + course_code + '/vid/'
     filename = filename + name.replace(' ', '-') + '-' + attach_str + '.png'
-    process = 'ffmpeg -y -i ' + filepath + ' -vframes ' + str(1) + ' -an -s '
-    process = process + thumb_size + ' -ss ' + str(thumb_time) + ' ' + filename
-    subprocess.call(process, shell=True)
+    # Argument list, not a shell string: the uploaded file name reaches this and
+    # would otherwise be interpreted by the shell.
+    subprocess.call([
+        'ffmpeg', '-y', '-i', filepath, '-vframes', '1', '-an',
+        '-s', str(thumb_size), '-ss', str(thumb_time), filename,
+    ])

@@ -10,7 +10,8 @@ from applications.globals.models import (ExtraInfo, HoldsDesignation, Department
 from applications.placement_cell.api.serializers import (SkillSerializer, HasSerializer,
                                                         EducationSerializer, CourseSerializer, ExperienceSerializer,
                                                         ProjectSerializer, AchievementSerializer, PublicationSerializer,
-                                                        PatentSerializer, PlacementStatusSerializer, NotifyStudentSerializer)
+                                                        PatentSerializer, PlacementStatusSerializer, NotifyStudentSerializer,
+                                                        StudentBankDetailsSerializer)
 
 User = get_user_model()
 
@@ -32,10 +33,24 @@ class AuthUserSerializer(serializers.ModelSerializer):
         return token.key
 
 class NotificationSerializer(serializers.ModelSerializer):
+    data = serializers.SerializerMethodField()
 
     class Meta:
         model=Notification
         fields=('__all__')
+
+    def get_data(self, obj):
+        import json, ast
+        payload = obj.data
+        if isinstance(payload, str):
+            try:
+                payload = json.loads(payload)
+            except Exception:
+                try:
+                    payload = ast.literal_eval(payload)
+                except Exception:
+                    payload = {}
+        return json.dumps(payload if isinstance(payload, dict) else {})
 
 class DepartmentInfoSerializer(serializers.ModelSerializer):
 
@@ -75,9 +90,11 @@ class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Announcement
         fields = ('id', 'title', 'message', 'audience_type', 'target_role',
-                'target_department', 'target_batch', 'target_users', 'created_at')
+                'target_programme', 'target_department', 'target_batch',
+                'target_users', 'created_at')
         extra_kwargs = {
             'target_role': {'required': False, 'allow_null': True},
+            'target_programme': {'required': False, 'allow_null': True},
             'target_department': {'required': False, 'allow_null': True},
             'target_batch': {'required': False, 'allow_null': True},
             'target_users': {'required': False},
@@ -87,6 +104,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         audience_type = attrs.get('audience_type')
         required_field = {
             'role': 'target_role',
+            'programme': 'target_programme',
             'department': 'target_department',
             'batch': 'target_batch',
         }.get(audience_type)

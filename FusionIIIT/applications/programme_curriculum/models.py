@@ -312,7 +312,7 @@ class Batch(models.Model):
     total_seats = models.PositiveIntegerField(default=60, null=False, blank=False)
 
     class Meta:
-        unique_together = ('name', 'discipline', 'year',)
+        unique_together = ('name', 'discipline', 'year', 'curriculum',)
 
     def __str__(self):
         return str(self.name) + " " + str(self.discipline.acronym) + " " + str(self.year)
@@ -440,8 +440,8 @@ class CourseInstructor(models.Model):
     # own instructor. Left blank for a single-offering course (e.g. an
     # interdisciplinary elective taught as one class by one dedicated faculty).
     section_label = models.CharField(
-        max_length=4, null=True, blank=True,
-        help_text="Section (A-F) this offering teaches; blank for a single-offering elective.",
+        max_length=8, null=True, blank=True,
+        help_text="Section this offering teaches; blank for a single-offering elective.",
     )
 
     class Meta:

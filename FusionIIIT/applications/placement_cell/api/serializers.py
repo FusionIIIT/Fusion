@@ -4,6 +4,7 @@ from rest_framework import serializers
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
                                                 Project, Publication, Skill,
+                                                StudentBankDetails,
                                                 PlacementAppeal, PlacementStatus,
                                                 NotifyStudent, PlacementAnnouncement,
                                                 OffCampusPlacement,
@@ -94,6 +95,13 @@ class PatentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patent
         fields = ('__all__')
+
+class StudentBankDetailsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = StudentBankDetails
+        fields = ('id', 'account_holder_name', 'bank_name', 'branch_name',
+                  'account_number', 'ifsc_code', 'updated_at')
 
 class NotifyStudentSerializer(serializers.ModelSerializer):
 

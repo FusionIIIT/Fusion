@@ -163,6 +163,7 @@ class StudentBatchUpload(models.Model):
     
     # Personal information
     name = models.CharField(max_length=200, help_text="Full Name")
+    hindi_name = models.CharField(max_length=200, blank=True, null=True, help_text="Full Name in Hindi")
     father_name = models.CharField(max_length=200, help_text="Father's Name")
     mother_name = models.CharField(max_length=200, help_text="Mother's Name")
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
@@ -203,7 +204,27 @@ class StudentBatchUpload(models.Model):
     mother_mobile = models.CharField(max_length=15, blank=True, null=True)
     parent_email = models.EmailField(blank=True, null=True, help_text="Parent Email ID")
     aadhar_number = models.CharField(max_length=12, blank=True, null=True)
-    
+    apaar_id = models.CharField(max_length=12, blank=True, null=True, help_text="APAAR ID (12 digits), collected at first login")
+    resume_link = models.URLField(
+        max_length=500, blank=True, null=True,
+        help_text="Shared Google Drive link to the resume"
+    )
+    bank_name = models.CharField(max_length=150, blank=True, null=True)
+    bank_account_no = models.CharField(max_length=20, blank=True, null=True)
+    ifsc_code = models.CharField(max_length=11, blank=True, null=True)
+    joining_date = models.DateField(
+        blank=True, null=True,
+        help_text="Date of joining, shown on the assistantship sheet"
+    )
+    photo = models.ImageField(upload_to='programme_curriculum/student_photos', blank=True, null=True, help_text="Passport photo (max 200KB)")
+    signature = models.ImageField(upload_to='programme_curriculum/student_signatures', blank=True, null=True, help_text="Signature image (max 30KB)")
+    # Images are stored in the DB (not on disk) so a plain pg_dump backs them up and restores them with the data.
+    photo_blob = models.BinaryField(null=True, blank=True, editable=False)
+    photo_mime = models.CharField(max_length=50, blank=True, null=True)
+    signature_blob = models.BinaryField(null=True, blank=True, editable=False)
+    signature_mime = models.CharField(max_length=50, blank=True, null=True)
+    profile_completed = models.BooleanField(default=False, help_text="True once the student submits the first-login profile-completion popup")
+
     # Allotment details
     allotted_category = models.CharField(max_length=50, blank=True, null=True)
     allotted_gender = models.CharField(max_length=50, blank=True, null=True)
@@ -656,6 +677,7 @@ class PhdStudentBatchUpload(models.Model):
 
     # ---- Personal information (col 4, 6, 7, 8, 9, 10, 11, 12) ----
     name = models.CharField(max_length=200, help_text="Full Name (col: Name)")
+    hindi_name = models.CharField(max_length=200, blank=True, null=True, help_text="Full Name in Hindi")
     discipline = models.CharField(max_length=200, help_text="Discipline / Branch (col: Discipline)")
     admission_type = models.CharField(
         max_length=100, choices=ADMISSION_TYPE_CHOICES, blank=True, null=True,
@@ -728,6 +750,29 @@ class PhdStudentBatchUpload(models.Model):
         max_length=12, blank=True, null=True,
         help_text="Aadhaar Number (12 digits)"
     )
+    apaar_id = models.CharField(
+        max_length=12, blank=True, null=True,
+        help_text="APAAR ID (12 digits), collected at first login"
+    )
+    resume_link = models.URLField(
+        max_length=500, blank=True, null=True,
+        help_text="Shared Google Drive link to the resume"
+    )
+    bank_name = models.CharField(max_length=150, blank=True, null=True)
+    bank_account_no = models.CharField(max_length=20, blank=True, null=True)
+    ifsc_code = models.CharField(max_length=11, blank=True, null=True)
+    joining_date = models.DateField(
+        blank=True, null=True,
+        help_text="Date of joining, shown on the assistantship sheet"
+    )
+    photo = models.ImageField(upload_to='programme_curriculum/student_photos', blank=True, null=True, help_text="Passport photo (max 200KB)")
+    signature = models.ImageField(upload_to='programme_curriculum/student_signatures', blank=True, null=True, help_text="Signature image (max 30KB)")
+    # Images are stored in the DB (not on disk) so a plain pg_dump backs them up and restores them with the data.
+    photo_blob = models.BinaryField(null=True, blank=True, editable=False)
+    photo_mime = models.CharField(max_length=50, blank=True, null=True)
+    signature_blob = models.BinaryField(null=True, blank=True, editable=False)
+    signature_mime = models.CharField(max_length=50, blank=True, null=True)
+    profile_completed = models.BooleanField(default=False, help_text="True once the student submits the first-login profile-completion popup")
 
     # ---- System / batch tracking fields ----
     admission_semester = models.CharField(

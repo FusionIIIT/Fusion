@@ -39,9 +39,13 @@ urlpatterns = [
     url(r'unique-stu-grades-years/', views.UniqueStudentGradeYearsView.as_view(), name="unique-stu-grades-years"),
     url(r'^student/credit_summary/$', views.StudentCreditSummaryAPI.as_view(), name='student_credit_summary'),
     url(r'^student/result_semesters/$', views.StudentSemesterListView.as_view(), name='get_student_semesters'),
+    url(r'^student/credit_summary/$', views.StudentCreditSummaryView.as_view(), name='student_credit_summary'),
     url(r'^grade_status/', views.GradeStatusAPI.as_view(), name='grade_status'),
     url(r'^grade_summary/', views.GradeSummaryAPI.as_view(), name='grade_summary'),
     url(r'^generate_gradesheet_data/', views.GenerateGradeSheetData.as_view(), name='generate_gradesheet_data'),
     url(r'^generate_gradesheet_form/', views.GenerateGradeSheetForm.as_view(), name='generate_gradesheet_form'),
+    url(r'^generate_full_gradesheet_form/', views.GenerateFullGradeSheetForm.as_view(), name='generate_full_gradesheet_form'),
+    url(r'^generate_full_gradesheet_data/', views.GenerateFullGradeSheetData.as_view(), name='generate_full_gradesheet_data'),
     url(r'^grade_validation/', views.GradeValidationView.as_view(), name='grade_validation'),
+    url(r'^submit_phd_milestone_grades/', views.SubmitPhDMilestoneGradesAPI.as_view(), name='submit_phd_milestone_grades'),
 ]

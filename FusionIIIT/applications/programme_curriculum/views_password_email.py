@@ -134,7 +134,7 @@ def send_password_email_smtp(student_email, student_name, password, roll_number,
                     <p>Your FUSION account has been created successfully. Please find your login credentials below:</p>
                     
                     <div style="background-color: #e3f2fd; padding: 20px; border-left: 4px solid #2196f3; margin: 20px 0; border-radius: 4px;">
-                        <p style="margin: 8px 0;"><strong>URL:</strong> <a href="http://fusion.iiitdmj.ac.in" style="color: #1976d2;">http://fusion.iiitdmj.ac.in</a></p>
+                        <p style="margin: 8px 0;"><strong>URL:</strong> <a href="https://fusion.iiitdmj.ac.in" style="color: #1976d2;">https://fusion.iiitdmj.ac.in</a></p>
                         <p style="margin: 8px 0;"><strong>Username:</strong> <code style="background-color: #f5f5f5; padding: 4px 8px; border-radius: 3px; font-family: monospace;">{roll_number}</code></p>
                         <p style="margin: 8px 0;"><strong>Password:</strong> <code style="background-color: #fff3cd; padding: 4px 8px; border-radius: 3px; font-family: monospace; color: #856404; border: 1px solid #ffeaa7;">{password}</code></p>
                     </div>

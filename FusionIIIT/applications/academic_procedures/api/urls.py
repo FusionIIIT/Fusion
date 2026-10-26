@@ -1,8 +1,65 @@
 from django.conf.urls import url
 from . import views
+from . import (bonafide_certificate, demand_letter, fee_certificate,
+               fee_structure, fee_structure_certificate)
+from .. import views as procedures_views
 
 
 urlpatterns = [
+    # Also reachable here because only /api/ paths are proxied to Django in
+    # production; the bare path returns the client's index.html instead.
+    url(r'^course_reg_receipt/$', procedures_views.generate_course_registration_receipt,
+        name='course_reg_receipt_api'),
+    url(r'^acad/bonafide/student/$', bonafide_certificate.bonafide_student,
+        name='bonafide-student'),
+    url(r'^acad/bonafide/pdf/$', bonafide_certificate.generate_bonafide_pdf,
+        name='bonafide-pdf'),
+    url(r'^acad/bonafide/certificates/$',
+        bonafide_certificate.bonafide_certificates,
+        name='bonafide-certificates'),
+    url(r'^acad/bonafide/certificates/(?P<certificate_id>\d+)/pdf/$',
+        bonafide_certificate.bonafide_certificate_pdf,
+        name='bonafide-certificate-pdf'),
+    url(r'^acad/fee-certificate/student/$', fee_certificate.fee_student,
+        name='fee-certificate-student'),
+    url(r'^acad/fee-certificate/pdf/$', fee_certificate.generate_fee_pdf,
+        name='fee-certificate-pdf'),
+    url(r'^acad/fee-certificate/certificates/$',
+        fee_certificate.fee_certificates,
+        name='fee-certificates'),
+    url(r'^acad/fee-certificate/certificates/(?P<certificate_id>\d+)/pdf/$',
+        fee_certificate.fee_certificate_pdf,
+        name='fee-certificate-pdf-detail'),
+    url(r'^acad/demand-letter/student/$', demand_letter.demand_letter_student,
+        name='demand-letter-student'),
+    url(r'^acad/demand-letter/pdf/$', demand_letter.generate_demand_letter_pdf,
+        name='demand-letter-pdf'),
+    url(r'^acad/demand-letter/certificates/$', demand_letter.demand_letters,
+        name='demand-letters'),
+    url(r'^acad/demand-letter/certificates/(?P<certificate_id>\d+)/pdf/$',
+        demand_letter.demand_letter_pdf, name='demand-letter-pdf-detail'),
+    url(r'^acad/fee-structure-certificate/student/$',
+        fee_structure_certificate.fee_structure_certificate_student,
+        name='fee-structure-certificate-student'),
+    url(r'^acad/fee-structure-certificate/pdf/$',
+        fee_structure_certificate.generate_fee_structure_pdf,
+        name='fee-structure-certificate-pdf'),
+    url(r'^acad/fee-structure-certificate/certificates/$',
+        fee_structure_certificate.fee_structure_certificates,
+        name='fee-structure-certificates'),
+    url(r'^acad/fee-structure-certificate/certificates/(?P<certificate_id>\d+)/pdf/$',
+        fee_structure_certificate.fee_structure_certificate_pdf,
+        name='fee-structure-certificate-pdf-detail'),
+    url(r'^acad/fee-structures/$', fee_structure.fee_structures,
+        name='fee-structures'),
+    url(r'^acad/fee-structures/template/$',
+        fee_structure.fee_structure_template, name='fee-structure-template'),
+    url(r'^acad/fee-structures/(?P<structure_id>\d+)/$',
+        fee_structure.fee_structure_detail, name='fee-structure-detail'),
+    url(r'^acad/fee-structures/(?P<structure_id>\d+)/replicate/$',
+        fee_structure.replicate_fee_structure, name='fee-structure-replicate'),
+    url(r'^acad/demand-letter-bank-accounts/$',
+        fee_structure.demand_letter_bank_accounts, name='demand-letter-bank-accounts'),
     # url(r'^stu/details', views.academic_procedures_student, name='student_procedures'),
     # url(r'^stu/pre_registration' , views.student_pre_registration , name = 'pre_registration'),
     url(r'^stu/final_registration' , views.final_registration , name = 'final_registration'),
@@ -21,6 +78,7 @@ urlpatterns = [
     url(r'^stu/preregistration/$', views.get_preregistration_data, name='get_preregistration_data'),
     url(r'^stu/preregistration/submit/$', views.submit_preregistration, name='preregistration-submit'),
     url(r'^stu/swayam_courses/$', views.get_swayam_registration_data, name='get_swayam_data'),
+    url(r'^stu/swayam/availability/$', views.swayam_availability, name='swayam-availability'),
     url(r'^stu/swayam/submit/$', views.submit_swayam_registration, name='swayam-submit'),
     url(r'^stu/swayam/replace/check/$', views.swayam_replace_check, name='swayam-replace-check'),
     url(r'^stu/swayam/replace/slots/$', views.swayam_replace_slots, name='swayam-replace-slots'),
@@ -61,6 +119,15 @@ urlpatterns = [
     url(r'^acad/get_add_course_slots' , views.get_add_course_slots , name = 'get_add_course_slots' ),
     url(r'^acad/get_add_courses' , views.get_add_course_courses , name = 'get_add_course_slots' ),
     url(r'^acad/addCourse/', views.acad_add_course, name="acad_add_course"),
+    url(r'^acad/get_thesis_slots', views.get_thesis_slots, name="get_thesis_slots"),
+    url(r'^acad/get_thesis_courses', views.get_thesis_courses, name="get_thesis_courses"),
+    url(r'^acad/get_progress_seminar_slots', views.get_progress_seminar_slots, name="get_progress_seminar_slots"),
+    url(r'^acad/get_progress_seminar_courses', views.get_progress_seminar_courses, name="get_progress_seminar_courses"),
+    url(r'^acad/get_teaching_credit_slots', views.get_teaching_credit_slots, name="get_teaching_credit_slots"),
+    url(r'^acad/get_teaching_credit_courses', views.get_teaching_credit_courses, name="get_teaching_credit_courses"),
+    url(r'^acad/add_thesis/', views.admin_add_thesis, name="admin_add_thesis"),
+    url(r'^acad/add_progress_seminar/', views.admin_add_progress_seminar, name="admin_add_progress_seminar"),
+    url(r'^acad/add_teaching_credit/', views.admin_add_teaching_credit, name="admin_add_teaching_credit"),
     url(r'^acad/get_course_list' , views.get_course_list , name = 'get_course_list' ),
     url(r'^acad/get_all_courses' , views.get_all_courses , name = 'get_all_courses' ),
     # url(r'^acad/gen_roll_list' , views.gen_roll_list , name = 'gen_roll_list' ),
@@ -74,10 +141,14 @@ urlpatterns = [
     url(r'^acad/search_preregistration' , views.search_preregistration , name = 'search_preregistration'),
     url(r'^acad/delete_preregistration' , views.delete_preregistration , name = 'delete_preregistration'),
     url(r'^acad/allot_courses' , views.allot_courses , name = 'allot_courses'),
+    url(r'^acad/allot_thesis' , views.allot_thesis , name = 'allot_thesis'),
+    url(r'^acad/allot_progress_seminar' , views.allot_progress_seminar , name = 'allot_progress_seminar'),
+    url(r'^acad/allot_teaching_credit' , views.allot_teaching_credit , name = 'allot_teaching_credit'),
     url(r'^acad/change-requests/allocate_all/$', views.allocate_all, name='allocate_all'),
     url(r'^acad/replacement-requests/$', views.admin_list_requests, name='admin_list_requests'),
     url(r'^acad/replacement-requests/revert/$', views.revert_replacement_to_pending, name='revert_replacement_to_pending'),
     url(r'^acad/replacement-requests/delete/$', views.delete_replacement_requests, name='delete_replacement_requests'),
+    url(r'^acad/pending-counts/$', views.admin_pending_counts, name='admin_pending_counts'),
     url(r'^acad/drop-requests/$', views.admin_list_drop_requests, name='admin_list_drop_requests'),
     url(r'^acad/drop-requests/approve/$', views.approve_drop_requests, name='approve_drop_requests'),
     url(r'^acad/drop-requests/delete/$', views.delete_drop_requests, name='delete_drop_requests'),
@@ -159,6 +230,25 @@ urlpatterns = [
     url(r'^dean/dashboard/$', views.dean_dashboard, name='dean-dashboard'),
     url(r'^dean/thesis/(?P<pk>\d+)/review/$', views.dean_review_api, name='dean-thesis-review'),
     url(r'^dean/thesis/(?P<pk>\d+)/generate/$', views.dean_generate_pdf_api, name='dean-thesis-generate'),
+
+    # Thesis Topic Change Request endpoints
+    url(r'^stu/thesis/change-requests/$', views.student_thesis_change_requests, name='student-thesis-change-requests'),
+    url(r'^stu/thesis/change-request/$', views.student_thesis_change_request_create, name='student-thesis-change-request-create'),
+    url(r'^faculty/thesis/change-requests/pending-consent/$', views.faculty_thesis_change_requests_pending_consent, name='faculty-thesis-change-requests-pending-consent'),
+    url(r'^faculty/thesis/change-request/(?P<pk>\d+)/consent/$', views.thesis_change_request_consent, name='thesis-change-request-consent'),
+    url(r'^hod/thesis/change-requests/$', views.hod_thesis_change_request_dashboard, name='hod-thesis-change-request-dashboard'),
+    url(r'^hod/thesis/change-request/(?P<pk>\d+)/review/$', views.hod_thesis_change_request_review, name='hod-thesis-change-request-review'),
+    url(r'^dean/thesis/change-requests/$', views.dean_thesis_change_request_dashboard, name='dean-thesis-change-request-dashboard'),
+    url(r'^dean/thesis/change-request/(?P<pk>\d+)/review/$', views.dean_thesis_change_request_review, name='dean-thesis-change-request-review'),
+
+    # Thesis Committee (RPC) Change Request endpoints
+    url(r'^supervisor/thesis/committee-change-requests/$', views.supervisor_committee_change_requests, name='supervisor-committee-change-requests'),
+    url(r'^supervisor/thesis/(?P<thesis_pk>\d+)/committee-change/propose/$', views.supervisor_propose_committee_change, name='supervisor-propose-committee-change'),
+    url(r'^supervisor/thesis/committee-change/(?P<pk>\d+)/resubmit/$', views.supervisor_resubmit_committee_change, name='supervisor-resubmit-committee-change'),
+    url(r'^hod/thesis/committee-change-requests/$', views.hod_committee_change_dashboard, name='hod-committee-change-dashboard'),
+    url(r'^hod/thesis/committee-change/(?P<pk>\d+)/review/$', views.hod_committee_change_review, name='hod-committee-change-review'),
+    url(r'^dean/thesis/committee-change-requests/$', views.dean_committee_change_dashboard, name='dean-committee-change-dashboard'),
+    url(r'^dean/thesis/committee-change/(?P<pk>\d+)/review/$', views.dean_committee_change_review, name='dean-committee-change-review'),
 
     # PhD Seminar endpoints
 
@@ -270,21 +360,30 @@ urlpatterns = [
     # Student
     url(r'^thesis/submit/$', views.thesis_submit, name='thesis_submit'),
     url(r'^thesis/submission-status/$', views.thesis_submission_status, name='thesis_submission_status'),
+    url(r'^thesis/submit-revision/$', views.student_submit_revision, name='student_submit_revision'),
 
     # Supervisor
     url(r'^thesis/supervisor-dashboard/$', views.supervisor_dashboard, name='supervisor_dashboard'),
     url(r'^thesis/submission-detail/(?P<submission_id>\d+)/$', views.supervisor_submission_detail, name='supervisor_submission_detail'),
     url(r'^thesis/supervisor-assign/$', views.supervisor_assign, name='supervisor_assign'),
     url(r'^thesis/supervisor-review-reports/$', views.supervisor_review_reports, name='supervisor_review_reports'),
+    url(r'^thesis/supervisor-reports-decision/$', views.supervisor_reports_decision, name='supervisor_reports_decision'),
+    url(r'^thesis/supervisor-finalize-revision/$', views.supervisor_finalize_revision, name='supervisor_finalize_revision'),
 
-    # Dean (panel approval + invitation dispatch)
+    # Dean (panel approval + invitation dispatch + post-evaluation)
     url(r'^thesis/dean-dashboard/$', views.dean_panel_dashboard, name='dean_panel_dashboard'),
     url(r'^thesis/dean-panel-approve/$', views.dean_panel_approve, name='dean_panel_approve'),
     url(r'^thesis/dean-send-invitations/$', views.dean_send_invitations, name='dean_send_invitations'),
+    url(r'^thesis/dean-forward-reports/$', views.dean_forward_reports, name='dean_forward_reports'),
+    url(r'^thesis/dean-final-review/$', views.dean_final_review_action, name='dean_final_review_action'),
 
     # Director
     url(r'^thesis/director-dashboard/$', views.director_dashboard, name='director_dashboard'),
     url(r'^thesis/director-approve/$', views.director_approve, name='director_approve'),
+
+    # RPC (thesis revision consent)
+    url(r'^thesis/revision-rpc/$', views.thesis_revision_rpc_list, name='thesis_revision_rpc_list'),
+    url(r'^thesis/revision-rpc/consent/$', views.thesis_revision_rpc_consent, name='thesis_revision_rpc_consent'),
 
     # Professor Invitation (External reviewers)
     url(r'^invitation/(?P<token>[0-9a-f-]+)/(?P<action>accept|reject)/$',

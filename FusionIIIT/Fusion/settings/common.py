@@ -90,6 +90,20 @@ CELERY_TIMEZONE = 'Asia/Calcutta'
 # examiner invitation/review links) that must point at frontend pages rather
 # than raw backend API endpoints.
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+BONAFIDE_SIGNATORY_NAME = os.environ.get('BONAFIDE_SIGNATORY_NAME', 'Priti Patel')
+BONAFIDE_SIGNATORY_TITLE = os.environ.get(
+    'BONAFIDE_SIGNATORY_TITLE', 'Assistant Registrar (Academic)')
+BONAFIDE_REFERENCE_PREFIX = os.environ.get(
+    'BONAFIDE_REFERENCE_PREFIX', 'IIITDMJ/AR')
+BONAFIDE_INSTITUTE_NAME = os.environ.get(
+    'BONAFIDE_INSTITUTE_NAME',
+    'PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur')
+BONAFIDE_UG_DURATION_YEARS = int(os.environ.get(
+    'BONAFIDE_UG_DURATION_YEARS', '4'))
+BONAFIDE_PG_DURATION_YEARS = int(os.environ.get(
+    'BONAFIDE_PG_DURATION_YEARS', '2'))
+BONAFIDE_PHD_DURATION_YEARS = int(os.environ.get(
+    'BONAFIDE_PHD_DURATION_YEARS', '6'))
 
 CELERY_BEAT_SCHEDULE = {
     'leave-migration-task': {

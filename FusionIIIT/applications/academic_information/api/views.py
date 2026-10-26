@@ -11,7 +11,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 import xlsxwriter
 from applications.academic_procedures.models import course_registration
-from applications.academic_information.utils import allocate, check_for_registration_complete
+from applications.academic_information.utils import (
+    allocate, check_for_registration_complete, publish_allocations,
+)
 from applications.globals.models import (HoldsDesignation,Designation)
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
@@ -32,11 +34,34 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from applications.globals.decorators import role_required
 from applications.globals.api.views import resolve_audience_recipients
+from applications.globals.programme_scope import PROGRAMME_NAMES_BY_SCOPE
 from notifications.signals import notify
 from django.core.cache import cache
 from django.db import connection, transaction
 
 logger = logging.getLogger(__name__)
+
+
+def _student_programme_q(programme_type):
+    scope = (programme_type or '').strip().upper()
+    names = PROGRAMME_NAMES_BY_SCOPE.get(scope)
+    if names:
+        return (
+            Q(batch_id__curriculum__programme__category=scope)
+            | Q(programme__in=names)
+        )
+    return Q(programme=programme_type)
+
+
+def _student_programme_sql(programme_type):
+    scope = (programme_type or '').strip().upper()
+    names = PROGRAMME_NAMES_BY_SCOPE.get(scope)
+    if names:
+        return (
+            " AND (p.category = %s OR s.programme IN %s)",
+            [scope, tuple(names)],
+        )
+    return " AND s.programme = %s", [programme_type]
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -281,6 +306,15 @@ def check_allocation_api(request):
             )
 
         result = check_for_registration_complete(batch, sem, year, programme_type)
+
+        # Older allocations stopped at FinalRegistration.  Checking one now
+        # also publishes any missing course_registration rows, so all academic
+        # consumers immediately see the same allocation without a separate
+        # Verify Registration step.
+        if result.get("status") == 2:
+            result["publication"] = publish_allocations(
+                batch, sem, year, programme_type)
+            result["message"] = "Courses already allocated and published"
 
         # Map status values to appropriate HTTP codes
         status_code_map = {
@@ -735,6 +769,8 @@ def generate_xlsheet_api(request):
             INNER JOIN auth_user u ON ei.user_id = u.id
             LEFT JOIN academic_information_student s ON ei.id = s.id_id
             LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
+            LEFT JOIN programme_curriculum_curriculum cur ON b.curriculum_id = cur.id
+            LEFT JOIN programme_curriculum_programme p ON cur.programme_id = p.id
             LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
             INNER JOIN programme_curriculum_course c ON cr.course_id_id = c.id
             LEFT JOIN programme_curriculum_courseinstructor ci ON cr.course_instructor_id = ci.id
@@ -755,15 +791,9 @@ def generate_xlsheet_api(request):
             
             # Add programme_type filter if specified
             if programme_type:
-                if programme_type.upper() == 'UG':
-                    sql += " AND s.programme IN ('B.Tech', 'B.Des')"
-                elif programme_type.upper() == 'PG':
-                    sql += " AND s.programme IN ('M.Tech', 'M.Des')"
-                elif programme_type.upper() == 'PHD':
-                    sql += " AND s.programme = 'PhD'"
-                else:
-                    sql += " AND s.programme = %s"
-                    params.append(programme_type)
+                programme_sql, programme_params = _student_programme_sql(programme_type)
+                sql += programme_sql
+                params.extend(programme_params)
 
             # Section = the course offering's section (course_instructor), else home section.
             if section:
@@ -876,12 +906,12 @@ def generate_xlsheet_api(request):
         )
         
         # Add title rows efficiently
-        ws.merge_cells('A1:G1')
+        ws.merge_cells('A1:H1')
         ws['A1'] = "PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR"
         ws['A1'].font = Font(bold=True, size=9)
         ws['A1'].alignment = Alignment(horizontal="center")
         
-        ws.merge_cells('A2:G2')
+        ws.merge_cells('A2:H2')
         ws['A2'] = f"{semester_type.upper()}, {academic_year}"
         ws['A2'].font = Font(bold=True, size=12)
         ws['A2'].alignment = Alignment(horizontal="center")
@@ -901,13 +931,13 @@ def generate_xlsheet_api(request):
             instructor_name = f"{course_instructor.instructor_id.id.user.first_name} {course_instructor.instructor_id.id.user.last_name}".strip()
         
         # Course details merged into single full-width cells (no borders on metadata rows).
-        ws.merge_cells('A3:G3')
+        ws.merge_cells('A3:H3')
         ws['A3'] = f"Course No: {course_info['code']}"
-        ws.merge_cells('A4:G4')
+        ws.merge_cells('A4:H4')
         ws['A4'] = f"Course Title: {course_info['name']}"
-        ws.merge_cells('A5:G5')
+        ws.merge_cells('A5:H5')
         ws['A5'] = f"Instructor: {instructor_name}"
-        ws.merge_cells('A6:G6')
+        ws.merge_cells('A6:H6')
         ws['A6'] = f"List Type: {list_type_display}"
 
         for row in range(3, 7):
@@ -1365,7 +1395,14 @@ def import_calendar(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@role_required(['acadadmin'])
+@role_required([
+    'acadadmin',
+    'Associate Professor',
+    'Professor',
+    'Assistant Professor',
+    'Dean Academic',
+    'Student',
+])
 def available_courses(request):
     """
     GET /api/available-courses/?academic_year=2024-25&semester_type=Odd+Semester&programme_type=UG
@@ -1380,19 +1417,10 @@ def available_courses(request):
     regs = course_registration.objects.filter(session=year, semester_type=sem)
 
     if programme_type:
-        programme_mapping = {
-            'UG': ['B.Tech', 'B.Des'],
-            'PG': ['M.Tech', 'M.Des', 'PhD']
-        }
-        
-        if programme_type in programme_mapping:
-            programmes = programme_mapping[programme_type]
-            from applications.academic_information.models import Student
-            student_ids_with_programme = Student.objects.filter(
-                programme__in=programmes
-            ).values_list('id', flat=True)
-            
-            regs = regs.filter(student_id__in=student_ids_with_programme)
+        student_ids_with_programme = Student.objects.filter(
+            _student_programme_q(programme_type)
+        ).values_list('id', flat=True)
+        regs = regs.filter(student_id__in=student_ids_with_programme)
     
     course_ids = regs.values_list('course_id', flat=True).distinct()
     courses = Courses.objects.filter(id__in=course_ids)
@@ -1413,19 +1441,508 @@ def available_courses(request):
         year_int = int(year_parts[0])  # Odd/Summer semester is in first year (e.g., 2025 for 2025-26)
     
     for c in courses:
-        instructor_name = "TBA"
-        course_instructor = CourseInstructor.objects.filter(course_id=c, year=year_int, semester_type=sem).first()
-        if course_instructor:
-            instructor_name = f"{course_instructor.instructor_id.id.user.first_name} {course_instructor.instructor_id.id.user.last_name}".strip()
+        # A course can be taught by several faculty, one offering per section,
+        # so report them per section instead of picking whichever comes first.
+        instructors_by_section = {}
+        names = []
+        for off in CourseInstructor.objects.filter(
+                course_id=c, year=year_int, semester_type=sem
+        ).select_related('instructor_id__id__user'):
+            user = off.instructor_id.id.user
+            name = f"{user.first_name} {user.last_name}".strip() or str(off.instructor_id_id)
+            if off.section_label:
+                instructors_by_section.setdefault(off.section_label, name)
+            if name not in names:
+                names.append(name)
 
         data.append({
             "id": c.id,
             "code": c.code,
             "name": c.name,
-            "instructor": instructor_name,
+            "instructor": ", ".join(names) if names else "TBA",
+            "instructors_by_section": instructors_by_section,
             "sections": sorted(section_map.get(c.id, set())),
         })
     return Response(data)
+
+
+DATABASE_REPORT_ROLES = ['acadadmin', 'Dean Academic', 'Acad UG', 'Acad PG', 'Acad Ph.D.']
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_report_filters(request):
+    """The session, semester type and batch values that actually have registrations."""
+    from applications.globals.programme_scope import scopes_for, scope_via_student
+
+    regs = scope_via_student(
+        course_registration.objects.all(), scopes_for(request.user), 'student_id')
+    sessions = sorted(
+        {v for v in regs.values_list('session', flat=True).distinct() if v},
+        reverse=True)
+    batches = sorted(
+        {v for v in regs.values_list('student_id__batch', flat=True).distinct() if v},
+        reverse=True)
+    semester_types = sorted(
+        {v for v in regs.values_list('semester_type', flat=True).distinct() if v})
+    semesters = sorted(
+        {v for v in regs.values_list('semester_id__semester_no', flat=True).distinct()
+         if v})
+    scopes = scopes_for(request.user)
+    categories = ['UG', 'PG', 'PHD'] if scopes is None else [
+        c for c in ('UG', 'PG', 'PHD') if c in scopes]
+    return Response({
+        'sessions': sessions,
+        'semester_types': semester_types,
+        'batches': batches,
+        'semesters': semesters,
+        'programme_categories': categories,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_course_registrations(request):
+    """One row per course registration for a session, semester type and batch."""
+    from applications.globals.programme_scope import scopes_for, scope_via_student
+
+    session = (request.query_params.get('session') or '').strip()
+    semester_type = (request.query_params.get('semester_type') or '').strip()
+    batch = (request.query_params.get('batch') or '').strip()
+    missing = [name for name, value in (
+        ('session', session), ('semester_type', semester_type), ('batch', batch)
+    ) if not value]
+    if missing:
+        return Response({'detail': f"Required: {', '.join(missing)}."}, status=400)
+    try:
+        batch_year = int(batch)
+    except ValueError:
+        return Response({'detail': f"Batch '{batch}' is not a year."}, status=400)
+
+    regs = scope_via_student(
+        course_registration.objects.filter(
+            session=session, semester_type=semester_type,
+            student_id__batch=batch_year),
+        scopes_for(request.user), 'student_id',
+    ).select_related(
+        'student_id__id__user', 'course_id', 'course_slot_id'
+    ).order_by('student_id__id_id', 'course_slot_id__name', 'course_id__code')
+
+    rows = []
+    for reg in regs:
+        student = reg.student_id
+        user = student.id.user
+        rows.append({
+            'roll_no': student.id_id,
+            'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'batch': student.batch,
+            'programme': student.programme,
+            'course_slot': reg.course_slot_id.name if reg.course_slot_id else '',
+            'course_code': reg.course_id.code,
+            'course_name': reg.course_id.name,
+            'course_credit': reg.course_id.credit,
+            'registration_type': reg.registration_type,
+        })
+
+    return Response({
+        'count': len(rows),
+        'students': len({r['roll_no'] for r in rows}),
+        'credits': sum(r['course_credit'] or 0 for r in rows),
+        'rows': rows,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_backlog_registrations(request):
+    """Registrations sitting in a backlog slot for a session and semester type."""
+    from applications.globals.programme_scope import scopes_for, scope_via_student
+
+    session = (request.query_params.get('session') or '').strip()
+    semester_type = (request.query_params.get('semester_type') or '').strip()
+    missing = [name for name, value in (
+        ('session', session), ('semester_type', semester_type)
+    ) if not value]
+    if missing:
+        return Response({'detail': f"Required: {', '.join(missing)}."}, status=400)
+
+    regs = scope_via_student(
+        course_registration.objects.filter(
+            session=session, semester_type=semester_type,
+            course_slot_id__name__startswith='BL'),
+        scopes_for(request.user), 'student_id',
+    ).select_related(
+        'student_id__id__user', 'course_id', 'course_slot_id', 'semester_id')
+
+    rows = []
+    for reg in regs:
+        user = reg.student_id.id.user
+        rows.append({
+            'roll_no': reg.student_id_id,
+            'name': f'{user.first_name} {user.last_name}'.strip(),
+            'semester': reg.semester_id.semester_no if reg.semester_id else '',
+            'course_slot': reg.course_slot_id.name if reg.course_slot_id else '',
+            'course_code': reg.course_id.code,
+            'course_name': reg.course_id.name,
+            'registration_type': reg.registration_type,
+        })
+    rows.sort(key=lambda r: (r['name'], r['course_code']))
+
+    return Response({
+        'count': len(rows),
+        'students': len({r['roll_no'] for r in rows}),
+        'rows': rows,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_student_credit_totals(request):
+    """Credits each student registered in a session and semester type, batch-wise."""
+    from django.db.models import Sum
+    from applications.globals.programme_scope import scopes_for, scope_via_student
+
+    session = (request.query_params.get('session') or '').strip()
+    semester_type = (request.query_params.get('semester_type') or '').strip()
+    batch = (request.query_params.get('batch') or '').strip()
+    missing = [name for name, value in (
+        ('session', session), ('semester_type', semester_type), ('batch', batch)
+    ) if not value]
+    if missing:
+        return Response({'detail': f"Required: {', '.join(missing)}."}, status=400)
+    try:
+        batch_year = int(batch)
+    except ValueError:
+        return Response({'detail': f"Batch '{batch}' is not a year."}, status=400)
+
+    totals = scope_via_student(
+        course_registration.objects.filter(
+            session=session, semester_type=semester_type,
+            student_id__batch_id__year=batch_year),
+        scopes_for(request.user), 'student_id',
+    ).values(
+        'student_id__id_id',
+        'student_id__id__user__first_name',
+        'student_id__id__user__last_name',
+    ).annotate(
+        total_credits=Sum('course_id__credit')
+    ).order_by('student_id__id_id')
+
+    rows = [{
+        'roll_no': row['student_id__id_id'],
+        'student_name': '{} {}'.format(
+            row['student_id__id__user__first_name'],
+            row['student_id__id__user__last_name']).strip(),
+        'total_credits': row['total_credits'] or 0,
+    } for row in totals]
+
+    return Response({
+        'count': len(rows),
+        'students': len(rows),
+        'credits': sum(r['total_credits'] for r in rows),
+        'rows': rows,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_course_registration_counts(request):
+    """How many students registered in each course for a session and semester type."""
+    from django.db.models import Count
+    from applications.globals.programme_scope import (
+        STUDENT_CATEGORY_PATH, scopes_for, scope_via_student)
+
+    session = (request.query_params.get('session') or '').strip()
+    semester_type = (request.query_params.get('semester_type') or '').strip()
+    missing = [name for name, value in (
+        ('session', session), ('semester_type', semester_type)
+    ) if not value]
+    if missing:
+        return Response({'detail': f"Required: {', '.join(missing)}."}, status=400)
+
+    programme = (request.query_params.get('programme') or '').strip().upper()
+    if programme in ('', 'ALL'):
+        programme = None
+    elif programme not in ('UG', 'PG', 'PHD'):
+        return Response({'detail': f"Unknown programme '{programme}'."}, status=400)
+
+    regs = scope_via_student(
+        course_registration.objects.filter(
+            session=session, semester_type=semester_type),
+        scopes_for(request.user), 'student_id')
+    if programme:
+        # iexact because one legacy programme spells the category 'PhD'
+        regs = regs.filter(**{
+            'student_id__%s__iexact' % STUDENT_CATEGORY_PATH: programme})
+
+    counts = regs.values(
+        'course_id_id', 'course_id__code', 'course_id__name'
+    ).annotate(
+        registered=Count('id')
+    ).order_by('-registered', 'course_id__code')
+
+    rows = [{
+        'course_code': row['course_id__code'],
+        'course_name': row['course_id__name'],
+        'registered': row['registered'],
+    } for row in counts]
+
+    return Response({
+        'count': len(rows),
+        'registrations': sum(r['registered'] for r in rows),
+        'rows': rows,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_swayam_registrations(request):
+    """Swayam course registrations for a session, by term or by slot semester parity."""
+    from django.db.models import F, IntegerField, Q, Value
+    from django.db.models.functions import Mod
+    from applications.globals.programme_scope import scopes_for, scope_via_student
+
+    session = (request.query_params.get('session') or '').strip()
+    semester_type = (request.query_params.get('semester_type') or '').strip()
+    missing = [name for name, value in (
+        ('session', session), ('semester_type', semester_type)
+    ) if not value]
+    if missing:
+        return Response({'detail': f"Required: {', '.join(missing)}."}, status=400)
+
+    batch = (request.query_params.get('batch') or '').strip()
+    batch_year = None
+    if batch and batch.upper() != 'ALL':
+        try:
+            batch_year = int(batch)
+        except ValueError:
+            return Response({'detail': f"Batch '{batch}' is not a year."}, status=400)
+
+    regs = scope_via_student(
+        course_registration.objects.filter(
+            session=session, course_id__code__startswith='SW'),
+        scopes_for(request.user), 'student_id')
+    if batch_year is not None:
+        regs = regs.filter(student_id__batch=batch_year)
+
+    # A term also picks up slots of that parity, which is how registrations
+    # recorded under a neighbouring term still surface.
+    parity = {'Odd Semester': 1, 'Even Semester': 0}.get(semester_type)
+    if parity is None:
+        regs = regs.filter(semester_type=semester_type)
+    else:
+        regs = regs.annotate(
+            slot_parity=Mod(F('course_slot_id__semester__semester_no'),
+                            Value(2, output_field=IntegerField()),
+                            output_field=IntegerField())
+        ).filter(Q(semester_type=semester_type) | Q(slot_parity=parity))
+
+    regs = regs.select_related(
+        'student_id__id__user', 'course_id', 'course_slot_id__semester')
+
+    rows = []
+    for reg in regs:
+        user = reg.student_id.id.user
+        slot = reg.course_slot_id
+        rows.append({
+            'roll_no': reg.student_id_id,
+            'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'course_code': reg.course_id.code,
+            'course_name': reg.course_id.name,
+            'semester_no': slot.semester.semester_no if slot else None,
+        })
+    rows.sort(key=lambda r: (r['semester_no'] is None, r['semester_no'] or 0,
+                             r['course_code'], str(r['roll_no'])))
+
+    return Response({
+        'count': len(rows),
+        'students': len({r['roll_no'] for r in rows}),
+        'without_slot': sum(1 for r in rows if r['semester_no'] is None),
+        'rows': rows,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_semester_registrations(request):
+    """What a batch registered in one semester, one row per student and course code."""
+    from applications.globals.programme_scope import scopes_for, scope_via_student
+
+    batch = (request.query_params.get('batch') or '').strip()
+    semester = (request.query_params.get('semester') or '').strip()
+    missing = [name for name, value in (
+        ('batch', batch), ('semester', semester)
+    ) if not value]
+    if missing:
+        return Response({'detail': f"Required: {', '.join(missing)}."}, status=400)
+    try:
+        batch_year = int(batch)
+    except ValueError:
+        return Response({'detail': f"Batch '{batch}' is not a year."}, status=400)
+    try:
+        semester_no = int(semester)
+    except ValueError:
+        return Response({'detail': f"Semester '{semester}' is not a number."}, status=400)
+
+    regs = scope_via_student(
+        course_registration.objects.filter(
+            student_id__batch=batch_year, semester_id__semester_no=semester_no),
+        scopes_for(request.user), 'student_id',
+    ).select_related('student_id__id__user', 'course_id', 'semester_id')
+
+    rows = []
+    for reg in regs:
+        user = reg.student_id.id.user
+        rows.append({
+            'id': reg.id,
+            'roll_no': reg.student_id_id,
+            'semester': reg.semester_id.semester_no,
+            'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'course_code': reg.course_id.code,
+            'course_name': reg.course_id.name,
+            'credit': reg.course_id.credit,
+            'semester_type': reg.semester_type,
+            'registration_type': reg.registration_type,
+        })
+    # the id breaks ties so a repeated registration always resolves the same way
+    rows.sort(key=lambda r: (str(r['roll_no']), r['semester'], r['course_code'], r['id']))
+
+    deduped, seen = [], set()
+    for row in rows:
+        key = (row['roll_no'], row['semester'], row['course_code'])
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append({k: v for k, v in row.items() if k != 'id'})
+
+    return Response({
+        'count': len(deduped),
+        'students': len({r['roll_no'] for r in deduped}),
+        'credits': sum(r['credit'] or 0 for r in deduped),
+        'duplicates_removed': len(rows) - len(deduped),
+        'rows': deduped,
+    })
+
+
+def _credits_earned_row(student):
+    """One student's regular / backlog-improvement / swayam credit split.
+    Runs _build_grade_validation_semesters's ~26 queries per call, so the view
+    fans this out across a thread pool rather than running it per student in
+    series -- each call opens its own DB connection, so it must close it."""
+    from django.db import connection
+    from applications.examination.api.views import (
+        _build_grade_validation_semesters, grade_conversion,
+    )
+
+    NON_EARN = {"F", "I", "X", "AU", "CD", "—", ""}
+    try:
+        try:
+            _, semesters_data = _build_grade_validation_semesters(student)
+            graded_sems = [s for s in semesters_data if not s.get('is_registered_only')]
+
+            best_by_code = {}
+            for gs in graded_sems:
+                for c in gs.get('courses', []):
+                    code = str(c.get('code', '')).strip().upper()
+                    if not code or c.get('superseded'):
+                        continue
+                    grade = (c.get('grade') or '').strip()
+                    if grade in NON_EARN:
+                        continue
+                    prev = best_by_code.get(code)
+                    if prev is None or (grade_conversion.get(grade, -1)
+                                        > grade_conversion.get(prev[0], -1)):
+                        best_by_code[code] = (
+                            grade, float(c.get('credits') or 0), c.get('remark', 'Regular'))
+
+            regular = backlog_imp = swayam = 0.0
+            for code, (grade, credit, remark) in best_by_code.items():
+                if code.startswith('SW'):
+                    swayam += credit
+                elif remark in ('Backlog', 'Improvement'):
+                    backlog_imp += credit
+                else:
+                    regular += credit
+
+            user = student.id.user
+            return {
+                'roll_no': student.id_id,
+                'student_name': f'{user.first_name} {user.last_name}'.strip(),
+                'regular_credits': regular,
+                'backlog_improvement_credits': backlog_imp,
+                'swayam_credits': swayam,
+                'total_credits_earned': regular + backlog_imp + swayam,
+            }
+        except Exception:
+            import traceback as _tb
+            try:
+                with open('/tmp/fusion_credits_earned_error.log', 'a') as _f:
+                    _f.write(f'roll_no={student.id_id}\n{_tb.format_exc()}\n')
+            except Exception:
+                pass
+            try:
+                user = student.id.user
+                student_name = f'{user.first_name} {user.last_name}'.strip()
+            except Exception:
+                student_name = str(student.id_id)
+            return {
+                'roll_no': student.id_id,
+                'student_name': student_name,
+                'regular_credits': 0.0,
+                'backlog_improvement_credits': 0.0,
+                'swayam_credits': 0.0,
+                'total_credits_earned': 0.0,
+                'error': True,
+            }
+    finally:
+        connection.close()
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_credits_earned(request):
+    """Each student's earned credits to date, split regular / backlog-improvement / swayam."""
+    from concurrent.futures import ThreadPoolExecutor
+    from applications.globals.programme_scope import scopes_for, scope_students
+
+    batch = (request.query_params.get('batch') or '').strip()
+    if not batch:
+        return Response({'detail': 'Required: batch.'}, status=400)
+    try:
+        batch_year = int(batch)
+    except ValueError:
+        return Response({'detail': f"Batch '{batch}' is not a year."}, status=400)
+
+    students = list(scope_students(
+        Student.objects.filter(batch=batch_year),
+        scopes_for(request.user),
+    ).select_related('id__user').order_by('id_id'))
+
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        rows = list(pool.map(_credits_earned_row, students))
+
+    return Response({
+        'count': len(rows),
+        'students': len(rows),
+        'credits': sum(r['total_credits_earned'] for r in rows),
+        'rows': rows,
+    })
 
 
 @api_view(['POST'])
@@ -1456,10 +1973,10 @@ def export_all_courses_zip(request):
     # Build base query for course_registration
     regs = course_registration.objects.filter(session=academic_year, semester_type=semester_type)
     if programme_type:
-        prog_map = {'UG': ['B.Tech', 'B.Des'], 'PG': ['M.Tech', 'M.Des', 'PhD']}
-        if programme_type.upper() in prog_map:
-            stu_ids = Student.objects.filter(programme__in=prog_map[programme_type.upper()]).values_list('id', flat=True)
-            regs = regs.filter(student_id__in=stu_ids)
+        stu_ids = Student.objects.filter(
+            _student_programme_q(programme_type)
+        ).values_list('id', flat=True)
+        regs = regs.filter(student_id__in=stu_ids)
 
     course_ids = regs.values_list('course_id', flat=True).distinct()
     courses = Courses.objects.filter(id__in=course_ids).order_by('code')
@@ -1475,7 +1992,7 @@ def export_all_courses_zip(request):
     thin = Side(style='thin')
     thin_border  = Border(left=thin, right=thin, top=thin, bottom=thin)
 
-    col_widths = [8, 15, 30, 15, 35, 18, 15]
+    col_widths = [8, 15, 30, 15, 10, 35, 18, 15]
 
     # List-type display label
     if not list_type:
@@ -1495,6 +2012,7 @@ def export_all_courses_zip(request):
                     u.username as roll_no,
                     CONCAT(u.first_name, ' ', u.last_name) as full_name,
                     COALESCE(d.acronym, 'General') as discipline,
+                    COALESCE(ci.section_label, s.section) as section,
                     u.email,
                     cr.registration_type
                 FROM course_registration cr
@@ -1502,7 +2020,10 @@ def export_all_courses_zip(request):
                 INNER JOIN auth_user u ON ei.user_id = u.id
                 LEFT JOIN academic_information_student s ON ei.id = s.id_id
                 LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
+                LEFT JOIN programme_curriculum_curriculum cur ON b.curriculum_id = cur.id
+                LEFT JOIN programme_curriculum_programme p ON cur.programme_id = p.id
                 LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
+                LEFT JOIN programme_curriculum_courseinstructor ci ON cr.course_instructor_id = ci.id
                 WHERE cr.session = %s AND cr.semester_type = %s AND cr.course_id_id = %s
             """
             params = [academic_year, semester_type, course_obj.id]
@@ -1515,11 +2036,9 @@ def export_all_courses_zip(request):
                     params.append(list_type)
 
             if programme_type:
-                pt = programme_type.upper()
-                if pt == 'UG':
-                    sql += " AND s.programme IN ('B.Tech', 'B.Des')"
-                elif pt == 'PG':
-                    sql += " AND s.programme IN ('M.Tech', 'M.Des', 'PhD')"
+                programme_sql, programme_params = _student_programme_sql(programme_type)
+                sql += programme_sql
+                params.extend(programme_params)
 
             sql += ' ORDER BY u.username'
 
@@ -1528,11 +2047,19 @@ def export_all_courses_zip(request):
                 cols = [c[0] for c in cursor.description]
                 students = [dict(zip(cols, row)) for row in cursor.fetchall()]
 
-            # Instructor
-            instructor_name = 'TBA'
-            ci = CourseInstructor.objects.filter(course_id=course_obj, year=year_int, semester_type=semester_type).first()
-            if ci:
-                instructor_name = f'{ci.instructor_id.id.user.first_name} {ci.instructor_id.id.user.last_name}'.strip()
+            # Instructor. This export covers whole courses rather than one
+            # section, so a course with several offerings names them all.
+            names = []
+            for off in CourseInstructor.objects.filter(
+                    course_id=course_obj, year=year_int, semester_type=semester_type
+            ).select_related('instructor_id__id__user'):
+                user = off.instructor_id.id.user
+                name = f'{user.first_name} {user.last_name}'.strip()
+                if off.section_label:
+                    name = f'{name} ({off.section_label})'
+                if name and name not in names:
+                    names.append(name)
+            instructor_name = ', '.join(names) if names else 'TBA'
 
             # Build workbook
             wb = OpenpyxlWorkbook()
@@ -1542,29 +2069,29 @@ def export_all_courses_zip(request):
             for i, w in enumerate(col_widths, 1):
                 ws.column_dimensions[chr(64 + i)].width = w
 
-            ws.merge_cells('A1:G1')
+            ws.merge_cells('A1:H1')
             ws['A1'] = 'PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR'
             ws['A1'].font = Font(bold=True, size=9)
             ws['A1'].alignment = center_align
 
-            ws.merge_cells('A2:G2')
+            ws.merge_cells('A2:H2')
             ws['A2'] = f'{semester_type.upper()}, {academic_year}'
             ws['A2'].font = Font(bold=True, size=12)
             ws['A2'].alignment = center_align
 
-            ws.merge_cells('A3:G3')
+            ws.merge_cells('A3:H3')
             ws['A3'] = f'Course No: {course_obj.code}'
-            ws.merge_cells('A4:G4')
+            ws.merge_cells('A4:H4')
             ws['A4'] = f'Course Title: {course_obj.name}'
-            ws.merge_cells('A5:G5')
+            ws.merge_cells('A5:H5')
             ws['A5'] = f'Instructor: {instructor_name}'
-            ws.merge_cells('A6:G6')
+            ws.merge_cells('A6:H6')
             ws['A6'] = f'List Type: {list_type_display}'
 
             for row in range(3, 7):
                 ws[f'A{row}'].alignment = left_align
 
-            headers = ['Sl. No', 'Roll No', 'Name', 'Discipline', 'Email', 'Reg. Type', 'Signature']
+            headers = ['Sl. No', 'Roll No', 'Name', 'Discipline', 'Section', 'Email', 'Reg. Type', 'Signature']
             for col, hdr in enumerate(headers, 1):
                 cell = ws.cell(row=8, column=col, value=hdr)
                 cell.font = header_font
@@ -1572,11 +2099,12 @@ def export_all_courses_zip(request):
                 cell.alignment = center_align
 
             for idx, stu in enumerate(students, 1):
-                ws.append([idx, stu['roll_no'], stu['full_name'], stu['discipline'], stu['email'], stu['registration_type'], ''])
+                ws.append([idx, stu['roll_no'], stu['full_name'], stu['discipline'],
+                           stu.get('section') or '—', stu['email'], stu['registration_type'], ''])
 
             last_row = ws.max_row
             for r in range(8, last_row + 1):
-                for c in range(1, 8):
+                for c in range(1, 9):
                     ws.cell(row=r, column=c).border = thin_border
 
             # Save workbook into ZIP
@@ -1652,6 +2180,38 @@ def section_students(request):
     return Response(result)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def sections_in_use(request):
+    """Every section the institute actually uses, so one list feeds each dropdown.
+
+    A section exists because it was assigned to a student or because an offering
+    teaches it, and the office invents its own labels, so neither a fixed A-F
+    list nor one of the two tables alone would be complete.
+    """
+    from applications.programme_curriculum.models import CourseInstructor
+
+    labels = set()
+    for value in (Student.objects
+                  .exclude(section__isnull=True).exclude(section='')
+                  .values_list('section', flat=True).distinct()):
+        labels.add(str(value).strip().upper())
+    for value in (CourseInstructor.objects
+                  .exclude(section_label__isnull=True).exclude(section_label='')
+                  .values_list('section_label', flat=True).distinct()):
+        labels.add(str(value).strip().upper())
+    labels.discard('')
+
+    def order(label):
+        # A, B ... then A1, A2 ... so plain letters lead and numbered follow
+        head = ''.join(c for c in label if not c.isdigit())
+        tail = ''.join(c for c in label if c.isdigit())
+        return (head, int(tail) if tail else -1)
+
+    return Response({'sections': sorted(labels, key=order)})
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -1664,8 +2224,8 @@ def assign_section(request):
     if not roll_numbers:
         return Response({'detail': 'roll_numbers required.'},
                         status=status.HTTP_400_BAD_REQUEST)
-    if section and (len(section) > 2 or not section.isalpha()):
-        return Response({'detail': 'section must be one or two letters.'},
+    if section and (len(section) > 8 or not section.isalnum()):
+        return Response({'detail': 'section must be up to 8 letters or digits.'},
                         status=status.HTTP_400_BAD_REQUEST)
 
     updated = (Student.objects
