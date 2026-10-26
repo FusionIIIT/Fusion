@@ -5938,3 +5938,828 @@ class SubmitPhDMilestoneGradesAPI(APIView):
             {"success_count": success_count, "error_count": len(errors), "errors": errors},
             status=status.HTTP_200_OK,
         )
+
+
+# ─── Seating Arrangement ──────────────────────────────────────────────────────
+
+import random
+from applications.examination.models import ExamRoom, SeatingArrangement
+from applications.academic_procedures.models import FinalRegistration
+from applications.academic_information.models import Student
+
+
+SEATING_ADMIN_ROLES = ["Dean Academic", *ALL_ACAD_ROLES]
+
+
+ROOM_COL_ROWS = {
+    "L-106": {1: 9, 2: 9, 3: 12, 4: 12, 5: 12, 6: 12, 7: 12, 8: 12, 9: 12, 10: 12},
+    "L-107": {1: 7, 2: 7, 3: 9, 4: 9, 5: 9, 6: 9, 7: 9, 8: 9},
+    "L-206": {1: 9, 2: 9, 3: 11, 4: 11, 5: 11, 6: 11, 7: 11, 8: 11, 9: 10, 10: 10},
+    "L-207": {1: 6, 2: 6, 3: 7, 4: 7, 5: 7, 6: 7, 7: 7, 8: 7},
+}
+
+
+def _normalize_room_no(room_no):
+    rn = (room_no or "").strip().upper()
+    if rn.startswith("L") and not rn.startswith("L-"):
+        rn = "L-" + rn[1:]
+    elif rn.startswith("CR") and not rn.startswith("CR-"):
+        rn = "CR-" + rn[2:]
+    return rn
+
+
+def _is_l_room(room):
+    """Check if room is a lecture hall ('L' room)."""
+    room_no = _normalize_room_no(getattr(room, "room_no", ""))
+    block = (getattr(room, "block", "") or "").strip().upper()
+    return room_no.startswith("L") or block == "L"
+
+
+def _get_active_cols(room):
+    """
+    Returns active 0-indexed column indices for a room.
+    1. L-rooms with stepped layout or NO GAP:
+       - L-106 (10 cols), L-206 (10 cols), L-107 (8 cols), L-207 (8 cols)
+       - L-102 (9 cols), L-202 (9 cols), L-201 (7 cols)
+       -> all columns active.
+    2. 16-column L-rooms (L-104, L-105, etc.):
+       Active: Col 1, 3, 6, 8, 9, 11, 14, 16 (0-indexed: [0, 2, 5, 7, 8, 10, 13, 15])
+       Blank columns: 2, 4, 5, 7, 10, 12, 13, 15
+    3. 9x9 CR rooms (CR-101, 102, 103, 104, 201, 202):
+       Active: Col 1, 3, 5, 7, 9 (0-indexed: [0, 2, 4, 6, 8])
+       Blank columns: Col 2, 4, 6, 8
+    4. 9x5 CR rooms (CR-107, 108, 109, 208):
+       Active: Col 1, 2, 4, 5 (0-indexed: [0, 1, 3, 4])
+       Blank column: Col 3
+    """
+    cols = max(getattr(room, "cols", 9) or 9, 1)
+    room_no = _normalize_room_no(getattr(room, "room_no", ""))
+
+    # Stepped L-rooms or no-gap L-rooms: all columns active
+    if room_no in ROOM_COL_ROWS or (_is_l_room(room) and any(room_no.endswith(s) for s in ["102", "202", "201", "106", "107", "206", "207"])):
+        return list(range(cols))
+
+    if _is_l_room(room):
+        if cols == 16:
+            return [0, 2, 5, 7, 8, 10, 13, 15]
+        return [c for c in range(cols) if c % 2 == 0]
+
+    # 5-column CR rooms (CR-107, 108, 109, 208): cols 1, 2, 4, 5 active; col 3 blank
+    if cols == 5 or any(room_no.endswith(s) for s in ["107", "108", "109", "208"]):
+        return [0, 1, 3, 4]
+
+    # 9-column CR rooms (CR-101, 102, 103, 104, 201, 202): cols 1, 3, 5, 7, 9 active; cols 2, 4, 6, 8 blank
+    if cols == 9 or any(room_no.endswith(s) for s in ["101", "102", "103", "104", "201", "202"]):
+        return [0, 2, 4, 6, 8]
+
+    return list(range(cols))
+
+
+def _get_col_max_rows(room, col_no):
+    """Returns max physical rows for a given 1-indexed col_no in room."""
+    rn = _normalize_room_no(getattr(room, "room_no", ""))
+    if rn in ROOM_COL_ROWS:
+        return ROOM_COL_ROWS[rn].get(col_no, 0)
+    cols = max(getattr(room, "cols", 9) or 9, 1)
+    cap = getattr(room, "seating_capacity", 0) or 0
+    return -(-cap // cols)
+
+
+def _get_room_seat_map(room):
+    """
+    Returns a dict mapping (row_no, col_no) -> seat_no (1-indexed)
+    for all physically existing seats in the room, ordered row-by-row.
+    """
+    rn = _normalize_room_no(getattr(room, "room_no", ""))
+    cols = max(getattr(room, "cols", 9) or 9, 1)
+    if rn in ROOM_COL_ROWS:
+        col_rows = ROOM_COL_ROWS[rn]
+        max_rows = max(col_rows.values())
+        seat_map = {}
+        curr_seat = 1
+        for r in range(1, max_rows + 1):
+            for c in range(1, cols + 1):
+                if r <= col_rows.get(c, 0):
+                    seat_map[(r, c)] = curr_seat
+                    curr_seat += 1
+        return seat_map
+    else:
+        max_rows = -(-room.seating_capacity // cols)
+        seat_map = {}
+        for r in range(1, max_rows + 1):
+            for c in range(1, cols + 1):
+                s_no = (r - 1) * cols + c
+                if s_no <= room.seating_capacity:
+                    seat_map[(r, c)] = s_no
+        return seat_map
+
+
+def _room_exam_capacity(room):
+    """
+    Actual exam capacity based on active seated columns:
+    - Stepped L-rooms (L-106, L-107, L-206, L-207): sum of active col rows (114, 68, 104, 54)
+    - L-rooms with 16 cols (L-104, L-105): 15 rows x 8 active cols = 120 seats (physical: 240)
+    - L-rooms with no gap (L-102, L-202): 14 rows x 9 active cols = 126 seats (physical: 126)
+    - L-room with no gap (L-201): 10 rows x 7 active cols = 70 seats (physical: 70)
+    - 9x9 CR rooms (CR-101..104, 201, 202): 9 rows x 5 active cols = 45 seats (physical: 81)
+    - 9x5 CR rooms (CR-107..109, 208): 9 rows x 4 active cols = 36 seats (physical: 45)
+    """
+    rn = _normalize_room_no(getattr(room, "room_no", ""))
+    active_cols = _get_active_cols(room)
+    if rn in ROOM_COL_ROWS:
+        return sum(ROOM_COL_ROWS[rn].get(c + 1, 0) for c in active_cols)
+    cols = max(getattr(room, "cols", 9) or 9, 1)
+    max_rows = -(-room.seating_capacity // cols)
+    return len(active_cols) * max_rows
+
+
+
+class ExamRoomListCreateAPI(APIView):
+    """GET all rooms / POST create a new room."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        rooms = ExamRoom.objects.all().order_by("room_no")
+        data = [
+            {
+                "id": r.id,
+                "room_no": r.room_no,
+                "seating_capacity": r.seating_capacity,
+                "exam_capacity": _room_exam_capacity(r),
+                "is_l_room": _is_l_room(r),
+                "cols": r.cols,
+                "block": r.block,
+                "is_active": r.is_active,
+            }
+            for r in rooms
+        ]
+        return Response(data)
+
+    def post(self, request):
+        if not user_holds_any_role(request.user, SEATING_ADMIN_ROLES):
+            return Response({"error": "Permission denied."}, status=403)
+        room_no = request.data.get("room_no", "").strip()
+        rn_norm = _normalize_room_no(room_no)
+        is_l = rn_norm.startswith("L") or request.data.get("block", "").strip().upper() == "L"
+        is_cr_5col = any(rn_norm.endswith(suffix) for suffix in ["107", "108", "109", "208"]) and not is_l
+        is_l_106 = is_l and rn_norm.endswith("106")
+        is_l_107 = is_l and rn_norm.endswith("107")
+        is_l_206 = is_l and rn_norm.endswith("206")
+        is_l_207 = is_l and rn_norm.endswith("207")
+        is_l_102_202 = is_l and any(rn_norm.endswith(suffix) for suffix in ["102", "202"])
+        is_l_201 = is_l and rn_norm.endswith("201")
+        if is_l_106:
+            default_cap = 114
+            default_cols = 10
+            default_block = "L"
+        elif is_l_107:
+            default_cap = 68
+            default_cols = 8
+            default_block = "L"
+        elif is_l_206:
+            default_cap = 104
+            default_cols = 10
+            default_block = "L"
+        elif is_l_207:
+            default_cap = 54
+            default_cols = 8
+            default_block = "L"
+        elif is_l_102_202:
+            default_cap = 126
+            default_cols = 9
+            default_block = "L"
+        elif is_l_201:
+            default_cap = 70
+            default_cols = 7
+            default_block = "L"
+        elif is_l:
+            default_cap = 240
+            default_cols = 16
+            default_block = "L"
+        elif is_cr_5col:
+            default_cap = 45
+            default_cols = 5
+            default_block = "CR"
+        else:
+            default_cap = 81
+            default_cols = 9
+            default_block = "CR"
+        capacity = request.data.get("seating_capacity") or default_cap
+        cols    = request.data.get("cols") or default_cols
+        block   = request.data.get("block", default_block).strip()
+        if not room_no:
+            return Response({"error": "room_no is required."}, status=400)
+        if ExamRoom.objects.filter(room_no=room_no).exists():
+            return Response({"error": f"Room {room_no} already exists."}, status=400)
+        try:
+            capacity = int(capacity)
+            cols     = int(cols)
+        except (ValueError, TypeError):
+            return Response({"error": "seating_capacity and cols must be integers."}, status=400)
+        room = ExamRoom.objects.create(room_no=room_no, seating_capacity=capacity, cols=cols, block=block)
+        return Response(
+            {
+                "id": room.id,
+                "room_no": room.room_no,
+                "seating_capacity": room.seating_capacity,
+                "exam_capacity": _room_exam_capacity(room),
+                "is_l_room": _is_l_room(room),
+                "cols": room.cols,
+                "block": room.block,
+                "is_active": room.is_active,
+            },
+            status=201,
+        )
+
+
+class ExamRoomDetailAPI(APIView):
+    """PATCH update / DELETE remove a single room."""
+    permission_classes = [IsAuthenticated]
+
+    def _get_room(self, pk):
+        try:
+            return ExamRoom.objects.get(pk=pk)
+        except ExamRoom.DoesNotExist:
+            return None
+
+    def patch(self, request, pk):
+        if not user_holds_any_role(request.user, SEATING_ADMIN_ROLES):
+            return Response({"error": "Permission denied."}, status=403)
+        room = self._get_room(pk)
+        if not room:
+            return Response({"error": "Room not found."}, status=404)
+        if "room_no" in request.data:
+            new_no = request.data["room_no"].strip()
+            if new_no != room.room_no and ExamRoom.objects.filter(room_no=new_no).exists():
+                return Response({"error": f"Room {new_no} already exists."}, status=400)
+            room.room_no = new_no
+        if "seating_capacity" in request.data:
+            try:
+                room.seating_capacity = int(request.data["seating_capacity"])
+            except (ValueError, TypeError):
+                return Response({"error": "seating_capacity must be an integer."}, status=400)
+        if "cols" in request.data:
+            try:
+                room.cols = int(request.data["cols"])
+            except (ValueError, TypeError):
+                return Response({"error": "cols must be an integer."}, status=400)
+        if "block" in request.data:
+            room.block = request.data["block"].strip()
+        if "is_active" in request.data:
+            room.is_active = bool(request.data["is_active"])
+        room.save()
+        return Response(
+            {
+                "id": room.id,
+                "room_no": room.room_no,
+                "seating_capacity": room.seating_capacity,
+                "exam_capacity": _room_exam_capacity(room),
+                "is_l_room": _is_l_room(room),
+                "cols": room.cols,
+                "block": room.block,
+                "is_active": room.is_active,
+            }
+        )
+
+    def delete(self, request, pk):
+        if not user_holds_any_role(request.user, SEATING_ADMIN_ROLES):
+            return Response({"error": "Permission denied."}, status=403)
+        room = self._get_room(pk)
+        if not room:
+            return Response({"error": "Room not found."}, status=404)
+        room.delete()
+        return Response({"message": "Room deleted."}, status=204)
+
+
+class SeatingArrangementGenerateAPI(APIView):
+    """
+    POST: Generate random seating for students across selected rooms on a given date/shift.
+    Rules:
+      1. For L-rooms: divide capacity by 2 because of a 1-seat gap between adjacent students.
+      2. For non-L rooms (e.g. CR): use full seating capacity.
+      3. Inter-mix courses across columns so adjacent students have different subjects.
+      4. Each student is seated at most once per exam slot (deduplicated by student_id).
+      5. Uses students from the latest 2-3 years in the database (or specified batch_years).
+    """
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def _derive_batches(academic_year):
+        raw = (academic_year or "").strip()
+        if not raw:
+            return []
+        try:
+            parts = raw.split("-")
+            if len(parts) != 2:
+                return []
+            s_raw, e_raw = parts[0].strip(), parts[1].strip()
+            start = int(s_raw) if len(s_raw) == 4 else 2000 + int(s_raw)
+            end   = int(e_raw) if len(e_raw) == 4 else 2000 + int(e_raw)
+            duration = end - start
+            if duration <= 1:
+                return [start]
+            return list(range(start - duration + 1, start + 1))
+        except (ValueError, IndexError):
+            return []
+
+    def post(self, request):
+        if not user_holds_any_role(request.user, SEATING_ADMIN_ROLES):
+            return Response({"error": "Permission denied."}, status=403)
+
+        exam_title    = request.data.get("exam_title")
+        exam_date     = request.data.get("exam_date")
+        shift         = request.data.get("shift")
+        academic_year = request.data.get("academic_year", "")
+        programme_type = request.data.get("programme_type", "ALL")
+        room_nos      = request.data.get("rooms", [])
+        course_codes  = request.data.get("course_codes", [])
+        batch_years   = request.data.get("batch_years", [])
+
+        if not all([exam_title, exam_date, shift, room_nos]):
+            return Response({"error": "exam_title, exam_date, shift, rooms are required."}, status=400)
+
+        # ── Rooms ─────────────────────────────────────────────────────────────
+        rooms = list(ExamRoom.objects.filter(room_no__in=room_nos, is_active=True).order_by("room_no"))
+        if not rooms:
+            return Response({"error": "No active rooms found with the given room numbers."}, status=400)
+
+        # Total exam capacity respects L-room divide-by-2 policy
+        total_capacity = sum(_room_exam_capacity(r) for r in rooms)
+
+        # ── Build student registrations queryset ──────────────────────────────
+        qs = FinalRegistration.objects.select_related(
+            "student_id", "student_id__id", "student_id__id__user", "course_id"
+        )
+
+        # Batch filtering: explicit, derived, or latest 3 batches in database
+        if batch_years:
+            try:
+                qs = qs.filter(student_id__batch__in=[int(y) for y in batch_years])
+            except (ValueError, TypeError):
+                pass
+        elif academic_year:
+            derived = self._derive_batches(academic_year)
+            if derived:
+                qs = qs.filter(student_id__batch__in=derived)
+        else:
+            latest_batches = list(
+                Student.objects.values_list('batch', flat=True)
+                .exclude(batch__isnull=True)
+                .distinct()
+                .order_by('-batch')[:3]
+            )
+            if latest_batches:
+                qs = qs.filter(student_id__batch__in=latest_batches)
+
+        if course_codes:
+            qs = qs.filter(course_id__code__in=course_codes)
+
+        if programme_type != "ALL":
+            PROG_PREFIXES = {
+                "UG":  ["B.Tech", "B.Des", "B.Sc"],
+                "PG":  ["M.Tech", "M.Sc", "M.Des", "MBA"],
+                "PHD": ["Ph.D", "PhD"],
+            }
+            from django.db.models import Q as _Q
+            prog_q = _Q()
+            for p in PROG_PREFIXES.get(programme_type, [programme_type]):
+                prog_q |= _Q(student_id__programme__icontains=p)
+            qs = qs.filter(prog_q)
+
+        from collections import defaultdict as _dd
+        import re
+
+        # ── Delete existing seating only for the selected rooms ───────────────
+        # This preserves previous rooms (e.g. CR-101 remains intact when generating CR-102)
+        clear_slot = request.data.get("clear_slot", False)
+        if clear_slot:
+            SeatingArrangement.objects.filter(
+                exam_title=exam_title, exam_date=exam_date, shift=shift
+            ).delete()
+        else:
+            SeatingArrangement.objects.filter(
+                exam_title=exam_title, exam_date=exam_date, shift=shift, room_no__in=room_nos
+            ).delete()
+
+        # ── Rule: No student roll number can be seated twice on the same day ──
+        already_seated_today = set(
+            SeatingArrangement.objects.filter(exam_date=exam_date)
+            .values_list("student_roll", flat=True)
+        )
+
+        def _extract_branch(roll):
+            m = re.search(r'^\d{2}([A-Za-z]{3})', str(roll))
+            if m:
+                return m.group(1).upper()
+            m2 = re.search(r'[A-Za-z]+', str(roll))
+            if m2:
+                return m2.group(0).upper()
+            return "GEN"
+
+        # ── Group registrations and assign uniform subject per branch ─────────
+        # On a given exam day/shift, all students in the same branch/batch take
+        # the same exam subject.
+        from collections import Counter as _Counter
+
+        BRANCH_PREFIX_ORDER = {
+            "BCS": ["CS", "IT"],
+            "BEC": ["EC"],
+            "BME": ["ME"],
+            "BDS": ["DS"],
+            "BSM": ["SM", "ME"],
+        }
+
+        def _pick_branch_course(b, regs, user_c_upper):
+            # 1. If user specified course codes, match against user's choice
+            if user_c_upper:
+                for u in user_c_upper:
+                    matching = [
+                        (r.course_id.code, r.course_id.name)
+                        for r in regs
+                        if r.course_id.code.upper() == u
+                    ]
+                    if matching:
+                        return matching[0]
+
+            # 2. Pick dominant discipline course for the branch
+            course_counts = _Counter((r.course_id.code, r.course_id.name) for r in regs)
+            prefixes = BRANCH_PREFIX_ORDER.get(b, [b[:2]])
+            for p in prefixes:
+                matching = [(c, cnt) for c, cnt in course_counts.items() if c[0].upper().startswith(p)]
+                if matching:
+                    matching.sort(key=lambda x: -x[1])
+                    return matching[0][0]
+            if course_counts:
+                return course_counts.most_common(1)[0][0]
+            return ("EXAM", "Examination")
+
+        regs_by_branch = _dd(list)
+        students_info = {}
+
+        for reg in qs.order_by("student_id_id"):
+            roll = reg.student_id_id
+            if roll in already_seated_today:
+                continue
+
+            branch = _extract_branch(roll)
+            regs_by_branch[branch].append(reg)
+
+            if roll not in students_info:
+                try:
+                    user = reg.student_id.id.user
+                    name = f"{user.first_name} {user.last_name}".strip() or user.username
+                except Exception:
+                    name = roll
+                students_info[roll] = {
+                    "roll": roll,
+                    "name": name,
+                    "branch": branch,
+                }
+
+        user_c_upper = [c.strip().upper() for c in course_codes] if course_codes else []
+        branch_course_map = {}
+        for b, b_regs in regs_by_branch.items():
+            branch_course_map[b] = _pick_branch_course(b, b_regs, user_c_upper)
+
+        students_by_branch = _dd(list)
+        all_unique_students = []
+
+        for roll, info in sorted(students_info.items(), key=lambda x: x[0]):
+            b = info["branch"]
+            c_code, c_name = branch_course_map.get(b, ("EXAM", "Examination"))
+            stu = {
+                "roll": roll,
+                "name": info["name"],
+                "branch": b,
+                "course_code": c_code,
+                "course_name": c_name,
+            }
+            students_by_branch[b].append(stu)
+            all_unique_students.append(stu)
+
+        if not all_unique_students:
+            return Response(
+                {"error": "No eligible student registrations found (or all already seated on this exam date).", "count": 0},
+                status=200,
+            )
+
+        # Sort students in each branch sequentially by roll number (e.g. 24BCS001, 24BCS002...)
+        for b in students_by_branch:
+            students_by_branch[b].sort(key=lambda s: s["roll"])
+
+        # Determine available branches ordered by student count descending
+        avail_branches = sorted(students_by_branch.keys(), key=lambda b: -len(students_by_branch[b]))
+
+        # Divide into Group A (top 2 branches, e.g. BCS, BEC) and Group B (e.g. BME, BSM, BDS)
+        g_a_branches = [b for b in ["BCS", "BEC"] if b in students_by_branch]
+        g_b_branches = [b for b in ["BME", "BSM", "BDS"] if b in students_by_branch]
+        other_branches = [b for b in avail_branches if b not in g_a_branches and b not in g_b_branches]
+        for ob in other_branches:
+            if len(g_a_branches) <= len(g_b_branches):
+                g_a_branches.append(ob)
+            else:
+                g_b_branches.append(ob)
+        if not g_a_branches and avail_branches:
+            half = max(1, len(avail_branches) // 2)
+            g_a_branches = avail_branches[:half]
+            g_b_branches = avail_branches[half:]
+        if not g_b_branches:
+            g_b_branches = list(g_a_branches)
+
+        # ── Seating Generation Across Rooms ───────────────────────────────────
+        # Respects L-room 16-col structure:
+        #   Active columns: Col 1, 3, 6, 8, 9, 11, 14, 16 (0-indexed: [0, 2, 5, 7, 8, 10, 13, 15])
+        #   Group A (Cols 1, 6, 9, 14): Odd rows -> Branch A1 (BCS), Even rows -> Branch A2 (BEC)
+        #   Group B (Cols 3, 8, 11, 16): Odd rows -> Branch B1 (BME), Even rows -> Branch B2 (BSM/BDS)
+        #   Empty columns: 2, 4, 5, 7, 10, 12, 13, 15
+        # Regular (CR) rooms: All columns active, smooth alternating of branches.
+        b_queues = {b: list(lst) for b, lst in students_by_branch.items()}
+
+        def _pop_seat_student(is_l_room, is_group_a, row_idx):
+            curr_group = g_a_branches if is_group_a else g_b_branches
+            is_odd_row = (row_idx % 2 == 0)
+
+            if is_odd_row:
+                primary_branches = curr_group[:1]
+                secondary_branches = curr_group[1:]
+            else:
+                primary_branches = curr_group[1:]
+                secondary_branches = curr_group[:1]
+
+            for b in primary_branches:
+                if b_queues.get(b):
+                    return b_queues[b].pop(0)
+            for b in secondary_branches:
+                if b_queues.get(b):
+                    return b_queues[b].pop(0)
+            for b in avail_branches:
+                if b_queues.get(b):
+                    return b_queues[b].pop(0)
+            return None
+
+        to_create = []
+        summary   = []
+
+        for room in rooms:
+            cols     = max(room.cols, 1)
+            is_l     = _is_l_room(room)
+            active_cols = _get_active_cols(room)
+            if not active_cols:
+                continue
+
+            room_seat_map = _get_room_seat_map(room)
+            room_cap = _room_exam_capacity(room)
+            room_placed = 0
+
+            # Fill active columns alternating between Group A and Group B
+            for a_idx, col_idx in enumerate(active_cols):
+                is_group_a = (a_idx % 2 == 0)
+                col_no = col_idx + 1
+                col_max_rows = _get_col_max_rows(room, col_no)
+
+                for row_idx in range(col_max_rows):
+                    row_no = row_idx + 1
+                    seat_no = room_seat_map.get((row_no, col_no))
+                    if not seat_no:
+                        continue
+                    if room_placed >= room_cap:
+                        break
+
+                    stu = _pop_seat_student(is_l, is_group_a, row_idx)
+                    if stu is None:
+                        break
+
+                    room_placed += 1
+
+                    to_create.append(SeatingArrangement(
+                        exam_title=exam_title,
+                        exam_date=exam_date,
+                        shift=shift,
+                        academic_year=academic_year,
+                        programme_type=programme_type,
+                        course_code=stu["course_code"],
+                        course_name=stu["course_name"],
+                        room_no=room.room_no,
+                        student_roll=stu["roll"],
+                        student_name=stu["name"],
+                        seat_no=seat_no,
+                        row_no=row_no,
+                        col_no=col_no,
+                    ))
+                    summary.append({
+                        "room_no": room.room_no,
+                        "seat_no": seat_no,
+                        "row_no": row_no,
+                        "col_no": col_no,
+                        "student_roll": stu["roll"],
+                        "student_name": stu["name"],
+                        "course_code": stu["course_code"],
+                    })
+
+                if room_placed >= room_cap:
+                    break
+
+
+        SeatingArrangement.objects.bulk_create(to_create, batch_size=500)
+
+        # Room-wise summary for response
+        room_summary = {}
+        for item in summary:
+            room_summary[item["room_no"]] = room_summary.get(item["room_no"], 0) + 1
+
+        total_in_batch = qs.values_list("student_id_id", flat=True).distinct().count()
+        total_seated_today = (
+            SeatingArrangement.objects.filter(exam_date=exam_date)
+            .values_list("student_roll", flat=True)
+            .distinct()
+            .count()
+        )
+        remaining_unseated = max(0, total_in_batch - total_seated_today)
+
+        return Response({
+            "generated": len(to_create),
+            "total_students_found": len(all_unique_students),
+            "total_in_batch": total_in_batch,
+            "total_seated_today": total_seated_today,
+            "remaining_unseated": remaining_unseated,
+            "total_capacity": total_capacity,
+            "rooms_used": [{"room_no": k, "assigned": v} for k, v in room_summary.items()],
+            "seats": summary,
+        })
+
+
+class SeatingArrangementListAPI(APIView):
+    """GET the generated seating for a given exam_date + shift."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        exam_date  = request.query_params.get("exam_date")
+        shift      = request.query_params.get("shift")
+        exam_title = request.query_params.get("exam_title")
+        room_no    = request.query_params.get("room_no")
+
+        qs = SeatingArrangement.objects.all()
+        if exam_date:
+            qs = qs.filter(exam_date=exam_date)
+        if shift:
+            if shift in ["evening", "afternoon"]:
+                qs = qs.filter(shift__in=["evening", "afternoon"])
+            else:
+                qs = qs.filter(shift=shift)
+        if exam_title:
+            qs = qs.filter(exam_title=exam_title)
+        if room_no:
+            qs = qs.filter(room_no=room_no)
+
+        room_obj_map = {r.room_no: r for r in ExamRoom.objects.all()}
+
+        data = [
+            {
+                "id": s.id,
+                "exam_title": s.exam_title,
+                "exam_date": str(s.exam_date),
+                "shift": s.shift,
+                "academic_year": s.academic_year,
+                "programme_type": s.programme_type,
+                "course_code": s.course_code,
+                "course_name": s.course_name,
+                "room_no": s.room_no,
+                "student_roll": s.student_roll,
+                "student_name": s.student_name,
+                "seat_no": s.seat_no,
+                "row_no": s.row_no,
+                "col_no": s.col_no,
+                "is_excluded": s.is_excluded,
+            }
+            for s in qs
+        ]
+
+        # Attach room metadata for grid rendering on frontend
+        room_meta = {}
+        for rn in {s["room_no"] for s in data}:
+            rm = room_obj_map.get(rn)
+            norm_rn = _normalize_room_no(rn)
+            room_meta[rn] = {
+                "cols": rm.cols if rm else 9,
+                "seating_capacity": rm.seating_capacity if rm else 45,
+                "exam_capacity": _room_exam_capacity(rm) if rm else 45,
+                "is_l_room": _is_l_room(rm) if rm else False,
+                "block": rm.block if rm else "",
+                "col_rows": ROOM_COL_ROWS.get(norm_rn, {}),
+            }
+
+        return Response({"count": len(data), "results": data, "room_meta": room_meta})
+
+
+class SeatingToggleExcludeAPI(APIView):
+    """PATCH /seating/<id>/toggle-exclude/ — flip is_excluded for one seat."""
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        if not user_holds_any_role(request.user, SEATING_ADMIN_ROLES):
+            return Response({"error": "Permission denied."}, status=403)
+        try:
+            seat = SeatingArrangement.objects.get(pk=pk)
+        except SeatingArrangement.DoesNotExist:
+            return Response({"error": "Seat not found."}, status=404)
+        seat.is_excluded = not seat.is_excluded
+        seat.save(update_fields=["is_excluded"])
+        return Response({"id": seat.id, "is_excluded": seat.is_excluded})
+
+
+class SeatingRoomToggleExcludeAPI(APIView):
+    """POST /seating/room-exclude/ — toggle or set is_excluded for all seats in a room for a date/shift."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not user_holds_any_role(request.user, SEATING_ADMIN_ROLES):
+            return Response({"error": "Permission denied."}, status=403)
+        exam_date = request.data.get("exam_date")
+        shift     = request.data.get("shift")
+        room_no   = request.data.get("room_no")
+        exclude   = request.data.get("exclude")  # bool or None to toggle
+
+        if not all([exam_date, shift, room_no]):
+            return Response({"error": "exam_date, shift, and room_no are required."}, status=400)
+
+        shift_filter = ["evening", "afternoon"] if shift in ["evening", "afternoon"] else [shift]
+        qs = SeatingArrangement.objects.filter(exam_date=exam_date, shift__in=shift_filter, room_no=room_no)
+        if not qs.exists():
+            return Response({"error": f"No seating records found for room {room_no} in this slot."}, status=404)
+
+        if exclude is None:
+            # If all are excluded, un-exclude them; otherwise exclude all
+            all_excluded = not qs.filter(is_excluded=False).exists()
+            exclude = not all_excluded
+
+        qs.update(is_excluded=exclude)
+        return Response({
+            "room_no": room_no,
+            "is_excluded": exclude,
+            "updated": qs.count(),
+        })
+
+
+class SeatingArrangementExamDatesAPI(APIView):
+    """GET list of distinct (exam_date, shift, exam_title) combos that have seating data."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        combos = (
+            SeatingArrangement.objects
+            .values("exam_date", "shift", "exam_title", "academic_year", "programme_type")
+            .distinct()
+            .order_by("-exam_date", "shift")
+        )
+        return Response(list(combos))
+
+
+class SeatingArrangementClearAPI(APIView):
+    """
+    POST /seating/clear/
+    Delete seating arrangements:
+    - If clear_all=True (or no exam_date): delete all seating records in database.
+    - If exam_date specified: delete seating records for that exam_date (and shift / room_no if given).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not user_holds_any_role(request.user, SEATING_ADMIN_ROLES):
+            return Response({"error": "Permission denied."}, status=403)
+
+        clear_all = request.data.get("clear_all", False)
+        exam_date = request.data.get("exam_date")
+        shift = request.data.get("shift")
+        room_no = request.data.get("room_no")
+
+        qs = SeatingArrangement.objects.all()
+
+        if clear_all or not exam_date:
+            count = qs.count()
+            qs.delete()
+            return Response({
+                "deleted": count,
+                "message": f"All {count} seating arrangement(s) have been cleared.",
+            })
+
+        qs = qs.filter(exam_date=exam_date)
+        if shift:
+            if shift in ["evening", "afternoon"]:
+                qs = qs.filter(shift__in=["evening", "afternoon"])
+            else:
+                qs = qs.filter(shift=shift)
+        if room_no:
+            qs = qs.filter(room_no=room_no)
+
+        count = qs.count()
+        qs.delete()
+        label = f"seating records for {exam_date}"
+        if shift:
+            label += f" ({shift})"
+        if room_no:
+            label += f" in Room {room_no}"
+        return Response({
+            "deleted": count,
+            "message": f"{count} {label} deleted.",
+        })
+
