@@ -2761,3 +2761,394 @@ class TeachingCreditEvaluationResponse(models.Model):
 
     def __str__(self):
         return f"Evaluation for {self.registration} by respondent #{self.respondent_id}"
+
+
+# =============================================================================
+# WHOLE-COLLEGE SEMESTER TIMETABLE GENERATION SYSTEM
+# New additive tables — zero modifications to existing production tables.
+# All foreign keys reference existing PKs by value only (read-only coupling).
+# =============================================================================
+
+class Classroom(models.Model):
+    """Physical teaching spaces available for scheduling.
+
+    Populated once via management command / Django admin; read-only during
+    solver execution.  ``room_type`` drives hard constraint BR-HC-08 (facility
+    match) and domain-pruning in FC-01.
+    """
+
+    ROOM_TYPE_CHOICES = [
+        ('Lecture Hall', 'Lecture Hall'),
+        ('Tutorial Room', 'Tutorial Room'),
+        ('Computer Lab', 'Computer Lab'),
+        ('Hardware Lab', 'Hardware Lab'),
+        ('Mechanical Workshop', 'Mechanical Workshop'),
+        ('Seminar Room', 'Seminar Room'),
+    ]
+
+    room_id = models.CharField(max_length=20, primary_key=True)
+    building = models.CharField(max_length=100)
+    capacity = models.PositiveIntegerField(help_text='Seating capacity (hard seats)')
+    room_type = models.CharField(max_length=30, choices=ROOM_TYPE_CHOICES)
+    has_projector = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True,
+        help_text='Set False during maintenance to exclude from scheduling',
+    )
+
+    class Meta:
+        db_table = 'timetable_classroom'
+        ordering = ['room_id']
+
+    def __str__(self):
+        return f'{self.room_id} ({self.room_type}, cap={self.capacity})'
+
+
+class CourseWeeklyRequirement(models.Model):
+    """Per-curriculum weekly session decomposition used by the CP-SAT solver.
+
+    Stores *how* a floated curriculum should be scheduled (lectures, tutorials,
+    lab blocks) without touching the read-only ``Curriculum`` table.  The
+    solver ingests this table during domain-building (FC-01).
+    """
+
+    SLOT_TYPE_CHOICES = [
+        ('Lecture', 'Lecture'),
+        ('Tutorial', 'Tutorial'),
+        ('Practical', 'Practical'),
+    ]
+    PREFERRED_ROOM_TYPE_CHOICES = [
+        ('any', 'Any'),
+        ('Lecture Hall', 'Lecture Hall'),
+        ('Tutorial Room', 'Tutorial Room'),
+        ('Computer Lab', 'Computer Lab'),
+        ('Hardware Lab', 'Hardware Lab'),
+        ('Mechanical Workshop', 'Mechanical Workshop'),
+    ]
+
+    # References the read-only Curriculum table by curriculum_id PK.
+    curriculum = models.ForeignKey(
+        'academic_information.Curriculum',
+        on_delete=models.CASCADE,
+        db_column='curriculum_id',
+        related_name='weekly_requirements',
+    )
+    lectures_per_week = models.PositiveSmallIntegerField(default=3)
+    tutorials_per_week = models.PositiveSmallIntegerField(default=1)
+    practicals_per_week = models.PositiveSmallIntegerField(default=0)
+    practical_block_size = models.PositiveSmallIntegerField(
+        default=2,
+        help_text='Consecutive hours for one lab session (2 or 3)',
+    )
+    preferred_room_type = models.CharField(
+        max_length=30,
+        choices=PREFERRED_ROOM_TYPE_CHOICES,
+        default='any',
+    )
+
+    class Meta:
+        db_table = 'timetable_course_weekly_requirement'
+        unique_together = ('curriculum',)
+
+    def __str__(self):
+        return (
+            f'{self.curriculum.course_code}: '
+            f'{self.lectures_per_week}L/{self.tutorials_per_week}T/{self.practicals_per_week}P'
+        )
+
+
+class TimetableVersion(models.Model):
+    """Snapshot / version of a whole-college timetable generation run.
+
+    Supports the draft → review → approved → published lifecycle described
+    in WF-01.  Only one version per (academic_year, semester_type) should have
+    status='Published' at any time.
+    """
+
+    STATUS_CHOICES = [
+        ('Draft', 'Draft'),
+        ('UnderReview', 'Under Review'),
+        ('Approved', 'Approved'),
+        ('Published', 'Published'),
+        ('Archived', 'Archived'),
+        ('Infeasible', 'Infeasible'),
+    ]
+    SEMESTER_TYPE_CHOICES = [
+        ('Odd Semester', 'Odd Semester'),
+        ('Even Semester', 'Even Semester'),
+        ('Summer Term', 'Summer Term'),
+    ]
+
+    academic_year = models.PositiveSmallIntegerField(
+        help_text='Start year of the academic year, e.g. 2026 for 2026-27',
+    )
+    semester_type = models.CharField(max_length=20, choices=SEMESTER_TYPE_CHOICES)
+    version_number = models.PositiveSmallIntegerField(default=1)
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='Draft')
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        'auth.User',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='timetable_versions_created',
+    )
+    solve_time_seconds = models.FloatField(null=True, blank=True)
+    slots_created = models.PositiveIntegerField(null=True, blank=True)
+    remarks = models.TextField(blank=True)
+    publish_notes = models.TextField(blank=True)
+
+    class Meta:
+        db_table = 'timetable_version'
+        unique_together = ('academic_year', 'semester_type', 'version_number')
+        ordering = ['-academic_year', '-version_number']
+
+    def __str__(self):
+        return (
+            f'TT-{self.academic_year}-{self.semester_type} '
+            f'v{self.version_number} [{self.status}]'
+        )
+
+
+class TimetableSlot(models.Model):
+    """One scheduled teaching slot within a timetable version.
+
+    Each record represents *one hour* in one room for one curriculum/faculty/
+    cohort combination.  Multi-hour lab blocks are stored as consecutive rows
+    sharing the same ``lab_block_id``.
+
+    The ``is_locked`` flag supports BR-HC-11 (admin pin) and the incremental
+    rescheduling pattern described in Section 6.4.
+    """
+
+    SLOT_TYPE_CHOICES = [
+        ('Lecture', 'Lecture'),
+        ('Tutorial', 'Tutorial'),
+        ('Practical', 'Practical'),
+    ]
+    DAY_CHOICES = [
+        (1, 'Monday'),
+        (2, 'Tuesday'),
+        (3, 'Wednesday'),
+        (4, 'Thursday'),
+        (5, 'Friday'),
+    ]
+    # Valid teaching hours: 9–12 (morning), 14–17 (afternoon); 13 is lunch.
+    HOUR_CHOICES = [
+        (9,  '09:00–10:00'),
+        (10, '10:00–11:00'),
+        (11, '11:00–12:00'),
+        (12, '12:00–13:00'),
+        (14, '14:00–15:00'),
+        (15, '15:00–16:00'),
+        (16, '16:00–17:00'),
+        (17, '17:00–18:00'),
+    ]
+
+    version = models.ForeignKey(
+        TimetableVersion,
+        on_delete=models.CASCADE,
+        related_name='slots',
+    )
+    # Read-only FK to Curriculum (existing production table).
+    curriculum = models.ForeignKey(
+        'academic_information.Curriculum',
+        on_delete=models.CASCADE,
+        db_column='curriculum_id',
+        related_name='timetable_slots',
+    )
+    # Read-only FK to Curriculum_Instructor (existing production table).
+    curriculum_instructor = models.ForeignKey(
+        'academic_information.Curriculum_Instructor',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        db_column='curriculum_instructor_id',
+        related_name='timetable_slots',
+    )
+    classroom = models.ForeignKey(
+        Classroom,
+        on_delete=models.PROTECT,
+        related_name='timetable_slots',
+    )
+
+    # Cohort identification (denormalised for fast filtering).
+    batch = models.PositiveSmallIntegerField(help_text='Admission year of the cohort')
+    programme = models.CharField(max_length=15)
+    branch = models.CharField(max_length=15)
+    section = models.CharField(max_length=8, blank=True, default='')
+
+    day_of_week = models.PositiveSmallIntegerField(choices=DAY_CHOICES)
+    start_hour = models.PositiveSmallIntegerField(
+        choices=HOUR_CHOICES,
+        help_text='Hour of the day (24-h), e.g. 9 means 09:00',
+    )
+    slot_type = models.CharField(max_length=15, choices=SLOT_TYPE_CHOICES)
+
+    # Links consecutive rows of a multi-hour lab into one logical block.
+    lab_block_id = models.UUIDField(null=True, blank=True, db_index=True)
+
+    is_locked = models.BooleanField(
+        default=False,
+        help_text='Locked slots are preserved as-is in subsequent solver runs',
+    )
+
+    class Meta:
+        db_table = 'timetable_slot'
+        indexes = [
+            models.Index(fields=['version', 'batch', 'programme', 'branch', 'section']),
+            models.Index(fields=['version', 'curriculum_instructor', 'day_of_week', 'start_hour']),
+            models.Index(fields=['version', 'classroom', 'day_of_week', 'start_hour']),
+        ]
+
+    @property
+    def start_time(self):
+        return f'{self.start_hour:02d}:00'
+
+    @property
+    def end_time(self):
+        return f'{self.start_hour + 1:02d}:00'
+
+    def __str__(self):
+        day_label = dict(self.DAY_CHOICES).get(self.day_of_week, self.day_of_week)
+        return (
+            f'{self.curriculum.course_code} | {day_label} {self.start_time} | '
+            f'{self.classroom_id} | {self.slot_type}'
+        )
+
+
+class ElectiveBasket(models.Model):
+    """Groups parallel elective courses that must run at the same time slot.
+
+    Enforces BR-HC-10: all curricula in the same basket are constrained to
+    the same (day, hour) pair by the CP-SAT equality constraints in FC-03.
+    """
+
+    basket_code = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=200)
+    semester = models.PositiveSmallIntegerField()
+    programme = models.CharField(max_length=15)
+    academic_year = models.PositiveSmallIntegerField(default=2026)
+    semester_type = models.CharField(
+        max_length=20,
+        choices=TimetableVersion.SEMESTER_TYPE_CHOICES,
+        default='Odd Semester',
+    )
+    curricula = models.ManyToManyField(
+        'academic_information.Curriculum',
+        through='ElectiveBasketCurriculum',
+        related_name='elective_baskets',
+    )
+
+    class Meta:
+        db_table = 'timetable_elective_basket'
+        ordering = ['basket_code']
+
+    def __str__(self):
+        return f'{self.basket_code}: {self.name}'
+
+
+class ElectiveBasketCurriculum(models.Model):
+    """Through-table for ElectiveBasket ↔ Curriculum M2M."""
+
+    basket = models.ForeignKey(ElectiveBasket, on_delete=models.CASCADE)
+    curriculum = models.ForeignKey(
+        'academic_information.Curriculum',
+        on_delete=models.CASCADE,
+        db_column='curriculum_id',
+    )
+    max_seats = models.PositiveSmallIntegerField(
+        default=60,
+        help_text='Expected enrollment cap for room-sizing',
+    )
+
+    class Meta:
+        db_table = 'timetable_elective_basket_curriculum'
+        unique_together = ('basket', 'curriculum')
+
+    def __str__(self):
+        return f'{self.basket.basket_code} ← {self.curriculum.course_code}'
+
+
+class FacultyPreference(models.Model):
+    """Faculty-declared time preferences consumed as soft constraint BR-SC-06.
+
+    ``preference_type='Unavailable'`` adds a penalty when the solver schedules
+    the faculty in that window.  ``'Preferred'`` rewards scheduling in it.
+    Both are expressed as weighted terms in the objective function.
+    """
+
+    PREFERENCE_TYPE_CHOICES = [
+        ('Unavailable', 'Unavailable'),
+        ('Preferred', 'Preferred'),
+    ]
+
+    # Read-only FK to Faculty (existing production table).
+    faculty = models.ForeignKey(
+        'globals.Faculty',
+        on_delete=models.CASCADE,
+        related_name='timetable_preferences',
+    )
+    academic_year = models.PositiveSmallIntegerField(default=2026)
+    semester_type = models.CharField(
+        max_length=20,
+        choices=TimetableVersion.SEMESTER_TYPE_CHOICES,
+        default='Odd Semester',
+    )
+    day_of_week = models.PositiveSmallIntegerField(
+        choices=TimetableSlot.DAY_CHOICES,
+    )
+    start_hour = models.PositiveSmallIntegerField(choices=TimetableSlot.HOUR_CHOICES)
+    end_hour = models.PositiveSmallIntegerField(choices=TimetableSlot.HOUR_CHOICES)
+    preference_type = models.CharField(max_length=15, choices=PREFERENCE_TYPE_CHOICES)
+    reason = models.TextField(blank=True)
+
+    class Meta:
+        db_table = 'timetable_faculty_preference'
+        ordering = ['faculty', 'day_of_week', 'start_hour']
+
+    def __str__(self):
+        day_label = dict(TimetableSlot.DAY_CHOICES).get(self.day_of_week, self.day_of_week)
+        return (
+            f'{self.faculty} | {day_label} {self.start_hour:02d}:00–{self.end_hour:02d}:00 '
+            f'[{self.preference_type}]'
+        )
+
+
+class TimetableConflictLog(models.Model):
+    """Diagnostic log written when the solver returns INFEASIBLE or detects
+    bottlenecks during domain-pruning (FC-01 / FC-02).
+
+    Severity levels mirror standard incident triage:
+      * CRITICAL — hard constraint cannot be satisfied (e.g., no room large
+        enough for a cohort → solver will never find a solution).
+      * WARNING  — soft-constraint violation found in a feasible solution.
+      * INFO     — informational diagnostic (e.g., solver hit time limit but
+        returned a feasible incumbent).
+    """
+
+    SEVERITY_CHOICES = [
+        ('CRITICAL', 'Critical'),
+        ('WARNING', 'Warning'),
+        ('INFO', 'Info'),
+    ]
+
+    version = models.ForeignKey(
+        TimetableVersion,
+        on_delete=models.CASCADE,
+        related_name='conflict_logs',
+    )
+    severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES)
+    error_code = models.CharField(max_length=30)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Optional FK pointers to the offending objects.
+    curriculum_id_ref = models.IntegerField(null=True, blank=True)
+    classroom_id_ref = models.CharField(max_length=20, null=True, blank=True)
+    faculty_id_ref = models.CharField(max_length=20, null=True, blank=True)
+
+    class Meta:
+        db_table = 'timetable_conflict_log'
+        ordering = ['-created_at', '-severity']
+
+    def __str__(self):
+        return f'[{self.severity}] {self.error_code} — Version {self.version_id}'

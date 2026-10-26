@@ -40,3 +40,5 @@ DJANGO_SETTINGS_MODULE=Fusion.settings.development python manage.py runserver 0.
 The server will be available at [http://localhost:8000/](http://localhost:8000/).
 
 To stop the server, press `Ctrl + C` in your terminal. You can deactivate the virtual environment anytime by running `deactivate`.
+cd FusionIIIT
+DJANGO_SETTINGS_MODULE=Fusion.settings.development ../.venv/bin/python manage.py runserver 0.0.0.0:8000

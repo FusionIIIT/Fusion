@@ -19,6 +19,7 @@ django-semanticui-forms = "*"
 django-unused-media = "*"
 html-text = "*"
 numpy = "*"
+ortools = "*"
 psycopg2-binary = "*"
 requests = "*"
 whitenoise = {extras = ["brotli"], version = "*"}
