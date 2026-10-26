@@ -103,6 +103,52 @@ class RowBuildingTests(FeeStructureCertificateTestCase):
         self.assertEqual(tuition_row['sem1'], '0.00')
 
 
+class FinancialYearSelectionTests(FeeStructureCertificateTestCase):
+    def test_financial_year_choices_cover_every_session(self):
+        choices = fsc.financial_year_choices(self.student, self.structure)
+        self.assertEqual([c['value'] for c in choices], [1, 3, 5, 7])
+        self.assertEqual(choices[0]['label'], '2026-27')
+        self.assertEqual(choices[3]['label'], '2029-30')
+
+    def test_student_endpoint_defaults_to_the_current_session(self):
+        student = self._student('26BCS3001', semester=7)
+        response = self.client.get(
+            '/academic-procedures/api/acad/fee-structure-certificate/student/',
+            {'roll_number': student.pk})
+        data = response.json()
+        self.assertEqual(data['selected_semester'], 7)
+        self.assertEqual(data['structure']['academic_year_label'], '2029-30')
+
+    def test_student_endpoint_honours_an_explicit_semester(self):
+        response = self.client.get(
+            '/academic-procedures/api/acad/fee-structure-certificate/student/',
+            {'roll_number': self.student.pk, 'semester': 5})
+        data = response.json()
+        self.assertEqual(data['selected_semester'], 5)
+        self.assertEqual(data['structure']['academic_year_label'], '2028-29')
+
+    def test_student_endpoint_falls_back_on_an_invalid_semester(self):
+        response = self.client.get(
+            '/academic-procedures/api/acad/fee-structure-certificate/student/',
+            {'roll_number': self.student.pk, 'semester': 4})
+        self.assertEqual(response.json()['selected_semester'], 1)
+
+    def test_pdf_generation_honours_an_explicit_semester(self):
+        response = self.client.post(
+            '/academic-procedures/api/acad/fee-structure-certificate/pdf/',
+            {'student_id': self.student.pk, 'semester': 5}, format='json')
+        self.assertEqual(response.status_code, 200)
+        certificate = BonafideCertificate.objects.get(
+            certificate_type='fee_structure')
+        self.assertEqual(certificate.purpose, 'Fee Structure 2028-29')
+
+    def test_pdf_generation_rejects_a_semester_outside_the_structure(self):
+        response = self.client.post(
+            '/academic-procedures/api/acad/fee-structure-certificate/pdf/',
+            {'student_id': self.student.pk, 'semester': 9}, format='json')
+        self.assertEqual(response.status_code, 400)
+
+
 class IssuedCertificateTests(FeeStructureCertificateTestCase):
     def _generate(self):
         return self.client.post(

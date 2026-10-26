@@ -1,4 +1,5 @@
 import math
+import os
 import re
 from datetime import datetime
 from io import BytesIO
@@ -11,10 +12,12 @@ from django.db.models import Max, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
@@ -26,6 +29,28 @@ from applications.academic_information.models import Student
 from applications.academic_procedures.models import BonafideCertificate
 from applications.globals.decorators import role_required
 from applications.globals.programme_scope import programme_display_name
+
+FONT_DIR = os.path.join(os.path.dirname(__file__), '..', 'fonts')
+
+
+def register_certificate_fonts():
+    """Caladea/Carlito stand in for Cambria/Calibri -- metric-compatible and
+    freely redistributable, unlike the Microsoft originals."""
+    if 'Caladea' in pdfmetrics.getRegisteredFontNames():
+        return
+    pdfmetrics.registerFont(TTFont('Caladea', os.path.join(FONT_DIR, 'Caladea-Regular.ttf')))
+    pdfmetrics.registerFont(TTFont('Caladea-Bold', os.path.join(FONT_DIR, 'Caladea-Bold.ttf')))
+    pdfmetrics.registerFont(TTFont('Carlito', os.path.join(FONT_DIR, 'Carlito-Regular.ttf')))
+    pdfmetrics.registerFont(TTFont('Carlito-Bold', os.path.join(FONT_DIR, 'Carlito-Bold.ttf')))
+    pdfmetrics.registerFontFamily(
+        'Caladea', normal='Caladea', bold='Caladea-Bold',
+        italic='Caladea', boldItalic='Caladea-Bold')
+    pdfmetrics.registerFontFamily(
+        'Carlito', normal='Carlito', bold='Carlito-Bold',
+        italic='Carlito', boldItalic='Carlito-Bold')
+
+
+register_certificate_fonts()
 
 #: Both certificates share the table; each screen lists only its own kind.
 CERTIFICATE_TYPE = 'bonafide'
@@ -164,35 +189,35 @@ def render_bonafide_pdf(
     document = SimpleDocTemplate(
         output,
         pagesize=A4,
-        topMargin=2.5 * cm,
+        topMargin=3.5 * cm,
         rightMargin=1.5 * cm,
-        bottomMargin=2.5 * cm,
+        bottomMargin=2 * cm,
         leftMargin=1.5 * cm,
         title='Bonafide Certificate',
         author=settings.BONAFIDE_INSTITUTE_NAME,
     )
     header_style = ParagraphStyle(
-        'Header', fontName='Helvetica-Bold', fontSize=13.5,
-        leading=18, alignment=TA_LEFT,
+        'Header', fontName='Caladea-Bold', fontSize=11,
+        leading=15, alignment=TA_JUSTIFY,
     )
     header_right_style = ParagraphStyle(
         'HeaderRight', parent=header_style, alignment=TA_RIGHT,
     )
     heading_style = ParagraphStyle(
-        'Heading', fontName='Helvetica-Bold', fontSize=15,
-        leading=19, alignment=TA_CENTER,
+        'Heading', fontName='Caladea-Bold', fontSize=11,
+        leading=15, alignment=TA_CENTER,
     )
     body_style = ParagraphStyle(
-        'Body', fontName='Helvetica', fontSize=13.5,
-        leading=22, alignment=TA_JUSTIFY,
+        'Body', fontName='Caladea', fontSize=12,
+        leading=20, alignment=TA_JUSTIFY,
     )
     signature_style = ParagraphStyle(
-        'Signature', fontName='Helvetica-Bold', fontSize=13.5,
-        leading=18, alignment=TA_LEFT,
+        'Signature', fontName='Caladea-Bold', fontSize=11,
+        leading=15, alignment=TA_JUSTIFY,
     )
     note_style = ParagraphStyle(
-        'Note', fontName='Helvetica', fontSize=13.5,
-        leading=22, alignment=TA_JUSTIFY,
+        'Note', fontName='Carlito', fontSize=11,
+        leading=18, alignment=TA_JUSTIFY,
     )
 
     header = Table(
