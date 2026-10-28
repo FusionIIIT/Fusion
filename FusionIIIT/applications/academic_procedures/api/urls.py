@@ -1,13 +1,18 @@
 from django.conf.urls import url
 from . import views
 from . import (bonafide_certificate, demand_letter, fee_certificate,
-               fee_structure, fee_structure_certificate)
+               fee_structure, fee_structure_certificate,medium_instruction_certificate)
 from .. import views as procedures_views
 
 
 urlpatterns = [
     # Also reachable here because only /api/ paths are proxied to Django in
     # production; the bare path returns the client's index.html instead.
+       url(
+        r'^acad/medium-instruction/pdf/$',
+        medium_instruction_certificate.generate_medium_instruction_certificate,
+        name='medium-instruction-pdf',
+    ),
     url(r'^course_reg_receipt/$', procedures_views.generate_course_registration_receipt,
         name='course_reg_receipt_api'),
     url(r'^acad/bonafide/student/$', bonafide_certificate.bonafide_student,
