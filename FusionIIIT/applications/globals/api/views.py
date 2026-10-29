@@ -33,7 +33,8 @@ from django.http import JsonResponse
 from . import serializers
 from applications.globals.models import (ExtraInfo, HoldsDesignation, ModuleAccess,
                                          Designation, DepartmentInfo, PasswordResetOTP,
-                                         Announcement)
+                                         Announcement, SystemAdminAccess,
+                                         UserActivityLog)
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
 from notifications.signals import notify
@@ -49,6 +50,13 @@ _security_log = logging.getLogger("fusion.security")
 
 User = get_user_model()
 
+
+def _has_system_admin_access(user):
+    return bool(
+        user.is_authenticated and
+        SystemAdminAccess.objects.filter(user=user).exists()
+    )
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
@@ -57,22 +65,29 @@ def login(request):
     user = get_and_authenticate_user(**serializer.validated_data)
     data = serializers.AuthUserSerializer(user).data
     
-    design = HoldsDesignation.objects.select_related('user','designation').filter(working=user)
+    now = timezone.now()
+    design = HoldsDesignation.objects.select_related('user', 'designation').filter(
+        working=user
+    ).filter(
+        Q(start_time__isnull=True) | Q(start_time__lte=now)
+    ).filter(Q(end_time__isnull=True) | Q(end_time__gt=now))
+    extra_info = ExtraInfo.objects.filter(user=user).first()
 
     designation=[]
-                
-    if str(user.extrainfo.user_type) == "student":
-        designation.append(str(user.extrainfo.user_type))
+
+    if extra_info and str(extra_info.user_type) == "student":
+        designation.append(str(extra_info.user_type))
         
     for i in design:
-        if str(i.designation) != str(user.extrainfo.user_type):
+        if not extra_info or str(i.designation) != str(extra_info.user_type):
             designation.append(str(i.designation))
     
     resp = {
         'success' : True,
         'message' : 'User logged in successfully',
         'token' : data['auth_token'],
-        'designations': designation
+        'designations': designation,
+        'is_system_admin': _has_system_admin_access(user),
     }
     response = Response(data=resp, status=status.HTTP_200_OK)
     # One login for every app. Best effort: the IAM being down must not block it.
@@ -102,13 +117,36 @@ def auth_view(request):
     name = " ".join(filter(None, [request.user.first_name, request.user.last_name])).strip()
     roll_no = request.user.username
 
-    extra_info = get_object_or_404(ExtraInfo, user=user)
-    last_selected_role = extra_info.last_selected_role
+    extra_info = ExtraInfo.objects.filter(user=user).first()
+    is_system_admin = _has_system_admin_access(user)
+    if extra_info is None and not is_system_admin:
+        return Response({'detail': 'User profile is not configured.'},
+                        status=status.HTTP_403_FORBIDDEN)
+    last_selected_role = extra_info.last_selected_role if extra_info else None
     
-    designation_list = list(HoldsDesignation.objects.filter(working=request.user).values_list('designation_id', flat=True))
+    now = timezone.now()
+    active_role_assignments = list(
+        HoldsDesignation.objects.filter(
+            working=request.user
+        ).filter(
+            Q(start_time__isnull=True) | Q(start_time__lte=now)
+        ).filter(Q(end_time__isnull=True) | Q(end_time__gt=now))
+        .select_related('designation')
+    )
+    designation_list = [assignment.designation_id
+                        for assignment in active_role_assignments]
     designation_info = list(
         Designation.objects.filter(id__in=designation_list).values_list('name', flat=True)
     )
+    leavable_roles = sorted({
+        assignment.designation.name
+        for assignment in active_role_assignments
+        if assignment.designation.name.lower() != 'student'
+    })
+    if is_system_admin:
+        designation_info = ['System Admin'] + [
+            role for role in designation_info if role != 'System Admin'
+        ]
 
     accessible_modules = {}
     
@@ -150,17 +188,191 @@ def auth_view(request):
 
     resp={
         'designation_info' : designation_info,
+        'leavable_roles': leavable_roles,
         'name': name,
         'roll_no': roll_no,
         'accessible_modules': accessible_modules,
         'last_selected_role': last_selected_role,
         'must_complete_profile': must_complete_profile,
+        'is_system_admin': is_system_admin,
         # The menus plugged modules contribute, under the designation that grants
         # each one, so a role never draws another role's screens.
         'plugged_navigation': plugged_nav,
     }
 
     return Response(data=resp,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def system_admin_role_assignments(request):
+    """Return a read-only directory of role assignments and their date ranges."""
+    if not _has_system_admin_access(request.user):
+        return Response({'detail': 'System Admin access is required.'},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    assignments = HoldsDesignation.objects.select_related(
+        'user', 'working', 'designation', 'working__extrainfo__department'
+    ).order_by('designation__name', 'working__username')
+    now = timezone.now()
+    rows = []
+    for assignment in assignments:
+        working = assignment.working
+        try:
+            info = working.extrainfo
+        except ExtraInfo.DoesNotExist:
+            info = None
+        display_name = ' '.join(
+            part for part in (working.first_name, working.last_name) if part
+        ).strip() or working.username
+        starts = assignment.start_time or assignment.held_at
+        ends = assignment.end_time
+        state = 'Inactive' if ends and ends <= now else (
+            'Scheduled' if starts and starts > now else 'Active'
+        )
+        rows.append({
+            'id': assignment.pk,
+            'username': working.username,
+            'name': display_name,
+            'holder_username': assignment.user.username,
+            'role': assignment.designation.name,
+            'role_name': assignment.designation.full_name,
+            'role_type': assignment.designation.type,
+            'department': info.department.name if info and info.department else '',
+            'start_time': starts.isoformat() if starts else None,
+            'end_time': ends.isoformat() if ends else None,
+            'status': state,
+        })
+    return Response({'assignments': rows}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def leave_role(request):
+    """End the caller's active non-student role while preserving its history."""
+    if _has_system_admin_access(request.user):
+        return Response({'detail': 'System Admin access is read-only.'},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    role_name = str(request.data.get('role') or '').strip()
+    if not role_name:
+        return Response({'detail': 'role is required.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if role_name.lower() == 'student':
+        return Response({'detail': 'The student role cannot be left here.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    now = timezone.now()
+    active_assignments = (HoldsDesignation.objects
+                          .filter(working=request.user)
+                          .filter(Q(start_time__isnull=True) | Q(start_time__lte=now))
+                          .filter(Q(end_time__isnull=True) | Q(end_time__gt=now)))
+    with transaction.atomic():
+        assignment = (active_assignments.select_for_update()
+                      .select_related('designation')
+                      .filter(designation__name__iexact=role_name)
+                      .first())
+        if assignment is None:
+            return Response({'detail': 'You do not currently hold that role.'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        remaining = (active_assignments.exclude(pk=assignment.pk)
+                     .select_related('designation').order_by('designation__name'))
+        next_assignment = remaining.first()
+
+        extra_info = ExtraInfo.objects.filter(user=request.user).first()
+        if extra_info is None:
+            return Response({'detail': 'Your Fusion profile is not configured.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        assignment.end_time = now
+        assignment.save(update_fields=['end_time'])
+        next_role = next_assignment.designation.name if next_assignment else None
+        extra_info.last_selected_role = next_role
+        extra_info.save(update_fields=['last_selected_role'])
+        request.session['currentDesignationSelected'] = next_role or 'default_value'
+        UserActivityLog.objects.create(
+            user=request.user,
+            role=assignment.designation.name,
+            action='Voluntarily left role',
+            method='POST',
+            resource='leave-role',
+        )
+        request._request._role_activity_recorded = True
+
+        active_roles = list(
+            (HoldsDesignation.objects
+             .filter(working=request.user)
+             .filter(Q(start_time__isnull=True) | Q(start_time__lte=now))
+             .filter(Q(end_time__isnull=True) | Q(end_time__gt=now))
+             .select_related('designation')
+             .order_by('designation__name'))
+        )
+        role_names = list(dict.fromkeys(
+            item.designation.name for item in active_roles
+        ))
+        request.session['allDesignations'] = role_names
+        module_access = (ModuleAccess.objects.filter(designation=next_role).first()
+                         if next_role else None)
+        request.session['moduleAccessRights'] = {}
+        if module_access:
+            access_fields = [
+                field.name for field in ModuleAccess._meta.get_fields()
+                if field.name not in ['id', 'designation']
+            ]
+            request.session['moduleAccessRights'] = {
+                field_name: getattr(module_access, field_name)
+                for field_name in access_fields
+            }
+        eligible_roles = [name for name in role_names if name.lower() != 'student']
+
+    return Response({
+        'detail': 'Role ended successfully.',
+        'role': assignment.designation.name,
+        'end_time': now.isoformat(),
+        'next_role': next_role,
+        'roles': role_names,
+        'leavable_roles': eligible_roles,
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def system_admin_user_activity(request):
+    """Return the latest role-scoped activity for one person to System Admin."""
+    if not _has_system_admin_access(request.user):
+        return Response({'detail': 'System Admin access is required.'},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    username = request.query_params.get('username', '').strip()
+    role = request.query_params.get('role', '').strip()
+    if not username or not role:
+        return Response(
+            {'detail': 'Both username and role are required.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    activity = UserActivityLog.objects.filter(
+        user__username=username, role__iexact=role
+    ).exclude(resource='update_last_selected_role').order_by('-created_at')
+    total = activity.count()
+    events = [
+        {
+            'id': event.pk,
+            'role': event.role,
+            'action': event.action,
+            'method': event.method,
+            'resource': event.resource,
+            'timestamp': event.created_at.isoformat(),
+        }
+        for event in activity[:100]
+    ]
+    return Response(
+        {'events': events, 'total': total}, status=status.HTTP_200_OK
+    )
 
 def _notification_role_matches(notification, active_role):
     """
@@ -220,6 +432,10 @@ def unread_notification_count(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def update_last_selected_role(request):
+    if _has_system_admin_access(request.user):
+        return Response({'error': 'System Admin access is read-only.'},
+                        status=status.HTTP_403_FORBIDDEN)
+
     new_role = request.data.get('last_selected_role')
 
     if new_role is None:
