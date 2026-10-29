@@ -2899,7 +2899,14 @@ class TimetableVersion(models.Model):
 
     class Meta:
         db_table = 'timetable_version'
-        unique_together = ('academic_year', 'semester_type', 'version_number')
+        # Must match migration 0061, which created a named constraint; a
+        # unique_together here made makemigrations want a new migration.
+        constraints = [
+            models.UniqueConstraint(
+                fields=['academic_year', 'semester_type', 'version_number'],
+                name='unique_timetable_version',
+            ),
+        ]
         ordering = ['-academic_year', '-version_number']
 
     def __str__(self):
@@ -2993,10 +3000,14 @@ class TimetableSlot(models.Model):
 
     class Meta:
         db_table = 'timetable_slot'
+        # Names must match migration 0061.
         indexes = [
-            models.Index(fields=['version', 'batch', 'programme', 'branch', 'section']),
-            models.Index(fields=['version', 'curriculum_instructor', 'day_of_week', 'start_hour']),
-            models.Index(fields=['version', 'classroom', 'day_of_week', 'start_hour']),
+            models.Index(fields=['version', 'batch', 'programme', 'branch', 'section'],
+                         name='tt_slot_cohort_idx'),
+            models.Index(fields=['version', 'curriculum_instructor', 'day_of_week', 'start_hour'],
+                         name='tt_slot_faculty_idx'),
+            models.Index(fields=['version', 'classroom', 'day_of_week', 'start_hour'],
+                         name='tt_slot_room_idx'),
         ]
 
     @property

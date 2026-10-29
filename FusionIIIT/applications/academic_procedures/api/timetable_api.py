@@ -30,19 +30,33 @@ POST   /timetable/faculty-preferences/   – Create/update faculty preference
 from __future__ import annotations
 
 import logging
-import math
 from collections import defaultdict
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
+from applications.academic_procedures.solver.timetable_solver import (
+    DAYS, HOURS, STUDENT_PROGRAMME_ALIASES, WHOLE_BATCH_BRANCH,
+    count_cohort_students, effective_cohort_size, eligible_room_types,
+    student_programmes_for, valid_block_starts,
+)
+
+from applications.academic_procedures.api.timetable_validation import (
+    MAX_TIMEOUT_SECONDS, POSITIVE_SMALLINT_MAX, PREFERRED_ROOM_TYPES,
+    SEMESTER_TYPES, clean_classroom_fields, clean_room_id, clean_str,
+    parse_bool, parse_int,
+)
+from applications.academic_procedures.api.timetable_workflow import plan_publication
+
 logger = logging.getLogger(__name__)
+
+
+def _bad_request(message):
+    return Response({'error': message}, status=status.HTTP_400_BAD_REQUEST)
 
 # ── Helper: get the designated role ─────────────────────────────────────────
 
@@ -65,6 +79,60 @@ def _is_dean(request):
 
 def _is_faculty(request):
     return _has_role(request, 'faculty', 'Professor', 'Associate Professor', 'Assistant Professor')
+
+
+def _can_view_unpublished(request):
+    """Draft / review versions are internal to the academic office."""
+    return _is_acadadmin(request) or _is_dean(request)
+
+
+def _latest_published_version(request):
+    """Latest published version, optionally narrowed by ?academic_year= and
+    ?semester_type= (each term has its own published version).
+
+    version_number restarts in every term, so it cannot rank versions of
+    different terms; the most recently created one wins instead.
+    Raises ValueError for a malformed academic_year.
+    """
+    from applications.academic_procedures.models import TimetableVersion
+
+    qs = TimetableVersion.objects.filter(status='Published')
+    academic_year = request.query_params.get('academic_year')
+    semester_type = request.query_params.get('semester_type')
+    if academic_year:
+        qs = qs.filter(academic_year=parse_int(academic_year, 'academic_year'))
+    if semester_type:
+        qs = qs.filter(semester_type=semester_type)
+    return qs.order_by('-academic_year', '-id').first()
+
+
+def _resolve_version_id(request):
+    """Return (version_id, error_response) for a ?version_id= query.
+
+    Without a version_id the latest published version is used.  Anyone may
+    read a published version; other versions need an academic-office role.
+    """
+    from applications.academic_procedures.models import TimetableVersion
+
+    raw = request.query_params.get('version_id')
+    if not raw:
+        try:
+            published = _latest_published_version(request)
+        except ValueError as exc:
+            return None, _bad_request(str(exc))
+        return (published.id if published else None), None
+    try:
+        version_id = parse_int(raw, 'version_id')
+    except ValueError as exc:
+        return None, _bad_request(str(exc))
+    version = TimetableVersion.objects.filter(pk=version_id).first()
+    if version is None:
+        return None, Response({'error': f'TimetableVersion {version_id} not found.'},
+                              status=status.HTTP_404_NOT_FOUND)
+    if version.status != 'Published' and not _can_view_unpublished(request):
+        return None, Response({'error': 'This timetable version is not published.'},
+                              status=status.HTTP_403_FORBIDDEN)
+    return version_id, None
 
 
 # ═══════════════════════════════════════════════════════════════════════════ #
@@ -96,7 +164,6 @@ def generate_timetable(request):
 
     academic_year = request.data.get('academic_year')
     semester_type = request.data.get('semester_type', 'Odd Semester')
-    timeout_seconds = int(request.data.get('timeout_seconds', 60))
 
     if not academic_year:
         return Response(
@@ -105,17 +172,17 @@ def generate_timetable(request):
         )
 
     try:
-        academic_year = int(academic_year)
-    except (TypeError, ValueError):
-        return Response(
-            {'error': 'academic_year must be an integer.'},
-            status=status.HTTP_400_BAD_REQUEST,
+        academic_year = parse_int(academic_year, 'academic_year', minimum=2000, maximum=2100)
+        timeout_seconds = parse_int(
+            request.data.get('timeout_seconds', 60), 'timeout_seconds',
+            minimum=1, maximum=MAX_TIMEOUT_SECONDS,
         )
+    except ValueError as exc:
+        return _bad_request(str(exc))
 
-    valid_sem = ('Odd Semester', 'Even Semester', 'Summer Term')
-    if semester_type not in valid_sem:
+    if semester_type not in SEMESTER_TYPES:
         return Response(
-            {'error': f'semester_type must be one of {valid_sem}.'},
+            {'error': f'semester_type must be one of {SEMESTER_TYPES}.'},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -126,12 +193,13 @@ def generate_timetable(request):
         solver = WholeCollegeTimetableSolver(
             academic_year=academic_year,
             semester_type=semester_type,
+            created_by=request.user,
         )
         result = solver.solve(timeout_seconds=timeout_seconds)
     except Exception as exc:
         logger.exception('Solver raised an unexpected exception: %s', exc)
         return Response(
-            {'error': f'Solver internal error: {exc}'},
+            {'error': 'Solver internal error; details are in the server log.'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -153,6 +221,14 @@ def generate_timetable(request):
             'conflicts': result.conflicts,
         }, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
+    elif result.status == 'TIMEOUT':
+        # Not proven infeasible: the client should retry with more time.
+        return Response({
+            'status': 'timeout',
+            'version_id': result.version_id,
+            'message': result.message,
+        }, status=status.HTTP_504_GATEWAY_TIMEOUT)
+
     else:
         return Response(
             {'status': 'error', 'message': result.message},
@@ -167,13 +243,21 @@ def generate_timetable(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_timetable_versions(request):
-    """Return all TimetableVersion records, optionally filtered by academic_year."""
+    """Return TimetableVersion records, optionally filtered by academic_year.
+
+    Users outside the academic office only see published versions.
+    """
     from applications.academic_procedures.models import TimetableVersion
 
     qs = TimetableVersion.objects.all()
+    if not _can_view_unpublished(request):
+        qs = qs.filter(status='Published')
     academic_year = request.query_params.get('academic_year')
     if academic_year:
-        qs = qs.filter(academic_year=int(academic_year))
+        try:
+            qs = qs.filter(academic_year=parse_int(academic_year, 'academic_year'))
+        except ValueError as exc:
+            return _bad_request(str(exc))
 
     data = [
         {
@@ -204,42 +288,45 @@ def list_timetable_slots(request):
     Return slots for a version, filtered by cohort or faculty.
 
     Query params: version_id, batch, programme, branch, section,
-                  faculty_ci_id, day_of_week
+                  faculty_ci_id, day_of_week; without version_id,
+                  academic_year / semester_type pick the published term.
     """
-    from applications.academic_procedures.models import TimetableSlot, TimetableVersion
+    from applications.academic_procedures.models import TimetableSlot
 
-    version_id = request.query_params.get('version_id')
-    if not version_id:
-        # Default to published version for current user
-        published = (
-            TimetableVersion.objects.filter(status='Published')
-            .order_by('-academic_year', '-version_number')
-            .first()
-        )
-        if not published:
-            return Response([])
-        version_id = published.id
+    version_id, error = _resolve_version_id(request)
+    if error:
+        return error
+    if version_id is None:
+        return Response([])
 
-    qs = TimetableSlot.objects.filter(version_id=int(version_id)).select_related(
+    qs = TimetableSlot.objects.filter(version_id=version_id).select_related(
         'curriculum__course_id',
         'curriculum_instructor__instructor_id__user',
         'classroom',
     )
 
-    for param, field in [
-        ('batch', 'batch'),
-        ('programme', 'programme'),
-        ('branch', 'branch'),
-        ('section', 'section'),
-        ('day_of_week', 'day_of_week'),
+    for param, field, is_int in [
+        ('batch', 'batch', True),
+        ('programme', 'programme', False),
+        ('branch', 'branch', False),
+        ('section', 'section', False),
+        ('day_of_week', 'day_of_week', True),
     ]:
         val = request.query_params.get(param)
         if val:
+            if is_int:
+                try:
+                    val = parse_int(val, param)
+                except ValueError as exc:
+                    return _bad_request(str(exc))
             qs = qs.filter(**{field: val})
 
     faculty_ci = request.query_params.get('faculty_ci_id')
     if faculty_ci:
-        qs = qs.filter(curriculum_instructor_id=int(faculty_ci))
+        try:
+            qs = qs.filter(curriculum_instructor_id=parse_int(faculty_ci, 'faculty_ci_id'))
+        except ValueError as exc:
+            return _bad_request(str(exc))
 
     data = []
     for slot in qs.order_by('day_of_week', 'start_hour'):
@@ -274,6 +361,93 @@ def list_timetable_slots(request):
 # POST /timetable/slot/override/                                              #
 # ═══════════════════════════════════════════════════════════════════════════ #
 
+def _override_conflicts(slot, version, block, new_day, new_hours, new_room):
+    """Hard-constraint violations a manual move would create (same rules as the solver)."""
+    from applications.academic_procedures.models import (
+        CourseWeeklyRequirement, ElectiveBasketCurriculum, TimetableSlot,
+    )
+    from applications.academic_information.models import Curriculum_Instructor, Student
+
+    conflicts = []
+    when = f'day={new_day} hour(s)={new_hours}'
+    others = TimetableSlot.objects.filter(
+        version=version, day_of_week=new_day, start_hour__in=new_hours,
+    ).exclude(pk__in=[s.pk for s in block])
+
+    if not new_room.is_active:
+        conflicts.append({'type': 'ROOM_INACTIVE',
+                          'detail': f'Room {new_room.room_id} is not active.'})
+
+    if others.filter(classroom_id=new_room.room_id).exists():
+        conflicts.append({'type': 'ROOM_CLASH',
+                          'detail': f'Room {new_room.room_id} is already occupied at {when}.'})
+
+    # Every instructor of this course, as a person, across all their courses.
+    teachers = Curriculum_Instructor.objects.filter(
+        curriculum_id=slot.curriculum_id,
+    ).values('instructor_id')
+    taught_by_them = Curriculum_Instructor.objects.filter(
+        instructor_id__in=teachers,
+    ).values('curriculum_id')
+    if others.filter(curriculum_id__in=taught_by_them).exists():
+        conflicts.append({'type': 'FACULTY_CLASH',
+                          'detail': f'An instructor of this course has another class at {when}.'})
+
+    # 'Common' spans all branches and '' spans all sections, as in the solver.
+    same_students = Q(batch=slot.batch, programme=slot.programme)
+    if slot.branch != WHOLE_BATCH_BRANCH:
+        same_students &= Q(branch=slot.branch) | Q(branch=WHOLE_BATCH_BRANCH)
+    if slot.section:
+        same_students &= Q(section=slot.section) | Q(section='')
+    if others.filter(same_students).exists():
+        conflicts.append({
+            'type': 'COHORT_CLASH',
+            'detail': (
+                f'Cohort {slot.batch}/{slot.programme}/{slot.branch}/{slot.section} '
+                f'has another class at {when}.'
+            ),
+        })
+
+    in_basket = ElectiveBasketCurriculum.objects.filter(
+        curriculum_id=slot.curriculum_id,
+        basket__academic_year=version.academic_year,
+        basket__semester_type=version.semester_type,
+    ).exists()
+    if in_basket:
+        conflicts.append({
+            'type': 'ELECTIVE_BASKET',
+            'detail': ('This course is in an elective basket whose courses must run '
+                       'at the same hours; regenerate the timetable instead.'),
+        })
+
+    requirement = CourseWeeklyRequirement.objects.filter(curriculum_id=slot.curriculum_id).first()
+    allowed_types = eligible_room_types(
+        slot.slot_type, requirement.preferred_room_type if requirement else 'any',
+    )
+    if allowed_types and new_room.room_type not in allowed_types:
+        conflicts.append({
+            'type': 'ROOM_TYPE',
+            'detail': f'{slot.slot_type} needs a room of type {allowed_types}, '
+                      f'not {new_room.room_type}.',
+        })
+
+    cohort_sizes = count_cohort_students(
+        Student.objects.filter(batch=slot.batch,
+                               programme__in=student_programmes_for(slot.programme))
+        .select_related('id__department')
+    )
+    needed = effective_cohort_size(
+        cohort_sizes, slot.batch, slot.programme, slot.branch, slot.section,
+    )
+    if new_room.capacity < needed:
+        conflicts.append({
+            'type': 'CAPACITY',
+            'detail': f'Room {new_room.room_id} capacity ({new_room.capacity}) < '
+                      f'cohort size ({needed}).',
+        })
+    return conflicts
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def override_timetable_slot(request):
@@ -290,6 +464,9 @@ def override_timetable_slot(request):
           "lock": true
         }
 
+    A slot that belongs to a multi-hour lab block moves the whole block, and
+    ``new_start_hour`` is then the block's new first hour.
+
     Returns 200 on success, 409 on constraint violation, 404 if slot not found.
     """
     if not _is_acadadmin(request):
@@ -298,121 +475,78 @@ def override_timetable_slot(request):
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    from applications.academic_procedures.models import TimetableSlot, Classroom
+    from applications.academic_procedures.models import (
+        Classroom, TimetableSlot, TimetableVersion,
+    )
 
-    slot_id = request.data.get('slot_id')
-    new_day = request.data.get('new_day')
-    new_hour = request.data.get('new_start_hour')
     new_room_id = request.data.get('new_room_id')
-    lock = bool(request.data.get('lock', False))
-
-    if not all([slot_id, new_day, new_hour, new_room_id]):
+    if not all([request.data.get('slot_id'), request.data.get('new_day'),
+                request.data.get('new_start_hour'), new_room_id]):
         return Response(
             {'error': 'slot_id, new_day, new_start_hour, new_room_id are required.'},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
+    if not isinstance(new_room_id, str):
+        return _bad_request('new_room_id must be a string.')
     try:
-        slot = TimetableSlot.objects.select_related(
-            'curriculum', 'classroom', 'version',
-        ).get(pk=int(slot_id))
-    except TimetableSlot.DoesNotExist:
-        return Response(
-            {'error': f'Slot {slot_id} not found.'},
-            status=status.HTTP_404_NOT_FOUND,
-        )
+        slot_id = parse_int(request.data.get('slot_id'), 'slot_id')
+        new_day = parse_int(request.data.get('new_day'), 'new_day', choices=DAYS)
+        new_hour = parse_int(request.data.get('new_start_hour'), 'new_start_hour',
+                              choices=HOURS)
+        lock = parse_bool(request.data.get('lock', False), 'lock')
+    except ValueError as exc:
+        return _bad_request(str(exc))
 
-    new_day = int(new_day)
-    new_hour = int(new_hour)
+    # Validation and the move happen in one transaction with the version row
+    # locked, so two concurrent overrides cannot both pass the clash checks.
+    with transaction.atomic():
+        try:
+            slot = TimetableSlot.objects.select_related('curriculum').get(pk=slot_id)
+        except TimetableSlot.DoesNotExist:
+            return Response(
+                {'error': f'Slot {slot_id} not found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        version = TimetableVersion.objects.select_for_update().get(pk=slot.version_id)
+        if version.status in ('Archived', 'Infeasible'):
+            return _bad_request(f'Cannot edit a version with status={version.status}.')
 
-    # ── Validate constraints ───────────────────────────────────────────── #
-    conflicts = []
+        try:
+            new_room = Classroom.objects.get(pk=new_room_id)
+        except Classroom.DoesNotExist:
+            return Response(
+                {'error': f'Classroom {new_room_id} not found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
-    # Room availability
-    room_clash = TimetableSlot.objects.filter(
-        version=slot.version,
-        classroom_id=new_room_id,
-        day_of_week=new_day,
-        start_hour=new_hour,
-    ).exclude(pk=slot.pk)
-    if room_clash.exists():
-        conflicts.append({
-            'type': 'ROOM_CLASH',
-            'detail': f'Room {new_room_id} is already occupied at day={new_day} hour={new_hour}.',
-        })
+        if slot.lab_block_id:
+            block = list(TimetableSlot.objects.filter(
+                version=version, lab_block_id=slot.lab_block_id,
+            ).order_by('start_hour'))
+        else:
+            block = [slot]
+        if new_hour not in valid_block_starts(len(block)):
+            return _bad_request(
+                f'A {len(block)}-hour block cannot start at {new_hour}:00 '
+                f'(it would cross lunch or the end of the day).'
+            )
+        new_hours = [new_hour + offset for offset in range(len(block))]
 
-    # Faculty clash
-    if slot.curriculum_instructor_id:
-        fac_clash = TimetableSlot.objects.filter(
-            version=slot.version,
-            curriculum_instructor_id=slot.curriculum_instructor_id,
-            day_of_week=new_day,
-            start_hour=new_hour,
-        ).exclude(pk=slot.pk)
-        if fac_clash.exists():
-            conflicts.append({
-                'type': 'FACULTY_CLASH',
-                'detail': (
-                    f'Instructor has another class at day={new_day} hour={new_hour}.'
-                ),
-            })
+        conflicts = _override_conflicts(slot, version, block, new_day, new_hours, new_room)
+        if conflicts:
+            return Response(
+                {'error': 'Constraint violations detected.', 'conflicts': conflicts},
+                status=status.HTTP_409_CONFLICT,
+            )
 
-    # Cohort clash
-    cohort_clash = TimetableSlot.objects.filter(
-        version=slot.version,
-        batch=slot.batch,
-        programme=slot.programme,
-        branch=slot.branch,
-        section=slot.section,
-        day_of_week=new_day,
-        start_hour=new_hour,
-    ).exclude(pk=slot.pk)
-    if cohort_clash.exists():
-        conflicts.append({
-            'type': 'COHORT_CLASH',
-            'detail': (
-                f'Cohort {slot.batch}/{slot.programme}/{slot.branch}/{slot.section} '
-                f'has another class at day={new_day} hour={new_hour}.'
-            ),
-        })
-
-    # Room capacity & type
-    try:
-        new_room = Classroom.objects.get(pk=new_room_id)
-    except Classroom.DoesNotExist:
-        return Response(
-            {'error': f'Classroom {new_room_id} not found.'},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-
-    # Estimate cohort size (fast approximation)
-    from applications.academic_information.models import Student
-    cohort_count = Student.objects.filter(
-        batch=slot.batch,
-        programme=slot.programme,
-    ).count()
-    eff_size = math.ceil(cohort_count * 1.10)
-    if new_room.capacity < eff_size:
-        conflicts.append({
-            'type': 'CAPACITY',
-            'detail': (
-                f'Room {new_room_id} capacity ({new_room.capacity}) < '
-                f'cohort size ({eff_size}).'
-            ),
-        })
-
-    if conflicts:
-        return Response(
-            {'error': 'Constraint violations detected.', 'conflicts': conflicts},
-            status=status.HTTP_409_CONFLICT,
-        )
-
-    # ── Apply move ─────────────────────────────────────────────────────── #
-    slot.day_of_week = new_day
-    slot.start_hour = new_hour
-    slot.classroom_id = new_room_id
-    slot.is_locked = lock
-    slot.save(update_fields=['day_of_week', 'start_hour', 'classroom_id', 'is_locked'])
+        # ── Apply move ─────────────────────────────────────────────────── #
+        for block_slot, hour in zip(block, new_hours):
+            block_slot.day_of_week = new_day
+            block_slot.start_hour = hour
+            block_slot.classroom_id = new_room_id
+            block_slot.is_locked = lock
+            block_slot.save(update_fields=['day_of_week', 'start_hour', 'classroom_id', 'is_locked'])
+        slot.refresh_from_db()
 
     return Response({
         'status': 'success',
@@ -444,29 +578,42 @@ def publish_timetable_version(request, version_id):
     from applications.academic_procedures.models import TimetableVersion
 
     try:
-        version = TimetableVersion.objects.get(pk=int(version_id))
+        term = TimetableVersion.objects.values('academic_year', 'semester_type').get(
+            pk=int(version_id),
+        )
     except TimetableVersion.DoesNotExist:
         return Response(
             {'error': f'TimetableVersion {version_id} not found.'},
             status=status.HTTP_404_NOT_FOUND,
         )
 
-    if version.status not in ('Draft', 'Approved', 'UnderReview'):
-        return Response(
-            {'error': f'Cannot publish a version with status={version.status}.'},
-            status=status.HTTP_400_BAD_REQUEST,
+    # Archive + publish run in one transaction holding row locks on every
+    # version of the term, so two concurrent publishes of different versions
+    # are serialised and the term never ends up with two published versions.
+    with transaction.atomic():
+        term_versions = {
+            v.pk: v for v in TimetableVersion.objects.select_for_update()
+            .filter(**term).order_by('pk')
+        }
+        version = term_versions.get(int(version_id))
+        if version is None:  # deleted after the lookup above
+            return Response(
+                {'error': f'TimetableVersion {version_id} not found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        error, archive_ids = plan_publication(
+            version.pk,
+            {pk: v.status for pk, v in term_versions.items()},
+            version.slots.exists(),
         )
+        if error:
+            return _bad_request(error)
+        TimetableVersion.objects.filter(pk__in=archive_ids).update(status='Archived')
 
-    # Archive currently published version for same term
-    TimetableVersion.objects.filter(
-        academic_year=version.academic_year,
-        semester_type=version.semester_type,
-        status='Published',
-    ).update(status='Archived')
-
-    version.status = 'Published'
-    version.publish_notes = request.data.get('publish_notes', '')
-    version.save(update_fields=['status', 'publish_notes'])
+        version.status = 'Published'
+        version.publish_notes = request.data.get('publish_notes', '')
+        version.save(update_fields=['status', 'publish_notes'])
 
     return Response({
         'status': 'success',
@@ -486,16 +633,15 @@ def my_schedule(request):
     Return the personalised 5-day weekly grid for the authenticated user.
     Identifies whether the user is a student or faculty from their profile.
     """
-    from applications.academic_procedures.models import TimetableSlot, TimetableVersion
+    from applications.academic_procedures.models import TimetableSlot
     from applications.academic_information.models import Student, Curriculum_Instructor
     from applications.globals.models import ExtraInfo
 
     # Find published version
-    published = (
-        TimetableVersion.objects.filter(status='Published')
-        .order_by('-academic_year', '-version_number')
-        .first()
-    )
+    try:
+        published = _latest_published_version(request)
+    except ValueError as exc:
+        return _bad_request(str(exc))
     if not published:
         return Response({'message': 'No published timetable available.', 'slots': []})
 
@@ -515,18 +661,24 @@ def my_schedule(request):
             stu = Student.objects.get(id=extra)
         except Student.DoesNotExist:
             return Response({'slots': []})
-        slots_qs = slots_qs.filter(
-            batch=stu.batch,
-            programme=stu.programme,
-            branch=getattr(stu.id.department, 'name', ''),
-            section=stu.section or '',
-        )
+        # Same matching as the solver's student_in_cohort: own branch and
+        # whole-batch ('Common') classes, case-insensitive branch, plus the
+        # (programme, branch) an aliased programme's courses are filed under.
+        branch = getattr(stu.id.department, 'name', '')
+        sections = ['', stu.section] if stu.section else ['']
+        cohort = Q(programme=stu.programme) & (
+            Q(branch__iexact=branch) | Q(branch=WHOLE_BATCH_BRANCH))
+        alias = STUDENT_PROGRAMME_ALIASES.get(stu.programme)
+        if alias:
+            cohort |= Q(programme=alias[0], branch__iexact=alias[1])
+        slots_qs = slots_qs.filter(cohort, batch=stu.batch, section__in=sections)
     elif extra.user_type == 'faculty':
-        ci_ids = list(
-            Curriculum_Instructor.objects.filter(instructor_id=extra)
-            .values_list('pk', flat=True)
-        )
-        slots_qs = slots_qs.filter(curriculum_instructor_id__in=ci_ids)
+        # The slot stores only the chief instructor, but the solver books every
+        # instructor of a course for its hours, so match on the course.
+        taught = Curriculum_Instructor.objects.filter(
+            instructor_id=extra,
+        ).values('curriculum_id')
+        slots_qs = slots_qs.filter(curriculum_id__in=taught)
     else:
         return Response({'slots': []})
 
@@ -562,25 +714,20 @@ def room_utilization(request):
     Return a heatmap matrix (day × hour) for a given room in the latest
     published version.  Query params: room_id (required), version_id (optional).
     """
-    from applications.academic_procedures.models import TimetableSlot, TimetableVersion
+    from applications.academic_procedures.models import TimetableSlot
 
     room_id = request.query_params.get('room_id')
     if not room_id:
         return Response({'error': 'room_id is required.'}, status=400)
 
-    version_id = request.query_params.get('version_id')
-    if not version_id:
-        pub = (
-            TimetableVersion.objects.filter(status='Published')
-            .order_by('-academic_year', '-version_number')
-            .first()
-        )
-        if not pub:
-            return Response({'matrix': {}, 'message': 'No published timetable.'})
-        version_id = pub.id
+    version_id, error = _resolve_version_id(request)
+    if error:
+        return error
+    if version_id is None:
+        return Response({'matrix': {}, 'message': 'No published timetable.'})
 
     slots = TimetableSlot.objects.filter(
-        version_id=int(version_id),
+        version_id=version_id,
         classroom_id=room_id,
     ).values('day_of_week', 'start_hour', 'curriculum__course_code')
 
@@ -591,8 +738,8 @@ def room_utilization(request):
         matrix[day][hour] = s['curriculum__course_code']
 
     # Fill unused slots with None
-    for day in range(1, 6):
-        for hour in [9, 10, 11, 12, 14, 15, 16, 17]:
+    for day in DAYS:
+        for hour in HOURS:
             if hour not in matrix[day]:
                 matrix[day][hour] = None
 
@@ -620,14 +767,20 @@ def classrooms(request):
         if f not in request.data:
             return Response({'error': f'{f} is required.'}, status=400)
 
+    try:
+        room_id = clean_room_id(request.data['room_id'])
+        fields = clean_classroom_fields(request.data, required_fields=required[1:])
+    except ValueError as exc:
+        return _bad_request(str(exc))
+
     room, created = Classroom.objects.get_or_create(
-        room_id=request.data['room_id'],
+        room_id=room_id,
         defaults={
-            'building': request.data['building'],
-            'capacity': int(request.data['capacity']),
-            'room_type': request.data['room_type'],
-            'has_projector': bool(request.data.get('has_projector', True)),
-            'is_active': bool(request.data.get('is_active', True)),
+            'building': fields['building'],
+            'capacity': fields['capacity'],
+            'room_type': fields['room_type'],
+            'has_projector': fields.get('has_projector', True),
+            'is_active': fields.get('is_active', True),
         },
     )
     return Response(
@@ -656,9 +809,12 @@ def classroom_detail(request, room_id):
     if not _is_acadadmin(request):
         return Response({'error': 'Forbidden.'}, status=403)
 
-    for field in ('building', 'capacity', 'room_type', 'has_projector', 'is_active'):
-        if field in request.data:
-            setattr(room, field, request.data[field])
+    try:
+        fields = clean_classroom_fields(request.data)
+    except ValueError as exc:
+        return _bad_request(str(exc))
+    for field, value in fields.items():
+        setattr(room, field, value)
     room.save()
     return Response({'status': 'updated', 'room_id': room.room_id})
 
@@ -688,19 +844,34 @@ def weekly_requirements(request):
         return Response({'error': 'curriculum_id is required.'}, status=400)
 
     try:
-        curr = Curriculum.objects.get(pk=int(curriculum_id))
+        curriculum_id = parse_int(curriculum_id, 'curriculum_id')
+        # One cohort has len(DAYS) * len(HOURS) teaching hours per week.
+        week = len(DAYS) * len(HOURS)
+        defaults = {
+            'lectures_per_week': parse_int(
+                request.data.get('lectures_per_week', 3), 'lectures_per_week', 0, week),
+            'tutorials_per_week': parse_int(
+                request.data.get('tutorials_per_week', 1), 'tutorials_per_week', 0, week),
+            'practicals_per_week': parse_int(
+                request.data.get('practicals_per_week', 0), 'practicals_per_week', 0, week),
+            'practical_block_size': parse_int(
+                request.data.get('practical_block_size', 2), 'practical_block_size',
+                choices=(2, 3)),
+            'preferred_room_type': request.data.get('preferred_room_type', 'any'),
+        }
+    except ValueError as exc:
+        return _bad_request(str(exc))
+    if defaults['preferred_room_type'] not in PREFERRED_ROOM_TYPES:
+        return _bad_request(f'preferred_room_type must be one of {PREFERRED_ROOM_TYPES}.')
+
+    try:
+        curr = Curriculum.objects.get(pk=curriculum_id)
     except Curriculum.DoesNotExist:
         return Response({'error': f'Curriculum {curriculum_id} not found.'}, status=404)
 
     req, created = CourseWeeklyRequirement.objects.update_or_create(
         curriculum=curr,
-        defaults={
-            'lectures_per_week': int(request.data.get('lectures_per_week', 3)),
-            'tutorials_per_week': int(request.data.get('tutorials_per_week', 1)),
-            'practicals_per_week': int(request.data.get('practicals_per_week', 0)),
-            'practical_block_size': int(request.data.get('practical_block_size', 2)),
-            'preferred_room_type': request.data.get('preferred_room_type', 'any'),
-        },
+        defaults=defaults,
     )
     return Response({'id': req.id, 'curriculum_id': curr.curriculum_id, 'created': created},
                     status=201 if created else 200)
@@ -745,28 +916,56 @@ def elective_baskets(request):
         if f not in request.data:
             return Response({'error': f'{f} is required.'}, status=400)
 
-    basket, created = ElectiveBasket.objects.get_or_create(
-        basket_code=request.data['basket_code'],
-        defaults={
-            'name': request.data['name'],
-            'semester': int(request.data['semester']),
-            'programme': request.data['programme'],
-            'academic_year': int(request.data.get('academic_year', 2026)),
-            'semester_type': request.data.get('semester_type', 'Odd Semester'),
-        },
-    )
-    # Add curricula
-    for entry in request.data.get('curricula', []):
-        cur_id = entry.get('curriculum_id')
-        max_seats = int(entry.get('max_seats', 60))
-        try:
-            curr = Curriculum.objects.get(pk=int(cur_id))
-        except (Curriculum.DoesNotExist, TypeError, ValueError):
-            continue
-        ElectiveBasketCurriculum.objects.get_or_create(
-            basket=basket, curriculum=curr,
-            defaults={'max_seats': max_seats},
+    semester_type = request.data.get('semester_type', 'Odd Semester')
+    if semester_type not in SEMESTER_TYPES:
+        return _bad_request(f'semester_type must be one of {SEMESTER_TYPES}.')
+    entries = request.data.get('curricula', [])
+    if not isinstance(entries, list):
+        return _bad_request('curricula must be a list.')
+    try:
+        basket_code = clean_str(request.data['basket_code'], 'basket_code', 20)
+        name = clean_str(request.data['name'], 'name', 200)
+        programme = clean_str(request.data['programme'], 'programme', 15)
+        semester = parse_int(request.data['semester'], 'semester',
+                             minimum=1, maximum=POSITIVE_SMALLINT_MAX)
+        academic_year = parse_int(request.data.get('academic_year', 2026), 'academic_year',
+                                  minimum=2000, maximum=2100)
+        members = []
+        for entry in entries:
+            if not isinstance(entry, dict):
+                raise ValueError('each curricula entry must be an object.')
+            cur_id = parse_int(entry.get('curriculum_id'), 'curriculum_id')
+            max_seats = parse_int(entry.get('max_seats', 60), 'max_seats',
+                                  minimum=1, maximum=POSITIVE_SMALLINT_MAX)
+            members.append((cur_id, max_seats))
+    except ValueError as exc:
+        return _bad_request(str(exc))
+
+    # Unknown curricula are reported instead of silently skipped: a basket that
+    # quietly loses a member would stop synchronising it.
+    found = set(Curriculum.objects.filter(
+        pk__in=[cur_id for cur_id, _ in members],
+    ).values_list('pk', flat=True))
+    unknown = [cur_id for cur_id, _ in members if cur_id not in found]
+    if unknown:
+        return Response({'error': f'Curricula not found: {unknown}.'}, status=404)
+
+    with transaction.atomic():
+        basket, created = ElectiveBasket.objects.get_or_create(
+            basket_code=basket_code,
+            defaults={
+                'name': name,
+                'semester': semester,
+                'programme': programme,
+                'academic_year': academic_year,
+                'semester_type': semester_type,
+            },
         )
+        for cur_id, max_seats in members:
+            ElectiveBasketCurriculum.objects.get_or_create(
+                basket=basket, curriculum_id=cur_id,
+                defaults={'max_seats': max_seats},
+            )
 
     return Response({'id': basket.id, 'basket_code': basket.basket_code, 'created': created},
                     status=201 if created else 200)
@@ -776,15 +975,29 @@ def elective_baskets(request):
 # FacultyPreference CRUD                                                       #
 # ═══════════════════════════════════════════════════════════════════════════ #
 
+def _own_faculty_pk(request):
+    from applications.globals.models import Faculty
+    faculty = Faculty.objects.filter(id__user=request.user).only('id').first()
+    return faculty.pk if faculty else None
+
+
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def faculty_preferences(request):
     from applications.academic_procedures.models import FacultyPreference
     from applications.globals.models import Faculty
 
+    is_admin = _is_acadadmin(request)
+    own_faculty_pk = _own_faculty_pk(request)
+
     if request.method == 'GET':
         qs = FacultyPreference.objects.select_related('faculty__id__user')
         faculty_pk = request.query_params.get('faculty_id')
+        if not is_admin:
+            # Faculty see only their own preferences; others see none.
+            faculty_pk = own_faculty_pk
+            if faculty_pk is None:
+                return Response([])
         if faculty_pk:
             qs = qs.filter(faculty_id=faculty_pk)
         data = [
@@ -805,20 +1018,18 @@ def faculty_preferences(request):
         return Response(data)
 
     # POST – faculty can set their own preferences; acadadmin can set for anyone
-    faculty_pk = request.data.get('faculty_id')
+    faculty_pk = request.data.get('faculty_id') or own_faculty_pk
     if not faculty_pk:
-        # Default to own faculty profile
-        try:
-            from applications.globals.models import ExtraInfo
-            extra = ExtraInfo.objects.get(user=request.user)
-            fac = Faculty.objects.get(id=extra)
-            faculty_pk = fac.id_id
-        except Exception:
-            return Response({'error': 'faculty_id is required.'}, status=400)
+        return Response({'error': 'faculty_id is required.'}, status=400)
+    if not is_admin and str(faculty_pk) != str(own_faculty_pk):
+        return Response(
+            {'error': 'You may only set your own preferences.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     try:
         fac = Faculty.objects.get(pk=faculty_pk)
-    except Faculty.DoesNotExist:
+    except (Faculty.DoesNotExist, ValueError):
         return Response({'error': f'Faculty {faculty_pk} not found.'}, status=404)
 
     required = ('day_of_week', 'start_hour', 'end_hour', 'preference_type')
@@ -826,14 +1037,31 @@ def faculty_preferences(request):
         if f not in request.data:
             return Response({'error': f'{f} is required.'}, status=400)
 
+    semester_type = request.data.get('semester_type', 'Odd Semester')
+    preference_type = request.data['preference_type']
+    try:
+        academic_year = parse_int(request.data.get('academic_year', 2026), 'academic_year',
+                                   minimum=2000, maximum=2100)
+        day_of_week = parse_int(request.data['day_of_week'], 'day_of_week', choices=DAYS)
+        start_hour = parse_int(request.data['start_hour'], 'start_hour', choices=HOURS)
+        end_hour = parse_int(request.data['end_hour'], 'end_hour', choices=HOURS)
+    except ValueError as exc:
+        return _bad_request(str(exc))
+    if start_hour >= end_hour:
+        return _bad_request('start_hour must be before end_hour.')
+    if semester_type not in SEMESTER_TYPES:
+        return _bad_request(f'semester_type must be one of {SEMESTER_TYPES}.')
+    if preference_type not in ('Unavailable', 'Preferred'):
+        return _bad_request("preference_type must be 'Unavailable' or 'Preferred'.")
+
     pref = FacultyPreference.objects.create(
         faculty=fac,
-        academic_year=int(request.data.get('academic_year', 2026)),
-        semester_type=request.data.get('semester_type', 'Odd Semester'),
-        day_of_week=int(request.data['day_of_week']),
-        start_hour=int(request.data['start_hour']),
-        end_hour=int(request.data['end_hour']),
-        preference_type=request.data['preference_type'],
+        academic_year=academic_year,
+        semester_type=semester_type,
+        day_of_week=day_of_week,
+        start_hour=start_hour,
+        end_hour=end_hour,
+        preference_type=preference_type,
         reason=request.data.get('reason', ''),
     )
     return Response({'id': pref.id, 'status': 'created'}, status=201)
@@ -849,11 +1077,18 @@ def conflict_log(request):
     """Return conflict log entries for a given version_id."""
     from applications.academic_procedures.models import TimetableConflictLog
 
+    if not _can_view_unpublished(request):
+        return Response({'error': 'Forbidden.'}, status=403)
+
     version_id = request.query_params.get('version_id')
     if not version_id:
         return Response({'error': 'version_id is required.'}, status=400)
+    try:
+        version_id = parse_int(version_id, 'version_id')
+    except ValueError as exc:
+        return _bad_request(str(exc))
 
-    logs = TimetableConflictLog.objects.filter(version_id=int(version_id))
+    logs = TimetableConflictLog.objects.filter(version_id=version_id)
     data = [
         {
             'id': l.id,
