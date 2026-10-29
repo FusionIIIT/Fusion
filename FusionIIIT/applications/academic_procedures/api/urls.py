@@ -3,6 +3,7 @@ from . import views
 from . import (bonafide_certificate, demand_letter, fee_certificate,
                fee_structure, fee_structure_certificate)
 from .. import views as procedures_views
+from . import timetable_api
 
 
 urlpatterns = [
@@ -542,4 +543,51 @@ urlpatterns = [
     # Academic Office (read-only)
     url(r'^acadadmin/teaching-credit/$',
         views.academic_office_teaching_credit_list, name='academic-office-teaching-credit-list'),
+
+    # ========================================================================
+    # Whole-College Semester Timetable Generation System
+    # Section 7 REST API endpoints (spec-compliant paths)
+    # ========================================================================
+
+    # Core solver & version management
+    url(r'^timetable/generate/$',
+        timetable_api.generate_timetable, name='timetable-generate'),
+    url(r'^timetable/versions/$',
+        timetable_api.list_timetable_versions, name='timetable-versions'),
+    url(r'^timetable/slots/$',
+        timetable_api.list_timetable_slots, name='timetable-slots'),
+    url(r'^timetable/slot/override/$',
+        timetable_api.override_timetable_slot, name='timetable-slot-override'),
+    url(r'^timetable/version/(?P<version_id>\d+)/publish/$',
+        timetable_api.publish_timetable_version, name='timetable-version-publish'),
+
+    # Personalised schedule (WF-02)
+    url(r'^timetable/my-schedule/$',
+        timetable_api.my_schedule, name='timetable-my-schedule'),
+
+    # Room utilization heatmap
+    url(r'^timetable/room-utilization/$',
+        timetable_api.room_utilization, name='timetable-room-utilization'),
+
+    # Conflict diagnostics
+    url(r'^timetable/conflict-log/$',
+        timetable_api.conflict_log, name='timetable-conflict-log'),
+
+    # Classroom CRUD
+    url(r'^timetable/classrooms/$',
+        timetable_api.classrooms, name='timetable-classrooms'),
+    url(r'^timetable/classrooms/(?P<room_id>[\w-]+)/$',
+        timetable_api.classroom_detail, name='timetable-classroom-detail'),
+
+    # CourseWeeklyRequirement
+    url(r'^timetable/weekly-requirements/$',
+        timetable_api.weekly_requirements, name='timetable-weekly-requirements'),
+
+    # ElectiveBasket
+    url(r'^timetable/elective-baskets/$',
+        timetable_api.elective_baskets, name='timetable-elective-baskets'),
+
+    # FacultyPreference
+    url(r'^timetable/faculty-preferences/$',
+        timetable_api.faculty_preferences, name='timetable-faculty-preferences'),
 ]
