@@ -322,18 +322,20 @@ def trace_registration(reg_id, mapping):
         reg_id = mapping[reg_id]
     return reg_id
 
-def superseded_course_codes(student, graded_codes):
+def superseded_course_codes(student, graded_codes, replacements=None):
     """Elective codes a graded replacement/swayam course has superseded.
 
     A replaced elective stops counting once its replacement is graded; each
     distinct replacement counts on its own. Shared by the CPI helper and the
-    semester-history builder so both apply one rule.
+    semester-history builder so both apply one rule. Batch callers pass the
+    student's ``replacements`` already loaded to skip the per-student query.
     """
-    replacements = course_replacement.objects.filter(
-        Q(old_course_registration__student_id=student) |
-        Q(new_course_registration__student_id=student)
-    ).select_related('old_course_registration__course_id',
-                     'new_course_registration__course_id')
+    if replacements is None:
+        replacements = course_replacement.objects.filter(
+            Q(old_course_registration__student_id=student) |
+            Q(new_course_registration__student_id=student)
+        ).select_related('old_course_registration__course_id',
+                         'new_course_registration__course_id')
     code_replacement_map = {}   # replacement/swayam course code -> replaced elective code
     for rep in replacements:
         old_code = (rep.old_course_registration.course_id.code or '').strip()
@@ -1373,6 +1375,14 @@ class GenerateResultAPI(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    @staticmethod
+    def _ordinal_suffix(n):
+        n = int(n)
+        if 11 <= (n % 100) <= 13:
+            return f"{n}th"
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+        return f"{n}{suffix}"
+
     def post(self, request):
         try:
             role = request.data.get("Role")
@@ -1413,7 +1423,8 @@ class GenerateResultAPI(APIView):
             ).exclude(grade__isnull=True).exclude(grade="").values_list('course_id_id', flat=True).distinct()
             
             courses = Courses.objects.filter(id__in=course_ids).order_by('code')
-            courses_map = {course.id: course.credit for course in courses}
+            courses_list = list(courses)  # evaluate once; order is now stable
+            courses_map = {course.id: course.credit for course in courses_list}
 
             disc_name = batch_obj.discipline.name
             spec_match = re.search(r'\(([^)]+)\)', disc_name)
@@ -1431,6 +1442,25 @@ class GenerateResultAPI(APIView):
                 sem_label = f"Sem{semester}"
             download_filename = f"{programme_str}_{disc_str}_{batch_year}_{sem_label}_{acad_year_str}.xlsx"
 
+            if batch_obj.curriculum_id:
+                category = batch_obj.curriculum.programme.category
+            elif batch_obj.name.startswith('PhD'):
+                category = 'PHD'
+            elif batch_obj.name.startswith('M.Tech') or batch_obj.name == 'M.Des':
+                category = 'PG'
+            else:
+                category = 'UG'
+            batch_label = f"{category}{batch_year}"
+            branch_label = branch if branch else batch_obj.discipline.acronym
+            if semester_type == "Summer Semester":
+                sem_clause = f"SUMMER-{semester // 2}"
+            else:
+                sem_clause = f"SEM-{self._ordinal_suffix(semester)}"
+            heading = (
+                f"Approval sheet for {semester_type} AY{acad_year_str} "
+                f"({batch_label} Batch ({branch_label})) - {sem_clause}"
+            )
+
             wb = Workbook()
             ws = wb.active
             ws.title = "Student Grades"
@@ -1443,59 +1473,78 @@ class GenerateResultAPI(APIView):
                 left=Side(style="thin"), right=Side(style="thin"),
                 top=Side(style="thin"), bottom=Side(style="thin")
             )
+            center_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
+            total_cols = 3 + 2 * len(courses_list) + 7
+            last_col_letter = get_column_letter(max(total_cols, 1))
 
-            # Setup header rows: S. No, Roll No and Name in columns A, B and C.
-            ws["A1"] = "S. No"
-            ws["B1"] = "Roll No"
-            ws["C1"] = "Name"
-            for col in ("A", "B"):
-                cell = ws[col + "1"]
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+            ws.merge_cells(f"A1:{last_col_letter}1")
+            heading_cell = ws["A1"]
+            heading_cell.value = heading
+            heading_cell.font = Font(bold=True, size=12)
+            heading_cell.alignment = center_align
+            ws.row_dimensions[1].height = 24
+
+            NUM_ROW = 2
+            HDR_START = 3
+            HDR_END = 6
+            DATA_START = HDR_END + 1
+
+            col_idx = 4
+            for subject_no, course in enumerate(courses_list, start=1):
+                ws.merge_cells(start_row=NUM_ROW, start_column=col_idx, end_row=NUM_ROW, end_column=col_idx + 1)
+                cell = ws.cell(row=NUM_ROW, column=col_idx)
+                cell.value = subject_no
+                cell.alignment = center_align
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
-            cell = ws["C1"]
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
+                col_idx += 2
+
+            for col_num, label in enumerate(["S. No", "Roll No", "Name"], start=1):
+                ws.merge_cells(start_row=NUM_ROW, start_column=col_num, end_row=HDR_END, end_column=col_num)
+                cell = ws.cell(row=NUM_ROW, column=col_num)
+                cell.value = label
+                cell.alignment = center_align
+                cell.font = Font(bold=True)
+                cell.fill = header_fill
             ws.column_dimensions[get_column_letter(1)].width = 12
             ws.column_dimensions[get_column_letter(2)].width = 18
             ws.column_dimensions[get_column_letter(3)].width = 30
 
             # Starting from column 4, add headers for each course (each course uses 2 columns for Grade and Remarks).
             col_idx = 4
-            for course in courses:
+            for course in courses_list:
                 # Merge cells for the course code header.
-                ws.merge_cells(start_row=1, start_column=col_idx, end_row=1, end_column=col_idx+1)
-                cell = ws.cell(row=1, column=col_idx)
+                ws.merge_cells(start_row=HDR_START, start_column=col_idx, end_row=HDR_START, end_column=col_idx+1)
+                cell = ws.cell(row=HDR_START, column=col_idx)
                 cell.value = course.code
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.alignment = center_align
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
 
-                ws.merge_cells(start_row=2, start_column=col_idx, end_row=2, end_column=col_idx+1)
-                cell = ws.cell(row=2, column=col_idx)
+                ws.merge_cells(start_row=HDR_START+1, start_column=col_idx, end_row=HDR_START+1, end_column=col_idx+1)
+                cell = ws.cell(row=HDR_START+1, column=col_idx)
                 cell.value = course.name
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.alignment = center_align
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
 
-                ws.merge_cells(start_row=3, start_column=col_idx, end_row=3, end_column=col_idx+1)
-                cell = ws.cell(row=3, column=col_idx)
+                ws.merge_cells(start_row=HDR_START+2, start_column=col_idx, end_row=HDR_START+2, end_column=col_idx+1)
+                cell = ws.cell(row=HDR_START+2, column=col_idx)
                 cell.value = course.credit
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.alignment = center_align
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
 
-                cell = ws.cell(row=4, column=col_idx)
+                cell = ws.cell(row=HDR_END, column=col_idx)
                 cell.value = "Grade"
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.alignment = center_align
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
 
-                cell = ws.cell(row=4, column=col_idx+1)
+                cell = ws.cell(row=HDR_END, column=col_idx+1)
                 cell.value = "Remarks"
-                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.alignment = center_align
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
 
@@ -1503,59 +1552,26 @@ class GenerateResultAPI(APIView):
                 ws.column_dimensions[get_column_letter(col_idx+1)].width = 25
                 col_idx += 2
 
-            # Append headers for SPI and CPI.
-            cell = ws.cell(row=1, column=col_idx)
-            cell.value = "SPI"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-
-            cell = ws.cell(row=1, column=col_idx+1)
-            cell.value = "CPI"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-
-            cell = ws.cell(row=1, column=col_idx+2)
-            cell.value = "SU"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-
-            cell = ws.cell(row=1, column=col_idx+3)
-            cell.value = "TU"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-
-            cell = ws.cell(row=1, column=col_idx+4)
-            cell.value = "SP"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-
-            cell = ws.cell(row=1, column=col_idx+5)
-            cell.value = "TP"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-
-            cell = ws.cell(row=1, column=col_idx+6)
-            cell.value = "WARNING"
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
+            for label in ("SPI", "CPI", "SU", "TU", "SP", "TP", "WARNING"):
+                ws.merge_cells(start_row=NUM_ROW, start_column=col_idx, end_row=HDR_END, end_column=col_idx)
+                cell = ws.cell(row=NUM_ROW, column=col_idx)
+                cell.value = label
+                cell.alignment = center_align
+                cell.font = Font(bold=True)
+                cell.fill = header_fill
+                ws.column_dimensions[get_column_letter(col_idx)].width = 10
+                col_idx += 1
 
             max_col = ws.max_column
-            for row in range(1, 5):
+            for row in range(NUM_ROW, HDR_END + 1):
                 for col in range(1, max_col + 1):
                     cell = ws.cell(row=row, column=col)
                     cell.fill = header_fill
                     cell.border = thin_border
+                    cell.alignment = center_align
             total_columns = ws.max_column
 
-            # Fill in student rows, starting from row 5.
-            row_idx = 5
+            row_idx = DATA_START
 
             # --- Bulk prefetch to avoid N+1 for 300+ students ---
             User = get_user_model()
@@ -1594,7 +1610,7 @@ class GenerateResultAPI(APIView):
 
                 grades_map = grades_by_student.get(student.id_id, {})
                 col_ptr = 4
-                for course in courses:
+                for course in courses_list:
                     grade_entry = grades_map.get(course.id)
                     grade_val = grade_entry.grade if grade_entry else '-'
 
@@ -1664,9 +1680,8 @@ class GenerateResultAPI(APIView):
 
                 row_idx += 1
 
-            # Apply borders on all populated cells (headers + student rows).
             last_data_row = row_idx - 1
-            for row in range(1, last_data_row + 1):
+            for row in range(NUM_ROW, last_data_row + 1):
                 for col in range(1, total_columns + 1):
                     ws.cell(row=row, column=col).border = thin_border
 
@@ -4672,6 +4687,82 @@ class GenerateGradeSheetForm(APIView):
         return Response({
             "students": list(students.values()),
             "semester": semester
+        }, status=status.HTTP_200_OK)
+
+
+class GenerateFullGradeSheetForm(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        role = request.GET.get("role")
+        if not user_holds_any_role(request.user, ALL_ACAD_ROLES):
+            return Response(
+                {"error": "Access denied. Invalid or missing role."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        batches_queryset = scope_batches(
+            Batch.objects.filter(running_batch=True), scopes_for(request.user))
+        batch_list = [
+            {"id": batch.id, "label": f"{batch.name} - {batch.discipline} {batch.year}"}
+            for batch in batches_queryset
+        ]
+        specializations = Student.objects.exclude(specialization__isnull=True)\
+                                         .exclude(specialization__exact="")\
+                                         .values_list('specialization', flat=True)\
+                                         .distinct()
+        return Response({
+            "batches": batch_list,
+            "specializations": list(specializations),
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        if not user_holds_any_role(request.user, ALL_ACAD_ROLES):
+            return Response(
+                {"error": "Access denied. Invalid or missing role."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        batch = request.data.get('batch')
+        specialization = request.data.get('specialization')
+        if not batch:
+            return Response({"error": "batch is a required field."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not batch_in_scope(Batch.objects.filter(id=batch).first(), scopes_for(request.user)):
+            return Response({"error": "Batch not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        students = Student.objects.filter(batch_id=batch)
+        if specialization:
+            students = students.filter(specialization=specialization)
+        students = students.order_by('id')
+
+        return Response({"students": list(students.values())}, status=status.HTTP_200_OK)
+
+
+class GenerateFullGradeSheetData(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not user_holds_role(request.user, "acadadmin"):
+            return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+
+        student_id = request.data.get("student")
+        if not student_id:
+            return Response({"error": "Student ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            student = Student.objects.select_related(
+                "id__user", "id__department", "batch_id__discipline"
+            ).get(id_id=student_id)
+        except Student.DoesNotExist:
+            return Response({"error": "Student ID does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+        student_info, semesters_data = _build_grade_validation_semesters(student)
+        graded_semesters = [s for s in semesters_data if not s.get("is_registered_only")]
+
+        return Response({
+            "student_info": student_info,
+            "semesters": graded_semesters,
         }, status=status.HTTP_200_OK)
 
 

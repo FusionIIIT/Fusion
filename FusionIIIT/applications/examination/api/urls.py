@@ -43,6 +43,8 @@ urlpatterns = [
     url(r'^grade_summary/', views.GradeSummaryAPI.as_view(), name='grade_summary'),
     url(r'^generate_gradesheet_data/', views.GenerateGradeSheetData.as_view(), name='generate_gradesheet_data'),
     url(r'^generate_gradesheet_form/', views.GenerateGradeSheetForm.as_view(), name='generate_gradesheet_form'),
+    url(r'^generate_full_gradesheet_form/', views.GenerateFullGradeSheetForm.as_view(), name='generate_full_gradesheet_form'),
+    url(r'^generate_full_gradesheet_data/', views.GenerateFullGradeSheetData.as_view(), name='generate_full_gradesheet_data'),
     url(r'^grade_validation/', views.GradeValidationView.as_view(), name='grade_validation'),
     url(r'^submit_phd_milestone_grades/', views.SubmitPhDMilestoneGradesAPI.as_view(), name='submit_phd_milestone_grades'),
 ]

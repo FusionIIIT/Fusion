@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
@@ -29,6 +29,7 @@ from .bonafide_certificate import (
     _search_certificates,
     _student_queryset,
     build_certificate_context,
+    superscript_ordinal,
 )
 from .demand_letter import financial_year_for
 from .fee_certificate import _is_concession, fee_structure_for, indian_currency
@@ -36,6 +37,15 @@ from .fee_certificate import _is_concession, fee_structure_for, indian_currency
 CERTIFICATE_TYPE = 'fee_structure'
 
 ONE_TIME_LABEL = 'One-time payment is paid only once at the time of admission'
+
+ROMAN_NUMERALS = {
+    1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI',
+    7: 'VII', 8: 'VIII', 9: 'IX', 10: 'X', 11: 'XI', 12: 'XII',
+}
+
+
+def semester_roman(semester):
+    return ROMAN_NUMERALS.get(semester, str(semester))
 
 
 def session_semesters(semester):
@@ -85,46 +95,60 @@ def _column_total(rows, key):
     return sum((Decimal(row[key]) for row in rows), Decimal('0'))
 
 
+def financial_year_choices(student, structure):
+    if not structure:
+        return []
+    choices = []
+    for odd in range(1, structure.semester_count + 1, 2):
+        _, label = financial_year_for(student, odd)
+        choices.append({'value': odd, 'label': label})
+    return choices
+
+
 def render_fee_structure_pdf(context, structure, odd_semester, academic_year_label,
                              rows, reference_number, issued_on):
     output = BytesIO()
     document = SimpleDocTemplate(
         output,
         pagesize=A4,
-        topMargin=2.5 * cm,
+        topMargin=3.5 * cm,
         rightMargin=1.5 * cm,
-        bottomMargin=2.5 * cm,
+        bottomMargin=2 * cm,
         leftMargin=1.5 * cm,
         title='Fee Structure Certificate',
         author=settings.BONAFIDE_INSTITUTE_NAME,
     )
     header_style = ParagraphStyle(
-        'Header', fontName='Helvetica-Bold', fontSize=12, leading=16,
+        'Header', fontName='Caladea-Bold', fontSize=11, leading=15,
+        alignment=TA_JUSTIFY,
     )
     header_right_style = ParagraphStyle(
         'HeaderRight', parent=header_style, alignment=2,
     )
     label_style = ParagraphStyle(
-        'Label', fontName='Helvetica-Bold', fontSize=12, leading=18,
+        'Label', fontName='Caladea-Bold', fontSize=11, leading=15,
+        alignment=TA_JUSTIFY,
     )
     value_style = ParagraphStyle(
-        'Value', fontName='Helvetica', fontSize=12, leading=18,
+        'Value', fontName='Caladea', fontSize=11, leading=15,
+        alignment=TA_JUSTIFY,
     )
     note_style = ParagraphStyle(
-        'Note', fontName='Helvetica-Bold', fontSize=12, leading=16,
+        'Note', fontName='Caladea-Bold', fontSize=11, leading=15,
+        alignment=TA_JUSTIFY,
     )
     cell_style = ParagraphStyle(
-        'Cell', fontName='Helvetica', fontSize=12, leading=15, alignment=TA_LEFT,
+        'Cell', fontName='Caladea', fontSize=11, leading=15, alignment=TA_JUSTIFY,
     )
     cell_center_style = ParagraphStyle(
         'CellCenter', parent=cell_style, alignment=TA_CENTER,
     )
     cell_bold_style = ParagraphStyle(
-        'CellBold', parent=cell_style, fontName='Helvetica-Bold',
+        'CellBold', parent=cell_style, fontName='Caladea-Bold',
     )
     signature_style = ParagraphStyle(
-        'Signature', fontName='Helvetica-Bold', fontSize=12,
-        leading=16, alignment=TA_LEFT,
+        'Signature', fontName='Caladea-Bold', fontSize=11,
+        leading=15, alignment=TA_JUSTIFY,
     )
 
     header = Table(
@@ -163,7 +187,8 @@ def render_fee_structure_pdf(context, structure, odd_semester, academic_year_lab
              value_cell(f'Mr. {context["father_name"]}'), '', ''],
             [label_cell('Roll No:'), value_cell(context['roll_number']),
              label_cell('Branch:'), value_cell(context['discipline'])],
-            [label_cell('Semester:'), value_cell(context['semester_ordinal']),
+            [label_cell('Semester:'),
+             Paragraph(superscript_ordinal(context['semester_ordinal']), value_style),
              label_cell('Programme:'), value_cell(context['programme_short'])],
             [label_cell('Financial Year:'), value_cell(academic_year_label), '', ''],
         ],
@@ -198,8 +223,8 @@ def render_fee_structure_pdf(context, structure, odd_semester, academic_year_lab
         [[
             Paragraph('S.No.', cell_bold_style),
             Paragraph('Fee Head(s)', cell_bold_style),
-            Paragraph('Semester-I', cell_bold_style),
-            Paragraph('Semester-II', cell_bold_style),
+            Paragraph(f'Semester-{semester_roman(odd_semester)}', cell_bold_style),
+            Paragraph(f'Semester-{semester_roman(odd_semester + 1)}', cell_bold_style),
             Paragraph('Total', cell_bold_style),
         ]] + table_rows,
         colWidths=[1.8 * cm, 6.2 * cm, 2.7 * cm, 3.3 * cm, 3 * cm], hAlign='LEFT',
@@ -276,13 +301,24 @@ def fee_structure_certificate_student(request):
 
     rows = []
     academic_year_label = ''
+    odd_semester = None
     if structure is None:
         batch_label = context.get('programme') or 'unrecognised'
         errors.append(
             f'No fee structure is recorded for {batch_label} programmes. '
             'Add one before issuing this certificate.')
-    elif context['semester']:
-        odd_semester, _ = session_semesters(context['semester'])
+    else:
+        default_odd_semester = (
+            session_semesters(context['semester'])[0] if context['semester'] else 1)
+        valid_odds = list(range(1, structure.semester_count + 1, 2))
+        semester_param = request.query_params.get('semester')
+        try:
+            odd_semester = int(semester_param) if semester_param else default_odd_semester
+        except (TypeError, ValueError):
+            odd_semester = default_odd_semester
+        if odd_semester not in valid_odds:
+            odd_semester = (default_odd_semester if default_odd_semester in valid_odds
+                            else valid_odds[0])
         rows = build_structure_rows(student, structure, odd_semester)
         _, academic_year_label = financial_year_for(student, odd_semester)
 
@@ -293,6 +329,8 @@ def fee_structure_certificate_student(request):
 
     return Response({
         'student': {**context, 'is_ready': not errors, 'validation_errors': errors},
+        'financial_years': financial_year_choices(student, structure),
+        'selected_semester': odd_semester,
         'structure': {
             'rows': rows,
             'academic_year_label': academic_year_label,
@@ -318,6 +356,7 @@ def fee_structure_certificate_student(request):
 @role_required(['acadadmin'])
 def generate_fee_structure_pdf(request):
     student_id = request.data.get('student_id')
+    semester_raw = request.data.get('semester')
     if not student_id:
         return Response({'error': 'student_id is required.'},
                         status=status.HTTP_400_BAD_REQUEST)
@@ -337,7 +376,19 @@ def generate_fee_structure_pdf(request):
             {'error': 'No fee structure is recorded for this programme.'},
             status=status.HTTP_400_BAD_REQUEST)
 
-    odd_semester, _ = session_semesters(context['semester'])
+    default_odd_semester = (
+        session_semesters(context['semester'])[0] if context['semester'] else 1)
+    try:
+        odd_semester = (int(semester_raw) if semester_raw not in (None, '')
+                        else default_odd_semester)
+    except (TypeError, ValueError):
+        return Response({'error': 'Select a valid financial year.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if odd_semester not in range(1, structure.semester_count + 1, 2):
+        return Response(
+            {'error': 'Financial year is outside the published fee structure.'},
+            status=status.HTTP_400_BAD_REQUEST)
+
     rows = build_structure_rows(student, structure, odd_semester)
     _, academic_year_label = financial_year_for(student, odd_semester)
 

@@ -2939,6 +2939,7 @@ def create_batch(request):
             name=batch_name,
             discipline=discipline_obj,
             year=year,
+            curriculum=curriculum_obj,
             running_batch=True
         ).first()
         
