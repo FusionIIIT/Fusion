@@ -14,6 +14,15 @@ Authorization must be derived from the authenticated user's real designation
 """
 
 from django.db.models import Q
+from django.utils import timezone
+
+
+def _active_role_assignments(queryset):
+    now = timezone.now()
+    return queryset.filter(
+        Q(start_time__isnull=True) | Q(start_time__lte=now),
+        Q(end_time__isnull=True) | Q(end_time__gt=now),
+    )
 
 
 def user_holds_role(user, role):
@@ -22,10 +31,10 @@ def user_holds_role(user, role):
         return False
     from applications.globals.models import HoldsDesignation
 
-    return HoldsDesignation.objects.filter(
+    return _active_role_assignments(HoldsDesignation.objects.filter(
         Q(working=user) | Q(user=user),
         designation__name=role,
-    ).exists()
+    )).exists()
 
 
 def user_holds_any_role(user, roles):
@@ -37,10 +46,10 @@ def user_holds_any_role(user, roles):
         return False
     from applications.globals.models import HoldsDesignation
 
-    return HoldsDesignation.objects.filter(
+    return _active_role_assignments(HoldsDesignation.objects.filter(
         Q(working=user) | Q(user=user),
         designation__name__in=names,
-    ).exists()
+    )).exists()
 
 
 # --- Reusable DRF permission classes (declarative, fail-closed) -------------

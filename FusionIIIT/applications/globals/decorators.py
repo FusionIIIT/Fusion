@@ -1,7 +1,9 @@
 from functools import wraps
 
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
+from django.utils import timezone
 
 from applications.globals.models import HoldsDesignation
 
@@ -10,17 +12,21 @@ BASIC_ROLES = {'student', 'faculty', 'staff'}
 
 
 def held_designations(user):
-    """Every post this user may act in, lowercased.
+    """Every currently active post this user may act in, lowercased.
 
     Keyed on `working`, not `user`: HoldsDesignation's own docstring says
     "Use 'working' to handle permissions in code", because `working` is whoever
     currently occupies the post and `user` is its substantive holder. Reading
     the wrong one authorises the person on leave and refuses their stand-in,
-    and disagrees with the IAM, which projects on `working`.
+    and disagrees with the IAM, which projects on `working`. A post is active
+    from its start time up to (but not including) its end time.
     """
+    now = timezone.now()
     names = (HoldsDesignation.objects
              .select_related('designation')
              .filter(working=user)
+             .filter(Q(start_time__isnull=True) | Q(start_time__lte=now))
+             .filter(Q(end_time__isnull=True) | Q(end_time__gt=now))
              .values_list('designation__name', flat=True))
     return {name.lower() for name in names if name}
 

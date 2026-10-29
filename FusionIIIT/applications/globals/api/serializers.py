@@ -83,7 +83,7 @@ class HoldsDesignationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HoldsDesignation
-        fields = ('user','designation','held_at')
+        fields = ('user', 'designation', 'held_at', 'start_time', 'end_time')
 
 class AnnouncementSerializer(serializers.ModelSerializer):
 

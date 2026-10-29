@@ -163,6 +163,34 @@ class ExtraInfo(models.Model):
         return '{} - {}'.format(self.id, self.user.username)
 
 
+class HoldsDesignationQuerySet(models.QuerySet):
+    def delete(self):
+        now = timezone.now()
+        non_student_roles = self.exclude(designation__name__iexact='student')
+        ended_count = non_student_roles.filter(
+            models.Q(end_time__isnull=True) | models.Q(end_time__gt=now)
+        ).update(end_time=now)
+
+        student_roles = self.filter(designation__name__iexact='student')
+        deleted_count, deleted_objects = models.QuerySet.delete(student_roles)
+        details = dict(deleted_objects)
+        if ended_count:
+            key = '{}.{}'.format(self.model._meta.app_label, self.model._meta.model_name)
+            details[key] = details.get(key, 0) + ended_count
+        return ended_count + deleted_count, details
+
+    def get_or_create(self, defaults=None, **kwargs):
+        # A prior closed assignment is history, not the currently held role.
+        # Let role setup flows create a fresh open assignment after a role ends.
+        if 'end_time' not in kwargs and not (defaults and 'end_time' in defaults):
+            lookup = self.filter(**kwargs).filter(end_time__isnull=True)
+            try:
+                return lookup.get(), False
+            except self.model.DoesNotExist:
+                kwargs = dict(kwargs, end_time__isnull=True)
+        return super().get_or_create(defaults=defaults, **kwargs)
+
+
 class HoldsDesignation(models.Model):
     """
     Purpose : Records designations held by users.
@@ -182,12 +210,68 @@ class HoldsDesignation(models.Model):
     designation = models.ForeignKey(
         Designation, related_name='designees', on_delete=models.CASCADE)
     held_at = models.DateTimeField(auto_now=True)
+    start_time = models.DateTimeField(default=timezone.now, null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+
+    objects = HoldsDesignationQuerySet.as_manager()
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if self.start_time and self.end_time and self.end_time <= self.start_time:
+            raise ValidationError({'end_time': 'End time must be after start time.'})
 
     class Meta:
-        unique_together = [['user', 'designation'], ['working', 'designation']]
+        constraints = [
+            models.UniqueConstraint(
+                fields=('user', 'designation'),
+                condition=models.Q(end_time__isnull=True),
+                name='globals_hold_user_role_open_uniq',
+            ),
+            models.UniqueConstraint(
+                fields=('working', 'designation'),
+                condition=models.Q(end_time__isnull=True),
+                name='globals_hold_working_role_open_uniq',
+            ),
+        ]
+
+    def delete(self, using=None, keep_parents=False):
+        return self.__class__.objects.filter(pk=self.pk).delete()
 
     def __str__(self):
         return '{} - {}'.format(self.user.username, self.designation)
+
+
+class SystemAdminAccess(models.Model):
+    """Grants read-only access to the system-wide role directory."""
+
+    user = models.OneToOneField(
+        User, related_name='system_admin_access', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    assigned_by = models.ForeignKey(
+        User, related_name='granted_system_admin_access',
+        on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return 'System Admin - {}'.format(self.user.username)
+
+
+class UserActivityLog(models.Model):
+    """Successful authenticated actions recorded under the role used."""
+
+    user = models.ForeignKey(
+        User, related_name='activity_logs', on_delete=models.CASCADE)
+    role = models.CharField(max_length=100, db_index=True)
+    action = models.CharField(max_length=200)
+    method = models.CharField(max_length=10)
+    resource = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ('-created_at',)
+
+    def __str__(self):
+        return '{} — {} — {}'.format(self.user.username, self.role, self.action)
 
 
 # TODO : ADD additional staff related fields when needed
