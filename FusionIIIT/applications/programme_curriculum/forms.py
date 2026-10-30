@@ -390,9 +390,6 @@ class CourseProposalTrackingFile(ModelForm):
         return self.cleaned_data
 
 class CourseInstructorForm(forms.ModelForm):
-    # next_year = datetime.now().year +1
-    max_year = Batch.objects.aggregate(max_year=Max('year'))['max_year']
-    next_year = max_year + 1 if max_year else datetime.now().year + 1
     course_id = forms.ModelChoiceField(
         queryset=Course.objects.all(),
         label="Select Course",
@@ -408,7 +405,7 @@ class CourseInstructorForm(forms.ModelForm):
     )
 
     year = forms.ChoiceField(
-        choices=[('', 'Choose a year')] + [(year, year) for year in Batch.objects.values_list('year', flat=True).distinct()]+[(next_year, next_year)],
+        choices=[],
         label="Select Year",
         widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
     )
@@ -424,6 +421,17 @@ class CourseInstructorForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'class': 'ui fluid input',
                                       'placeholder': 'No section (single-offering / elective)'})
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        try:
+            max_year = Batch.objects.aggregate(max_year=Max('year'))['max_year']
+            next_year = max_year + 1 if max_year else datetime.now().year + 1
+            batch_years = list(Batch.objects.values_list('year', flat=True).distinct())
+        except Exception:
+            next_year = datetime.now().year + 1
+            batch_years = []
+        self.fields['year'].choices = [('', 'Choose a year')] + [(year, year) for year in batch_years] + [(next_year, next_year)]
 
     def clean_section_label(self):
         # Normalise blank -> None so a single-offering elective stays NULL

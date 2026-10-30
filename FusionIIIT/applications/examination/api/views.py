@@ -8,7 +8,7 @@ from applications.academic_procedures.models import(
     course_registration, course_replacement,
     ThesisRegistration, ThesisEvaluation, ThesisTopic,
     ProgressSeminarRegistration, ProgressSeminarEntry, TeachingCreditAllocation,
-    resolve_progress_seminar_catalog_entry, DEFAULT_PROGRESS_SEMINAR_CREDIT,
+    resolve_progress_seminar_catalog_entry, DEFAULT_PROGRESS_SEMINAR_CREDIT, FeedbackFilled,
 )
 from applications.programme_curriculum.models import Course as Courses ,  Batch, CourseInstructor, Semester
 from applications.examination.models import(hidden_grades , ResultAnnouncement, authentication, PublishedResultStudent)
@@ -3267,6 +3267,17 @@ class CheckResultView(APIView):
                 status=404,
             )
 
+        # Verify feedback submission before releasing results
+        if not FeedbackFilled.objects.filter(student=student, semester_no=semester_no).exists():
+            return JsonResponse(
+                {
+                    "success": False,
+                    "require_feedback": True,
+                    "message": "Please submit your feedback form to access your results.",
+                },
+                status=200,
+            )
+
         # Find the announcement for this batch + semester + semester_type
         ann = ResultAnnouncement.objects.filter(
             batch=student.batch_id,
@@ -4109,6 +4120,24 @@ class GenerateStudentResultPDFAPI(APIView):
         try:
             # Get data from request
             data = request.data
+
+            # Verify feedback submission before allowing PDF download
+            roll_number = request.user.username
+            semester_no = data.get('semester_no')
+            if semester_no is not None:
+                try:
+                    student = Student.objects.get(id_id=roll_number)
+                    if not FeedbackFilled.objects.filter(student=student, semester_no=semester_no).exists():
+                        return JsonResponse(
+                            {
+                                "success": False,
+                                "require_feedback": True,
+                                "message": "Please submit your feedback form to access your results.",
+                            },
+                            status=403,
+                        )
+                except Student.DoesNotExist:
+                    pass
             
             # Check if student_info is provided, if not fetch it like CheckResultView
             student_info = data.get('student_info', {})
@@ -5637,6 +5666,26 @@ class GradeValidationView(APIView):
             return resp
 
         return Response({"error": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class StudentCreditSummaryAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        roll_no = request.user.username
+        try:
+            student = Student.objects.select_related(
+                'id__user', 'id__department', 'batch_id__discipline', 'programme'
+            ).get(id__user__username=roll_no)
+        except Student.DoesNotExist:
+            return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        student_info, semesters = _build_grade_validation_semesters(student)
+        prog_cat = student.programme.category if getattr(student, 'programme', None) else "UG"
+        return Response({
+            "programme_category": prog_cat,
+            "semesters": semesters
+        })
 
 
 PHD_MILESTONE_CATEGORIES = {'thesis', 'progress_seminar', 'teaching_credit'}
