@@ -37,6 +37,19 @@ from .bonafide_certificate import (
 CERTIFICATE_TYPE = 'medium_of_instruction'
 
 
+def medium_of_instruction_context(student):
+    """The bonafide context, worded as the Medium of Instruction format has it:
+    "Mr."/"Ms." rather than capitals, and the programme abbreviated with a
+    closing stop ("B.Tech.")."""
+    context = build_certificate_context(student)
+    context['salutation'] = context['salutation'].capitalize()
+    programme = (student.programme or '').strip()
+    context['programme_short'] = (
+        f'{programme}.' if '.' in programme and not programme.endswith('.')
+        else programme)
+    return context
+
+
 def render_medium_of_instruction_pdf(context, reference_number, issued_on):
     output = BytesIO()
     document = SimpleDocTemplate(
@@ -106,22 +119,18 @@ def render_medium_of_instruction_pdf(context, reference_number, issued_on):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
     ]))
 
+    # Worded as the Academic section's Medium of Instruction format.
     first_text = (
         'This is to certify that '
         f'<b>{escape(context["salutation"])} {escape(context["name"])}</b> '
-        f'(Roll No. {escape(context["roll_number"])}) '
-        f'{escape(context["relation"])} '
-        f'<b>MR. {escape(context["father_name"])}</b> is a student of '
-        f'<b>{superscript_ordinal(context["year_ordinal"])} Year</b> '
+        f'(Roll No. {escape(context["roll_number"])}), '
+        f'{escape(context["relation"])} Mr. {escape(context["father_name"])}, '
+        f'is a student of {superscript_ordinal(context["year_ordinal"])} Year '
         f'({superscript_ordinal(context["semester_ordinal"])} Semester) '
-        f'<b>{escape(context["programme"])}</b> in '
-        f'<b>{escape(context["discipline"])}</b> '
-        f'({escape(context["duration_text"])} course duration: '
-        f'<b>{context["start_year"]}</b> to <b>{context["end_year"]}</b>) at '
-        f'{escape(settings.BONAFIDE_INSTITUTE_NAME)}.'
-    )
-    second_text = (
-        'Institute provides education mode of instruction to the students in English only.'
+        f'<b>{escape(context["programme_short"])}</b> programme from '
+        f'<b>{escape(context["discipline"])}</b> discipline. '
+        'Institute provides education mode of instruction to the students '
+        'in English only.'
     )
 
     story = [
@@ -130,8 +139,6 @@ def render_medium_of_instruction_pdf(context, reference_number, issued_on):
         Paragraph('<u>TO WHOM SO EVER IT MAY CONCERN</u>', heading_style),
         Spacer(1, 1.25 * cm),
         Paragraph(first_text, body_style),
-        Spacer(1, 0.9 * cm),
-        Paragraph(second_text, body_style),
         Spacer(1, 1.65 * cm),
         Paragraph(f'({escape(settings.BONAFIDE_SIGNATORY_NAME)})', signature_style),
     ]
@@ -151,7 +158,7 @@ def _certificate_pdf(certificate):
     if certificate.pdf_content:
         return bytes(certificate.pdf_content)
 
-    context = build_certificate_context(certificate.student)
+    context = medium_of_instruction_context(certificate.student)
     if not context['is_ready']:
         return None
     document = render_medium_of_instruction_pdf(
@@ -180,7 +187,7 @@ def medium_of_instruction_student(request):
         id__user__is_active=True,
         id__user_status='PRESENT',
     )
-    context = build_certificate_context(student)
+    context = medium_of_instruction_context(student)
     issued_on = timezone.now().date()
     prefix = settings.BONAFIDE_REFERENCE_PREFIX.rstrip('/')
     next_serial = (
@@ -212,7 +219,7 @@ def generate_medium_of_instruction_pdf(request):
         return Response({'error': 'student_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
     student = get_object_or_404(_student_queryset(), pk=student_id)
-    context = build_certificate_context(student)
+    context = medium_of_instruction_context(student)
     if not context['is_ready']:
         return Response(
             {'error': 'Student data is incomplete.', 'details': context['validation_errors']},
