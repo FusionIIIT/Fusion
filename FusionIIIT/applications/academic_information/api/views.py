@@ -2593,3 +2593,60 @@ def assign_section(request):
     return Response({'detail': f'Section updated for {updated} student(s).',
                      'updated': updated,
                      'section': section or None})
+
+# Counts start from the 2020 batch. Gender is recorded reliably only from the
+# 2025 batch on, so earlier batches show their total alone.
+STUDENT_COUNT_FROM_BATCH = 2020
+GENDER_COUNTED_FROM_BATCH = 2025
+
+
+def _student_counts(request, group_by):
+    """Students per group, with male and female counts for batches whose gender
+    data can be trusted. Scoped to the programmes the user may see."""
+    from django.db.models import Count, Q
+    from applications.globals.programme_scope import scopes_for, scope_students
+
+    students = scope_students(
+        Student.objects.filter(batch__gte=STUDENT_COUNT_FROM_BATCH),
+        scopes_for(request.user),
+    )
+    rows = []
+    for count in students.values(*group_by).annotate(
+        male=Count('id', filter=Q(id__sex='M')),
+        female=Count('id', filter=Q(id__sex='F')),
+        total=Count('id'),
+    ).order_by(*group_by):
+        if count['batch'] < GENDER_COUNTED_FROM_BATCH:
+            count['male'] = count['female'] = None
+        rows.append(count)
+    return rows
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_batch_wise_student_count(request):
+    """Students in each batch, with male and female counts from the 2025 batch on."""
+    return Response({'rows': [
+        {'batch': c['batch'], 'male': c['male'], 'female': c['female'],
+         'total': c['total']}
+        for c in _student_counts(request, ('batch',))
+    ]})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_branch_wise_student_count(request):
+    """Students in each programme and discipline of every batch, with male and
+    female counts from the 2025 batch on."""
+    return Response({'rows': [
+        {'batch': c['batch'],
+         'branch': f"{c['programme'] or 'Unknown'} "
+                   f"{c['batch_id__discipline__acronym'] or 'General'}",
+         'male': c['male'], 'female': c['female'], 'total': c['total']}
+        for c in _student_counts(
+            request, ('batch', 'programme', 'batch_id__discipline__acronym'))
+    ]})
