@@ -1469,6 +1469,11 @@ def available_courses(request):
 DATABASE_REPORT_ROLES = ['acadadmin', 'Dean Academic', 'Acad UG', 'Acad PG', 'Acad Ph.D.']
 
 
+def _branch(student):
+    """The student's branch as recorded on their batch, not read off the roll number."""
+    return student.batch_id.discipline.acronym if student.batch_id_id else ''
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -1499,7 +1504,29 @@ def database_report_filters(request):
         'batches': batches,
         'semesters': semesters,
         'programme_categories': categories,
+        'ug_batches': _ug_curriculum_batches() if 'UG' in categories else [],
     })
+
+
+UG_BATCH_NAMES = ('B.Tech', 'B.Des')
+
+
+def _ug_curriculum_batches():
+    """Each undergraduate discipline batch that has a curriculum, for picking
+    one discipline of a year. The curriculum is named only when a discipline
+    has more than one batch that year."""
+    from collections import Counter
+    batches = list(Batch.objects.filter(
+        name__in=UG_BATCH_NAMES, curriculum__isnull=False,
+    ).select_related('discipline', 'curriculum').order_by('-year', 'name', 'discipline__acronym'))
+    seen = Counter((b.year, b.name, b.discipline.acronym) for b in batches)
+    options = []
+    for b in batches:
+        label = f'{b.name} {b.discipline.acronym}'
+        if seen[(b.year, b.name, b.discipline.acronym)] > 1:
+            label += f' ({b.curriculum})'
+        options.append({'id': b.id, 'year': b.year, 'label': label})
+    return options
 
 
 @api_view(['GET'])
@@ -1529,7 +1556,8 @@ def database_course_registrations(request):
             student_id__batch=batch_year),
         scopes_for(request.user), 'student_id',
     ).select_related(
-        'student_id__id__user', 'course_id', 'course_slot_id'
+        'student_id__id__user', 'student_id__batch_id__discipline',
+        'course_id', 'course_slot_id'
     ).order_by('student_id__id_id', 'course_slot_id__name', 'course_id__code')
 
     rows = []
@@ -1539,6 +1567,7 @@ def database_course_registrations(request):
         rows.append({
             'roll_no': student.id_id,
             'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'branch': _branch(student),
             'batch': student.batch,
             'programme': student.programme,
             'course_slot': reg.course_slot_id.name if reg.course_slot_id else '',
@@ -1578,7 +1607,8 @@ def database_backlog_registrations(request):
             course_slot_id__name__startswith='BL'),
         scopes_for(request.user), 'student_id',
     ).select_related(
-        'student_id__id__user', 'course_id', 'course_slot_id', 'semester_id')
+        'student_id__id__user', 'student_id__batch_id__discipline',
+        'course_id', 'course_slot_id', 'semester_id')
 
     rows = []
     for reg in regs:
@@ -1586,6 +1616,7 @@ def database_backlog_registrations(request):
         rows.append({
             'roll_no': reg.student_id_id,
             'name': f'{user.first_name} {user.last_name}'.strip(),
+            'branch': _branch(reg.student_id),
             'semester': reg.semester_id.semester_no if reg.semester_id else '',
             'course_slot': reg.course_slot_id.name if reg.course_slot_id else '',
             'course_code': reg.course_id.code,
@@ -1632,6 +1663,7 @@ def database_student_credit_totals(request):
         'student_id__id_id',
         'student_id__id__user__first_name',
         'student_id__id__user__last_name',
+        'student_id__batch_id__discipline__acronym',
     ).annotate(
         total_credits=Sum('course_id__credit')
     ).order_by('student_id__id_id')
@@ -1641,6 +1673,7 @@ def database_student_credit_totals(request):
         'student_name': '{} {}'.format(
             row['student_id__id__user__first_name'],
             row['student_id__id__user__last_name']).strip(),
+        'branch': row['student_id__batch_id__discipline__acronym'] or '',
         'total_credits': row['total_credits'] or 0,
     } for row in totals]
 
@@ -1750,7 +1783,8 @@ def database_swayam_registrations(request):
         ).filter(Q(semester_type=semester_type) | Q(slot_parity=parity))
 
     regs = regs.select_related(
-        'student_id__id__user', 'course_id', 'course_slot_id__semester')
+        'student_id__id__user', 'student_id__batch_id__discipline',
+        'course_id', 'course_slot_id__semester')
 
     rows = []
     for reg in regs:
@@ -1759,6 +1793,7 @@ def database_swayam_registrations(request):
         rows.append({
             'roll_no': reg.student_id_id,
             'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'branch': _branch(reg.student_id),
             'course_code': reg.course_id.code,
             'course_name': reg.course_id.name,
             'semester_no': slot.semester.semester_no if slot else None,
@@ -1802,7 +1837,8 @@ def database_semester_registrations(request):
         course_registration.objects.filter(
             student_id__batch=batch_year, semester_id__semester_no=semester_no),
         scopes_for(request.user), 'student_id',
-    ).select_related('student_id__id__user', 'course_id', 'semester_id')
+    ).select_related('student_id__id__user', 'student_id__batch_id__discipline',
+                     'course_id', 'semester_id')
 
     rows = []
     for reg in regs:
@@ -1812,6 +1848,7 @@ def database_semester_registrations(request):
             'roll_no': reg.student_id_id,
             'semester': reg.semester_id.semester_no,
             'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'branch': _branch(reg.student_id),
             'course_code': reg.course_id.code,
             'course_name': reg.course_id.name,
             'credit': reg.course_id.credit,
@@ -1882,6 +1919,7 @@ def _credits_earned_row(student):
             return {
                 'roll_no': student.id_id,
                 'student_name': f'{user.first_name} {user.last_name}'.strip(),
+                'branch': _branch(student),
                 'regular_credits': regular,
                 'backlog_improvement_credits': backlog_imp,
                 'swayam_credits': swayam,
@@ -1902,6 +1940,7 @@ def _credits_earned_row(student):
             return {
                 'roll_no': student.id_id,
                 'student_name': student_name,
+                'branch': _branch(student),
                 'regular_credits': 0.0,
                 'backlog_improvement_credits': 0.0,
                 'swayam_credits': 0.0,
@@ -1912,6 +1951,96 @@ def _credits_earned_row(student):
         connection.close()
 
 
+def _bulk_credits_earned_rows(students):
+    """_credits_earned_row for many students from a handful of batch-wide
+    queries instead of ~26 per student. Only for students without PG/PhD
+    thesis or seminar credits, which _build_grade_validation_semesters adds."""
+    from collections import defaultdict
+    from applications.academic_procedures.models import course_replacement
+    from applications.examination.api.views import (
+        grade_conversion, superseded_course_codes,
+    )
+    from applications.online_cms.models import Student_grades
+
+    NON_EARN = {"F", "I", "X", "AU", "CD", "—", ""}
+    FAILING_GRADES = {"F", "I", "X", "AU", "CD"}
+    rolls = [s.id_id for s in students]
+
+    grades_by_roll = defaultdict(list)
+    for g in Student_grades.objects.filter(
+            roll_no__in=rolls).select_related('course_id'):
+        grades_by_roll[g.roll_no].append(g)
+
+    replacements_by_roll = defaultdict(list)
+    for rep in course_replacement.objects.filter(
+        Q(old_course_registration__student_id__in=rolls) |
+        Q(new_course_registration__student_id__in=rolls)
+    ).select_related('old_course_registration__course_id',
+                     'new_course_registration__course_id'):
+        for roll in {rep.old_course_registration.student_id_id,
+                     rep.new_course_registration.student_id_id}:
+            replacements_by_roll[roll].append(rep)
+
+    def history_order(g):
+        # Semester by semester, summer after the regular term of the same
+        # number, as _build_grade_validation_semesters walks the history. A
+        # repeat can be filed under the same semester as the original, so the
+        # year decides which attempt came first.
+        s_type = g.semester_type or ''
+        return (g.semester or 0, 'summer' in s_type.lower(),
+                g.semester_type is None, s_type, g.course_id.code or '',
+                g.year, g.id)
+
+    rows = []
+    for student in students:
+        grades = sorted(grades_by_roll[student.id_id], key=history_order)
+        superseded = superseded_course_codes(
+            student, {(g.course_id.code or '').strip() for g in grades},
+            replacements=replacements_by_roll[student.id_id])
+
+        first_grade, best_by_code = {}, {}
+        for g in grades:
+            grade = (g.grade or '').strip()
+            if g.course_id_id in first_grade:
+                prev = first_grade[g.course_id_id]
+                remark = 'Backlog' if prev in FAILING_GRADES else 'Improvement'
+            else:
+                remark = 'Regular'
+                first_grade[g.course_id_id] = g.grade or ''
+
+            code = (g.course_id.code or '').strip()
+            if not code or code in superseded or grade in NON_EARN:
+                continue
+            code = code.upper()
+            prev = best_by_code.get(code)
+            if prev is None or (grade_conversion.get(grade, -1)
+                                > grade_conversion.get(prev[0], -1)):
+                credit = g.course_id.credit
+                best_by_code[code] = (
+                    grade, float(credit) if credit is not None else 0.0, remark)
+
+        regular = backlog_imp = swayam = 0.0
+        for code, (grade, credit, remark) in best_by_code.items():
+            if code.startswith('SW'):
+                swayam += credit
+            elif remark in ('Backlog', 'Improvement'):
+                backlog_imp += credit
+            else:
+                regular += credit
+
+        user = student.id.user
+        rows.append({
+            'roll_no': student.id_id,
+            'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'branch': _branch(student),
+            'regular_credits': regular,
+            'backlog_improvement_credits': backlog_imp,
+            'swayam_credits': swayam,
+            'total_credits_earned': regular + backlog_imp + swayam,
+        })
+    return rows
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -1919,6 +2048,7 @@ def _credits_earned_row(student):
 def database_credits_earned(request):
     """Each student's earned credits to date, split regular / backlog-improvement / swayam."""
     from concurrent.futures import ThreadPoolExecutor
+    from applications.examination.api.views import PROGRAMME_TYPE_BUCKETS
     from applications.globals.programme_scope import scopes_for, scope_students
 
     batch = (request.query_params.get('batch') or '').strip()
@@ -1932,15 +2062,244 @@ def database_credits_earned(request):
     students = list(scope_students(
         Student.objects.filter(batch=batch_year),
         scopes_for(request.user),
-    ).select_related('id__user').order_by('id_id'))
+    ).select_related('id__user', 'batch_id__discipline').order_by('id_id'))
 
-    with ThreadPoolExecutor(max_workers=16) as pool:
-        rows = list(pool.map(_credits_earned_row, students))
+    # PG/PhD students also earn thesis and seminar credits, which only the full
+    # per-student history adds, so they keep the slow path; there are few.
+    thesis_programmes = set(PROGRAMME_TYPE_BUCKETS['PHD'] + PROGRAMME_TYPE_BUCKETS['PG'])
+    with_thesis = [s for s in students if s.programme in thesis_programmes]
+    rows = _bulk_credits_earned_rows(
+        [s for s in students if s.programme not in thesis_programmes])
+    if with_thesis:
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            rows += list(pool.map(_credits_earned_row, with_thesis))
+    rows.sort(key=lambda r: str(r['roll_no']))
 
     return Response({
         'count': len(rows),
         'students': len(rows),
         'credits': sum(r['total_credits_earned'] for r in rows),
+        'rows': rows,
+    })
+
+
+def _picked_courses(raw):
+    """The ``courses`` query parameter, comma-separated course codes, as report
+    columns in the order given. Versions of a code share one column. Returns
+    the columns and the codes no course has."""
+    from django.db.models.functions import Upper
+    wanted = []
+    for part in raw.split(','):
+        code = part.strip().upper()
+        if code and code not in wanted:
+            wanted.append(code)
+    known = {}
+    for course in Courses.objects.annotate(code_upper=Upper('code')).filter(
+            code_upper__in=wanted).order_by('-version', 'id'):
+        known.setdefault(course.code_upper, course)
+    columns = {code: {'key': f'grade_{code}', 'code': known[code].code.strip(),
+                      'name': known[code].name}
+               for code in wanted if code in known}
+    return columns, [code for code in wanted if code not in known]
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_course_grades(request):
+    """Credits earned by each student of a batch, with their best grade in each
+    course of ``courses`` (comma-separated codes), one column per course in the
+    order given.
+
+    ``batch_id`` narrows it to one discipline; otherwise every undergraduate
+    discipline of the ``batch`` year is listed. Serves both the common-courses
+    and the remaining-core-courses reports, which differ only in the courses
+    the user picks.
+    """
+    from applications.examination.api.views import grade_conversion
+    from applications.globals.programme_scope import scopes_for, scope_students
+    from applications.online_cms.models import Student_grades
+
+    batch_id = (request.query_params.get('batch_id') or '').strip()
+    year = (request.query_params.get('batch') or '').strip()
+    batches = Batch.objects.filter(
+        name__in=UG_BATCH_NAMES, curriculum__isnull=False,
+    ).select_related('discipline')
+    if batch_id:
+        batches = list(batches.filter(id=batch_id if batch_id.isdigit() else None))
+        if not batches:
+            return Response({'detail': f"No undergraduate batch '{batch_id}'."}, status=400)
+        b = batches[0]
+        label = f'{b.name} {b.discipline.acronym} {b.year}'
+    elif year:
+        if not year.isdigit():
+            return Response({'detail': f"Batch '{year}' is not a year."}, status=400)
+        batches = list(batches.filter(year=int(year)))
+        if not batches:
+            return Response({'detail': f"No undergraduate batches in {year}."}, status=400)
+        label = f'All disciplines {year}'
+    else:
+        return Response({'detail': 'Required: batch or batch_id.'}, status=400)
+
+    courses, unknown = _picked_courses(request.query_params.get('courses') or '')
+    if unknown:
+        return Response({'detail': f"No course with code {', '.join(unknown)}."},
+                        status=400)
+    if not courses:
+        return Response({'detail': 'Pick at least one course.'}, status=400)
+
+    students = list(scope_students(
+        Student.objects.filter(batch_id__in=batches), scopes_for(request.user),
+    ).select_related('id__user', 'batch_id__discipline').order_by('id_id'))
+    rows = _bulk_credits_earned_rows(students)
+
+    # The best attempt at each course, the latest one when attempts tie.
+    best = {}
+    for g in Student_grades.objects.filter(
+        roll_no__in=[s.id_id for s in students],
+    ).select_related('course_id').order_by('semester', 'year', 'id'):
+        code = (g.course_id.code or '').strip().upper()
+        if code not in courses:
+            continue
+        grade = (g.grade or '').strip()
+        key = (g.roll_no, code)
+        if key not in best or (grade_conversion.get(grade, -1)
+                               >= grade_conversion.get(best[key], -1)):
+            best[key] = grade
+
+    for row in rows:
+        for code, course in courses.items():
+            row[course['key']] = best.get((row['roll_no'], code)) or '-'
+
+    return Response({
+        'count': len(rows),
+        'students': len(rows),
+        'batch': label,
+        'courses': list(courses.values()),
+        'rows': rows,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_report_courses(request):
+    """Every course code, for picking a grade report's columns. Versions of a
+    code are one entry, named as its latest version."""
+    seen = {}
+    for course in Courses.objects.order_by('-version', 'id'):
+        code = (course.code or '').strip()
+        if code and code.upper() not in seen:
+            seen[code.upper()] = {'code': code, 'name': course.name}
+    return Response({'courses': sorted(seen.values(), key=lambda c: c['code'].upper())})
+
+
+def _instructor_name(faculty):
+    user = faculty.id.user
+    return f'{user.first_name} {user.last_name}'.strip() or str(faculty.id_id)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_active_backlogs(request):
+    """Courses a student failed and has not cleared since, across the whole programme.
+
+    A course stays a backlog until some attempt at that code earns a passing
+    grade, or a graded replacement supersedes it. Each row describes the first
+    failed attempt: its semester, grade and the instructor who taught it.
+    """
+    from collections import defaultdict
+    from applications.academic_information.models import pick_offering
+    from applications.examination.api.views import (
+        REMARK_KIND_BY_GRADE, grade_conversion, superseded_course_codes,
+    )
+    from applications.globals.programme_scope import scopes_for, scope_students
+    from applications.online_cms.models import Student_grades
+
+    batch = (request.query_params.get('batch') or '').strip()
+    students = Student.objects.all()
+    if batch and batch.upper() != 'ALL':
+        try:
+            students = students.filter(batch=int(batch))
+        except ValueError:
+            return Response({'detail': f"Batch '{batch}' is not a year."}, status=400)
+    students = scope_students(students, scopes_for(request.user))
+    students_by_roll = {
+        s.id_id: s for s in students.select_related('id__user', 'batch_id__discipline')}
+
+    backlog_grades = {g for g, kind in REMARK_KIND_BY_GRADE.items() if kind == 'BL'}
+    grades = Student_grades.objects.filter(
+        roll_no__in=list(students_by_roll),
+    ).select_related(
+        'course_id', 'course_instructor__instructor_id__id__user',
+    ).order_by('roll_no', 'semester', 'year', 'id')
+
+    attempts = defaultdict(lambda: defaultdict(list))  # roll -> code -> grades
+    for g in grades:
+        code = (g.course_id.code or '').strip().upper()
+        attempts[g.roll_no][code].append(g)
+
+    offerings_cache = {}
+
+    def instructor_for(student, g):
+        if g.course_instructor:
+            return _instructor_name(g.course_instructor.instructor_id)
+        key = (g.course_id_id, g.year, g.semester_type)
+        if key not in offerings_cache:
+            offerings_cache[key] = list(CourseInstructor.objects.filter(
+                course_id_id=g.course_id_id, year=g.year,
+                semester_type=g.semester_type,
+            ).select_related('instructor_id__id__user'))
+        offerings = offerings_cache[key]
+        offering = pick_offering(student, offerings)
+        if offering:
+            return _instructor_name(offering.instructor_id)
+        # Ambiguous offerings: name everyone who taught it that term. Terms
+        # before offerings were recorded have none at all.
+        return ', '.join(dict.fromkeys(
+            _instructor_name(o.instructor_id) for o in offerings)) or 'Not recorded'
+
+    rows = []
+    for roll_no, by_code in attempts.items():
+        failed = {}
+        for code, tries in by_code.items():
+            graded = [(t.grade or '').strip() for t in tries]
+            if any(gr in grade_conversion and gr not in backlog_grades for gr in graded):
+                continue
+            first_fail = next((t for t, gr in zip(tries, graded) if gr in backlog_grades), None)
+            if first_fail:
+                failed[code] = first_fail
+        if not failed:
+            continue
+
+        student = students_by_roll[roll_no]
+        superseded = {c.upper() for c in superseded_course_codes(student, {
+            (t.course_id.code or '').strip() for tries in by_code.values() for t in tries})}
+        user = student.id.user
+        for code, g in failed.items():
+            if code in superseded:
+                continue
+            rows.append({
+                'batch': student.batch,
+                'roll_no': roll_no,
+                'student_name': f'{user.first_name} {user.last_name}'.strip(),
+                'branch': _branch(student),
+                'semester': g.semester,
+                'course_code': g.course_id.code,
+                'course_name': g.course_id.name,
+                'grade': (g.grade or '').strip(),
+                'instructor': instructor_for(student, g),
+            })
+    rows.sort(key=lambda r: (r['batch'] or 0, str(r['roll_no']),
+                             r['semester'], r['course_code']))
+
+    return Response({
+        'count': len(rows),
+        'students': len({r['roll_no'] for r in rows}),
         'rows': rows,
     })
 
