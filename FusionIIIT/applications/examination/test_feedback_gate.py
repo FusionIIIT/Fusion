@@ -119,6 +119,7 @@ class FeedbackGateTests(TestCase):
             return views.GenerateStudentResultPDFAPI.as_view()(request)
 
         held = sheet({'semester_no': 2, 'semester_type': 'Even Semester'})
+        self.assertEqual(held.status_code, 403)
         self.assertTrue(json.loads(held.content)['require_feedback'])
         self.assertEqual(sheet({'semester_type': 'Even Semester'}).status_code, 400)
 

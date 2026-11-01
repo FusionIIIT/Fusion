@@ -4121,6 +4121,8 @@ class GenerateStudentResultPDFAPI(APIView):
 
             # A student's own result sheet waits for feedback as the result
             # does; staff printing a transcript are not students and pass.
+            # Refused with 403, not 200: the pages save any successful reply
+            # as the PDF, so a 200 would hand the student a broken file.
             requester = Student.objects.filter(id_id=request.user.username).first()
             if requester is not None:
                 if data.get('semester_no') is None:
@@ -4129,7 +4131,7 @@ class GenerateStudentResultPDFAPI(APIView):
                         status=400,
                     )
                 if feedback_pending(requester, data.get('semester_no')):
-                    return JsonResponse(FEEDBACK_REQUIRED, status=200)
+                    return JsonResponse(FEEDBACK_REQUIRED, status=403)
             
             # Check if student_info is provided, if not fetch it like CheckResultView
             student_info = data.get('student_info', {})
