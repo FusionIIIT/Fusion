@@ -1,6 +1,28 @@
 from django.urls import path
 from . import views
+from . import iwd_workflow_views
+
 urlpatterns = [
+    # DIRECT_FINAL_v2 IWD Basis & Composite Workflow Endpoints
+    path('workflow/submit-complaint/', iwd_workflow_views.submit_maintenance_complaint, name='iwd_submit_complaint'),
+    path('workflow/track-status/', iwd_workflow_views.track_complaint_status, name='iwd_track_status'),
+    path('workflow/assess/<int:complaint_id>/', iwd_workflow_views.assess_assigned_complaint, name='iwd_assess_complaint'),
+    path('workflow/submit-estimate/<int:complaint_id>/', iwd_workflow_views.submit_estimate, name='iwd_submit_estimate'),
+    path('workflow/flag-urgent/<int:complaint_id>/', iwd_workflow_views.flag_urgent_repair, name='iwd_flag_urgent'),
+    path('workflow/review-urgent/<int:complaint_id>/', iwd_workflow_views.review_urgent_escalation, name='iwd_review_urgent'),
+    path('workflow/review-low-cost/<int:complaint_id>/', iwd_workflow_views.review_low_cost_estimate, name='iwd_review_low_cost'),
+    path('workflow/mid-range-review/<int:complaint_id>/', iwd_workflow_views.conduct_mid_range_review, name='iwd_mid_range_review'),
+    path('workflow/director-review/<int:complaint_id>/', iwd_workflow_views.director_review_estimate, name='iwd_director_review'),
+    path('workflow/check-stock-issue/<int:complaint_id>/', iwd_workflow_views.check_stock_and_issue, name='iwd_check_stock_issue'),
+    path('workflow/execute-repair/<int:complaint_id>/', iwd_workflow_views.execute_repair_work, name='iwd_execute_repair'),
+    path('workflow/verify-work/<int:complaint_id>/', iwd_workflow_views.verify_completed_work, name='iwd_verify_work'),
+    path('workflow/submit-final-bill/<int:complaint_id>/', iwd_workflow_views.submit_final_bill, name='iwd_submit_final_bill'),
+    path('workflow/audit-final-bill/<int:complaint_id>/', iwd_workflow_views.audit_final_bill, name='iwd_audit_final_bill'),
+    path('workflow/approve-settlement/<int:complaint_id>/', iwd_workflow_views.approve_payment_settlement, name='iwd_approve_settlement'),
+    path('workflow/feedback/<int:complaint_id>/', iwd_workflow_views.submit_complaint_feedback, name='iwd_feedback'),
+    path('workflow/resubmit-rejected/<int:complaint_id>/', iwd_workflow_views.modify_and_resubmit_rejected, name='iwd_resubmit_rejected'),
+    path('workflow/switch-role/', iwd_workflow_views.switch_active_iwd_role, name='iwd_switch_role'),
+
     
     # fully implemented
 

@@ -243,3 +243,16 @@ class Item(models.Model):
     quantity = models.IntegerField(default = 0)
     total_price = models.DecimalField(default = 0, max_digits=10, decimal_places=2)
     docs = models.FileField(upload_to='iwd/items/', null=True, blank=True)
+
+
+# Import DIRECT_FINAL_v2 synchronized IWD models
+from .models_iwd import (
+    MaintenanceComplaint,
+    RepairEstimate,
+    InventoryStock,
+    MaterialIssueRecord,
+    PhysicalVerification,
+    FinalBillRecord,
+    ComplaintFeedback,
+    IWDAuditTrail,
+)
