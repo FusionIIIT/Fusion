@@ -387,10 +387,12 @@ class BonafideCertificate(models.Model):
         ('fee', 'Paid / Unpaid Fee Certificate'),
         ('demand', 'Demand Letter'),
         ('fee_structure', 'Fee Structure Certificate'),
+        ('medium_of_instruction', 'Medium of Instruction Certificate'),
+        ('pointer_conv', 'Pointer Conversion Certificate'),
     )
 
     certificate_type = models.CharField(
-        max_length=16, choices=TYPE_CHOICES, default='bonafide', db_index=True)
+        max_length=32, choices=TYPE_CHOICES, default='bonafide', db_index=True)
     #: The semester rows exactly as printed, so a reissue matches the original.
     fee_rows = models.JSONField(default=list, blank=True)
 

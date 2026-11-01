@@ -212,26 +212,19 @@ def render_fee_pdf(context, purpose, reference_number, issued_on, rows,
         ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
     ]))
 
+    # Worded as the Academic section's fee certificate format.
     first_text = (
         'This is to certify that '
         f'<b>{escape(context["salutation"])} {escape(context["name"])}</b> '
         f'(Roll No. {escape(context["roll_number"])}) '
         f'{escape(context["relation"])} '
-        f'<b>MR. {escape(context["father_name"])}</b> is a student of '
-        f'<b>{superscript_ordinal(context["year_ordinal"])} Year</b> '
-        f'({superscript_ordinal(context["semester_ordinal"])} Semester) '
-        f'<b>{escape(context["programme"])}</b> in '
-        f'<b>{escape(context["discipline"])}</b> '
-        f'({escape(context["duration_text"])} course duration: '
-        f'<b>{context["start_year"]}</b> to <b>{context["end_year"]}</b>) at '
-        f'{escape(settings.BONAFIDE_INSTITUTE_NAME)}.'
-    )
-    # The short form, as the certificate shows it: "B.Tech", not the
-    # expanded name the opening sentence uses.
-    # Continues the same paragraph; the circular has no break after Jabalpur.
-    first_text += (
-        f' The fee details of <b>{escape(context["programme_short"])}</b> '
-        f'Programme for the purpose of applying for <b>{escape(purpose)}</b> '
+        f'<b>Mr. {escape(context["father_name"])}</b> is a bonafide student of '
+        f'{superscript_ordinal(context["year_ordinal"])} year '
+        f'({superscript_ordinal(context["semester_ordinal"])} Semester) of '
+        f'<b>{escape(context["programme_short"])}</b> Programme in '
+        f'<b>{escape(context["discipline"])}</b> at this Institute. '
+        f'The fee details of {escape(context["programme_short_abbr"])} '
+        f'Programme for the purpose of applying for {escape(purpose)} '
         f'are given below:'
     )
 
@@ -307,6 +300,19 @@ def _certificates_queryset():
         'student__id__user', 'issued_by')
 
 
+def fee_certificate_context(student):
+    """The bonafide context, worded as the fee certificate format has it:
+    "Mr."/"Ms." rather than capitals, and the programme spaced as "B. Tech",
+    written "B. Tech." where the format abbreviates it."""
+    context = build_certificate_context(student)
+    context['salutation'] = context['salutation'].capitalize()
+    programme = re.sub(r'^([A-Za-z])\.\s*(?=\S)', r'\1. ',
+                       (student.programme or '').strip())
+    context['programme_short'] = programme
+    context['programme_short_abbr'] = f'{programme}.' if '.' in programme else programme
+    return context
+
+
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -321,8 +327,7 @@ def fee_student(request):
         _student_queryset(), pk=roll_number,
         id__user__is_active=True, id__user_status='PRESENT',
     )
-    context = build_certificate_context(student)
-    context['programme_short'] = (student.programme or '').strip()
+    context = fee_certificate_context(student)
     structure = fee_structure_for(student)
     batch_label = programme_category(student) or 'unrecognised'
     rows, errors = [], list(context['validation_errors'])
@@ -390,8 +395,7 @@ def generate_fee_pdf(request):
 
     effective_purpose = custom_purpose if purpose == 'Other' else purpose
     student = get_object_or_404(_student_queryset(), pk=student_id)
-    context = build_certificate_context(student)
-    context['programme_short'] = (student.programme or '').strip()
+    context = fee_certificate_context(student)
     if not context['is_ready']:
         return Response(
             {'error': 'Student data is incomplete.',

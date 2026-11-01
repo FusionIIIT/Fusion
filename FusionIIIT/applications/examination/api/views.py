@@ -322,18 +322,20 @@ def trace_registration(reg_id, mapping):
         reg_id = mapping[reg_id]
     return reg_id
 
-def superseded_course_codes(student, graded_codes):
+def superseded_course_codes(student, graded_codes, replacements=None):
     """Elective codes a graded replacement/swayam course has superseded.
 
     A replaced elective stops counting once its replacement is graded; each
     distinct replacement counts on its own. Shared by the CPI helper and the
-    semester-history builder so both apply one rule.
+    semester-history builder so both apply one rule. Batch callers pass the
+    student's ``replacements`` already loaded to skip the per-student query.
     """
-    replacements = course_replacement.objects.filter(
-        Q(old_course_registration__student_id=student) |
-        Q(new_course_registration__student_id=student)
-    ).select_related('old_course_registration__course_id',
-                     'new_course_registration__course_id')
+    if replacements is None:
+        replacements = course_replacement.objects.filter(
+            Q(old_course_registration__student_id=student) |
+            Q(new_course_registration__student_id=student)
+        ).select_related('old_course_registration__course_id',
+                         'new_course_registration__course_id')
     code_replacement_map = {}   # replacement/swayam course code -> replaced elective code
     for rep in replacements:
         old_code = (rep.old_course_registration.course_id.code or '').strip()
