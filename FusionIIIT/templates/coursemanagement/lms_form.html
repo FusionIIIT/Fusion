@@ -1,0 +1,9 @@
+{% extends 'globals/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block body %}<main class="ui container" style="padding:2rem">
+<a href="{% url 'lms:workspace' workspace.pk %}">Back to course</a><h1>{{ title }}</h1>
+<p>Dates use local institute time; enter YYYY-MM-DD HH:MM.</p>
+<form method="post" enctype="multipart/form-data" class="ui form">{% csrf_token %}{{ form.as_p }}
+<button class="ui primary button" type="submit" name="action" value="save">Save</button>
+{% if grade and may_release %}<button class="ui button" type="submit" name="action" value="release">Release saved grade</button>{% endif %}
+</form></main>{% endblock %}

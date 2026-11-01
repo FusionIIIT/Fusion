@@ -1,0 +1,46 @@
+{% extends 'globals/base.html' %}
+{% block title %}{{ course.code }} LMS{% endblock %}
+{% block body %}<main class="ui container" style="padding:2rem">
+<a href="{% url 'lms:index' %}">My courses</a><h1>{{ course.code }} {{ course.name }}</h1>
+<p>{{ workspace.year }} / {{ workspace.semester_type }} / {{ role }}</p>
+<h2>Course home</h2><h3>Syllabus</h3><p style="white-space:pre-wrap">{{ workspace.syllabus|default:course.syllabus }}</p>
+<h3>Schedule</h3><p style="white-space:pre-wrap">{{ workspace.schedule }}</p>
+<p>Faculty: {% for instructor in instructors %}{{ instructor.instructor_id.id.user.get_full_name }} {% empty %}Not assigned{% endfor %}</p>
+<p>TAs: {% for ta in tas %}{{ ta.user.get_full_name }} {% empty %}Not linked{% endfor %}</p>
+{% if role == 'faculty' %}<a href="{% url 'lms:create' workspace.pk 'details' %}">Edit course details</a> |
+<a href="{% url 'lms:create' workspace.pk 'material' %}">Add material</a> |
+<a href="{% url 'lms:create' workspace.pk 'assignment' %}">Create assignment</a>{% endif %}
+<h2>Materials</h2>
+{% for material in materials %}<section class="ui segment"><h3>{{ material.section }} / {{ material.title }}</h3>
+<p>{{ material.state }}{% if material.release_at %} / Release: {{ material.release_at }}{% endif %}</p>
+{% if material.kind == 'file' %}<a href="{% url 'lms:download' workspace.pk 'material' material.pk %}">Download material</a>
+{% elif material.kind == 'link' %}<a href="{{ material.link }}" rel="noopener noreferrer">Open material</a>
+{% else %}<p style="white-space:pre-wrap">{{ material.text }}</p>{% endif %}
+{% if role == 'faculty' %}<a href="{% url 'lms:edit' workspace.pk 'material' material.pk %}">Edit material / release timing</a>{% endif %}
+</section>{% empty %}<p>No released materials.</p>{% endfor %}
+<h2>Announcements</h2>{% if may_announce %}<a href="{% url 'lms:create' workspace.pk 'announcement' %}">Post announcement</a>{% endif %}
+{% for announcement in announcements %}<section class="ui segment"><h3>{{ announcement.title }}</h3>
+<p>{{ announcement.created_at }} / {{ announcement.author.get_full_name }}</p><p style="white-space:pre-wrap">{{ announcement.body }}</p></section>
+{% empty %}<p>No announcements.</p>{% endfor %}
+{% if role != 'observer' %}<h2>Assignments</h2>
+{% for assignment in assignments %}<section class="ui segment"><h3>{{ assignment.title }}</h3>
+<p>{{ assignment.state }} / Due: {{ assignment.due_at }} / {{ assignment.points_possible }} points / {{ assignment.submission_type }}</p>
+<p style="white-space:pre-wrap">{{ assignment.instructions }}</p>
+<a href="{% url 'lms:download' workspace.pk 'assignment' assignment.pk %}">Download instructions / attachment</a>
+{% if role == 'faculty' and assignment.state == 'draft' %}
+<a href="{% url 'lms:edit' workspace.pk 'assignment' assignment.pk %}">Edit draft</a>
+<form method="post" action="{% url 'lms:publish' workspace.pk assignment.pk %}">{% csrf_token %}<button type="submit">Publish assignment</button></form>{% endif %}
+{% if role == 'student' %}<a href="{% url 'lms:submit' workspace.pk assignment.pk %}">Submit {{ assignment.submission_type }} work</a>{% endif %}
+</section>{% empty %}<p>No released assignments.</p>{% endfor %}
+<h2>Submission history and grades</h2>
+{% for submission in submissions %}<section class="ui segment"><h3>{{ submission.assignment.title }}</h3>
+<p>Submitted: {{ submission.submitted_at }}</p>
+{% if role != 'student' %}<p>Student: {{ submission.student.username }}</p>{% endif %}
+{% if submission.file %}<a href="{% url 'lms:download' workspace.pk 'submission' submission.pk %}">Download submission</a>{% endif %}
+{% if submission.link %}<a href="{{ submission.link }}" rel="noopener noreferrer">Submitted link</a>{% endif %}
+<p style="white-space:pre-wrap">{{ submission.text }}</p>
+{% if submission.released or role != 'student' %}<p>Points: {{ submission.points|default_if_none:'Not graded' }}</p><p>{{ submission.feedback }}</p>
+{% else %}<p>Grade and feedback have not been released.</p>{% endif %}
+{% if role == 'faculty' or role == 'ta' %}<a href="{% url 'lms:grade' workspace.pk submission.pk %}">Grade / review</a>{% endif %}
+</section>{% empty %}<p>No submissions recorded. An unsubmitted assignment becomes missing after its due date.</p>{% endfor %}{% endif %}
+</main>{% endblock %}

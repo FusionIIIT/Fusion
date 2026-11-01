@@ -27,6 +27,7 @@ from applications.globals.views import RateLimitedPasswordResetView
 
 
 urlpatterns = [
+    path('lms/', include('applications.coursemanagement.urls')),
     url(r'^', include('applications.globals.urls')),
     url(r'^feeds/', include('applications.feeds.urls')),
     url(r'^admin/', admin.site.urls),

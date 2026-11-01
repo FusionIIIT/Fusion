@@ -1,0 +1,11 @@
+{% extends 'globals/base.html' %}
+{% block title %}LMS Course Management{% endblock %}
+{% block body %}
+<main class="ui container" style="padding:2rem">
+<a href="/">Fusion home</a><h1>LMS Course Management</h1>
+<p>Your registered, assigned and explicitly linked course workspaces.</p>
+{% for entry in courses %}<section class="ui segment">
+<h2><a href="{% url 'lms:workspace' entry.workspace.pk %}">{{ entry.course.code }} {{ entry.course.name }}</a></h2>
+<p>{{ entry.workspace.year }} / {{ entry.workspace.semester_type }} / {{ entry.role }}</p>
+</section>{% empty %}<p>No course associations found. Registration records must include working year and semester type.</p>{% endfor %}
+</main>{% endblock %}

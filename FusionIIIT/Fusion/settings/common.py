@@ -86,6 +86,10 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Calcutta'
 CELERY_BEAT_SCHEDULE = {
+    'lms-content-release': {
+        'task': 'applications.coursemanagement.tasks.release_scheduled_content',
+        'schedule': 60.0,
+    },
     'leave-migration-task': {
         'task': 'applications.leave.tasks.execute_leave_migrations',
         'schedule': crontab(minute='1', hour='0')
@@ -111,6 +115,7 @@ INSTALLED_APPS = [
     'notification',
     'notifications',
     'applications.academic_procedures',
+    'applications.coursemanagement.apps.CourseManagementConfig',
     'applications.examination',
     'applications.academic_information',
     'applications.leave',
