@@ -1,8 +1,13 @@
 from django.conf.urls import url
 
 from . import views
+from . import elm_views
 
 urlpatterns = [
+
+    url(r'^elm/applications/$', elm_views.elm_applications_api, name='elm-applications-api'),
+    url(r'^elm/tasks/(?P<task_id>[0-9]+)/respond/$', elm_views.elm_task_response_api, name='elm-task-response-api'),
+    url(r'^elm/account/$', elm_views.elm_account_api, name='elm-account-api'),
 
     url(r'leavetype/$', views.leave_type_api,name='leave-type-api'),
     url(r'leavescount/$',views.leaves_count_api,name='leaves-count-api'),

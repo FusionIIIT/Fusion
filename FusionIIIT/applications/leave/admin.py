@@ -9,3 +9,9 @@ leave_models = (models.LeaveType, models.Leave, models.LeavesCount, models.Leave
                 models.ReplacementSegmentOffline)
 
 admin.site.register(leave_models)
+
+elm_models = (models.ELMPolicy, models.ELMCalendar, models.ELMCalendarDate,
+              models.ELMRouteConfiguration, models.ELMWorkflowTask,
+              models.ELMAccountTransaction, models.ELMChangeRequest,
+              models.ELMYearEndRun, models.ELMActionLog)
+admin.site.register(elm_models)

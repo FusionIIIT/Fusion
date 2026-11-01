@@ -1,0 +1,100 @@
+{% extends 'globals/base.html' %}
+{% block title %}Employee Leave Management{% endblock %}
+{% block body %}
+{% include 'dashboard/navbar.html' %}
+<main class="ui container" style="padding:2rem 0">
+  <h1>Employee Leave Management</h1>
+  {% if is_leave_admin %}<p><a class="ui button" href="{% url 'leave:elm-offline' %}">Record offline-sanctioned leave</a> <a class="ui button" href="/admin/leave/">Maintain ELM policy, calendar and routes</a></p>{% endif %}
+  {% if messages %}{% for message in messages %}<div class="ui message">{{ message }}</div>{% endfor %}{% endif %}
+  {% if is_employee %}
+  <section class="ui segment">
+    <h2>Apply for leave</h2>
+    <form class="ui form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}{{ form.non_field_errors }}
+      {% for field in form %}<div class="field"><label>{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+      <button class="ui primary button" type="submit">Submit request</button>
+    </form>
+  </section>
+  <section class="ui segment">
+    <h2>Current-year balance</h2>
+    <table class="ui celled table"><thead><tr><th>Leave category</th><th>Available</th></tr></thead><tbody>
+      {% for balance in balances %}<tr><td>{{ balance.leave_type.name }}</td><td>{{ balance.remaining_leaves }}</td></tr>{% empty %}<tr><td colspan="2">No balance records are configured.</td></tr>{% endfor %}
+    </tbody></table>
+  </section>
+  {% endif %}
+  <section class="ui segment">
+    <h2>Tasks assigned to me</h2>
+    {% for task in tasks %}
+      <article class="ui message"><strong>{{ task.get_task_type_display }}</strong> for {{ task.leave.applicant.get_full_name|default:task.leave.applicant.username }} — {{ task.leave.purpose }}
+        <form method="post" action="{% url 'leave:elm-task-action' task.id %}" class="ui form">
+          {% csrf_token %}<div class="field"><label>Decision</label>
+            <select name="decision" required>
+              {% if task.task_type == 'substitute' %}<option value="accept">Accept</option><option value="decline">Decline</option>
+              {% elif task.task_type == 'unit_head' %}
+                {% with segment=task.leave.segments.all|first %}
+                  {% if segment.leave_type.name == 'Casual' or segment.leave_type.name == 'Restricted' %}<option value="approve">Approve</option><option value="reject">Reject</option>
+                  {% else %}<option value="recommend">Recommend</option><option value="not_recommend">Not recommended</option>{% endif %}
+                {% endwith %}
+              {% elif task.task_type == 'resumption' %}<option value="verify">Verify return</option>
+              {% else %}<option value="forward">Forward</option><option value="approve">Approve</option><option value="reject">Reject</option>{% endif %}
+            </select></div>
+          <div class="field"><label>Remark</label><textarea name="remark"></textarea></div>
+          <button class="ui button" type="submit">Record decision</button>
+        </form>
+      </article>
+    {% empty %}<p>No pending tasks.</p>{% endfor %}
+  </section>
+  <section class="ui segment">
+    <h2>My leave requests</h2>
+    {% for leave in applications %}
+      <article class="ui message"><strong>Request {{ leave.id }}</strong> — {{ leave.elm_state|default:leave.status }} — {{ leave.purpose }}
+        {% for segment in leave.segments.all %}<div>{{ segment.leave_type.name }}: {{ segment.start_date }} to {{ segment.end_date }}</div>{% endfor %}
+        {% if leave.elm_state == 'awaiting_substitute' or leave.elm_state == 'substitute_declined' or leave.elm_state == 'awaiting_unit_head' or leave.elm_state == 'awaiting_establishment' or leave.elm_state == 'awaiting_final_sanction' or leave.elm_state == 'awaiting_director_self_sanction' %}
+          <form method="post" action="{% url 'leave:elm-withdraw' leave.id %}">{% csrf_token %}<button class="ui button" type="submit">Withdraw</button></form>
+        {% endif %}
+        {% if leave.elm_state == 'substitute_declined' %}
+          <form method="post" action="{% url 'leave:elm-substitute' leave.id %}" class="ui form">
+            {% csrf_token %}<div class="field"><label>Nominate another substitute</label><select name="substitute" required>{% for substitute in substitutes %}<option value="{{ substitute.id }}">{{ substitute.get_full_name|default:substitute.username }}</option>{% endfor %}</select></div>
+            <button class="ui button" type="submit">Send substitute request</button>
+          </form>
+        {% endif %}
+        {% if leave.elm_state == 'awaiting_substitute' or leave.elm_state == 'substitute_declined' or leave.elm_state == 'awaiting_unit_head' or leave.elm_state == 'awaiting_establishment' or leave.elm_state == 'awaiting_final_sanction' or leave.elm_state == 'awaiting_director_self_sanction' %}
+          {% with segment=leave.segments.all|first %}
+          <details><summary>Modify pending request</summary>
+            <form method="post" action="{% url 'leave:elm-modify' leave.id %}" enctype="multipart/form-data" class="ui form">
+              {% csrf_token %}<div class="field"><label>Category</label><select name="category">{% for code,label in form.CATEGORY_CHOICES %}<option value="{{ code }}" {% if segment.leave_type.name == label %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+              <div class="field"><label>Start date</label><input type="date" name="start_date" value="{{ segment.start_date|date:'Y-m-d' }}" required></div>
+              <div class="field"><label>End date</label><input type="date" name="end_date" value="{{ segment.end_date|date:'Y-m-d' }}" required></div>
+              <div class="field"><label><input type="checkbox" name="start_half" {% if segment.start_half %}checked{% endif %}> First half</label></div>
+              <div class="field"><label><input type="checkbox" name="end_half" {% if segment.end_half %}checked{% endif %}> Second half</label></div>
+              <div class="field"><label>Purpose</label><textarea name="purpose" required>{{ leave.purpose }}</textarea></div>
+              <div class="field"><label>Station Leave details</label><input type="checkbox" name="station_leave" {% if leave.station_leave %}checked{% endif %}><input name="station_details" value="{{ leave.station_details }}"></div>
+              <div class="field"><label>Substitute, if required</label><select name="substitute"><option value="">Select</option>{% for substitute in substitutes %}<option value="{{ substitute.id }}">{{ substitute.get_full_name|default:substitute.username }}</option>{% endfor %}</select></div>
+              <div class="field"><label>Medical evidence</label><input type="file" name="medical_evidence"></div>
+              <button class="ui button" type="submit">Revalidate and resubmit</button>
+            </form>
+          </details>
+          {% endwith %}
+        {% endif %}
+        {% if leave.elm_state == 'approved' %}
+          <form method="post" action="{% url 'leave:elm-change' leave.id %}" class="ui form">
+            {% csrf_token %}<div class="field"><label>Lifecycle request</label><select name="change_type"><option value="cancel">Cancel before start</option><option value="extension">Extend ongoing leave</option><option value="resumption">Submit resumption</option></select></div>
+            <div class="field"><label>New end date (extension)</label><input type="date" name="end_date"></div>
+            <div class="field"><label>Substitute (if required by policy)</label><select name="substitute"><option value="">Select</option>{% for substitute in substitutes %}<option value="{{ substitute.id }}">{{ substitute.get_full_name|default:substitute.username }}</option>{% endfor %}</select></div>
+            <div class="field"><label>Actual return date (resumption)</label><input type="date" name="actual_return_date"></div>
+            <div class="field"><label>Details</label><textarea name="details"></textarea></div><button class="ui button" type="submit">Submit lifecycle request</button>
+          </form>
+        {% endif %}
+        <a class="ui button" href="{% url 'leave:generate_form' %}?id={{ leave.id }}">Printable application</a>
+        <a class="ui button" href="{% url 'leave:elm-export' leave.id %}">Export CSV</a>
+      </article>
+    {% empty %}<p>No ELM requests yet.</p>{% endfor %}
+  </section>
+  <section class="ui segment">
+    <h2>Leave account history</h2>
+    <table class="ui celled table"><thead><tr><th>Date</th><th>Category</th><th>Year</th><th>Change</th><th>Reason</th><th>Reference</th></tr></thead><tbody>
+      {% for entry in transactions %}<tr><td>{{ entry.created_at }}</td><td>{{ entry.get_category_display }}</td><td>{{ entry.year }}</td><td>{{ entry.amount }}</td><td>{{ entry.reason }}</td><td>{{ entry.reference }}</td></tr>{% empty %}<tr><td colspan="6">No account transactions yet.</td></tr>{% endfor %}
+    </tbody></table>
+  </section>
+</main>
+{% endblock %}

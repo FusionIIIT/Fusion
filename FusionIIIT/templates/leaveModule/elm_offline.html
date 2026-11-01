@@ -1,0 +1,14 @@
+{% extends 'globals/base.html' %}
+{% block title %}Record Offline-Sanctioned Leave{% endblock %}
+{% block body %}
+{% include 'dashboard/navbar.html' %}
+<main class="ui container" style="padding:2rem 0">
+  <h1>Record offline-sanctioned leave</h1>
+  <p>This records an existing authorized paper/offline sanction and synchronizes the ELM account. It does not start a second approval.</p>
+  <form class="ui form" method="post" enctype="multipart/form-data">{% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}<div class="field"><label>{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+    <button class="ui primary button" type="submit">Synchronize record</button>
+  </form>
+</main>
+{% endblock %}
