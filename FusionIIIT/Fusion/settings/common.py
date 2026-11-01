@@ -113,6 +113,14 @@ CELERY_BEAT_SCHEDULE = {
     'phd-thesis-review-invitations-task': {
         'task': 'applications.academic_procedures.tasks.process_review_invitations',
         'schedule': crontab(minute='0', hour='2')
+    },
+    'elm-sla-processing-task': {
+        'task': 'applications.leave.tasks.process_elm_slas',
+        'schedule': crontab(minute='0')
+    },
+    'elm-year-end-task': {
+        'task': 'applications.leave.tasks.execute_elm_year_end',
+        'schedule': crontab(minute='30', hour='23', day_of_month='31', month_of_year='12')
     }
 }
 
