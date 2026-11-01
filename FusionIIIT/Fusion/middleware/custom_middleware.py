@@ -14,7 +14,6 @@ def user_logged_in_middleware(get_response):
             # For example, if your User model has a field named 'custom_field', you can access it like:
             if user.is_authenticated:
                 desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = request.user).values_list('designation'))
-                print(desig)
                 b = [i for sub in desig for i in sub]
                 design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
 
@@ -27,18 +26,11 @@ def user_logged_in_middleware(get_response):
 
                 for i in design:
                     if not has_extrainfo or str(i.designation) != user_type_str:
-                        print('-------')
-                        print(i.designation)
-                        print(user_type_str)
-                        print('')
                         designation.append(str(i.designation))
-
-                for i in designation:
-                    print(i)
 
                 if designation:
                     request.session['currentDesignationSelected'] = designation[0]
-                    request.session['allDesignations'] = designation 
+                    request.session['allDesignations'] = designation
                     first_designation = designation[0]
                     module_access = ModuleAccess.objects.filter(designation=first_designation).first()
                     
@@ -53,7 +45,6 @@ def user_logged_in_middleware(get_response):
                     request.session['currentDesignationSelected'] = "admin" if user.is_superuser else "unknown"
                     request.session['allDesignations'] = [request.session['currentDesignationSelected']]
                     request.session['moduleAccessRights'] = {}           
-                print("logged iN")
                 
             # Set the flag in the session to indicate that the function has bee+n executed
             request.session['function_executed'] = True

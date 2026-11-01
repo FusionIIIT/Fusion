@@ -424,13 +424,11 @@ class CourseInstructorForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        try:
-            max_year = Batch.objects.aggregate(max_year=Max('year'))['max_year']
-            next_year = max_year + 1 if max_year else datetime.now().year + 1
-            batch_years = list(Batch.objects.values_list('year', flat=True).distinct())
-        except Exception:
-            next_year = datetime.now().year + 1
-            batch_years = []
+        # Read when the form is built, not once at import, so a new batch
+        # shows up without a restart.
+        max_year = Batch.objects.aggregate(max_year=Max('year'))['max_year']
+        next_year = max_year + 1 if max_year else datetime.now().year + 1
+        batch_years = list(Batch.objects.values_list('year', flat=True).distinct())
         self.fields['year'].choices = [('', 'Choose a year')] + [(year, year) for year in batch_years] + [(next_year, next_year)]
 
     def clean_section_label(self):
