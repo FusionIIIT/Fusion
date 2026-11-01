@@ -1,6 +1,6 @@
-# Assignment 7 LMS baseline
+# Assignment 7 LMS Course Management implementation
 
-This is a minimal Codex-assisted LMS implementation for the AI branch `FusionIIIT/Fusion:lms-v2`. It follows the supplied Course Management v1.0 synchronized specification bundle. It is separate from the earlier ELM submissions in Fusion-Integrated.
+This Codex-assisted LMS implementation targets the AI branch `FusionIIIT/Fusion:lms-v2` and follows the supplied Course Management v1.0 synchronized specification bundle. It is separate from the earlier ELM submissions in Fusion-Integrated.
 
 ## Implemented
 
