@@ -52,6 +52,9 @@ HOD_DESIGNATIONS = {
     'HOD (Liberal Arts)',
 }
 
+# These roles handle IWD financial records and may read generated bill details.
+BILL_VIEW_DESIGNATIONS = {'Accounts Admin', 'Admin IWD', 'Auditor', 'Director'}
+
 DEAN_OR_HOD_DESIGNATIONS = sorted(DEAN_DESIGNATIONS | HOD_DESIGNATIONS)
 
 ENGINEER_DESIGNATIONS = {
@@ -80,6 +83,11 @@ def _is_allowed_sender_designation(designation_name):
 
 
 def _resolve_iwd_designation(request, explicit_role=None):
+    held_designations = list(
+        HoldsDesignation.objects.filter(working=request.user).values_list(
+            'designation__name', flat=True
+        )
+    )
     candidates = [
         (explicit_role or '').strip(),
         (request.query_params.get('role') or '').strip(),
@@ -87,12 +95,13 @@ def _resolve_iwd_designation(request, explicit_role=None):
     ]
 
     for candidate in candidates:
-        if candidate and Designation.objects.filter(name=candidate).exists():
+        # A caller-supplied role is only a selection hint. The authenticated user
+        # must actually hold it, and it must be a role recognized by IWD.
+        if candidate in held_designations and candidate in designations_list:
             return candidate
 
-    held_designations = HoldsDesignation.objects.filter(working=request.user).values_list('designation__name', flat=True)
     for designation in held_designations:
-        if _is_allowed_sender_designation(designation):
+        if designation in designations_list:
             return designation
 
     return None
@@ -445,7 +454,16 @@ def view_file(request):
             status_code=status.HTTP_400_BAD_REQUEST
         )
 
-    file1 = File.objects.filter(id=file_id).first()
+    # File IDs are shared across modules. Restrict this endpoint to IWD files
+    # and to users who uploaded or handled the file in its routing history.
+    file1 = File.objects.filter(
+        id=file_id,
+        src_module='IWD',
+    ).filter(
+        Q(uploader__user=request.user)
+        | Q(tracking__current_id__user=request.user)
+        | Q(tracking__receiver_id=request.user)
+    ).distinct().first()
     if not file1:
         return error_response(
             message='File not found',
@@ -1494,9 +1512,9 @@ def audit_document_view(request):
         This api is used to get a list of all the bills those are required to be audited
     '''
     
-    desg = _resolve_iwd_designation(request)
-    if not desg:
-        return Response({"error": "Designation not provided"}, status=status.HTTP_400_BAD_REQUEST)
+    auth_error = _require_any_designation(request, ['Auditor'])
+    if auth_error:
+        return auth_error
 
     obj = []
     requests_qs = Requests.objects.filter(
@@ -1818,6 +1836,10 @@ def handleBillGeneratedRequests(request):
 @permission_classes([IsAuthenticated])
 def generatedBillsView(request):
     from ..services import paginate_queryset
+
+    auth_error = _require_any_designation(request, BILL_VIEW_DESIGNATIONS)
+    if auth_error:
+        return auth_error
     
     page = request.query_params.get('page', 1)
     page_size = request.query_params.get('page_size', 20)
@@ -1864,6 +1886,10 @@ def generatedBillsView(request):
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def generate_bill_pdf(request):
+    auth_error = _require_any_designation(request, BILL_VIEW_DESIGNATIONS)
+    if auth_error:
+        return auth_error
+
     request_id = request.query_params.get('request_id') or request.data.get('request_id')
     if not request_id:
         return Response({'error': 'request_id is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -1953,11 +1979,9 @@ def generate_bill_pdf(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def settle_bills_view(request):
-    desg = request.session.get('currentDesignationSelected') or request.query_params.get('role')
-    if not desg:
-        desg = HoldsDesignation.objects.filter(working=request.user).values_list('designation__name', flat=True).first()
-    if not desg or not Designation.objects.filter(name=desg).exists():
-        return Response({'data': []}, status=status.HTTP_200_OK)
+    auth_error = _require_any_designation(request, ['Accounts Admin'])
+    if auth_error:
+        return auth_error
 
     obj = []
     requests_qs = Requests.objects.filter(
