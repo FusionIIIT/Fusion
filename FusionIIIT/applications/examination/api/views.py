@@ -12,6 +12,7 @@ from applications.academic_procedures.models import(
 )
 from applications.programme_curriculum.models import Course as Courses ,  Batch, CourseInstructor, Semester
 from applications.examination.models import(hidden_grades , ResultAnnouncement, authentication, PublishedResultStudent)
+from applications.academic_procedures.feedback import FEEDBACK_REQUIRED, feedback_pending
 from applications.globals.access import user_holds_role, user_holds_any_role
 from applications.globals.programme_scope import (
     ALL_ACAD_ROLES,
@@ -3280,6 +3281,10 @@ class CheckResultView(APIView):
                 status=200,
             )
 
+        # A published result for the current semester waits for its feedback.
+        if feedback_pending(student, semester_no):
+            return JsonResponse(FEEDBACK_REQUIRED, status=200)
+
         # Filter grades on both fields
         grades_info = Student_grades.objects.filter(
             roll_no=roll_number,
@@ -3877,10 +3882,14 @@ class StudentCreditSummaryView(APIView):
             if _is_result_published_for(ann, roll_number)
         }
 
+        # The current semester's result waits for its feedback here too.
+        held = (student.curr_semester_no
+                if feedback_pending(student, student.curr_semester_no) else None)
         announced = [
             sem for sem in semesters_data
             if not sem.get("is_registered_only")
             and (sem.get("semester_no"), sem.get("semester_type")) in published
+            and sem.get("semester_no") != held
         ]
 
         # The degree-requirement figure below the table is a UG rule, so the
@@ -4109,6 +4118,20 @@ class GenerateStudentResultPDFAPI(APIView):
         try:
             # Get data from request
             data = request.data
+
+            # A student's own result sheet waits for feedback as the result
+            # does; staff printing a transcript are not students and pass.
+            # Refused with 403, not 200: the pages save any successful reply
+            # as the PDF, so a 200 would hand the student a broken file.
+            requester = Student.objects.filter(id_id=request.user.username).first()
+            if requester is not None:
+                if data.get('semester_no') is None:
+                    return JsonResponse(
+                        {"success": False, "message": "semester_no is required."},
+                        status=400,
+                    )
+                if feedback_pending(requester, data.get('semester_no')):
+                    return JsonResponse(FEEDBACK_REQUIRED, status=403)
             
             # Check if student_info is provided, if not fetch it like CheckResultView
             student_info = data.get('student_info', {})

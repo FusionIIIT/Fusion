@@ -6323,41 +6323,8 @@ def student_questions(request):
         semester_no=semester_no
     ).exists()
 
-    registrations = course_registration.objects.filter(
-        student_id=student,
-        semester_id__semester_no=semester_no,
-    ).select_related("course_id")
-
-    from applications.academic_information.models import resolve_offering
-
-    courses = []
-    for reg in registrations:
-        course = reg.course_id
-        academic_year, _ = parse_academic_year(reg.session, reg.semester_type)
-        # The student's own section instructor, else any offering (no-section courses).
-        instructor_entry = resolve_offering(student, course, academic_year, reg.semester_type) or \
-            CourseInstructor.objects.filter(
-                course_id=course,
-                semester_type=reg.semester_type,
-                year=academic_year,
-            ).first()
-
-        # No instructor -> nothing to give feedback on; skip.
-        if not instructor_entry:
-            continue
-
-        instructor_name = (
-            f"{instructor_entry.instructor_id.id.user.first_name} "
-            f"{instructor_entry.instructor_id.id.user.last_name}"
-        ).strip()
-
-        courses.append({
-            "course_id": course.id,
-            "code": course.code,
-            "name": course.name,
-            "instructor_id": instructor_entry.id,
-            "instructor_name": instructor_name,
-        })
+    from applications.academic_procedures.feedback import feedback_courses
+    courses = feedback_courses(student)
 
     questions = [
         {
