@@ -1,0 +1,1237 @@
+# Generated from the frozen VMS v1.3 specification bundle. Do not edit by hand.
+workflows:
+- id: BW01
+  source_id: BW-VMS-01
+  name: Pre-registered Approved Visit
+  type: Basis
+  purpose: Represent the normal approved pre-registration path through completed checkout.
+  stt:
+  - row: BW-VMS-01 R1
+    from: Not Submitted
+    actor: Visitor
+    uc: VMS-UC-010
+    guard: Valid standard submission; mandatory checks pass; no disqualifying blacklist match; normal advance window satisfied.
+    to: Pending Host Approval
+  - row: BW-VMS-01 R2
+    from: Pending Host Approval
+    actor: Host
+    uc: VMS-UC-013
+    guard: Outcome = Approve.
+    to: Pass Active (PRE_REGISTERED)
+  - row: BW-VMS-01 R3
+    from: Pass Active (PRE_REGISTERED)
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Pass active; within validity; no disqualifying blacklist match; gate/zone permission succeeds.
+    to: On-site
+  - row: BW-VMS-01 R4
+    from: On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds and exit is recorded.
+    to: Completed
+  scenarios:
+    end_to_end:
+      _test_id: BW01_E2E_01
+      _wf_id: BW01
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Not Submitted -> Pending Host Approval -> Pass Active (PRE_REGISTERED)
+        -> On-site -> Completed'
+    negative:
+      _test_id: BW01_NEG_01
+      _wf_id: BW01
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW02
+  source_id: BW-VMS-02
+  name: Pre-registered Rejected Visit
+  type: Basis
+  purpose: Represent a standard pre-registration ending in Host rejection.
+  stt:
+  - row: BW-VMS-02 R1
+    from: Not Submitted
+    actor: Visitor
+    uc: VMS-UC-010
+    guard: Valid standard submission passes registration checks.
+    to: Pending Host Approval
+  - row: BW-VMS-02 R2
+    from: Pending Host Approval
+    actor: Host
+    uc: VMS-UC-013
+    guard: Outcome = Reject.
+    to: Rejected
+  scenarios:
+    end_to_end:
+      _test_id: BW02_E2E_01
+      _wf_id: BW02
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Not Submitted -> Pending Host Approval -> Rejected'
+    negative:
+      _test_id: BW02_NEG_01
+      _wf_id: BW02
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW03
+  source_id: BW-VMS-03
+  name: Pre-registered Approval Timeout
+  type: Basis
+  purpose: Represent a pending request that expires without Host decision.
+  stt:
+  - row: BW-VMS-03 R1
+    from: Not Submitted
+    actor: Visitor
+    uc: VMS-UC-010
+    guard: Valid standard submission passes registration checks.
+    to: Pending Host Approval
+  - row: BW-VMS-03 R2
+    from: Pending Host Approval
+    actor: System
+    uc: VMS-UC-037
+    guard: Policy-defined approval timeout occurs while request remains pending.
+    to: Expired
+  scenarios:
+    end_to_end:
+      _test_id: BW03_E2E_01
+      _wf_id: BW03
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Not Submitted -> Pending Host Approval -> Expired'
+    negative:
+      _test_id: BW03_NEG_01
+      _wf_id: BW03
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW04
+  source_id: BW-VMS-04
+  name: Pre-authorized Visit
+  type: Basis
+  purpose: Represent a recurring-visitor path using valid Host pre-authorization to bypass the individual approval decision.
+  stt:
+  - row: BW-VMS-04 R1
+    from: No Active Pre-authorization
+    actor: Host
+    uc: VMS-UC-014
+    guard: Valid scoped pre-authorization is created.
+    to: Pre-authorization Active
+  - row: BW-VMS-04 R2
+    from: Pre-authorization Active / Not Submitted
+    actor: Visitor
+    uc: VMS-UC-010
+    guard: Registration checks pass and the active pre-authorization covers the visit.
+    to: Pass Active (PRE_REGISTERED)
+  - row: BW-VMS-04 R3
+    from: Pass Active (PRE_REGISTERED)
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Gate validation succeeds.
+    to: On-site
+  - row: BW-VMS-04 R4
+    from: On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds.
+    to: Completed
+  scenarios:
+    end_to_end:
+      _test_id: BW04_E2E_01
+      _wf_id: BW04
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: No Active Pre-authorization -> Pre-authorization Active -> Pass Active
+        (PRE_REGISTERED) -> On-site -> Completed'
+    negative:
+      _test_id: BW04_NEG_01
+      _wf_id: BW04
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW05
+  source_id: BW-VMS-05
+  name: VIP Visit
+  type: Basis
+  purpose: Represent the explicit VIP-override path without inventing VIP eligibility criteria.
+  stt:
+  - row: BW-VMS-05 R1
+    from: Standard Visitor/Visit
+    actor: Super Admin
+    uc: VMS-UC-003
+    guard: Super Admin grants a valid scoped VIP override.
+    to: VIP Override Active
+  - row: BW-VMS-05 R2
+    from: VIP Override Active / Not Submitted
+    actor: Visitor
+    uc: VMS-UC-010
+    guard: Registration checks pass and the active VIP override applies to the visit.
+    to: Pass Active (VIP)
+  - row: BW-VMS-05 R3
+    from: Pass Active (VIP)
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Gate validations not bypassed by the VIP override succeed.
+    to: On-site
+  - row: BW-VMS-05 R4
+    from: On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds.
+    to: Completed
+  scenarios:
+    end_to_end:
+      _test_id: BW05_E2E_01
+      _wf_id: BW05
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Standard Visitor/Visit -> VIP Override Active -> Pass Active (VIP) ->
+        On-site -> Completed'
+    negative:
+      _test_id: BW05_NEG_01
+      _wf_id: BW05
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW06
+  source_id: BW-VMS-06
+  name: Walk-in Host-approved Visit
+  type: Basis
+  purpose: Represent a walk-in registration that is approved by the selected Host.
+  stt:
+  - row: BW-VMS-06 R1
+    from: Not Registered
+    actor: Security Personnel
+    uc: VMS-UC-017
+    guard: Registration checks pass; no disqualifying blacklist match; Host is available.
+    to: Pending Host Approval
+  - row: BW-VMS-06 R2
+    from: Pending Host Approval
+    actor: Host
+    uc: VMS-UC-013
+    guard: Outcome = Approve.
+    to: Pass Active (WALK_IN)
+  - row: BW-VMS-06 R3
+    from: Pass Active (WALK_IN)
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Gate validation succeeds.
+    to: On-site
+  - row: BW-VMS-06 R4
+    from: On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds.
+    to: Completed
+  scenarios:
+    end_to_end:
+      _test_id: BW06_E2E_01
+      _wf_id: BW06
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Not Registered -> Pending Host Approval -> Pass Active (WALK_IN) ->
+        On-site -> Completed'
+    negative:
+      _test_id: BW06_NEG_01
+      _wf_id: BW06
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW07
+  source_id: BW-VMS-07
+  name: Walk-in Contingency-approved Visit
+  type: Basis
+  purpose: Represent a Host-unavailable walk-in approved by the relevant Admin within the configured contingency window.
+  stt:
+  - row: BW-VMS-07 R1
+    from: Not Registered
+    actor: Security Personnel
+    uc: VMS-UC-017
+    guard: Registration checks pass; Host is unavailable.
+    to: Pending Admin Contingency
+  - row: BW-VMS-07 R2
+    from: Pending Admin Contingency
+    actor: Admin
+    uc: VMS-UC-033
+    guard: Outcome = Approve within configured SLA/policy window.
+    to: Pass Active (WALK_IN)
+  - row: BW-VMS-07 R3
+    from: Pass Active (WALK_IN)
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Gate validation succeeds.
+    to: On-site
+  - row: BW-VMS-07 R4
+    from: On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds.
+    to: Completed
+  scenarios:
+    end_to_end:
+      _test_id: BW07_E2E_01
+      _wf_id: BW07
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Not Registered -> Pending Admin Contingency -> Pass Active (WALK_IN)
+        -> On-site -> Completed'
+    negative:
+      _test_id: BW07_NEG_01
+      _wf_id: BW07
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW08
+  source_id: BW-VMS-08
+  name: Walk-in Host-rejected Visit
+  type: Basis
+  purpose: Represent a valid walk-in request ending in Host rejection.
+  stt:
+  - row: BW-VMS-08 R1
+    from: Not Registered
+    actor: Security Personnel
+    uc: VMS-UC-017
+    guard: Registration checks pass; Host is available.
+    to: Pending Host Approval
+  - row: BW-VMS-08 R2
+    from: Pending Host Approval
+    actor: Host
+    uc: VMS-UC-013
+    guard: Outcome = Reject.
+    to: Rejected
+  scenarios:
+    end_to_end:
+      _test_id: BW08_E2E_01
+      _wf_id: BW08
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Not Registered -> Pending Host Approval -> Rejected'
+    negative:
+      _test_id: BW08_NEG_01
+      _wf_id: BW08
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW09
+  source_id: BW-VMS-09
+  name: Gate Validation Denied
+  type: Basis
+  purpose: Represent a pass presentation that fails required gate validation and remains blocked.
+  stt:
+  - row: BW-VMS-09 R1
+    from: Pass Active / Credential Presented
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Any required gate validation fails.
+    to: Entry Blocked
+  scenarios:
+    end_to_end:
+      _test_id: BW09_E2E_01
+      _wf_id: BW09
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Pass Active / Credential Presented -> Entry Blocked'
+    negative:
+      _test_id: BW09_NEG_01
+      _wf_id: BW09
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW10
+  source_id: BW-VMS-10
+  name: Gate Denial with Authorized Override
+  type: Basis
+  purpose: Represent an override-eligible blocked gate attempt that is authorized by Admin and manually recorded by Security
+    Personnel.
+  stt:
+  - row: BW-VMS-10 R1
+    from: Pass Active / Credential Presented
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Required validation fails; failure type is eligible for override.
+    to: Entry Blocked
+  - row: BW-VMS-10 R2
+    from: Entry Blocked
+    actor: Admin
+    uc: VMS-UC-019
+    guard: Admin authorizes override with recorded justification.
+    to: Override Authorized
+  - row: BW-VMS-10 R3
+    from: Override Authorized
+    actor: Security Personnel
+    uc: VMS-UC-020
+    guard: Security records the authorized manual check-in event.
+    to: On-site
+  scenarios:
+    end_to_end:
+      _test_id: BW10_E2E_01
+      _wf_id: BW10
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Pass Active / Credential Presented -> Entry Blocked -> Override Authorized
+        -> On-site'
+    negative:
+      _test_id: BW10_NEG_01
+      _wf_id: BW10
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW11
+  source_id: BW-VMS-11
+  name: Offline Gate Entry and Reconciliation
+  type: Basis
+  purpose: Represent the explicit connectivity-failure path for cached gate events and later synchronization.
+  stt:
+  - row: BW-VMS-11 R1
+    from: Pass/Credential Presented; Connectivity Unavailable
+    actor: Security Personnel
+    uc: VMS-UC-028
+    guard: Offline mode/cache is available.
+    to: Offline Entry Cached / On-site (provisional)
+  - row: BW-VMS-11 R2
+    from: Offline Entry Cached / On-site (provisional)
+    actor: System
+    uc: VMS-UC-039
+    guard: Connectivity is restored and cached gate-event reconciliation succeeds.
+    to: Entry Reconciled / On-site
+  scenarios:
+    end_to_end:
+      _test_id: BW11_E2E_01
+      _wf_id: BW11
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Pass/Credential Presented; Connectivity Unavailable -> Offline Entry
+        Cached / On-site (provisional) -> Entry Reconciled / On-site'
+    negative:
+      _test_id: BW11_NEG_01
+      _wf_id: BW11
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW12
+  source_id: BW-VMS-12
+  name: Zone Access Granted
+  type: Basis
+  purpose: Represent a permitted zone-access attempt.
+  stt:
+  - row: BW-VMS-12 R1
+    from: On-site / Zone Access Attempt
+    actor: Security Personnel
+    uc: VMS-UC-023
+    guard: Applicable published policy/pass/override permits target zone.
+    to: Zone Access Granted / On-site in permitted zone
+  scenarios:
+    end_to_end:
+      _test_id: BW12_E2E_01
+      _wf_id: BW12
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: On-site / Zone Access Attempt -> Zone Access Granted / On-site in permitted
+        zone'
+    negative:
+      _test_id: BW12_NEG_01
+      _wf_id: BW12
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW13
+  source_id: BW-VMS-13
+  name: Zone Access Denied and Alert Handled
+  type: Basis
+  purpose: Represent an unauthorized zone attempt followed by recorded alert handling.
+  stt:
+  - row: BW-VMS-13 R1
+    from: On-site / Zone Access Attempt
+    actor: Security Personnel
+    uc: VMS-UC-023
+    guard: Target zone is not permitted.
+    to: Zone Access Denied / Alert Open
+  - row: BW-VMS-13 R2
+    from: Zone Access Denied / Alert Open
+    actor: Security Personnel
+    uc: VMS-UC-025
+    guard: Security reviews and records handling/escalation outcome.
+    to: Alert Handled / On-site
+  scenarios:
+    end_to_end:
+      _test_id: BW13_E2E_01
+      _wf_id: BW13
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: On-site / Zone Access Attempt -> Zone Access Denied / Alert Open ->
+        Alert Handled / On-site'
+    negative:
+      _test_id: BW13_NEG_01
+      _wf_id: BW13
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW14
+  source_id: BW-VMS-14
+  name: Temporary Zone Elevation and One Re-validation
+  type: Basis
+  purpose: Represent one permitted retry after Admin grants a time-boxed temporary elevation.
+  stt:
+  - row: BW-VMS-14 R1
+    from: On-site / Zone Access Attempt
+    actor: Security Personnel
+    uc: VMS-UC-023
+    guard: Target zone is not currently permitted.
+    to: Zone Access Denied / Alert Open
+  - row: BW-VMS-14 R2
+    from: Zone Access Denied / Alert Open
+    actor: Admin
+    uc: VMS-UC-024
+    guard: Admin grants an explicit time-boxed elevation.
+    to: Temporary Elevation Active
+  - row: BW-VMS-14 R3
+    from: Temporary Elevation Active
+    actor: Security Personnel
+    uc: VMS-UC-023
+    guard: One re-validation attempt occurs within the elevation time box and now satisfies permission.
+    to: Zone Access Granted / On-site in elevated zone
+  scenarios:
+    end_to_end:
+      _test_id: BW14_E2E_01
+      _wf_id: BW14
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: On-site / Zone Access Attempt -> Zone Access Denied / Alert Open ->
+        Temporary Elevation Active -> Zone Access Granted / On-site in elevated zone'
+    negative:
+      _test_id: BW14_NEG_01
+      _wf_id: BW14
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW15
+  source_id: BW-VMS-15
+  name: Host Terminates Pass Before Check-in
+  type: Basis
+  purpose: Represent Host early termination while an active pass exists but the Visitor is not on-site.
+  stt:
+  - row: BW-VMS-15 R1
+    from: Pass Active / Not On-site
+    actor: Host
+    uc: VMS-UC-016
+    guard: Authorized policy-breach termination.
+    to: Terminated / Pass Deactivated
+  scenarios:
+    end_to_end:
+      _test_id: BW15_E2E_01
+      _wf_id: BW15
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Pass Active / Not On-site -> Terminated / Pass Deactivated'
+    negative:
+      _test_id: BW15_NEG_01
+      _wf_id: BW15
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW16
+  source_id: BW-VMS-16
+  name: Host Terminates On-site Visit
+  type: Basis
+  purpose: Represent Host early termination while the Visitor is on-site, followed by recorded exit.
+  stt:
+  - row: BW-VMS-16 R1
+    from: On-site
+    actor: Host
+    uc: VMS-UC-016
+    guard: Authorized policy-breach termination.
+    to: Pass Deactivated / On-site Pending Exit
+  - row: BW-VMS-16 R2
+    from: Pass Deactivated / On-site Pending Exit
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Physical exit is recorded.
+    to: Completed
+  scenarios:
+    end_to_end:
+      _test_id: BW16_E2E_01
+      _wf_id: BW16
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: On-site -> Pass Deactivated / On-site Pending Exit -> Completed'
+    negative:
+      _test_id: BW16_NEG_01
+      _wf_id: BW16
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW17
+  source_id: BW-VMS-17
+  name: Admin Terminates Pass Before Check-in
+  type: Basis
+  purpose: Represent Admin early termination while an active pass exists but the Visitor is not on-site.
+  stt:
+  - row: BW-VMS-17 R1
+    from: Pass Active / Not On-site
+    actor: Admin
+    uc: VMS-UC-036
+    guard: Authorized policy-breach termination.
+    to: Terminated / Pass Deactivated
+  scenarios:
+    end_to_end:
+      _test_id: BW17_E2E_01
+      _wf_id: BW17
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Pass Active / Not On-site -> Terminated / Pass Deactivated'
+    negative:
+      _test_id: BW17_NEG_01
+      _wf_id: BW17
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW18
+  source_id: BW-VMS-18
+  name: Admin Terminates On-site Visit
+  type: Basis
+  purpose: Represent Admin early termination while the Visitor is on-site, followed by recorded exit.
+  stt:
+  - row: BW-VMS-18 R1
+    from: On-site
+    actor: Admin
+    uc: VMS-UC-036
+    guard: Authorized policy-breach termination.
+    to: Pass Deactivated / On-site Pending Exit
+  - row: BW-VMS-18 R2
+    from: Pass Deactivated / On-site Pending Exit
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Physical exit is recorded.
+    to: Completed
+  scenarios:
+    end_to_end:
+      _test_id: BW18_E2E_01
+      _wf_id: BW18
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: On-site -> Pass Deactivated / On-site Pending Exit -> Completed'
+    negative:
+      _test_id: BW18_NEG_01
+      _wf_id: BW18
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW19
+  source_id: BW-VMS-19
+  name: Admin-triggered Emergency Muster
+  type: Basis
+  purpose: Represent emergency muster initiated by Admin and completed through Security roll-call.
+  stt:
+  - row: BW-VMS-19 R1
+    from: Normal Operations / On-site Roster Available
+    actor: Admin
+    uc: VMS-UC-026
+    guard: Authorized emergency trigger.
+    to: Muster Active
+  - row: BW-VMS-19 R2
+    from: Muster Active
+    actor: Security Personnel
+    uc: VMS-UC-027
+    guard: Roll-call is performed and finalized for the available roster.
+    to: Muster Completed
+  scenarios:
+    end_to_end:
+      _test_id: BW19_E2E_01
+      _wf_id: BW19
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Normal Operations / On-site Roster Available -> Muster Active -> Muster
+        Completed'
+    negative:
+      _test_id: BW19_NEG_01
+      _wf_id: BW19
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW20
+  source_id: BW-VMS-20
+  name: Security-triggered Emergency Muster
+  type: Basis
+  purpose: Represent emergency muster initiated by Security Personnel and completed through roll-call.
+  stt:
+  - row: BW-VMS-20 R1
+    from: Normal Operations / On-site Roster Available
+    actor: Security Personnel
+    uc: VMS-UC-032
+    guard: Authorized emergency trigger.
+    to: Muster Active
+  - row: BW-VMS-20 R2
+    from: Muster Active
+    actor: Security Personnel
+    uc: VMS-UC-027
+    guard: Roll-call is performed and finalized for the available roster.
+    to: Muster Completed
+  scenarios:
+    end_to_end:
+      _test_id: BW20_E2E_01
+      _wf_id: BW20
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Normal Operations / On-site Roster Available -> Muster Active -> Muster
+        Completed'
+    negative:
+      _test_id: BW20_NEG_01
+      _wf_id: BW20
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW21
+  source_id: BW-VMS-21
+  name: Bulk Event Visitor Entry
+  type: Basis
+  purpose: Represent event bulk-list processing through configured high-throughput entry and completion.
+  stt:
+  - row: BW-VMS-21 R1
+    from: Event Visitor List Draft
+    actor: Admin
+    uc: VMS-UC-008
+    guard: Bulk list is valid and accepted.
+    to: Event Passes Active
+  - row: BW-VMS-21 R2
+    from: Event Passes Active
+    actor: Admin
+    uc: VMS-UC-009
+    guard: Supported event fast-lane/overflow controls are configured.
+    to: Event Entry Controls Active
+  - row: BW-VMS-21 R3
+    from: Event Entry Controls Active
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Event pass validation succeeds.
+    to: Event Attendee On-site
+  - row: BW-VMS-21 R4
+    from: Event Attendee On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds.
+    to: Completed
+  scenarios:
+    end_to_end:
+      _test_id: BW21_E2E_01
+      _wf_id: BW21
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Event Visitor List Draft -> Event Passes Active -> Event Entry Controls
+        Active -> Event Attendee On-site -> Completed'
+    negative:
+      _test_id: BW21_NEG_01
+      _wf_id: BW21
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW22
+  source_id: BW-VMS-22
+  name: Same-day Urgent Pre-registration
+  type: Basis
+  purpose: Represent the explicit Admin exception for a same-day urgent request inside the normal advance-registration window,
+    followed by normal Host approval.
+  stt:
+  - row: BW-VMS-22 R1
+    from: Not Submitted
+    actor: Visitor
+    uc: VMS-UC-010
+    guard: Other registration checks pass, but request violates normal advance window and is flagged urgent same-day.
+    to: Pending Admin Exception
+  - row: BW-VMS-22 R2
+    from: Pending Admin Exception
+    actor: Admin
+    uc: VMS-UC-035
+    guard: Outcome = Approve exception.
+    to: Pending Host Approval
+  - row: BW-VMS-22 R3
+    from: Pending Host Approval
+    actor: Host
+    uc: VMS-UC-013
+    guard: Outcome = Approve.
+    to: Pass Active (PRE_REGISTERED)
+  - row: BW-VMS-22 R4
+    from: Pass Active (PRE_REGISTERED)
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Gate validation succeeds.
+    to: On-site
+  - row: BW-VMS-22 R5
+    from: On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds.
+    to: Completed
+  scenarios:
+    end_to_end:
+      _test_id: BW22_E2E_01
+      _wf_id: BW22
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Not Submitted -> Pending Admin Exception -> Pending Host Approval ->
+        Pass Active (PRE_REGISTERED) -> On-site -> Completed'
+    negative:
+      _test_id: BW22_NEG_01
+      _wf_id: BW22
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: BW23
+  source_id: BW-VMS-23
+  name: Admin-approved Visit Extension
+  type: Basis
+  purpose: Represent the cross-cutting state change created when Admin approves an extension beyond the normal maximum duration.
+  stt:
+  - row: BW-VMS-23 R1
+    from: Pass Active or On-site; Extension Request Pending
+    actor: Admin
+    uc: VMS-UC-034
+    guard: Admin approves an extension beyond the normal maximum duration.
+    to: Extended Validity Active
+  scenarios:
+    end_to_end:
+      _test_id: BW23_E2E_01
+      _wf_id: BW23
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Pass Active or On-site; Extension Request Pending -> Extended Validity
+        Active'
+    negative:
+      _test_id: BW23_NEG_01
+      _wf_id: BW23
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: CW01
+  source_id: CW-VMS-01
+  name: Pre-registered Visit Lifecycle
+  type: Composite
+  purpose: Compose normal, rejected, expired, pre-authorized, VIP, and same-day urgent pre-registration paths.
+  stt:
+  - row: BW-VMS-01 R1
+    from: Not Submitted
+    actor: Visitor
+    uc: VMS-UC-010
+    guard: Valid standard submission; mandatory checks pass; no disqualifying blacklist match; normal advance window satisfied.
+    to: Pending Host Approval
+  - row: BW-VMS-01 R2
+    from: Pending Host Approval
+    actor: Host
+    uc: VMS-UC-013
+    guard: Outcome = Approve.
+    to: Pass Active (PRE_REGISTERED)
+  - row: BW-VMS-01 R3
+    from: Pass Active (PRE_REGISTERED)
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Pass active; within validity; no disqualifying blacklist match; gate/zone permission succeeds.
+    to: On-site
+  - row: BW-VMS-01 R4
+    from: On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds and exit is recorded.
+    to: Completed
+  - row: BW-VMS-02 R1
+    from: Not Submitted
+    actor: Visitor
+    uc: VMS-UC-010
+    guard: Valid standard submission passes registration checks.
+    to: Pending Host Approval
+  - row: BW-VMS-02 R2
+    from: Pending Host Approval
+    actor: Host
+    uc: VMS-UC-013
+    guard: Outcome = Reject.
+    to: Rejected
+  - row: BW-VMS-03 R1
+    from: Not Submitted
+    actor: Visitor
+    uc: VMS-UC-010
+    guard: Valid standard submission passes registration checks.
+    to: Pending Host Approval
+  - row: BW-VMS-03 R2
+    from: Pending Host Approval
+    actor: System
+    uc: VMS-UC-037
+    guard: Policy-defined approval timeout occurs while request remains pending.
+    to: Expired
+  - row: BW-VMS-04 R1
+    from: No Active Pre-authorization
+    actor: Host
+    uc: VMS-UC-014
+    guard: Valid scoped pre-authorization is created.
+    to: Pre-authorization Active
+  - row: BW-VMS-04 R2
+    from: Pre-authorization Active / Not Submitted
+    actor: Visitor
+    uc: VMS-UC-010
+    guard: Registration checks pass and the active pre-authorization covers the visit.
+    to: Pass Active (PRE_REGISTERED)
+  - row: BW-VMS-04 R3
+    from: Pass Active (PRE_REGISTERED)
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Gate validation succeeds.
+    to: On-site
+  - row: BW-VMS-04 R4
+    from: On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds.
+    to: Completed
+  - row: BW-VMS-05 R1
+    from: Standard Visitor/Visit
+    actor: Super Admin
+    uc: VMS-UC-003
+    guard: Super Admin grants a valid scoped VIP override.
+    to: VIP Override Active
+  - row: BW-VMS-05 R2
+    from: VIP Override Active / Not Submitted
+    actor: Visitor
+    uc: VMS-UC-010
+    guard: Registration checks pass and the active VIP override applies to the visit.
+    to: Pass Active (VIP)
+  - row: BW-VMS-05 R3
+    from: Pass Active (VIP)
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Gate validations not bypassed by the VIP override succeed.
+    to: On-site
+  - row: BW-VMS-05 R4
+    from: On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds.
+    to: Completed
+  - row: BW-VMS-22 R1
+    from: Not Submitted
+    actor: Visitor
+    uc: VMS-UC-010
+    guard: Other registration checks pass, but request violates normal advance window and is flagged urgent same-day.
+    to: Pending Admin Exception
+  - row: BW-VMS-22 R2
+    from: Pending Admin Exception
+    actor: Admin
+    uc: VMS-UC-035
+    guard: Outcome = Approve exception.
+    to: Pending Host Approval
+  - row: BW-VMS-22 R3
+    from: Pending Host Approval
+    actor: Host
+    uc: VMS-UC-013
+    guard: Outcome = Approve.
+    to: Pass Active (PRE_REGISTERED)
+  - row: BW-VMS-22 R4
+    from: Pass Active (PRE_REGISTERED)
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Gate validation succeeds.
+    to: On-site
+  - row: BW-VMS-22 R5
+    from: On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds.
+    to: Completed
+  scenarios:
+    end_to_end:
+      _test_id: CW01_E2E_01
+      _wf_id: CW01
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Not Submitted -> Pending Host Approval -> Pass Active (PRE_REGISTERED)
+        -> On-site -> Completed -> Pending Host Approval -> Rejected -> Pending Host Approval -> Expired -> Pre-authorization
+        Active -> Pass Active (PRE_REGISTERED) -> On-site -> Completed -> VIP Override Active -> Pass Active (VIP) -> On-site
+        -> Completed -> Pending Admin Exception -> Pending Host Approval -> Pass Active (PRE_REGISTERED) -> On-site -> Completed'
+    negative:
+      _test_id: CW01_NEG_01
+      _wf_id: CW01
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: CW02
+  source_id: CW-VMS-02
+  name: Walk-in Visit Lifecycle
+  type: Composite
+  purpose: Compose Host-approved, Admin-contingency, and Host-rejected walk-in paths.
+  stt:
+  - row: BW-VMS-06 R1
+    from: Not Registered
+    actor: Security Personnel
+    uc: VMS-UC-017
+    guard: Registration checks pass; no disqualifying blacklist match; Host is available.
+    to: Pending Host Approval
+  - row: BW-VMS-06 R2
+    from: Pending Host Approval
+    actor: Host
+    uc: VMS-UC-013
+    guard: Outcome = Approve.
+    to: Pass Active (WALK_IN)
+  - row: BW-VMS-06 R3
+    from: Pass Active (WALK_IN)
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Gate validation succeeds.
+    to: On-site
+  - row: BW-VMS-06 R4
+    from: On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds.
+    to: Completed
+  - row: BW-VMS-07 R1
+    from: Not Registered
+    actor: Security Personnel
+    uc: VMS-UC-017
+    guard: Registration checks pass; Host is unavailable.
+    to: Pending Admin Contingency
+  - row: BW-VMS-07 R2
+    from: Pending Admin Contingency
+    actor: Admin
+    uc: VMS-UC-033
+    guard: Outcome = Approve within configured SLA/policy window.
+    to: Pass Active (WALK_IN)
+  - row: BW-VMS-07 R3
+    from: Pass Active (WALK_IN)
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Gate validation succeeds.
+    to: On-site
+  - row: BW-VMS-07 R4
+    from: On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds.
+    to: Completed
+  - row: BW-VMS-08 R1
+    from: Not Registered
+    actor: Security Personnel
+    uc: VMS-UC-017
+    guard: Registration checks pass; Host is available.
+    to: Pending Host Approval
+  - row: BW-VMS-08 R2
+    from: Pending Host Approval
+    actor: Host
+    uc: VMS-UC-013
+    guard: Outcome = Reject.
+    to: Rejected
+  scenarios:
+    end_to_end:
+      _test_id: CW02_E2E_01
+      _wf_id: CW02
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Not Registered -> Pending Host Approval -> Pass Active (WALK_IN) ->
+        On-site -> Completed -> Pending Admin Contingency -> Pass Active (WALK_IN) -> On-site -> Completed -> Pending Host
+        Approval -> Rejected'
+    negative:
+      _test_id: CW02_NEG_01
+      _wf_id: CW02
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: CW03
+  source_id: CW-VMS-03
+  name: Gate Entry Validation and Exception Handling
+  type: Composite
+  purpose: Compose blocked gate validation, authorized override, and offline-reconciliation paths.
+  stt:
+  - row: BW-VMS-09 R1
+    from: Pass Active / Credential Presented
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Any required gate validation fails.
+    to: Entry Blocked
+  - row: BW-VMS-10 R1
+    from: Pass Active / Credential Presented
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Required validation fails; failure type is eligible for override.
+    to: Entry Blocked
+  - row: BW-VMS-10 R2
+    from: Entry Blocked
+    actor: Admin
+    uc: VMS-UC-019
+    guard: Admin authorizes override with recorded justification.
+    to: Override Authorized
+  - row: BW-VMS-10 R3
+    from: Override Authorized
+    actor: Security Personnel
+    uc: VMS-UC-020
+    guard: Security records the authorized manual check-in event.
+    to: On-site
+  - row: BW-VMS-11 R1
+    from: Pass/Credential Presented; Connectivity Unavailable
+    actor: Security Personnel
+    uc: VMS-UC-028
+    guard: Offline mode/cache is available.
+    to: Offline Entry Cached / On-site (provisional)
+  - row: BW-VMS-11 R2
+    from: Offline Entry Cached / On-site (provisional)
+    actor: System
+    uc: VMS-UC-039
+    guard: Connectivity is restored and cached gate-event reconciliation succeeds.
+    to: Entry Reconciled / On-site
+  scenarios:
+    end_to_end:
+      _test_id: CW03_E2E_01
+      _wf_id: CW03
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Pass Active / Credential Presented -> Entry Blocked -> Entry Blocked
+        -> Override Authorized -> On-site -> Offline Entry Cached / On-site (provisional) -> Entry Reconciled / On-site'
+    negative:
+      _test_id: CW03_NEG_01
+      _wf_id: CW03
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: CW04
+  source_id: CW-VMS-04
+  name: Zone Access and Elevation
+  type: Composite
+  purpose: Compose zone grant, denial/alert, and one temporary-elevation retry path.
+  stt:
+  - row: BW-VMS-12 R1
+    from: On-site / Zone Access Attempt
+    actor: Security Personnel
+    uc: VMS-UC-023
+    guard: Applicable published policy/pass/override permits target zone.
+    to: Zone Access Granted / On-site in permitted zone
+  - row: BW-VMS-13 R1
+    from: On-site / Zone Access Attempt
+    actor: Security Personnel
+    uc: VMS-UC-023
+    guard: Target zone is not permitted.
+    to: Zone Access Denied / Alert Open
+  - row: BW-VMS-13 R2
+    from: Zone Access Denied / Alert Open
+    actor: Security Personnel
+    uc: VMS-UC-025
+    guard: Security reviews and records handling/escalation outcome.
+    to: Alert Handled / On-site
+  - row: BW-VMS-14 R1
+    from: On-site / Zone Access Attempt
+    actor: Security Personnel
+    uc: VMS-UC-023
+    guard: Target zone is not currently permitted.
+    to: Zone Access Denied / Alert Open
+  - row: BW-VMS-14 R2
+    from: Zone Access Denied / Alert Open
+    actor: Admin
+    uc: VMS-UC-024
+    guard: Admin grants an explicit time-boxed elevation.
+    to: Temporary Elevation Active
+  - row: BW-VMS-14 R3
+    from: Temporary Elevation Active
+    actor: Security Personnel
+    uc: VMS-UC-023
+    guard: One re-validation attempt occurs within the elevation time box and now satisfies permission.
+    to: Zone Access Granted / On-site in elevated zone
+  scenarios:
+    end_to_end:
+      _test_id: CW04_E2E_01
+      _wf_id: CW04
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: On-site / Zone Access Attempt -> Zone Access Granted / On-site in permitted
+        zone -> Zone Access Denied / Alert Open -> Alert Handled / On-site -> Zone Access Denied / Alert Open -> Temporary
+        Elevation Active -> Zone Access Granted / On-site in elevated zone'
+    negative:
+      _test_id: CW04_NEG_01
+      _wf_id: CW04
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: CW05
+  source_id: CW-VMS-05
+  name: Early Termination and Extension
+  type: Composite
+  purpose: Compose cross-cutting early-termination paths and the approved-extension state change.
+  stt:
+  - row: BW-VMS-15 R1
+    from: Pass Active / Not On-site
+    actor: Host
+    uc: VMS-UC-016
+    guard: Authorized policy-breach termination.
+    to: Terminated / Pass Deactivated
+  - row: BW-VMS-16 R1
+    from: On-site
+    actor: Host
+    uc: VMS-UC-016
+    guard: Authorized policy-breach termination.
+    to: Pass Deactivated / On-site Pending Exit
+  - row: BW-VMS-16 R2
+    from: Pass Deactivated / On-site Pending Exit
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Physical exit is recorded.
+    to: Completed
+  - row: BW-VMS-17 R1
+    from: Pass Active / Not On-site
+    actor: Admin
+    uc: VMS-UC-036
+    guard: Authorized policy-breach termination.
+    to: Terminated / Pass Deactivated
+  - row: BW-VMS-18 R1
+    from: On-site
+    actor: Admin
+    uc: VMS-UC-036
+    guard: Authorized policy-breach termination.
+    to: Pass Deactivated / On-site Pending Exit
+  - row: BW-VMS-18 R2
+    from: Pass Deactivated / On-site Pending Exit
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Physical exit is recorded.
+    to: Completed
+  - row: BW-VMS-23 R1
+    from: Pass Active or On-site; Extension Request Pending
+    actor: Admin
+    uc: VMS-UC-034
+    guard: Admin approves an extension beyond the normal maximum duration.
+    to: Extended Validity Active
+  scenarios:
+    end_to_end:
+      _test_id: CW05_E2E_01
+      _wf_id: CW05
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Pass Active / Not On-site -> Terminated / Pass Deactivated -> Pass Deactivated
+        / On-site Pending Exit -> Completed -> Terminated / Pass Deactivated -> Pass Deactivated / On-site Pending Exit ->
+        Completed -> Extended Validity Active'
+    negative:
+      _test_id: CW05_NEG_01
+      _wf_id: CW05
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: CW06
+  source_id: CW-VMS-06
+  name: Emergency Muster and Accountability
+  type: Composite
+  purpose: Compose Admin-triggered and Security-triggered emergency muster paths.
+  stt:
+  - row: BW-VMS-19 R1
+    from: Normal Operations / On-site Roster Available
+    actor: Admin
+    uc: VMS-UC-026
+    guard: Authorized emergency trigger.
+    to: Muster Active
+  - row: BW-VMS-19 R2
+    from: Muster Active
+    actor: Security Personnel
+    uc: VMS-UC-027
+    guard: Roll-call is performed and finalized for the available roster.
+    to: Muster Completed
+  - row: BW-VMS-20 R1
+    from: Normal Operations / On-site Roster Available
+    actor: Security Personnel
+    uc: VMS-UC-032
+    guard: Authorized emergency trigger.
+    to: Muster Active
+  - row: BW-VMS-20 R2
+    from: Muster Active
+    actor: Security Personnel
+    uc: VMS-UC-027
+    guard: Roll-call is performed and finalized for the available roster.
+    to: Muster Completed
+  scenarios:
+    end_to_end:
+      _test_id: CW06_E2E_01
+      _wf_id: CW06
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Normal Operations / On-site Roster Available -> Muster Active -> Muster
+        Completed -> Muster Active -> Muster Completed'
+    negative:
+      _test_id: CW06_NEG_01
+      _wf_id: CW06
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.
+- id: CW07
+  source_id: CW-VMS-07
+  name: Bulk Event Visitor Handling
+  type: Composite
+  purpose: Represent the coordinated event-list, entry-control, gate-entry, and visit-completion path.
+  stt:
+  - row: BW-VMS-21 R1
+    from: Event Visitor List Draft
+    actor: Admin
+    uc: VMS-UC-008
+    guard: Bulk list is valid and accepted.
+    to: Event Passes Active
+  - row: BW-VMS-21 R2
+    from: Event Passes Active
+    actor: Admin
+    uc: VMS-UC-009
+    guard: Supported event fast-lane/overflow controls are configured.
+    to: Event Entry Controls Active
+  - row: BW-VMS-21 R3
+    from: Event Entry Controls Active
+    actor: Security Personnel
+    uc: VMS-UC-018
+    guard: Event pass validation succeeds.
+    to: Event Attendee On-site
+  - row: BW-VMS-21 R4
+    from: Event Attendee On-site
+    actor: Security Personnel
+    uc: VMS-UC-021
+    guard: Checkout succeeds.
+    to: Completed
+  scenarios:
+    end_to_end:
+      _test_id: CW07_E2E_01
+      _wf_id: CW07
+      _scenario: End-to-End
+      _expected_result: 'Visit follows every STT row: Event Visitor List Draft -> Event Passes Active -> Event Entry Controls
+        Active -> Event Attendee On-site -> Completed'
+    negative:
+      _test_id: CW07_NEG_01
+      _wf_id: CW07
+      _scenario: Negative
+      _expected_result: A transition the STT does not allow is refused and state is unchanged.

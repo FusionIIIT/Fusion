@@ -113,6 +113,12 @@ CELERY_BEAT_SCHEDULE = {
     'phd-thesis-review-invitations-task': {
         'task': 'applications.academic_procedures.tasks.process_review_invitations',
         'schedule': crontab(minute='0', hour='2')
+    },
+    # VMS event-triggered services: VMS-UC-037 expiry, UC-038 auto-checkout,
+    # UC-039 offline reconciliation, UC-040 approval reminders.
+    'vms-lifecycle-task': {
+        'task': 'applications.visitor_management.tasks.run_vms_lifecycle',
+        'schedule': crontab(minute='*/5')
     }
 }
 
@@ -156,6 +162,7 @@ INSTALLED_APPS = [
     'applications.recruitment',
     'applications.scholarships',
     'applications.visitor_hostel',
+    'applications.visitor_management',
     'applications.establishment',
     'applications.estate_module',
     'applications.counselling_cell',

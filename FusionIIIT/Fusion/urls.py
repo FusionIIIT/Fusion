@@ -69,6 +69,7 @@ urlpatterns = [
     url(r'^filetracking/', include('applications.filetracking.urls')),
     url(r'^spacs/', include('applications.scholarships.urls')),
     url(r'^visitorhostel/', include('applications.visitor_hostel.urls')),
+    url(r'^vms/', include('applications.visitor_management.api.urls')),
     url(r'^office/', include('applications.office_module.urls')),
     url(r'^finance/', include('applications.finance_accounts.urls')),
     url(r'^purchase-and-store/', include('applications.ps1.urls')),
