@@ -102,7 +102,10 @@ def auth_view(request):
     name = " ".join(filter(None, [request.user.first_name, request.user.last_name])).strip()
     roll_no = request.user.username
 
-    extra_info = get_object_or_404(ExtraInfo, user=user)
+    extra_info, _ = ExtraInfo.objects.get_or_create(
+        user=user,
+        defaults={'id': user.username, 'user_type': 'staff'}
+    )
     last_selected_role = extra_info.last_selected_role
     
     designation_list = list(HoldsDesignation.objects.filter(working=request.user).values_list('designation_id', flat=True))

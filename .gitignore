@@ -76,3 +76,12 @@ package-lock.json
 
 .DS_Store
 **/generated.pdf
+
+# Office / Temporary lock files
+.~lock.*#
+~$*.xlsx
+~$*.docx
+
+# SQLite / Database
+*.sqlite3
+.pytest_cache/

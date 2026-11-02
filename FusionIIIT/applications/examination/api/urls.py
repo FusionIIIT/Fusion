@@ -47,4 +47,14 @@ urlpatterns = [
     url(r'^generate_full_gradesheet_data/', views.GenerateFullGradeSheetData.as_view(), name='generate_full_gradesheet_data'),
     url(r'^grade_validation/', views.GradeValidationView.as_view(), name='grade_validation'),
     url(r'^submit_phd_milestone_grades/', views.SubmitPhDMilestoneGradesAPI.as_view(), name='submit_phd_milestone_grades'),
+
+    # ── Seating Arrangement ──────────────────────────────────────────────────
+    url(r'^exam-rooms/(?P<pk>\d+)/$', views.ExamRoomDetailAPI.as_view(), name='exam-room-detail'),
+    url(r'^exam-rooms/$', views.ExamRoomListCreateAPI.as_view(), name='exam-room-list'),
+    url(r'^seating/generate/$', views.SeatingArrangementGenerateAPI.as_view(), name='seating-generate'),
+    url(r'^seating/list/$', views.SeatingArrangementListAPI.as_view(), name='seating-list'),
+    url(r'^seating/(?P<pk>\d+)/toggle-exclude/$', views.SeatingToggleExcludeAPI.as_view(), name='seating-toggle-exclude'),
+    url(r'^seating/room-exclude/$', views.SeatingRoomToggleExcludeAPI.as_view(), name='seating-room-exclude'),
+    url(r'^seating/exam-dates/$', views.SeatingArrangementExamDatesAPI.as_view(), name='seating-exam-dates'),
+    url(r'^seating/clear/$', views.SeatingArrangementClearAPI.as_view(), name='seating-clear'),
 ]

@@ -69,4 +69,4 @@ CRONJOBS = [
     ('0 22 * * *', 'applications.central_mess.tasks.generate_bill'),
 ]
 
-CRONTAB_DJANGO_MANAGE_PATH = '/home/owlman/Desktop/Fuse/Fusion/FusionIIIT/manage.py'
+CRONTAB_DJANGO_MANAGE_PATH = '/home/muntazir/Desktop/fusion/Fusion/FusionIIIT/manage.py'
