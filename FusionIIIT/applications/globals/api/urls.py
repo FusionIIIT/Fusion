@@ -9,6 +9,11 @@ urlpatterns = [
     re_path(r'^auth/login/', views.login, name='login-api'),
     re_path(r'^auth/logout/', views.logout, name='logout-api'),
     re_path(r'^auth/me', views.auth_view, name='auth-api'),
+    re_path(r'^system-admin/role-assignments/', views.system_admin_role_assignments,
+            name='system-admin-role-assignments'),
+    re_path(r'^leave-role/', views.leave_role, name='leave-role'),
+    re_path(r'^system-admin/activity/', views.system_admin_user_activity,
+            name='system-admin-user-activity'),
 
     # OTP-based password reset (no authentication required)
     re_path(r'^auth/password-reset/send-otp/',  views.password_reset_send_otp,   name='password-reset-send-otp'),
