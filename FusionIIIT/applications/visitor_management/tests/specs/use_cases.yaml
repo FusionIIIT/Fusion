@@ -1,0 +1,1257 @@
+# Generated from the frozen VMS v1.3 specification bundle. Do not edit by hand.
+use_cases:
+- id: UC001
+  source_id: VMS-UC-001
+  name: Configure VMS Roles
+  uc_type: Actor-triggered
+  primary_actor: Super Admin
+  endpoint: /vms/api/superadmin/roles/
+  method: GET, POST
+  description: Assign or reassign Admin and Security Personnel roles for a defined gate/zone/campus scope and duration.
+  main_success_scenario:
+  - Select the user and VMS role.
+  - Specify gate/zone/campus scope and duration.
+  - Submit the assignment or reassignment.
+  - VMS validates hierarchy and scope, records the active assignment, and audits the change.
+  - For reassignment, VMS makes the new assignment effective and routes applicable pending work to the newly assigned personnel.
+  related_business_rules: VMS-BR-181, VMS-BR-182, VMS-BR-183, VMS-BR-184
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC001_HP_01
+      _uc_id: UC001
+      _scenario: Happy Path
+      _expected_result: The authorized role assignment is active and auditable.
+    alternate_path:
+      _test_id: UC001_AP_01
+      _uc_id: UC001
+      _scenario: Alternate Path
+      _expected_result: If the requested role/scope conflicts with VMS role hierarchy or assignment constraints, VMS rejects
+        the change.
+    exception_path:
+      _test_id: UC001_EP_01
+      _uc_id: UC001
+      _scenario: Exception Path
+      _expected_result: If the directory user cannot be resolved, VMS does not create the role assignment.
+- id: UC002
+  source_id: VMS-UC-002
+  name: Configure VMS Integration Boundaries
+  uc_type: Actor-triggered
+  primary_actor: Super Admin
+  endpoint: /vms/api/superadmin/integrations/<key>/
+  method: PUT
+  description: Configure VMS-facing integration settings without transferring ownership of external master data or physical
+    infrastructure to VMS.
+  main_success_scenario:
+  - Select the supported external integration.
+  - Configure the VMS-permitted lookup, exchange, or validation settings.
+  - Save the configuration.
+  - VMS records configuration and audit information.
+  related_business_rules: VMS-BR-185
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC002_HP_01
+      _uc_id: UC002
+      _scenario: Happy Path
+      _expected_result: The VMS integration configuration is recorded.
+    alternate_path:
+      _test_id: UC002_AP_01
+      _uc_id: UC002
+      _scenario: Alternate Path
+      _expected_result: A temporarily unavailable external service may be saved/configured but remains unavailable for runtime
+        use until restored.
+    exception_path:
+      _test_id: UC002_EP_01
+      _uc_id: UC002
+      _scenario: Exception Path
+      _expected_result: Invalid endpoint/configuration is rejected and logged.
+- id: UC003
+  source_id: VMS-UC-003
+  name: Manage VIP Visitor Permissions
+  uc_type: Actor-triggered
+  primary_actor: Super Admin
+  endpoint: /vms/api/superadmin/vip/
+  method: GET, POST, PATCH
+  description: Grant or revoke VMS special-permission/VIP override scope for an eligible visitor/visit as supported by policy.
+  main_success_scenario:
+  - Identify the visitor/visit.
+  - Specify the VIP permission/override scope and validity.
+  - Submit the VIP permission.
+  - VMS records the permission, its scope, validity, and audit information.
+  - VMS makes the active permission available to pass/approval/zone validation where applicable.
+  related_business_rules: VMS-BR-052, VMS-BR-196, VMS-BR-197, VMS-BR-211
+  related_workflows: BW-VMS-05, CW-VMS-01
+  scenarios:
+    happy_path:
+      _test_id: UC003_HP_01
+      _uc_id: UC003
+      _scenario: Happy Path
+      _expected_result: The VIP permission state is recorded and traceable.
+    alternate_path:
+      _test_id: UC003_AP_01
+      _uc_id: UC003
+      _scenario: Alternate Path
+      _expected_result: A valid existing VIP permission may be revised or revoked by Super Admin.
+    exception_path:
+      _test_id: UC003_EP_01
+      _uc_id: UC003
+      _scenario: Exception Path
+      _expected_result: Invalid, expired, or unauthorized VIP permission is rejected.
+- id: UC004
+  source_id: VMS-UC-004
+  name: Review Audit Trails for Security
+  uc_type: Actor-triggered
+  primary_actor: Super Admin
+  endpoint: /vms/api/audit-logs/
+  method: GET
+  description: Inspect VMS audit-trail records for security/compliance review.
+  main_success_scenario:
+  - Specify visitor/date/action or other available filters.
+  - VMS retrieves matching audit records.
+  - Review the audit entries and metadata.
+  related_business_rules: N/A
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC004_HP_01
+      _uc_id: UC004
+      _scenario: Happy Path
+      _expected_result: Audit information is viewed without changing operational records.
+    alternate_path:
+      _test_id: UC004_AP_01
+      _uc_id: UC004
+      _scenario: Alternate Path
+      _expected_result: If no records match, VMS displays an empty result.
+    exception_path:
+      _test_id: UC004_EP_01
+      _uc_id: UC004
+      _scenario: Exception Path
+      _expected_result: Unauthorized access to audit information is denied.
+- id: UC005
+  source_id: VMS-UC-005
+  name: Manage Access Policies
+  uc_type: Actor-triggered
+  primary_actor: Admin
+  endpoint: /vms/api/admin/policies/
+  method: GET, POST, PATCH
+  description: Create, modify, version, and publish VMS access policies used by runtime validations.
+  main_success_scenario:
+  - Create or open a policy version.
+  - Configure visiting hours, maximum duration, restricted zones, default walk-in duration, and other supported policy values.
+  - Validate the policy values.
+  - Save as draft or publish the version.
+  - VMS makes only published policy versions available to runtime validation and audits the change.
+  related_business_rules: VMS-BR-053, VMS-BR-125, VMS-BR-126, VMS-BR-127, VMS-BR-128, VMS-BR-129, VMS-BR-193
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC005_HP_01
+      _uc_id: UC005
+      _scenario: Happy Path
+      _expected_result: A valid policy version is stored; if published, it becomes the runtime source for future applicable
+        validations.
+    alternate_path:
+      _test_id: UC005_AP_01
+      _uc_id: UC005
+      _scenario: Alternate Path
+      _expected_result: Draft policy versions may be saved without affecting runtime behavior.
+    exception_path:
+      _test_id: UC005_EP_01
+      _uc_id: UC005
+      _scenario: Exception Path
+      _expected_result: Invalid policy values or unauthorized publication are rejected.
+- id: UC006
+  source_id: VMS-UC-006
+  name: Manage Blacklist/Watchlist and Safe-list Registry
+  uc_type: Actor-triggered
+  primary_actor: Admin
+  endpoint: /vms/api/admin/registry/
+  method: GET, POST, PATCH
+  description: Maintain blacklist/watchlist records, temporary safe-list entries, version/publication status, and associated
+    metadata used by VMS checks.
+  main_success_scenario:
+  - Create or edit a registry record.
+  - Capture supported identity/contact, reason, severity, expiry, and status data as applicable.
+  - Validate the record.
+  - Save/publish the registry version.
+  - VMS makes only the published runtime registry available to operational checks and audits the change.
+  related_business_rules: VMS-BR-118, VMS-BR-119, VMS-BR-120
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC006_HP_01
+      _uc_id: UC006
+      _scenario: Happy Path
+      _expected_result: The registry/version is stored; published data becomes available to runtime checks.
+    alternate_path:
+      _test_id: UC006_AP_01
+      _uc_id: UC006
+      _scenario: Alternate Path
+      _expected_result: A temporary safe-list entry may be maintained for a vetted VIP/vendor and must carry an expiry.
+    exception_path:
+      _test_id: UC006_EP_01
+      _uc_id: UC006
+      _scenario: Exception Path
+      _expected_result: Invalid/duplicate registry data is rejected or flagged for correction.
+- id: UC007
+  source_id: VMS-UC-007
+  name: Generate Visitor Reports and Analytics
+  uc_type: Actor-triggered
+  primary_actor: Admin
+  endpoint: /vms/api/admin/reports/<type>/
+  method: GET
+  description: Generate the visitor reports, statistics, anonymized views, and exports explicitly supported by VMS.
+  main_success_scenario:
+  - Select the supported report/analytics type and filters.
+  - VMS validates parameters.
+  - VMS generates the requested summary/report.
+  - Optionally export the supported report as CSV or PDF.
+  related_business_rules: N/A
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC007_HP_01
+      _uc_id: UC007
+      _scenario: Happy Path
+      _expected_result: The report/view/export is produced without altering source operational records.
+    alternate_path:
+      _test_id: UC007_AP_01
+      _uc_id: UC007
+      _scenario: Alternate Path
+      _expected_result: An anonymized view may be selected where the supported report provides one.
+    exception_path:
+      _test_id: UC007_EP_01
+      _uc_id: UC007
+      _scenario: Exception Path
+      _expected_result: Invalid filters or unauthorized report access are rejected.
+- id: UC008
+  source_id: VMS-UC-008
+  name: Manage Bulk Visitor Lists and Approvals
+  uc_type: Actor-triggered
+  primary_actor: Admin
+  endpoint: /vms/api/admin/bulk-lists/
+  method: POST
+  description: Process bulk visitor lists/approvals for recurring vendors or scheduled events and generate event visitor passes.
+  main_success_scenario:
+  - Upload or select the bulk visitor list.
+  - Validate attendee/vendor rows.
+  - Apply supported approval handling.
+  - Assign event slots, zones, and validity where applicable.
+  - Generate and distribute passes for accepted rows.
+  - Record bulk-processing outcome for attendance tracking.
+  related_business_rules: N/A
+  related_workflows: BW-VMS-21, CW-VMS-07
+  scenarios:
+    happy_path:
+      _test_id: UC008_HP_01
+      _uc_id: UC008
+      _scenario: Happy Path
+      _expected_result: Accepted bulk records/passes are created and traceable.
+    alternate_path:
+      _test_id: UC008_AP_01
+      _uc_id: UC008
+      _scenario: Alternate Path
+      _expected_result: Invalid rows may be rejected/flagged while valid rows continue when supported by the bulk operation.
+    exception_path:
+      _test_id: UC008_EP_01
+      _uc_id: UC008
+      _scenario: Exception Path
+      _expected_result: The bulk operation is rejected if the list cannot be parsed or required event context is missing.
+- id: UC009
+  source_id: VMS-UC-009
+  name: Coordinate Special-Event Visitor Handling
+  uc_type: Actor-triggered
+  primary_actor: Admin
+  endpoint: /vms/api/admin/events/<id>/controls/
+  method: POST
+  description: Configure and coordinate VMS event-entry handling such as fast-lane scanning, attendance/throughput monitoring,
+    and overflow controls.
+  main_success_scenario:
+  - Select the event.
+  - Configure supported fast-lane and overflow/rate-limit controls.
+  - Make event handling information available to Security Personnel.
+  - Monitor event attendance and entry throughput.
+  related_business_rules: N/A
+  related_workflows: BW-VMS-21, CW-VMS-07
+  scenarios:
+    happy_path:
+      _test_id: UC009_HP_01
+      _uc_id: UC009
+      _scenario: Happy Path
+      _expected_result: Supported event-entry controls are active and visible for operational handling.
+    alternate_path:
+      _test_id: UC009_AP_01
+      _uc_id: UC009
+      _scenario: Alternate Path
+      _expected_result: Controls not enabled for the event remain inactive.
+    exception_path:
+      _test_id: UC009_EP_01
+      _uc_id: UC009
+      _scenario: Exception Path
+      _expected_result: Invalid or unsupported control settings are rejected.
+- id: UC010
+  source_id: VMS-UC-010
+  name: Pre-register Visit
+  uc_type: Actor-triggered
+  primary_actor: Visitor
+  endpoint: /vms/api/public/visits/
+  method: POST
+  description: Submit an online visit request with required visitor, purpose, host, schedule, and ID-document information.
+  main_success_scenario:
+  - Enter visitor personal/contact information.
+  - Enter visit purpose and schedule.
+  - Select the Host.
+  - Provide the required ID-document information.
+  - Submit the request.
+  - VMS validates mandatory fields, duplicate request conditions, applicable blacklist/watchlist checks, visit-duration/advance-registration
+    constraints, and any supported exception path.
+  - For a valid standard request, VMS creates a pending request and notifies the selected Host.
+  related_business_rules: VMS-BR-037, VMS-BR-038, VMS-BR-051, VMS-BR-052, VMS-BR-112, VMS-BR-117, VMS-BR-120, VMS-BR-127,
+    VMS-BR-186, VMS-BR-187, VMS-BR-193, VMS-BR-195, VMS-BR-197, VMS-BR-202, VMS-BR-203
+  related_workflows: BW-VMS-01, BW-VMS-02, BW-VMS-03, BW-VMS-04, BW-VMS-05, BW-VMS-22, CW-VMS-01
+  scenarios:
+    happy_path:
+      _test_id: UC010_HP_01
+      _uc_id: UC010
+      _scenario: Happy Path
+      _expected_result: A valid request is created in the correct pending/authorized state and the next responsible actor
+        is notified.
+    alternate_path:
+      _test_id: UC010_AP_01
+      _uc_id: UC010
+      _scenario: Alternate Path
+      _expected_result: If a valid pre-authorization or VIP override applies, the individual Host-approval step may be bypassed
+        according to the applicable rule. A same-day urgent request that violates the normal advance window is routed to the
+        Admin exception decision rather than silently accepted.
+    exception_path:
+      _test_id: UC010_EP_01
+      _uc_id: UC010
+      _scenario: Exception Path
+      _expected_result: Invalid mandatory data, an active disqualifying blacklist match, or other failed validation prevents
+        request acceptance; the reason is recorded/displayed as applicable.
+- id: UC011
+  source_id: VMS-UC-011
+  name: Track Visit Request Status and History
+  uc_type: Actor-triggered
+  primary_actor: Visitor
+  endpoint: /vms/api/visitor/visits/
+  method: GET
+  description: View the Visitor’s request status, pass status, appointment information, and visit history.
+  main_success_scenario:
+  - Open the status/history view.
+  - VMS retrieves the Visitor’s visit requests, statuses, pass information, and visit history.
+  - Review the displayed information.
+  related_business_rules: VMS-BR-062, VMS-BR-200
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC011_HP_01
+      _uc_id: UC011
+      _scenario: Happy Path
+      _expected_result: Information is displayed without changing visit state.
+    alternate_path:
+      _test_id: UC011_AP_01
+      _uc_id: UC011
+      _scenario: Alternate Path
+      _expected_result: If no records exist, VMS shows an empty history/status view.
+    exception_path:
+      _test_id: UC011_EP_01
+      _uc_id: UC011
+      _scenario: Exception Path
+      _expected_result: Unauthorized access to another Visitor’s records is denied.
+- id: UC012
+  source_id: VMS-UC-012
+  name: Access Digital Pass
+  uc_type: Actor-triggered
+  primary_actor: Visitor
+  endpoint: /vms/api/visitor/visits/<ref>/pass/
+  method: GET
+  description: Access the digital pass issued for an approved/authorized visit.
+  main_success_scenario:
+  - Open the pass notification or pass view.
+  - VMS displays the pass credential(s), validity, pass type, and permitted zones.
+  - Visitor retains/uses the credential for checkpoint validation.
+  related_business_rules: VMS-BR-174, VMS-BR-211
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC012_HP_01
+      _uc_id: UC012
+      _scenario: Happy Path
+      _expected_result: The Visitor can access the issued pass details.
+    alternate_path:
+      _test_id: UC012_AP_01
+      _uc_id: UC012
+      _scenario: Alternate Path
+      _expected_result: The pass may be delivered/viewed through any configured notification channel supported by VMS.
+    exception_path:
+      _test_id: UC012_EP_01
+      _uc_id: UC012
+      _scenario: Exception Path
+      _expected_result: Delivery/channel failure is recorded; the pass remains governed by its stored active/validity state.
+- id: UC013
+  source_id: VMS-UC-013
+  name: Decide Visit Request
+  uc_type: Actor-triggered
+  primary_actor: Host
+  endpoint: /vms/api/host/requests/<ref>/decide/
+  method: POST
+  description: Approve or reject a pending visit request, with optional time/zone restrictions and special instructions.
+  main_success_scenario:
+  - Open the pending request.
+  - Review visitor, purpose, schedule, and requested access.
+  - Optionally set permitted/restricted zones, modify the allowed time window, and add special instructions.
+  - Choose Approve or Reject.
+  - VMS records the decision, updates request status, and notifies applicable Visitor/Security recipients.
+  - For an approval requiring a pass, VMS makes the corresponding pass active/available according to pass rules.
+  related_business_rules: VMS-BR-052
+  related_workflows: BW-VMS-01, BW-VMS-02, BW-VMS-06, BW-VMS-08, BW-VMS-22, CW-VMS-01, CW-VMS-02
+  scenarios:
+    happy_path:
+      _test_id: UC013_HP_01
+      _uc_id: UC013
+      _scenario: Happy Path
+      _expected_result: Request is Approved or Rejected; approval restrictions/instructions are persisted.
+    alternate_path:
+      _test_id: UC013_AP_01
+      _uc_id: UC013
+      _scenario: Alternate Path
+      _expected_result: Bulk approval may be used where explicitly supported for recurring vendors/scheduled events. If no
+        Host decision occurs before the configured approval timeout, expiry is handled by event-triggered VMS-UC-037.
+    exception_path:
+      _test_id: UC013_EP_01
+      _uc_id: UC013
+      _scenario: Exception Path
+      _expected_result: A decision on a non-pending/expired request is rejected.
+- id: UC014
+  source_id: VMS-UC-014
+  name: Pre-authorize Recurring Visitor
+  uc_type: Actor-triggered
+  primary_actor: Host
+  endpoint: /vms/api/host/preauthorizations/
+  method: POST
+  description: Create a scoped pre-authorization for a recurring/regular visitor so an applicable visit may bypass individual
+    Host approval.
+  main_success_scenario:
+  - Select/identify the recurring visitor.
+  - Set the supported pre-authorization scope, time, and zones.
+  - Submit the pre-authorization.
+  - VMS records the authorization and makes it available to subsequent visit validation.
+  related_business_rules: VMS-BR-052, VMS-BR-195
+  related_workflows: BW-VMS-04, CW-VMS-01
+  scenarios:
+    happy_path:
+      _test_id: UC014_HP_01
+      _uc_id: UC014
+      _scenario: Happy Path
+      _expected_result: A valid pre-authorization is active and traceable.
+    alternate_path:
+      _test_id: UC014_AP_01
+      _uc_id: UC014
+      _scenario: Alternate Path
+      _expected_result: A pre-authorization may expire or become inapplicable outside its recorded scope.
+    exception_path:
+      _test_id: UC014_EP_01
+      _uc_id: UC014
+      _scenario: Exception Path
+      _expected_result: Invalid or expired pre-authorization is not applied.
+- id: UC015
+  source_id: VMS-UC-015
+  name: View Visitor Arrival Updates
+  uc_type: Actor-triggered
+  primary_actor: Host
+  endpoint: /vms/api/host/arrivals/
+  method: GET
+  description: Receive/view the supported arrival/check-in update for a Visitor associated with the Host.
+  main_success_scenario:
+  - Open/receive the arrival update.
+  - Review the visitor/check-in information supplied by VMS.
+  related_business_rules: N/A
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC015_HP_01
+      _uc_id: UC015
+      _scenario: Happy Path
+      _expected_result: Host can see the supported arrival information.
+    alternate_path:
+      _test_id: UC015_AP_01
+      _uc_id: UC015
+      _scenario: Alternate Path
+      _expected_result: If the delivery channel fails, the notification event may still be recorded for later viewing where
+        supported.
+    exception_path:
+      _test_id: UC015_EP_01
+      _uc_id: UC015
+      _scenario: Exception Path
+      _expected_result: No operational visit state is changed by merely viewing the update.
+- id: UC016
+  source_id: VMS-UC-016
+  name: Terminate Visitor Visit Early
+  uc_type: Actor-triggered
+  primary_actor: Host
+  endpoint: /vms/api/host/visits/<ref>/terminate/
+  method: POST
+  description: Terminate/deactivate an active visitor pass/visit early for a policy-breach reason as explicitly allowed.
+  main_success_scenario:
+  - Select the active visit/pass.
+  - Enter the termination/deactivation reason.
+  - Confirm termination.
+  - VMS deactivates the pass/visit authorization, records the action/audit information, and notifies applicable actors.
+  related_business_rules: VMS-BR-073
+  related_workflows: BW-VMS-15, BW-VMS-16, CW-VMS-05
+  scenarios:
+    happy_path:
+      _test_id: UC016_HP_01
+      _uc_id: UC016
+      _scenario: Happy Path
+      _expected_result: The visit/pass authorization is terminated/deactivated and auditable.
+    alternate_path:
+      _test_id: UC016_AP_01
+      _uc_id: UC016
+      _scenario: Alternate Path
+      _expected_result: If the Visitor is already on-site, the pass is deactivated but physical exit/check-out remains a separate
+        recorded event.
+    exception_path:
+      _test_id: UC016_EP_01
+      _uc_id: UC016
+      _scenario: Exception Path
+      _expected_result: Unauthorized or already-inactive pass/visit cannot be terminated through this UC.
+- id: UC017
+  source_id: VMS-UC-017
+  name: Register Walk-in Visitor at Gate
+  uc_type: Actor-triggered
+  primary_actor: Security Personnel
+  endpoint: /vms/api/security/walk-ins/
+  method: POST
+  description: Capture and submit a walk-in visitor registration at a gate checkpoint.
+  main_success_scenario:
+  - Capture visitor personal/contact details.
+  - Scan/enter required ID-document information.
+  - Capture visit purpose/schedule as applicable and select the Host.
+  - Submit the walk-in registration.
+  - VMS validates required data and applicable blacklist/watchlist conditions.
+  - If valid and the Host is available, create a quick-approval request for the Host; if Host is unavailable, route the case
+    to the Admin contingency-approval path.
+  related_business_rules: VMS-BR-051, VMS-BR-112, VMS-BR-117, VMS-BR-120, VMS-BR-127, VMS-BR-186, VMS-BR-187, VMS-BR-211
+  related_workflows: BW-VMS-06, BW-VMS-07, BW-VMS-08, CW-VMS-02
+  scenarios:
+    happy_path:
+      _test_id: UC017_HP_01
+      _uc_id: UC017
+      _scenario: Happy Path
+      _expected_result: A valid walk-in case reaches the appropriate approval state; no approval is embedded as an action
+        of Security Personnel.
+    alternate_path:
+      _test_id: UC017_AP_01
+      _uc_id: UC017
+      _scenario: Alternate Path
+      _expected_result: A valid Host decision may activate a WALK_IN pass; if Host is unavailable, only the Admin contingency
+        path may authorize the visit within the configured policy/SLA.
+    exception_path:
+      _test_id: UC017_EP_01
+      _uc_id: UC017
+      _scenario: Exception Path
+      _expected_result: A disqualifying blacklist match or invalid registration data blocks the walk-in registration/pass
+        path.
+- id: UC018
+  source_id: VMS-UC-018
+  name: Validate Visitor Pass at Gate
+  uc_type: Actor-triggered
+  primary_actor: Security Personnel
+  endpoint: /vms/api/security/gate/validate/
+  method: POST
+  description: Validate a Visitor credential at a gate checkpoint and allow or block entry according to current VMS rules.
+  main_success_scenario:
+  - Scan/enter the credential.
+  - VMS validates pass active state, validity window, published blacklist/watchlist status, and gate/zone permission relevant
+    to the checkpoint.
+  - If all required validations succeed, allow VMS check-in and record the entry event.
+  - If any validation fails, block entry and record the failure reason; create a flag/alert where required.
+  related_business_rules: VMS-BR-052, VMS-BR-077, VMS-BR-082, VMS-BR-112, VMS-BR-116, VMS-BR-117, VMS-BR-120, VMS-BR-127,
+    VMS-BR-190, VMS-BR-197
+  related_workflows: BW-VMS-01, BW-VMS-04, BW-VMS-05, BW-VMS-06, BW-VMS-07, BW-VMS-09, BW-VMS-10, BW-VMS-21, BW-VMS-22, CW-VMS-01,
+    CW-VMS-02, CW-VMS-03, CW-VMS-07
+  scenarios:
+    happy_path:
+      _test_id: UC018_HP_01
+      _uc_id: UC018
+      _scenario: Happy Path
+      _expected_result: Entry is either logged as allowed/on-site or blocked with reason.
+    alternate_path:
+      _test_id: UC018_AP_01
+      _uc_id: UC018
+      _scenario: Alternate Path
+      _expected_result: For an override-eligible failure, Security Personnel may refer the blocked attempt to the Admin manual-override
+        UC. Event fast-lane scanning uses the same validation obligations.
+    exception_path:
+      _test_id: UC018_EP_01
+      _uc_id: UC018
+      _scenario: Exception Path
+      _expected_result: Unreadable/unknown credential or unavailable required validation source results in a blocked/exception
+        outcome according to available online/offline handling.
+- id: UC019
+  source_id: VMS-UC-019
+  name: Process Manual Gate Override
+  uc_type: Actor-triggered
+  primary_actor: Admin
+  endpoint: /vms/api/admin/gate/attempts/<id>/override/
+  method: POST
+  description: Authorize or deny an eligible blocked gate attempt using the VMS manual-override function with recorded justification.
+  main_success_scenario:
+  - Review the blocked attempt and validation failure reason.
+  - Enter the required justification.
+  - Authorize or deny the override.
+  - VMS records the decision and audit trail.
+  - If authorized, return the case to Security Personnel for manual entry recording/check-in.
+  related_business_rules: VMS-BR-038, VMS-BR-085
+  related_workflows: BW-VMS-10, CW-VMS-03
+  scenarios:
+    happy_path:
+      _test_id: UC019_HP_01
+      _uc_id: UC019
+      _scenario: Happy Path
+      _expected_result: Override decision is recorded and traceable.
+    alternate_path:
+      _test_id: UC019_AP_01
+      _uc_id: UC019
+      _scenario: Alternate Path
+      _expected_result: The override path applies only to failure types that institutional policy permits to be overridden.
+    exception_path:
+      _test_id: UC019_EP_01
+      _uc_id: UC019
+      _scenario: Exception Path
+      _expected_result: Missing justification or unauthorized Admin action is rejected.
+- id: UC020
+  source_id: VMS-UC-020
+  name: Record Manual Visit Log
+  uc_type: Actor-triggered
+  primary_actor: Security Personnel
+  endpoint: /vms/api/security/gate/manual-log/
+  method: POST
+  description: Record a manual/checkpoint visit log event when Security Personnel must explicitly record entry, exit, or other
+    supported visit-log information.
+  main_success_scenario:
+  - Select the visit/visitor and log type.
+  - Record timestamp, entry/exit point or zone, device information where available, and verifier information.
+  - Save the visit-log event.
+  - Where the event concerns a configured hostel-area integration, make the visitor-log event available to Hostel Management
+    as explicitly scoped.
+  related_business_rules: VMS-BR-082
+  related_workflows: BW-VMS-10, CW-VMS-03
+  scenarios:
+    happy_path:
+      _test_id: UC020_HP_01
+      _uc_id: UC020
+      _scenario: Happy Path
+      _expected_result: The supported log event is stored and traceable.
+    alternate_path:
+      _test_id: UC020_AP_01
+      _uc_id: UC020
+      _scenario: Alternate Path
+      _expected_result: An access-denied event may be recorded instead of a successful check-in log.
+    exception_path:
+      _test_id: UC020_EP_01
+      _uc_id: UC020
+      _scenario: Exception Path
+      _expected_result: Invalid visit/log type or unauthorized edit is rejected.
+- id: UC021
+  source_id: VMS-UC-021
+  name: Check Out Visitor at Gate
+  uc_type: Actor-triggered
+  primary_actor: Security Personnel
+  endpoint: /vms/api/security/gate/check-out/
+  method: POST
+  description: Record Visitor checkout/exit through the Security Personnel gate process.
+  main_success_scenario:
+  - Identify/scan the visitor badge/visit.
+  - Confirm checkout.
+  - VMS records exit time, updates the on-site roster, and marks the visit Completed when completion conditions are satisfied.
+  - VMS triggers configured checkout notifications.
+  related_business_rules: VMS-BR-105
+  related_workflows: BW-VMS-01, BW-VMS-04, BW-VMS-05, BW-VMS-06, BW-VMS-07, BW-VMS-16, BW-VMS-18, BW-VMS-21, BW-VMS-22, CW-VMS-01,
+    CW-VMS-02, CW-VMS-05, CW-VMS-07
+  scenarios:
+    happy_path:
+      _test_id: UC021_HP_01
+      _uc_id: UC021
+      _scenario: Happy Path
+      _expected_result: Exit is recorded; roster is updated; visit reaches Completed where applicable.
+    alternate_path:
+      _test_id: UC021_AP_01
+      _uc_id: UC021
+      _scenario: Alternate Path
+      _expected_result: Visitor self-checkout is modeled separately in VMS-UC-031. If scheduled validity/pass expiry occurs
+        before recorded checkout, event-triggered VMS-UC-038 handles the supported automatic checkout service.
+    exception_path:
+      _test_id: UC021_EP_01
+      _uc_id: UC021
+      _scenario: Exception Path
+      _expected_result: An unknown/invalid visit cannot be checked out as a successful exit event.
+- id: UC022
+  source_id: VMS-UC-022
+  name: Monitor Live Visitor Dashboard
+  uc_type: Actor-triggered
+  primary_actor: Security Personnel
+  endpoint: /vms/api/dashboard/
+  method: GET
+  description: View the live on-site roster, visitor movements, event throughput, and zone-related alerts available to Security
+    Personnel.
+  main_success_scenario:
+  - Open the live dashboard.
+  - View on-site roster, current/recent movements, alerts, and supported event attendance/throughput indicators.
+  related_business_rules: VMS-BR-050
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC022_HP_01
+      _uc_id: UC022
+      _scenario: Happy Path
+      _expected_result: Monitoring information is displayed without changing operational state.
+    alternate_path:
+      _test_id: UC022_AP_01
+      _uc_id: UC022
+      _scenario: Alternate Path
+      _expected_result: If no active visitors/events exist, VMS shows an appropriate empty state.
+    exception_path:
+      _test_id: UC022_EP_01
+      _uc_id: UC022
+      _scenario: Exception Path
+      _expected_result: Unavailable data source is indicated without fabricating live data.
+- id: UC023
+  source_id: VMS-UC-023
+  name: Validate Zone Access
+  uc_type: Actor-triggered
+  primary_actor: Security Personnel
+  endpoint: /vms/api/security/zones/validate/
+  method: POST
+  description: Validate a Visitor token/QR/pass against current zone permissions and record the zone-access outcome.
+  main_success_scenario:
+  - Scan/receive the visitor token/QR at the zone checkpoint.
+  - VMS validates permitted zones and any active temporary/VIP override applicable to the attempt.
+  - Grant or deny the VMS zone-access decision.
+  - Record the zone-access event.
+  - On unauthorized/out-of-bounds access, create the supported violation/alert event.
+  related_business_rules: VMS-BR-052, VMS-BR-127, VMS-BR-191, VMS-BR-192, VMS-BR-197
+  related_workflows: BW-VMS-12, BW-VMS-13, BW-VMS-14, CW-VMS-04
+  scenarios:
+    happy_path:
+      _test_id: UC023_HP_01
+      _uc_id: UC023
+      _scenario: Happy Path
+      _expected_result: Zone decision and log are recorded; any violation alert is available for handling.
+    alternate_path:
+      _test_id: UC023_AP_01
+      _uc_id: UC023
+      _scenario: Alternate Path
+      _expected_result: A time-boxed temporary zone elevation may permit a subsequent re-validation attempt.
+    exception_path:
+      _test_id: UC023_EP_01
+      _uc_id: UC023
+      _scenario: Exception Path
+      _expected_result: Unauthorized zone access is denied/logged; unavailable integration is recorded as an integration/validation
+        exception.
+- id: UC024
+  source_id: VMS-UC-024
+  name: Grant Temporary Zone Elevation
+  uc_type: Actor-triggered
+  primary_actor: Admin
+  endpoint: /vms/api/admin/visits/<ref>/elevations/
+  method: POST
+  description: Grant a temporary, time-boxed zone-access elevation for a specific visitor/visit.
+  main_success_scenario:
+  - Select the visitor/visit.
+  - Specify the elevated zone(s) and time box.
+  - Submit the elevation.
+  - VMS records the elevation and makes it available to subsequent zone validation until expiry.
+  related_business_rules: VMS-BR-038, VMS-BR-096
+  related_workflows: BW-VMS-14, CW-VMS-04
+  scenarios:
+    happy_path:
+      _test_id: UC024_HP_01
+      _uc_id: UC024
+      _scenario: Happy Path
+      _expected_result: Temporary elevation is active for the specified time box and auditable.
+    alternate_path:
+      _test_id: UC024_AP_01
+      _uc_id: UC024
+      _scenario: Alternate Path
+      _expected_result: Expired elevation ceases to apply automatically to later validation.
+    exception_path:
+      _test_id: UC024_EP_01
+      _uc_id: UC024
+      _scenario: Exception Path
+      _expected_result: Invalid zone/visit or non-time-boxed elevation is rejected.
+- id: UC025
+  source_id: VMS-UC-025
+  name: Handle Zone Violation Alert
+  uc_type: Actor-triggered
+  primary_actor: Security Personnel
+  endpoint: /vms/api/security/alerts/<id>/handle/
+  method: POST
+  description: Review and record the handling outcome of a VMS zone-violation/out-of-bounds alert.
+  main_success_scenario:
+  - Open the alert.
+  - Review visitor, zone/location, and event information.
+  - Record the handling/escalation outcome.
+  - Notify/escalate to Admin or other security authorities where supported.
+  related_business_rules: VMS-BR-051, VMS-BR-117
+  related_workflows: BW-VMS-13, CW-VMS-04
+  scenarios:
+    happy_path:
+      _test_id: UC025_HP_01
+      _uc_id: UC025
+      _scenario: Happy Path
+      _expected_result: Alert handling/escalation information is recorded.
+    alternate_path:
+      _test_id: UC025_AP_01
+      _uc_id: UC025
+      _scenario: Alternate Path
+      _expected_result: A duplicate/false alert may be marked/recorded accordingly without changing the original access log.
+    exception_path:
+      _test_id: UC025_EP_01
+      _uc_id: UC025
+      _scenario: Exception Path
+      _expected_result: If the alert cannot be resolved, it remains open/pending according to recorded status.
+- id: UC026
+  source_id: VMS-UC-026
+  name: Trigger Emergency Muster
+  uc_type: Actor-triggered
+  primary_actor: Admin
+  endpoint: /vms/api/muster/
+  method: POST
+  description: Initiate VMS emergency muster/accountability support as an authorized Admin.
+  main_success_scenario:
+  - Trigger emergency muster.
+  - VMS creates the current on-site visitor accountability list with supported contact, host, and last-seen information.
+  - VMS triggers configured emergency alerts/assembly instructions.
+  - Make the muster list available for Security Personnel roll-call.
+  related_business_rules: VMS-BR-052, VMS-BR-130, VMS-BR-174
+  related_workflows: BW-VMS-19, CW-VMS-06
+  scenarios:
+    happy_path:
+      _test_id: UC026_HP_01
+      _uc_id: UC026
+      _scenario: Happy Path
+      _expected_result: Muster is active and the accountability list is available for roll-call.
+    alternate_path:
+      _test_id: UC026_AP_01
+      _uc_id: UC026
+      _scenario: Alternate Path
+      _expected_result: If connectivity is unavailable, VMS may use the cached roster and later reconcile it.
+    exception_path:
+      _test_id: UC026_EP_01
+      _uc_id: UC026
+      _scenario: Exception Path
+      _expected_result: If no usable live/cached roster exists, VMS records the inability to produce a complete roster.
+- id: UC027
+  source_id: VMS-UC-027
+  name: Perform Emergency Roll-call
+  uc_type: Actor-triggered
+  primary_actor: Security Personnel
+  endpoint: /vms/api/muster/<id>/roll-call/
+  method: POST
+  description: Update visitor accountability status during an active emergency muster and produce the VMS post-event result.
+  main_success_scenario:
+  - Open the active muster list.
+  - Update each available Visitor’s roll-call/accountability status.
+  - Record last-seen/assembly status information where supported.
+  - Finalize the roll-call when appropriate.
+  - VMS generates the post-event report and preserves unresolved/pending visitors where applicable.
+  related_business_rules: VMS-BR-052
+  related_workflows: BW-VMS-19, BW-VMS-20, CW-VMS-06
+  scenarios:
+    happy_path:
+      _test_id: UC027_HP_01
+      _uc_id: UC027
+      _scenario: Happy Path
+      _expected_result: Roll-call status and post-event report are recorded.
+    alternate_path:
+      _test_id: UC027_AP_01
+      _uc_id: UC027
+      _scenario: Alternate Path
+      _expected_result: Unaccounted visitors remain pending/unresolved rather than being silently marked safe.
+    exception_path:
+      _test_id: UC027_EP_01
+      _uc_id: UC027
+      _scenario: Exception Path
+      _expected_result: If connectivity fails, use supported cached information and reconcile later.
+- id: UC028
+  source_id: VMS-UC-028
+  name: Process Gate Entry in Offline Mode
+  uc_type: Actor-triggered
+  primary_actor: Security Personnel
+  endpoint: /vms/api/security/gate/offline-events/
+  method: POST
+  description: Continue supported gate-entry recording during connectivity failure by caching the gate event locally for later
+    reconciliation.
+  main_success_scenario:
+  - Use available local/cached data to process the supported offline gate event.
+  - Record the entry/checkpoint event in the local VMS cache.
+  - Mark the cached event as pending reconciliation with the authoritative VMS record.
+  related_business_rules: N/A
+  related_workflows: BW-VMS-11, CW-VMS-03
+  scenarios:
+    happy_path:
+      _test_id: UC028_HP_01
+      _uc_id: UC028
+      _scenario: Happy Path
+      _expected_result: The supported offline gate event is recorded in the local VMS cache and remains pending reconciliation.
+    alternate_path:
+      _test_id: UC028_AP_01
+      _uc_id: UC028
+      _scenario: Alternate Path
+      _expected_result: When connectivity is restored, event-triggered VMS-UC-039 performs cached-event synchronization/reconciliation.
+    exception_path:
+      _test_id: UC028_EP_01
+      _uc_id: UC028
+      _scenario: Exception Path
+      _expected_result: If offline cache is unavailable, Security Personnel cannot record the event through this UC.
+- id: UC030
+  source_id: VMS-UC-030
+  name: View Visitor Notifications
+  uc_type: Actor-triggered
+  primary_actor: Visitor
+  endpoint: /vms/api/visitor/notifications/
+  method: GET
+  description: Receive/view Visitor-facing VMS notifications for request, decision, pass, expiry, emergency, and other supported
+    visit events.
+  main_success_scenario:
+  - VMS records/triggers the applicable notification event through configured channel(s).
+  - Visitor receives or opens the notification.
+  - Visitor views the supported event details.
+  related_business_rules: VMS-BR-174
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC030_HP_01
+      _uc_id: UC030
+      _scenario: Happy Path
+      _expected_result: Notification event/view is recorded or available.
+    alternate_path:
+      _test_id: UC030_AP_01
+      _uc_id: UC030
+      _scenario: Alternate Path
+      _expected_result: A delivery failure may be recorded while the notification event remains traceable.
+    exception_path:
+      _test_id: UC030_EP_01
+      _uc_id: UC030
+      _scenario: Exception Path
+      _expected_result: Unavailable notification infrastructure does not change the underlying visit decision/state.
+- id: UC031
+  source_id: VMS-UC-031
+  name: Self-Checkout Visit
+  uc_type: Actor-triggered
+  primary_actor: Visitor
+  endpoint: /vms/api/visitor/visits/<ref>/check-out/
+  method: POST
+  description: Check out through a supported kiosk/app interface without making Security Personnel the primary actor.
+  main_success_scenario:
+  - Identify/authenticate the active visit through the supported kiosk/app flow.
+  - Confirm checkout.
+  - VMS records exit time, updates the on-site roster, and marks the visit Completed when completion conditions are met.
+  - VMS triggers configured checkout notifications.
+  related_business_rules: VMS-BR-105
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC031_HP_01
+      _uc_id: UC031
+      _scenario: Happy Path
+      _expected_result: Exit is recorded and visit completes where applicable.
+    alternate_path:
+      _test_id: UC031_AP_01
+      _uc_id: UC031
+      _scenario: Alternate Path
+      _expected_result: If self-checkout interface is unavailable, the Visitor uses the Security Personnel checkout flow instead.
+    exception_path:
+      _test_id: UC031_EP_01
+      _uc_id: UC031
+      _scenario: Exception Path
+      _expected_result: Invalid/unknown active visit is not completed.
+- id: UC032
+  source_id: VMS-UC-032
+  name: Trigger Emergency Muster
+  uc_type: Actor-triggered
+  primary_actor: Security Personnel
+  endpoint: /vms/api/muster/
+  method: POST
+  description: Initiate VMS emergency muster/accountability support as authorized Security Personnel.
+  main_success_scenario:
+  - Trigger emergency muster.
+  - VMS creates the current on-site visitor accountability list.
+  - VMS triggers configured emergency alerts/assembly instructions.
+  - Open/continue the roll-call process.
+  related_business_rules: VMS-BR-052, VMS-BR-130, VMS-BR-174
+  related_workflows: BW-VMS-20, CW-VMS-06
+  scenarios:
+    happy_path:
+      _test_id: UC032_HP_01
+      _uc_id: UC032
+      _scenario: Happy Path
+      _expected_result: Muster is active and available for roll-call.
+    alternate_path:
+      _test_id: UC032_AP_01
+      _uc_id: UC032
+      _scenario: Alternate Path
+      _expected_result: If connectivity is unavailable, VMS may use the cached roster and later reconcile it.
+    exception_path:
+      _test_id: UC032_EP_01
+      _uc_id: UC032
+      _scenario: Exception Path
+      _expected_result: If no usable roster exists, the limitation is recorded.
+- id: UC033
+  source_id: VMS-UC-033
+  name: Decide Walk-in Contingency Approval
+  uc_type: Actor-triggered
+  primary_actor: Admin
+  endpoint: /vms/api/admin/contingency/<ref>/decide/
+  method: POST
+  description: Approve or reject a walk-in visit when the selected Host is unavailable and contingency approval is permitted.
+  main_success_scenario:
+  - Review the walk-in request and Host-unavailable condition.
+  - Approve or reject the contingency request within the configured SLA/policy window.
+  - VMS records the decision and audit information.
+  - On approval, VMS activates the WALK_IN pass using the configured walk-in validity; on rejection/timeout, no pass is activated.
+  related_business_rules: VMS-BR-038, VMS-BR-049, VMS-BR-050, VMS-BR-053, VMS-BR-211
+  related_workflows: BW-VMS-07, CW-VMS-02
+  scenarios:
+    happy_path:
+      _test_id: UC033_HP_01
+      _uc_id: UC033
+      _scenario: Happy Path
+      _expected_result: Contingency decision is recorded; approved case has a valid WALK_IN pass.
+    alternate_path:
+      _test_id: UC033_AP_01
+      _uc_id: UC033
+      _scenario: Alternate Path
+      _expected_result: A timed-out contingency request remains unapproved and cannot silently receive a pass.
+    exception_path:
+      _test_id: UC033_EP_01
+      _uc_id: UC033
+      _scenario: Exception Path
+      _expected_result: Unauthorized Admin or missing request cannot be approved.
+- id: UC034
+  source_id: VMS-UC-034
+  name: Decide Visit Extension
+  uc_type: Actor-triggered
+  primary_actor: Admin
+  endpoint: /vms/api/admin/extensions/<id>/decide/
+  method: POST
+  description: Approve or reject an extension that would take an active visit beyond the policy-defined maximum duration.
+  main_success_scenario:
+  - Review the current visit, policy maximum, and requested extension.
+  - Approve or reject the extension.
+  - VMS records the decision and audit information.
+  - On approval, VMS updates the applicable pass/visit validity for the approved extension.
+  related_business_rules: VMS-BR-038, VMS-BR-126, VMS-BR-193, VMS-BR-194
+  related_workflows: BW-VMS-23, CW-VMS-05
+  scenarios:
+    happy_path:
+      _test_id: UC034_HP_01
+      _uc_id: UC034
+      _scenario: Happy Path
+      _expected_result: Approved extension becomes active and traceable, or rejection leaves prior validity unchanged.
+    alternate_path:
+      _test_id: UC034_AP_01
+      _uc_id: UC034
+      _scenario: Alternate Path
+      _expected_result: Requests that remain within the configured maximum do not require this exception UC.
+    exception_path:
+      _test_id: UC034_EP_01
+      _uc_id: UC034
+      _scenario: Exception Path
+      _expected_result: Unauthorized approval or invalid/expired visit is rejected.
+- id: UC035
+  source_id: VMS-UC-035
+  name: Decide Same-Day Urgent Visit Exception
+  uc_type: Actor-triggered
+  primary_actor: Admin
+  endpoint: /vms/api/admin/exceptions/<ref>/decide/
+  method: POST
+  description: Approve or reject the advance-registration exception for a same-day urgent visit submitted inside the normal
+    advance window.
+  main_success_scenario:
+  - Review the urgent request and timing exception.
+  - Approve or reject the exception.
+  - VMS records the decision.
+  - On approval, route the request to the normal Host decision unless another valid approval bypass applies.
+  related_business_rules: VMS-BR-038, VMS-BR-126, VMS-BR-202, VMS-BR-203
+  related_workflows: BW-VMS-22, CW-VMS-01
+  scenarios:
+    happy_path:
+      _test_id: UC035_HP_01
+      _uc_id: UC035
+      _scenario: Happy Path
+      _expected_result: Approved exception proceeds to the next normal approval state; rejected exception is stopped.
+    alternate_path:
+      _test_id: UC035_AP_01
+      _uc_id: UC035
+      _scenario: Alternate Path
+      _expected_result: If rejected, the request does not proceed to standard Host approval/pass issuance.
+    exception_path:
+      _test_id: UC035_EP_01
+      _uc_id: UC035
+      _scenario: Exception Path
+      _expected_result: Unauthorized exception approval is rejected.
+- id: UC036
+  source_id: VMS-UC-036
+  name: Terminate Visitor Visit Early
+  uc_type: Actor-triggered
+  primary_actor: Admin
+  endpoint: /vms/api/admin/visits/<ref>/terminate/
+  method: POST
+  description: Terminate/deactivate an active visitor pass/visit early as an authorized Admin for a policy-breach reason.
+  main_success_scenario:
+  - Select the active visit/pass.
+  - Enter the termination/deactivation reason.
+  - Confirm termination.
+  - VMS deactivates the pass/visit authorization, records the action/audit information, and notifies applicable actors.
+  related_business_rules: VMS-BR-038, VMS-BR-073
+  related_workflows: BW-VMS-17, BW-VMS-18, CW-VMS-05
+  scenarios:
+    happy_path:
+      _test_id: UC036_HP_01
+      _uc_id: UC036
+      _scenario: Happy Path
+      _expected_result: Visit/pass authorization is terminated/deactivated and auditable.
+    alternate_path:
+      _test_id: UC036_AP_01
+      _uc_id: UC036
+      _scenario: Alternate Path
+      _expected_result: If the Visitor is already on-site, physical exit/check-out remains a separate recorded event.
+    exception_path:
+      _test_id: UC036_EP_01
+      _uc_id: UC036
+      _scenario: Exception Path
+      _expected_result: Unauthorized or already-inactive visit/pass cannot be terminated through this UC.
+- id: UC037
+  source_id: VMS-UC-037
+  name: Expire Pending Visit Request
+  uc_type: Event-triggered
+  primary_actor: N.A. — Event-triggered
+  endpoint: services.lifecycle.expire_pending_requests
+  method: EVENT
+  description: Apply the policy-defined pending-approval timeout as an autonomous lifecycle service.
+  main_success_scenario:
+  - Detect that the policy-defined approval timeout has elapsed while the request remains pending.
+  - Set the visit request state to Expired and prevent normal approval/pass activation for that timed-out request.
+  - Record the timeout outcome and trigger the supported expiry notification to the Visitor.
+  related_business_rules: VMS-BR-062, VMS-BR-200
+  related_workflows: BW-VMS-03, CW-VMS-01
+  scenarios:
+    happy_path:
+      _test_id: UC037_HP_01
+      _uc_id: UC037
+      _scenario: Happy Path
+      _expected_result: The request is Expired, no normal pass is activated, the outcome is traceable, and the supported expiry
+        notification is triggered.
+    alternate_path:
+      _test_id: UC037_AP_01
+      _uc_id: UC037
+      _scenario: Alternate Path
+      _expected_result: Configured pre-expiry reminder events are handled separately by VMS-UC-040.
+    exception_path:
+      _test_id: UC037_EP_01
+      _uc_id: UC037
+      _scenario: Exception Path
+      _expected_result: If the request is no longer pending when the timeout event is evaluated, no expiry transition is applied.
+- id: UC038
+  source_id: VMS-UC-038
+  name: Automatically Check Out Visit
+  uc_type: Event-triggered
+  primary_actor: N.A. — Event-triggered
+  endpoint: services.lifecycle.auto_check_out
+  method: EVENT
+  description: Automatically check out an active/on-site visit when the supported validity-end or pass-expiry event occurs
+    before recorded checkout.
+  main_success_scenario:
+  - Detect that the scheduled validity end or pass-expiry trigger has occurred before a recorded manual/self checkout.
+  - Record the supported automatic checkout/completion event and out-time.
+  - Update the on-site roster and visit state according to the completion rule.
+  - Trigger the configured checkout notification.
+  related_business_rules: VMS-BR-101, VMS-BR-105
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC038_HP_01
+      _uc_id: UC038
+      _scenario: Happy Path
+      _expected_result: The supported automatic checkout is recorded, the roster is updated, and the visit reaches Completed
+        where the completion rule is satisfied.
+    alternate_path:
+      _test_id: UC038_AP_01
+      _uc_id: UC038
+      _scenario: Alternate Path
+      _expected_result: If checkout was already recorded, the event does not create a second checkout.
+    exception_path:
+      _test_id: UC038_EP_01
+      _uc_id: UC038
+      _scenario: Exception Path
+      _expected_result: If the visit record cannot be resolved consistently, the event is not silently converted into a false
+        completion record.
+- id: UC039
+  source_id: VMS-UC-039
+  name: Reconcile Cached Offline Gate Entries
+  uc_type: Event-triggered
+  primary_actor: N.A. — Event-triggered
+  endpoint: services.gate.reconcile_offline_events
+  method: EVENT
+  description: Synchronize/reconcile cached offline gate events when connectivity is restored.
+  main_success_scenario:
+  - Detect restoration of connectivity while cached gate events are pending reconciliation.
+  - Synchronize the pending cached events with the authoritative VMS record.
+  - Mark successfully synchronized events reconciled.
+  - Flag any synchronization conflict for review instead of silently overwriting authoritative data.
+  related_business_rules: N/A
+  related_workflows: BW-VMS-11, CW-VMS-03
+  scenarios:
+    happy_path:
+      _test_id: UC039_HP_01
+      _uc_id: UC039
+      _scenario: Happy Path
+      _expected_result: Cached gate events are reconciled or explicitly flagged for review; no event is silently lost.
+    alternate_path:
+      _test_id: UC039_AP_01
+      _uc_id: UC039
+      _scenario: Alternate Path
+      _expected_result: If no cached events are pending, no reconciliation action is required.
+    exception_path:
+      _test_id: UC039_EP_01
+      _uc_id: UC039
+      _scenario: Exception Path
+      _expected_result: A data conflict is flagged for review rather than silently overwriting authoritative data.
+- id: UC040
+  source_id: VMS-UC-040
+  name: Send Pending Approval Reminder
+  uc_type: Event-triggered
+  primary_actor: N.A. — Event-triggered
+  endpoint: services.lifecycle.send_pending_reminders
+  method: EVENT
+  description: Send configured pending-approval reminders while a visit request remains undecided.
+  main_success_scenario:
+  - Detect a configured reminder instant for a visit request that is still pending.
+  - Generate the pending-approval reminder for the responsible Host.
+  - Route the reminder through the configured notification channel(s) and retain the notification event even if external delivery
+    fails.
+  related_business_rules: VMS-BR-174
+  related_workflows: N/A
+  scenarios:
+    happy_path:
+      _test_id: UC040_HP_01
+      _uc_id: UC040
+      _scenario: Happy Path
+      _expected_result: The reminder event is recorded and routed to the Host through the configured channel(s).
+    alternate_path:
+      _test_id: UC040_AP_01
+      _uc_id: UC040
+      _scenario: Alternate Path
+      _expected_result: If the request is no longer pending, the reminder is suppressed. Multiple configured reminder instants
+        may be supported.
+    exception_path:
+      _test_id: UC040_EP_01
+      _uc_id: UC040
+      _scenario: Exception Path
+      _expected_result: If a delivery channel is unavailable, preserve the notification event and apply the configured-channel
+        behavior without inventing delivery guarantees.

@@ -1,0 +1,896 @@
+# Generated from the frozen VMS v1.3 specification bundle. Do not edit by hand.
+business_rules:
+- id: BR037
+  source_id: VMS-BR-037
+  name: Mandatory Pre-registration Validation
+  rule_type: Validation
+  statement: A pre-registration request may be accepted only after required registration fields pass VMS validation.
+  applies_to: Online pre-registration
+  related_use_cases: VMS-UC-010
+  scenarios:
+    valid:
+      _test_id: BR037_V_01
+      _br_id: BR037
+      _scenario: Valid
+      _expected_result: Reject/return invalid submission; create a request only after validation succeeds.
+    invalid:
+      _test_id: BR037_I_01
+      _br_id: BR037
+      _scenario: Invalid
+      _expected_result: 'Violation of: A pre-registration request may be accepted only after required registration fields
+        pass VMS validation.'
+- id: BR038
+  source_id: VMS-BR-038
+  name: Duplicate Visit Request Check
+  rule_type: Validation
+  statement: VMS must check a pre-registration submission for duplicate visit requests before accepting it.
+  applies_to: Online pre-registration
+  related_use_cases: VMS-UC-010, VMS-UC-019, VMS-UC-024, VMS-UC-033, VMS-UC-034, VMS-UC-035, VMS-UC-036
+  scenarios:
+    valid:
+      _test_id: BR038_V_01
+      _br_id: BR038
+      _scenario: Valid
+      _expected_result: Apply the supported duplicate check and prevent/flag duplicate acceptance as defined by VMS.
+    invalid:
+      _test_id: BR038_I_01
+      _br_id: BR038
+      _scenario: Invalid
+      _expected_result: 'Violation of: VMS must check a pre-registration submission for duplicate visit requests before accepting
+        it.'
+- id: BR049
+  source_id: VMS-BR-049
+  name: Walk-in Contingency Approval Authorization
+  rule_type: Authorization
+  statement: When the selected Host is unavailable for a walk-in visit, only the relevant authorized Admin may provide contingency
+    approval.
+  applies_to: Walk-in approval
+  related_use_cases: VMS-UC-033
+  scenarios:
+    valid:
+      _test_id: BR049_V_01
+      _br_id: BR049
+      _scenario: Valid
+      _expected_result: Route to Admin contingency decision; do not treat Security Personnel as the approver.
+    invalid:
+      _test_id: BR049_I_01
+      _br_id: BR049
+      _scenario: Invalid
+      _expected_result: 'Violation of: When the selected Host is unavailable for a walk-in visit, only the relevant authorized
+        Admin may provide contingency approval.'
+- id: BR050
+  source_id: VMS-BR-050
+  name: Walk-in Contingency Approval SLA
+  rule_type: Time / Trigger
+  statement: Contingency approval for a Host-unavailable walk-in visit is governed by the configured SLA/policy window.
+  applies_to: Walk-in contingency approval
+  related_use_cases: VMS-UC-022, VMS-UC-033
+  scenarios:
+    valid:
+      _test_id: BR050_V_01
+      _br_id: BR050
+      _scenario: Valid
+      _expected_result: Approval must occur within the configured window; otherwise no pass is activated through this path.
+    invalid:
+      _test_id: BR050_I_01
+      _br_id: BR050
+      _scenario: Invalid
+      _expected_result: 'Violation of: Contingency approval for a Host-unavailable walk-in visit is governed by the configured
+        SLA/policy window.'
+- id: BR051
+  source_id: VMS-BR-051
+  name: Blacklist Registration Rejection
+  rule_type: Eligibility / Constraint
+  statement: A registration request that matches an applicable active published blacklist rule is rejected.
+  applies_to: Pre-registration and walk-in registration
+  related_use_cases: VMS-UC-010, VMS-UC-017, VMS-UC-025
+  scenarios:
+    valid:
+      _test_id: BR051_V_01
+      _br_id: BR051
+      _scenario: Valid
+      _expected_result: Reject the registration/pass path and record/alert as applicable.
+    invalid:
+      _test_id: BR051_I_01
+      _br_id: BR051
+      _scenario: Invalid
+      _expected_result: 'Violation of: A registration request that matches an applicable active published blacklist rule is
+        rejected.'
+- id: BR052
+  source_id: VMS-BR-052
+  name: Host Approval Requirement
+  rule_type: Authorization
+  statement: A pre-registered visit requires explicit Host approval before pass activation unless a valid supported pre-authorization
+    or VIP override applies.
+  applies_to: Pre-registered visit approval
+  related_use_cases: VMS-UC-003, VMS-UC-010, VMS-UC-013, VMS-UC-014, VMS-UC-018, VMS-UC-023, VMS-UC-026, VMS-UC-027, VMS-UC-032
+  scenarios:
+    valid:
+      _test_id: BR052_V_01
+      _br_id: BR052
+      _scenario: Valid
+      _expected_result: Require Host decision or a valid approval-bypass rule before pass activation.
+    invalid:
+      _test_id: BR052_I_01
+      _br_id: BR052
+      _scenario: Invalid
+      _expected_result: 'Violation of: A pre-registered visit requires explicit Host approval before pass activation unless
+        a valid supported pre-authorization or VIP override applies.'
+- id: BR053
+  source_id: VMS-BR-053
+  name: Walk-in Pass Duration
+  rule_type: Time / Constraint
+  statement: A WALK_IN pass uses the configured walk-in pass duration; the frozen baseline default is 4 hours.
+  applies_to: Walk-in pass
+  related_use_cases: VMS-UC-005, VMS-UC-033
+  scenarios:
+    valid:
+      _test_id: BR053_V_01
+      _br_id: BR053
+      _scenario: Valid
+      _expected_result: Set/enforce pass validity according to the published configured duration.
+    invalid:
+      _test_id: BR053_I_01
+      _br_id: BR053
+      _scenario: Invalid
+      _expected_result: 'Violation of: A WALK_IN pass uses the configured walk-in pass duration; the frozen baseline default
+        is 4 hours.'
+- id: BR062
+  source_id: VMS-BR-062
+  name: Pending Approval Timeout
+  rule_type: Time / Lifecycle
+  statement: A pending visit request expires after the policy-defined approval window; the frozen baseline default is 24 hours.
+  applies_to: Host approval
+  related_use_cases: VMS-UC-011, VMS-UC-037
+  scenarios:
+    valid:
+      _test_id: BR062_V_01
+      _br_id: BR062
+      _scenario: Valid
+      _expected_result: Transition the request to Expired at timeout and trigger the supported expiry notification/reminder
+        behavior.
+    invalid:
+      _test_id: BR062_I_01
+      _br_id: BR062
+      _scenario: Invalid
+      _expected_result: 'Violation of: A pending visit request expires after the policy-defined approval window; the frozen
+        baseline default is 24 hours.'
+- id: BR073
+  source_id: VMS-BR-073
+  name: Early Pass/Visit Termination Authorization
+  rule_type: Authorization / Lifecycle
+  statement: Host or Admin may terminate/deactivate an active visitor pass/visit early for policy-breach handling within their
+    authorized scope, and the action must be traceable.
+  applies_to: Active pass/visit
+  related_use_cases: VMS-UC-016, VMS-UC-036
+  scenarios:
+    valid:
+      _test_id: BR073_V_01
+      _br_id: BR073
+      _scenario: Valid
+      _expected_result: Deactivate the pass/visit authorization and record the reason/audit information.
+    invalid:
+      _test_id: BR073_I_01
+      _br_id: BR073
+      _scenario: Invalid
+      _expected_result: 'Violation of: Host or Admin may terminate/deactivate an active visitor pass/visit early for policy-breach
+        handling within their authorized scope, and the action must be traceable.'
+- id: BR077
+  source_id: VMS-BR-077
+  name: Active Pass Gate Rule
+  rule_type: Eligibility
+  statement: Gate entry may be allowed only when the presented pass is active.
+  applies_to: Gate validation
+  related_use_cases: VMS-UC-018
+  scenarios:
+    valid:
+      _test_id: BR077_V_01
+      _br_id: BR077
+      _scenario: Valid
+      _expected_result: Fail validation/block entry if pass is inactive.
+    invalid:
+      _test_id: BR077_I_01
+      _br_id: BR077
+      _scenario: Invalid
+      _expected_result: 'Violation of: Gate entry may be allowed only when the presented pass is active.'
+- id: BR082
+  source_id: VMS-BR-082
+  name: Gate Validation Failure Rule
+  rule_type: Constraint
+  statement: When a required gate validation fails, VMS blocks entry and records the failure reason.
+  applies_to: Gate validation
+  related_use_cases: VMS-UC-018, VMS-UC-020
+  scenarios:
+    valid:
+      _test_id: BR082_V_01
+      _br_id: BR082
+      _scenario: Valid
+      _expected_result: Entry remains blocked unless a separately permitted Admin override path completes.
+    invalid:
+      _test_id: BR082_I_01
+      _br_id: BR082
+      _scenario: Invalid
+      _expected_result: 'Violation of: When a required gate validation fails, VMS blocks entry and records the failure reason.'
+- id: BR085
+  source_id: VMS-BR-085
+  name: Manual Gate Override Authorization
+  rule_type: Authorization / Audit
+  statement: A gate-validation failure may be manually overridden only by an authorized Admin with recorded justification
+    and audit trail.
+  applies_to: Blocked gate attempt
+  related_use_cases: VMS-UC-019
+  scenarios:
+    valid:
+      _test_id: BR085_V_01
+      _br_id: BR085
+      _scenario: Valid
+      _expected_result: Require Admin decision and justification; record override outcome.
+    invalid:
+      _test_id: BR085_I_01
+      _br_id: BR085
+      _scenario: Invalid
+      _expected_result: 'Violation of: A gate-validation failure may be manually overridden only by an authorized Admin with
+        recorded justification and audit trail.'
+- id: BR096
+  source_id: VMS-BR-096
+  name: Temporary Zone Elevation Time Box
+  rule_type: Time / Authorization
+  statement: Any temporary zone elevation granted by Admin must be time-boxed.
+  applies_to: Temporary zone elevation
+  related_use_cases: VMS-UC-024
+  scenarios:
+    valid:
+      _test_id: BR096_V_01
+      _br_id: BR096
+      _scenario: Valid
+      _expected_result: Store explicit expiry/time box and stop applying the elevation after it expires.
+    invalid:
+      _test_id: BR096_I_01
+      _br_id: BR096
+      _scenario: Invalid
+      _expected_result: 'Violation of: Any temporary zone elevation granted by Admin must be time-boxed.'
+- id: BR101
+  source_id: VMS-BR-101
+  name: Automatic Checkout Trigger
+  rule_type: Lifecycle / Trigger
+  statement: VMS automatically checks out a Visitor when scheduled validity ends or the pass expires, where the supported
+    auto-checkout behavior applies.
+  applies_to: Active/on-site visit
+  related_use_cases: VMS-UC-038
+  scenarios:
+    valid:
+      _test_id: BR101_V_01
+      _br_id: BR101
+      _scenario: Valid
+      _expected_result: Record auto-checkout according to supported lifecycle behavior and update the roster.
+    invalid:
+      _test_id: BR101_I_01
+      _br_id: BR101
+      _scenario: Invalid
+      _expected_result: 'Violation of: VMS automatically checks out a Visitor when scheduled validity ends or the pass expires,
+        where the supported auto-checkout behavior applies.'
+- id: BR105
+  source_id: VMS-BR-105
+  name: Visit Completion Rule
+  rule_type: Lifecycle
+  statement: A visit is marked Completed only with the supported recorded exit/completion information, including in-time and
+    out-time where applicable.
+  applies_to: Checkout/visit completion
+  related_use_cases: VMS-UC-021, VMS-UC-031, VMS-UC-038
+  scenarios:
+    valid:
+      _test_id: BR105_V_01
+      _br_id: BR105
+      _scenario: Valid
+      _expected_result: Set Completed and preserve traceable visit times.
+    invalid:
+      _test_id: BR105_I_01
+      _br_id: BR105
+      _scenario: Invalid
+      _expected_result: 'Violation of: A visit is marked Completed only with the supported recorded exit/completion information,
+        including in-time and out-time where applicable.'
+- id: BR112
+  source_id: VMS-BR-112
+  name: Blacklist Runtime Checkpoints
+  rule_type: Validation
+  statement: The active published blacklist/watchlist data is checked at pre-registration, walk-in registration, and gate
+    check-in as applicable.
+  applies_to: Registration and gate validation
+  related_use_cases: VMS-UC-010, VMS-UC-017, VMS-UC-018
+  scenarios:
+    valid:
+      _test_id: BR112_V_01
+      _br_id: BR112
+      _scenario: Valid
+      _expected_result: Apply the published registry to the checkpoint outcome.
+    invalid:
+      _test_id: BR112_I_01
+      _br_id: BR112
+      _scenario: Invalid
+      _expected_result: 'Violation of: The active published blacklist/watchlist data is checked at pre-registration, walk-in
+        registration, and gate check-in as applicable.'
+- id: BR116
+  source_id: VMS-BR-116
+  name: Blacklist Entry Denial
+  rule_type: Eligibility / Constraint
+  statement: A gate entry attempt that matches an applicable active blacklist rule is denied.
+  applies_to: Gate validation
+  related_use_cases: VMS-UC-018
+  scenarios:
+    valid:
+      _test_id: BR116_V_01
+      _br_id: BR116
+      _scenario: Valid
+      _expected_result: Block the entry attempt and record/alert as applicable.
+    invalid:
+      _test_id: BR116_I_01
+      _br_id: BR116
+      _scenario: Invalid
+      _expected_result: 'Violation of: A gate entry attempt that matches an applicable active blacklist rule is denied.'
+- id: BR117
+  source_id: VMS-BR-117
+  name: Blacklist Match Alert
+  rule_type: Trigger / Routing
+  statement: A detected blacklist match triggers the supported security-authority alert/record.
+  applies_to: Registration/gate blacklist check
+  related_use_cases: VMS-UC-010, VMS-UC-017, VMS-UC-018, VMS-UC-025
+  scenarios:
+    valid:
+      _test_id: BR117_V_01
+      _br_id: BR117
+      _scenario: Valid
+      _expected_result: Create/send the supported security alert and preserve the event.
+    invalid:
+      _test_id: BR117_I_01
+      _br_id: BR117
+      _scenario: Invalid
+      _expected_result: 'Violation of: A detected blacklist match triggers the supported security-authority alert/record.'
+- id: BR118
+  source_id: VMS-BR-118
+  name: Temporary Safe-list Scope
+  rule_type: Eligibility
+  statement: VMS may support a temporary safe-list for vetted VIPs/vendors only where explicitly configured.
+  applies_to: Blacklist/watchlist handling
+  related_use_cases: VMS-UC-006
+  scenarios:
+    valid:
+      _test_id: BR118_V_01
+      _br_id: BR118
+      _scenario: Valid
+      _expected_result: Apply the safe-list exception only within its recorded scope/validity.
+    invalid:
+      _test_id: BR118_I_01
+      _br_id: BR118
+      _scenario: Invalid
+      _expected_result: 'Violation of: VMS may support a temporary safe-list for vetted VIPs/vendors only where explicitly
+        configured.'
+- id: BR119
+  source_id: VMS-BR-119
+  name: Temporary Safe-list Expiry
+  rule_type: Time / Constraint
+  statement: Every temporary safe-list entry must have an expiry.
+  applies_to: Safe-list entry
+  related_use_cases: VMS-UC-006
+  scenarios:
+    valid:
+      _test_id: BR119_V_01
+      _br_id: BR119
+      _scenario: Valid
+      _expected_result: Reject/avoid indefinite safe-list records and stop applying expired entries.
+    invalid:
+      _test_id: BR119_I_01
+      _br_id: BR119
+      _scenario: Invalid
+      _expected_result: 'Violation of: Every temporary safe-list entry must have an expiry.'
+- id: BR120
+  source_id: VMS-BR-120
+  name: Published Blacklist Runtime Source
+  rule_type: Source of Truth
+  statement: Only published blacklist/watchlist registry versions are used by runtime VMS checks.
+  applies_to: Blacklist/watchlist runtime validation
+  related_use_cases: VMS-UC-006, VMS-UC-010, VMS-UC-017, VMS-UC-018
+  scenarios:
+    valid:
+      _test_id: BR120_V_01
+      _br_id: BR120
+      _scenario: Valid
+      _expected_result: Ignore draft/unpublished registry changes for live validation.
+    invalid:
+      _test_id: BR120_I_01
+      _br_id: BR120
+      _scenario: Invalid
+      _expected_result: 'Violation of: Only published blacklist/watchlist registry versions are used by runtime VMS checks.'
+- id: BR125
+  source_id: VMS-BR-125
+  name: Access Policy Versioning
+  rule_type: Lifecycle / Source of Truth
+  statement: VMS access policies are versioned records.
+  applies_to: Access policy management
+  related_use_cases: VMS-UC-005
+  scenarios:
+    valid:
+      _test_id: BR125_V_01
+      _br_id: BR125
+      _scenario: Valid
+      _expected_result: Preserve policy version identity/history.
+    invalid:
+      _test_id: BR125_I_01
+      _br_id: BR125
+      _scenario: Invalid
+      _expected_result: 'Violation of: VMS access policies are versioned records.'
+- id: BR126
+  source_id: VMS-BR-126
+  name: Access Policy Publication
+  rule_type: Source of Truth
+  statement: Access-policy changes do not take effect in runtime validation until the policy version is published.
+  applies_to: Access policy management/runtime validation
+  related_use_cases: VMS-UC-005, VMS-UC-034, VMS-UC-035
+  scenarios:
+    valid:
+      _test_id: BR126_V_01
+      _br_id: BR126
+      _scenario: Valid
+      _expected_result: Keep draft/unpublished policy out of live validation; activate only on publication.
+    invalid:
+      _test_id: BR126_I_01
+      _br_id: BR126
+      _scenario: Invalid
+      _expected_result: 'Violation of: Access-policy changes do not take effect in runtime validation until the policy version
+        is published.'
+- id: BR127
+  source_id: VMS-BR-127
+  name: Published Access Policy Runtime Source
+  rule_type: Source of Truth
+  statement: Runtime VMS validations consume only the applicable published access-policy version.
+  applies_to: Registration/gate/zone validation
+  related_use_cases: VMS-UC-005, VMS-UC-010, VMS-UC-017, VMS-UC-018, VMS-UC-023
+  scenarios:
+    valid:
+      _test_id: BR127_V_01
+      _br_id: BR127
+      _scenario: Valid
+      _expected_result: Use published policy values as the validation source.
+    invalid:
+      _test_id: BR127_I_01
+      _br_id: BR127
+      _scenario: Invalid
+      _expected_result: 'Violation of: Runtime VMS validations consume only the applicable published access-policy version.'
+- id: BR128
+  source_id: VMS-BR-128
+  name: Policy Modification Creates New Version
+  rule_type: Lifecycle
+  statement: Modifying access-policy content creates a new policy version rather than silently mutating the published historical
+    version.
+  applies_to: Access policy management
+  related_use_cases: VMS-UC-005
+  scenarios:
+    valid:
+      _test_id: BR128_V_01
+      _br_id: BR128
+      _scenario: Valid
+      _expected_result: Create/store a new version for the modification.
+    invalid:
+      _test_id: BR128_I_01
+      _br_id: BR128
+      _scenario: Invalid
+      _expected_result: 'Violation of: Modifying access-policy content creates a new policy version rather than silently mutating
+        the published historical version.'
+- id: BR129
+  source_id: VMS-BR-129
+  name: Policy Non-retroactivity
+  rule_type: Lifecycle / Constraint
+  statement: A newly modified/published access policy does not retroactively change active visits unless an applicable policy
+    explicitly states otherwise.
+  applies_to: Active visits
+  related_use_cases: VMS-UC-005
+  scenarios:
+    valid:
+      _test_id: BR129_V_01
+      _br_id: BR129
+      _scenario: Valid
+      _expected_result: Continue existing active-visit behavior under the applicable prior context unless an explicit rule
+        says otherwise.
+    invalid:
+      _test_id: BR129_I_01
+      _br_id: BR129
+      _scenario: Invalid
+      _expected_result: 'Violation of: A newly modified/published access policy does not retroactively change active visits
+        unless an applicable policy explicitly states otherwise.'
+- id: BR130
+  source_id: VMS-BR-130
+  name: Emergency Muster Trigger Authorization
+  rule_type: Authorization
+  statement: Emergency muster may be triggered by an authorized Admin or Security Personnel.
+  applies_to: Emergency muster
+  related_use_cases: VMS-UC-026, VMS-UC-032
+  scenarios:
+    valid:
+      _test_id: BR130_V_01
+      _br_id: BR130
+      _scenario: Valid
+      _expected_result: Allow either authorized role to start VMS muster support.
+    invalid:
+      _test_id: BR130_I_01
+      _br_id: BR130
+      _scenario: Invalid
+      _expected_result: 'Violation of: Emergency muster may be triggered by an authorized Admin or Security Personnel.'
+- id: BR174
+  source_id: VMS-BR-174
+  name: Notification Channel Configuration
+  rule_type: Routing / Configuration
+  statement: VMS sends/triggers notifications through email, SMS, and/or in-app push only where the corresponding channel/infrastructure
+    is configured and available.
+  applies_to: VMS notifications
+  related_use_cases: VMS-UC-012, VMS-UC-026, VMS-UC-030, VMS-UC-032, VMS-UC-037, VMS-UC-038, VMS-UC-040
+  scenarios:
+    valid:
+      _test_id: BR174_V_01
+      _br_id: BR174
+      _scenario: Valid
+      _expected_result: Use configured channel(s); preserve the underlying event even if delivery infrastructure fails.
+    invalid:
+      _test_id: BR174_I_01
+      _br_id: BR174
+      _scenario: Invalid
+      _expected_result: 'Violation of: VMS sends/triggers notifications through email, SMS, and/or in-app push only where
+        the corresponding channel/infrastructure is configured and available.'
+- id: BR181
+  source_id: VMS-BR-181
+  name: Time-bound VMS Role Assignment
+  rule_type: Authorization / Time
+  statement: Admin and Security Personnel VMS role assignments are time-bound.
+  applies_to: Role management
+  related_use_cases: VMS-UC-001
+  scenarios:
+    valid:
+      _test_id: BR181_V_01
+      _br_id: BR181
+      _scenario: Valid
+      _expected_result: Require a defined duration/validity for the assignment.
+    invalid:
+      _test_id: BR181_I_01
+      _br_id: BR181
+      _scenario: Invalid
+      _expected_result: 'Violation of: Admin and Security Personnel VMS role assignments are time-bound.'
+- id: BR182
+  source_id: VMS-BR-182
+  name: Immediate Role Reassignment
+  rule_type: Lifecycle
+  statement: A valid VMS role reassignment becomes effective immediately after successful reassignment.
+  applies_to: Role management
+  related_use_cases: VMS-UC-001
+  scenarios:
+    valid:
+      _test_id: BR182_V_01
+      _br_id: BR182
+      _scenario: Valid
+      _expected_result: Activate the new assignment without a delayed handoff period.
+    invalid:
+      _test_id: BR182_I_01
+      _br_id: BR182
+      _scenario: Invalid
+      _expected_result: 'Violation of: A valid VMS role reassignment becomes effective immediately after successful reassignment.'
+- id: BR183
+  source_id: VMS-BR-183
+  name: Pending Work Handoff on Reassignment
+  rule_type: Routing
+  statement: Applicable pending requests are routed to newly assigned personnel after role reassignment.
+  applies_to: Role management / pending work
+  related_use_cases: VMS-UC-001
+  scenarios:
+    valid:
+      _test_id: BR183_V_01
+      _br_id: BR183
+      _scenario: Valid
+      _expected_result: Transfer/reroute pending work to the new assigned personnel.
+    invalid:
+      _test_id: BR183_I_01
+      _br_id: BR183
+      _scenario: Invalid
+      _expected_result: 'Violation of: Applicable pending requests are routed to newly assigned personnel after role reassignment.'
+- id: BR184
+  source_id: VMS-BR-184
+  name: VMS Role Hierarchy
+  rule_type: Authorization
+  statement: VMS role governance follows Super Admin \> Admin \> Security Personnel.
+  applies_to: Role management
+  related_use_cases: VMS-UC-001
+  scenarios:
+    valid:
+      _test_id: BR184_V_01
+      _br_id: BR184
+      _scenario: Valid
+      _expected_result: Enforce the stated hierarchy for VMS role governance.
+    invalid:
+      _test_id: BR184_I_01
+      _br_id: BR184
+      _scenario: Invalid
+      _expected_result: 'Violation of: VMS role governance follows Super Admin \> Admin \> Security Personnel.'
+- id: BR185
+  source_id: VMS-BR-185
+  name: Implicit Host Role
+  rule_type: Eligibility / Identity
+  statement: Faculty/Staff users available from the institutional user directory are treated as Hosts without Super Admin
+    assigning the Host role through VMS role management.
+  applies_to: Host recognition
+  related_use_cases: VMS-UC-002
+  scenarios:
+    valid:
+      _test_id: BR185_V_01
+      _br_id: BR185
+      _scenario: Valid
+      _expected_result: Recognize the user as a Host for VMS visit selection/approval.
+    invalid:
+      _test_id: BR185_I_01
+      _br_id: BR185
+      _scenario: Invalid
+      _expected_result: 'Violation of: Faculty/Staff users available from the institutional user directory are treated as
+        Hosts without Super Admin assigning the Host role through VMS role management.'
+- id: BR186
+  source_id: VMS-BR-186
+  name: Valid Identity Document Requirement
+  rule_type: Validation
+  statement: Visitor registration requires a valid government-issued identity document as preserved by the existing FR baseline.
+  applies_to: Pre-registration and walk-in registration
+  related_use_cases: VMS-UC-010, VMS-UC-017
+  scenarios:
+    valid:
+      _test_id: BR186_V_01
+      _br_id: BR186
+      _scenario: Valid
+      _expected_result: Require supported identity-document information before successful registration.
+    invalid:
+      _test_id: BR186_I_01
+      _br_id: BR186
+      _scenario: Invalid
+      _expected_result: 'Violation of: Visitor registration requires a valid government-issued identity document as preserved
+        by the existing FR baseline.'
+- id: BR187
+  source_id: VMS-BR-187
+  name: Supported Identity Document Types
+  rule_type: Validation / Value Domain
+  statement: Supported identity-document type values are Passport, National ID, Driver's License, or Other, as preserved by
+    the existing FR baseline.
+  applies_to: Visitor registration
+  related_use_cases: VMS-UC-010, VMS-UC-017
+  scenarios:
+    valid:
+      _test_id: BR187_V_01
+      _br_id: BR187
+      _scenario: Valid
+      _expected_result: Restrict the document-type field to the supported value domain.
+    invalid:
+      _test_id: BR187_I_01
+      _br_id: BR187
+      _scenario: Invalid
+      _expected_result: 'Violation of: Supported identity-document type values are Passport, National ID, Driver''s License,
+        or Other, as preserved by the existing FR baseline.'
+- id: BR190
+  source_id: VMS-BR-190
+  name: Pass Validity Window
+  rule_type: Time / Eligibility
+  statement: Gate entry is denied outside the pass valid-from and valid-until timestamps.
+  applies_to: Gate validation
+  related_use_cases: VMS-UC-018
+  scenarios:
+    valid:
+      _test_id: BR190_V_01
+      _br_id: BR190
+      _scenario: Valid
+      _expected_result: Fail validation/block entry when current entry time is outside the validity window.
+    invalid:
+      _test_id: BR190_I_01
+      _br_id: BR190
+      _scenario: Invalid
+      _expected_result: 'Violation of: Gate entry is denied outside the pass valid-from and valid-until timestamps.'
+- id: BR191
+  source_id: VMS-BR-191
+  name: Unauthorized Zone Access Denial
+  rule_type: Authorization / Constraint
+  statement: VMS denies a zone-access attempt when the Visitor lacks permission for the target zone under the applicable policy/pass/override.
+  applies_to: Zone access
+  related_use_cases: VMS-UC-023
+  scenarios:
+    valid:
+      _test_id: BR191_V_01
+      _br_id: BR191
+      _scenario: Valid
+      _expected_result: Deny access and create the supported denial/violation event.
+    invalid:
+      _test_id: BR191_I_01
+      _br_id: BR191
+      _scenario: Invalid
+      _expected_result: 'Violation of: VMS denies a zone-access attempt when the Visitor lacks permission for the target zone
+        under the applicable policy/pass/override.'
+- id: BR192
+  source_id: VMS-BR-192
+  name: Unauthorized Zone Access Logging
+  rule_type: Audit / Trigger
+  statement: Every unauthorized zone-access attempt is logged as a supported visit/zone-access event.
+  applies_to: Zone access
+  related_use_cases: VMS-UC-023
+  scenarios:
+    valid:
+      _test_id: BR192_V_01
+      _br_id: BR192
+      _scenario: Valid
+      _expected_result: Record the denied attempt with available visitor/zone/time information.
+    invalid:
+      _test_id: BR192_I_01
+      _br_id: BR192
+      _scenario: Invalid
+      _expected_result: 'Violation of: Every unauthorized zone-access attempt is logged as a supported visit/zone-access event.'
+- id: BR193
+  source_id: VMS-BR-193
+  name: Maximum Visit Duration
+  rule_type: Time / Constraint
+  statement: A visit must not exceed the published policy-defined maximum duration; the frozen baseline default is 8 hours
+    unless an approved extension applies.
+  applies_to: Registration/pass validity
+  related_use_cases: VMS-UC-005, VMS-UC-010, VMS-UC-034
+  scenarios:
+    valid:
+      _test_id: BR193_V_01
+      _br_id: BR193
+      _scenario: Valid
+      _expected_result: Reject/limit duration beyond the applicable maximum unless the extension rule is satisfied.
+    invalid:
+      _test_id: BR193_I_01
+      _br_id: BR193
+      _scenario: Invalid
+      _expected_result: 'Violation of: A visit must not exceed the published policy-defined maximum duration; the frozen baseline
+        default is 8 hours unless an approved extension applies.'
+- id: BR194
+  source_id: VMS-BR-194
+  name: Extension Approval
+  rule_type: Authorization
+  statement: An extension beyond the policy-defined maximum visit duration requires Admin approval.
+  applies_to: Visit extension
+  related_use_cases: VMS-UC-034
+  scenarios:
+    valid:
+      _test_id: BR194_V_01
+      _br_id: BR194
+      _scenario: Valid
+      _expected_result: Do not activate the extension unless an authorized Admin approves it.
+    invalid:
+      _test_id: BR194_I_01
+      _br_id: BR194
+      _scenario: Invalid
+      _expected_result: 'Violation of: An extension beyond the policy-defined maximum visit duration requires Admin approval.'
+- id: BR195
+  source_id: VMS-BR-195
+  name: Pre-authorization Approval Bypass
+  rule_type: Authorization / Routing
+  statement: A valid applicable Host pre-authorization allows the visit to skip the individual Host-approval decision.
+  applies_to: Pre-registered recurring visit
+  related_use_cases: VMS-UC-010, VMS-UC-014
+  scenarios:
+    valid:
+      _test_id: BR195_V_01
+      _br_id: BR195
+      _scenario: Valid
+      _expected_result: Bypass the individual Host decision and proceed to the authorized/pass state subject to other validations.
+    invalid:
+      _test_id: BR195_I_01
+      _br_id: BR195
+      _scenario: Invalid
+      _expected_result: 'Violation of: A valid applicable Host pre-authorization allows the visit to skip the individual Host-approval
+        decision.'
+- id: BR196
+  source_id: VMS-BR-196
+  name: VIP Override Authorization
+  rule_type: Authorization
+  statement: Only Super Admin grants the VMS VIP status/override permission represented by this module.
+  applies_to: VIP handling
+  related_use_cases: VMS-UC-003
+  scenarios:
+    valid:
+      _test_id: BR196_V_01
+      _br_id: BR196
+      _scenario: Valid
+      _expected_result: Require Super Admin authorization and record scope/validity.
+    invalid:
+      _test_id: BR196_I_01
+      _br_id: BR196
+      _scenario: Invalid
+      _expected_result: 'Violation of: Only Super Admin grants the VMS VIP status/override permission represented by this
+        module.'
+- id: BR197
+  source_id: VMS-BR-197
+  name: VIP Override Effect
+  rule_type: Authorization / Exception
+  statement: When a valid VIP override applies, the visit may bypass standard approval and zone restrictions only within the
+    recorded override scope.
+  applies_to: VIP visit
+  related_use_cases: VMS-UC-003, VMS-UC-010, VMS-UC-018, VMS-UC-023
+  scenarios:
+    valid:
+      _test_id: BR197_V_01
+      _br_id: BR197
+      _scenario: Valid
+      _expected_result: Apply the bypass only to the explicitly authorized scope; otherwise use normal rules.
+    invalid:
+      _test_id: BR197_I_01
+      _br_id: BR197
+      _scenario: Invalid
+      _expected_result: 'Violation of: When a valid VIP override applies, the visit may bypass standard approval and zone
+        restrictions only within the recorded override scope.'
+- id: BR200
+  source_id: VMS-BR-200
+  name: Expired Request State
+  rule_type: Lifecycle
+  statement: A pending visit request that reaches its approval timeout is marked Expired.
+  applies_to: Host approval timeout
+  related_use_cases: VMS-UC-011, VMS-UC-037
+  scenarios:
+    valid:
+      _test_id: BR200_V_01
+      _br_id: BR200
+      _scenario: Valid
+      _expected_result: Set Expired and prevent normal approval/pass activation unless a new supported process is initiated.
+    invalid:
+      _test_id: BR200_I_01
+      _br_id: BR200
+      _scenario: Invalid
+      _expected_result: 'Violation of: A pending visit request that reaches its approval timeout is marked Expired.'
+- id: BR202
+  source_id: VMS-BR-202
+  name: Advance Pre-registration Window
+  rule_type: Time / Eligibility
+  statement: Standard pre-registration is submitted at least 2 hours before the scheduled visit under the frozen baseline
+    default.
+  applies_to: Pre-registration
+  related_use_cases: VMS-UC-010, VMS-UC-035
+  scenarios:
+    valid:
+      _test_id: BR202_V_01
+      _br_id: BR202
+      _scenario: Valid
+      _expected_result: If inside the normal window, require the supported same-day urgent Admin exception or reject/stop
+        the normal path.
+    invalid:
+      _test_id: BR202_I_01
+      _br_id: BR202
+      _scenario: Invalid
+      _expected_result: 'Violation of: Standard pre-registration is submitted at least 2 hours before the scheduled visit
+        under the frozen baseline default.'
+- id: BR203
+  source_id: VMS-BR-203
+  name: Same-day Urgent Visit Exception
+  rule_type: Authorization
+  statement: A same-day urgent visit submitted inside the normal advance window requires Admin approval before it can proceed
+    to the normal Host-approval path, unless another explicit approval bypass applies.
+  applies_to: Pre-registration exception
+  related_use_cases: VMS-UC-010, VMS-UC-035
+  scenarios:
+    valid:
+      _test_id: BR203_V_01
+      _br_id: BR203
+      _scenario: Valid
+      _expected_result: Route to Admin exception decision; do not silently waive the advance rule.
+    invalid:
+      _test_id: BR203_I_01
+      _br_id: BR203
+      _scenario: Invalid
+      _expected_result: 'Violation of: A same-day urgent visit submitted inside the normal advance window requires Admin approval
+        before it can proceed to the normal Host-approval path, unless another explicit approval bypass applies.'
+- id: BR211
+  source_id: VMS-BR-211
+  name: Pass Type Domain
+  rule_type: Classification / Value Domain
+  statement: VMS visitor pass type is classified as PRE_REGISTERED, WALK_IN, or VIP according to the visit authorization path.
+  applies_to: Pass generation/maintenance
+  related_use_cases: VMS-UC-003, VMS-UC-012, VMS-UC-017, VMS-UC-033
+  scenarios:
+    valid:
+      _test_id: BR211_V_01
+      _br_id: BR211
+      _scenario: Valid
+      _expected_result: Assign exactly one supported pass type consistent with the visit path.
+    invalid:
+      _test_id: BR211_I_01
+      _br_id: BR211
+      _scenario: Invalid
+      _expected_result: 'Violation of: VMS visitor pass type is classified as PRE_REGISTERED, WALK_IN, or VIP according to
+        the visit authorization path.'
