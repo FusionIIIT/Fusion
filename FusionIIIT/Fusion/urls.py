@@ -46,7 +46,6 @@ def serve_media(request, path, document_root=None):
 
 urlpatterns = [
     url(r'^', include('applications.globals.urls')),
-    url(r'^feeds/', include('applications.feeds.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^academic-procedures/', include('applications.academic_procedures.urls')),
     url(r'^aims/', include('applications.academic_information.urls')),
