@@ -170,7 +170,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     # 'allauth.socialaccount.providers.google',
     'semanticuiforms',
-    'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
     'django_cleanup.apps.CleanupConfig',
