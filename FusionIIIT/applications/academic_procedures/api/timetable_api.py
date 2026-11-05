@@ -243,7 +243,7 @@ def generate_timetable(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_timetable_versions(request):
-    """Return TimetableVersion records, optionally filtered by academic_year.
+    """Return timetable versions, optionally filtered by year and semester.
 
     Users outside the academic office only see published versions.
     """
@@ -258,6 +258,11 @@ def list_timetable_versions(request):
             qs = qs.filter(academic_year=parse_int(academic_year, 'academic_year'))
         except ValueError as exc:
             return _bad_request(str(exc))
+    semester_type = request.query_params.get('semester_type')
+    if semester_type:
+        if semester_type not in SEMESTER_TYPES:
+            return _bad_request(f'semester_type must be one of {SEMESTER_TYPES}.')
+        qs = qs.filter(semester_type=semester_type)
 
     data = [
         {
@@ -328,8 +333,14 @@ def list_timetable_slots(request):
         except ValueError as exc:
             return _bad_request(str(exc))
 
+    slots = list(qs.order_by('day_of_week', 'start_hour'))
+    block_hours = defaultdict(list)
+    for slot in slots:
+        if slot.lab_block_id:
+            block_hours[slot.lab_block_id].append(slot.start_hour)
+
     data = []
-    for slot in qs.order_by('day_of_week', 'start_hour'):
+    for slot in slots:
         instructor_name = ''
         if slot.curriculum_instructor and slot.curriculum_instructor.instructor_id:
             u = slot.curriculum_instructor.instructor_id.user
@@ -351,6 +362,12 @@ def list_timetable_slots(request):
             'start_time': slot.start_time,
             'end_time': slot.end_time,
             'slot_type': slot.slot_type,
+            'lab_block_id': str(slot.lab_block_id) if slot.lab_block_id else None,
+            'block_start_time': (
+                f'{min(block_hours[slot.lab_block_id]):02d}:00'
+                if slot.lab_block_id else slot.start_time
+            ),
+            'block_size': len(block_hours[slot.lab_block_id]) if slot.lab_block_id else 1,
             'is_locked': slot.is_locked,
         })
 
@@ -553,6 +570,7 @@ def override_timetable_slot(request):
         'slot_id': slot.id,
         'day': new_day,
         'start_time': slot.start_time,
+        'block_start_time': f'{new_hour:02d}:00',
         'classroom': new_room_id,
         'is_locked': lock,
     })

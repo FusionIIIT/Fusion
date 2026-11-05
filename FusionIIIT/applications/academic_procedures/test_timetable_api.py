@@ -155,8 +155,39 @@ class PermissionAndValidationTests(TimetableTestCase):
         response = self.as_user(self.admin).get(BASE + 'versions/', {'academic_year': 'x'})
         self.assertEqual(response.status_code, 400)
 
+    def test_versions_can_be_filtered_by_semester_type(self):
+        even = TimetableVersion.objects.create(
+            academic_year=2026, semester_type='Even Semester', version_number=1)
+        response = self.as_user(self.admin).get(
+            BASE + 'versions/',
+            {'academic_year': 2026, 'semester_type': 'Even Semester'},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([version['id'] for version in response.data], [even.id])
+
+        response = self.as_user(self.admin).get(
+            BASE + 'versions/', {'semester_type': 'Monsoon Semester'})
+        self.assertEqual(response.status_code, 400)
+
 
 class OverrideTests(TimetableTestCase):
+
+    def test_slot_list_identifies_the_start_of_a_lab_block(self):
+        block = uuid.uuid4()
+        self._slot(self.cse2, self.ci_cse2, self.lab, 3, 14,
+                   slot_type='Practical', block=block)
+        self._slot(self.cse2, self.ci_cse2, self.lab, 3, 15,
+                   slot_type='Practical', block=block)
+
+        response = self.as_user(self.admin).get(
+            BASE + 'slots/', {'version_id': self.draft.pk})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [(slot['start_time'], slot['block_start_time'], slot['block_size'])
+             for slot in response.data],
+            [('14:00', '14:00', 2), ('15:00', '14:00', 2)],
+        )
+        self.assertTrue(all(slot['lab_block_id'] == str(block) for slot in response.data))
 
     def test_same_person_on_another_course_blocks_the_move(self):
         moving = self._slot(self.cse1, self.ci_cse1, self.lh1, 1, 9)
@@ -215,6 +246,16 @@ class OverrideTests(TimetableTestCase):
         moving = self._slot(self.cse1, self.ci_cse1, self.lh1, 1, 9)
         response = self.override(moving, 5, 9, {'x': 1})
         self.assertEqual(response.status_code, 400)
+
+    def test_closed_versions_cannot_be_edited(self):
+        moving = self._slot(self.cse1, self.ci_cse1, self.lh1, 1, 9)
+        for version_status in ('Archived', 'Infeasible'):
+            self.draft.status = version_status
+            self.draft.save(update_fields=['status'])
+            response = self.override(moving, 5, 9, 'LH1')
+            self.assertEqual(response.status_code, 400, version_status)
+            moving.refresh_from_db()
+            self.assertEqual((moving.day_of_week, moving.start_hour), (1, 9))
 
 
 class PublishTests(TimetableTestCase):

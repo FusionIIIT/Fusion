@@ -7,15 +7,8 @@ practical session a `(day, hour, room)` slot such that rooms, faculty, and
 student cohorts never clash, while minimising soft-constraint penalties
 (day-spread, seat wastage, faculty time preferences, …).
 
-It is an API-only Django feature
-(`applications/academic_procedures/solver/timetable_solver.py` +
-`applications/academic_procedures/api/timetable_api.py`) intended to be
-consumed by a React admin console in `Fusion-client`
-(`src/Modules/Academic/AdminSemesterTimetable.jsx`).
-
-> **Note:** that frontend file does not exist in `Fusion-client` (`acad-main`,
-> checked 2026-10-29); no Fusion-client file references the timetable API. Until the UI is
-> added, use the REST API (Option B) or the Django shell (Option C).
+The Django solver and REST API are consumed by the React admin console in
+`Fusion-client/src/Modules/Academic/AdminSemesterTimetable.jsx`.
 
 ---
 
@@ -26,7 +19,7 @@ consumed by a React admin console in `Fusion-client`
 | Solver engine (CP-SAT model) | `solver/timetable_solver.py` |
 | REST API | `api/timetable_api.py`, routed in `api/urls.py` under `/academic-procedures/api/timetable/…` |
 | Data model | `models.py` (8 additive tables, migration `0061_timetable_models.py`) |
-| Admin UI | `Fusion-client/src/Modules/Academic/AdminSemesterTimetable.jsx` (not yet in Fusion-client; see note above) |
+| Admin UI | `Fusion-client/src/Modules/Academic/AdminSemesterTimetable.jsx` |
 
 ### Tables (all new, zero changes to existing production tables)
 
@@ -78,7 +71,7 @@ All under `/academic-procedures/api/timetable/`:
 | POST | `generate/` | acadadmin / Dean Academic | Trigger a full solver run |
 | GET | `versions/` | published: anyone; all statuses: acadadmin / Dean | List `TimetableVersion`s |
 | GET | `slots/` | published: anyone; other versions: acadadmin / Dean | Filtered slot list (version/cohort/faculty/day) |
-| POST | `slot/override/` | acadadmin | Move one slot (a lab block moves as a whole), with conflict validation |
+| POST | `slot/override/` | acadadmin / Dean Academic | Move one slot in a non-closed version (a lab block moves as a whole), with conflict validation |
 | PATCH | `version/<id>/publish/` | Dean Academic | Promote a Draft/UnderReview/Approved version with slots to Published (archives the term's previous one) |
 | GET | `my-schedule/` | any authenticated user | Personalised weekly grid (student or faculty, inferred from profile) |
 | GET | `room-utilization/` | published: anyone; other versions: acadadmin / Dean | Day×hour heatmap for one room |
@@ -118,7 +111,7 @@ specific term.
 5. Log in as a user holding the `acadadmin` (or `Dean Academic`) designation —
    `generate_timetable` is gated on this role.
 
-### Option A — Admin Console (not available yet; see the note at the top)
+### Option A — Admin Console
 
 Fusion-client → **Calendar & Feedback → Semester Timetable**
 (`AdminSemesterTimetable.jsx`, slug `semester-timetable`):
