@@ -30,6 +30,7 @@ POST   /timetable/faculty-preferences/   – Create/update faculty preference
 from __future__ import annotations
 
 import logging
+import math
 from collections import defaultdict
 
 from django.db import transaction
@@ -40,15 +41,15 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from applications.academic_procedures.solver.timetable_solver import (
-    DAYS, HOURS, STUDENT_PROGRAMME_ALIASES, WHOLE_BATCH_BRANCH,
+    CAPACITY_BUFFER, DAYS, HOURS, STUDENT_PROGRAMME_ALIASES, WHOLE_BATCH_BRANCH,
     count_cohort_students, effective_cohort_size, eligible_room_types,
     student_programmes_for, valid_block_starts,
 )
 
 from applications.academic_procedures.api.timetable_validation import (
     MAX_TIMEOUT_SECONDS, POSITIVE_SMALLINT_MAX, PREFERRED_ROOM_TYPES,
-    SEMESTER_TYPES, clean_classroom_fields, clean_room_id, clean_str,
-    parse_bool, parse_int,
+    SEMESTER_TYPES, clean_classroom_fields, clean_room_id,
+    clean_semester_number, clean_str, parse_bool, parse_int,
 )
 from applications.academic_procedures.api.timetable_workflow import plan_publication
 
@@ -86,9 +87,34 @@ def _can_view_unpublished(request):
     return _is_acadadmin(request) or _is_dean(request)
 
 
+def _slot_course(slot):
+    """Return (code, name, semester) for legacy or registered-course slots."""
+    if slot.course_id:
+        return slot.course.code, slot.course.name, slot.version.semester_number
+    return (
+        slot.curriculum.course_code,
+        slot.curriculum.course_id.course_name,
+        slot.curriculum.sem,
+    )
+
+
+def _slot_faculty_name(slot):
+    if slot.course_instructor_id:
+        user = slot.course_instructor.instructor_id.id.user
+    elif slot.curriculum_instructor_id:
+        user = slot.curriculum_instructor.instructor_id.user
+    else:
+        return ''
+    return user.get_full_name() or user.username
+
+
+def _slot_room(slot):
+    return slot.room_label or slot.classroom_id or 'LAB'
+
+
 def _latest_published_version(request):
-    """Latest published version, optionally narrowed by ?academic_year= and
-    ?semester_type= (each term has its own published version).
+    """Latest published version, optionally narrowed by academic year, term
+    type, and semester number (each semester has its own published version).
 
     version_number restarts in every term, so it cannot rank versions of
     different terms; the most recently created one wins instead.
@@ -99,10 +125,15 @@ def _latest_published_version(request):
     qs = TimetableVersion.objects.filter(status='Published')
     academic_year = request.query_params.get('academic_year')
     semester_type = request.query_params.get('semester_type')
+    semester_number = request.query_params.get('semester_number')
     if academic_year:
         qs = qs.filter(academic_year=parse_int(academic_year, 'academic_year'))
     if semester_type:
         qs = qs.filter(semester_type=semester_type)
+    if semester_number:
+        qs = qs.filter(semester_number=clean_semester_number(
+            semester_number, semester_type or 'Summer Term',
+        ))
     return qs.order_by('-academic_year', '-id').first()
 
 
@@ -150,6 +181,8 @@ def generate_timetable(request):
         {
           "academic_year": 2026,
           "semester_type": "Odd Semester",
+          "semester_number": 3,
+          "course_source": "registered",
           "timeout_seconds": 60        // optional, default 60
         }
 
@@ -164,6 +197,8 @@ def generate_timetable(request):
 
     academic_year = request.data.get('academic_year')
     semester_type = request.data.get('semester_type', 'Odd Semester')
+    semester_number = request.data.get('semester_number')
+    course_source = request.data.get('course_source', 'registered')
 
     if not academic_year:
         return Response(
@@ -177,6 +212,8 @@ def generate_timetable(request):
             request.data.get('timeout_seconds', 60), 'timeout_seconds',
             minimum=1, maximum=MAX_TIMEOUT_SECONDS,
         )
+        if semester_number is not None:
+            semester_number = clean_semester_number(semester_number, semester_type)
     except ValueError as exc:
         return _bad_request(str(exc))
 
@@ -185,6 +222,10 @@ def generate_timetable(request):
             {'error': f'semester_type must be one of {SEMESTER_TYPES}.'},
             status=status.HTTP_400_BAD_REQUEST,
         )
+    if course_source not in ('registered', 'legacy'):
+        return _bad_request('course_source must be registered or legacy.')
+    if course_source == 'registered' and semester_number is None:
+        return _bad_request('semester_number is required for registered courses.')
 
     try:
         from applications.academic_procedures.solver.timetable_solver import (
@@ -193,6 +234,8 @@ def generate_timetable(request):
         solver = WholeCollegeTimetableSolver(
             academic_year=academic_year,
             semester_type=semester_type,
+            semester_number=semester_number,
+            course_source=course_source,
             created_by=request.user,
         )
         result = solver.solve(timeout_seconds=timeout_seconds)
@@ -208,7 +251,10 @@ def generate_timetable(request):
             'status': 'success',
             'solver_status': result.status,
             'version_id': result.version_id,
+            'semester_number': semester_number,
+            'course_source': course_source,
             'slots_created': result.slots_created,
+            'courses_scheduled': result.courses_scheduled,
             'solve_time_sec': round(result.solve_time_sec, 2),
             'message': result.message,
         }, status=status.HTTP_200_OK)
@@ -217,6 +263,8 @@ def generate_timetable(request):
         return Response({
             'status': 'infeasible',
             'version_id': result.version_id,
+            'semester_number': semester_number,
+            'course_source': course_source,
             'message': result.message,
             'conflicts': result.conflicts,
         }, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -226,6 +274,8 @@ def generate_timetable(request):
         return Response({
             'status': 'timeout',
             'version_id': result.version_id,
+            'semester_number': semester_number,
+            'course_source': course_source,
             'message': result.message,
         }, status=status.HTTP_504_GATEWAY_TIMEOUT)
 
@@ -243,7 +293,7 @@ def generate_timetable(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_timetable_versions(request):
-    """Return timetable versions, optionally filtered by year and semester.
+    """Return versions, optionally filtered by year, term, and semester number.
 
     Users outside the academic office only see published versions.
     """
@@ -263,12 +313,22 @@ def list_timetable_versions(request):
         if semester_type not in SEMESTER_TYPES:
             return _bad_request(f'semester_type must be one of {SEMESTER_TYPES}.')
         qs = qs.filter(semester_type=semester_type)
+    semester_number = request.query_params.get('semester_number')
+    if semester_number:
+        try:
+            qs = qs.filter(semester_number=clean_semester_number(
+                semester_number, semester_type or 'Summer Term',
+            ))
+        except ValueError as exc:
+            return _bad_request(str(exc))
 
     data = [
         {
             'id': v.id,
             'academic_year': v.academic_year,
             'semester_type': v.semester_type,
+            'semester_number': v.semester_number,
+            'course_source': v.course_source,
             'version_number': v.version_number,
             'status': v.status,
             'slots_created': v.slots_created,
@@ -305,8 +365,11 @@ def list_timetable_slots(request):
         return Response([])
 
     qs = TimetableSlot.objects.filter(version_id=version_id).select_related(
+        'version',
         'curriculum__course_id',
         'curriculum_instructor__instructor_id__user',
+        'course',
+        'course_instructor__instructor_id__id__user',
         'classroom',
     )
 
@@ -341,23 +404,24 @@ def list_timetable_slots(request):
 
     data = []
     for slot in slots:
-        instructor_name = ''
-        if slot.curriculum_instructor and slot.curriculum_instructor.instructor_id:
-            u = slot.curriculum_instructor.instructor_id.user
-            instructor_name = u.get_full_name() or u.username
+        course_code, course_name, semester_number = _slot_course(slot)
 
         data.append({
             'id': slot.id,
             'version_id': slot.version_id,
-            'course_code': slot.curriculum.course_code,
-            'course_name': slot.curriculum.course_id.course_name,
-            'faculty': instructor_name,
-            'classroom': slot.classroom_id,
-            'classroom_type': slot.classroom.room_type,
+            'course_code': course_code,
+            'course_name': course_name,
+            'semester_number': semester_number,
+            'faculty': _slot_faculty_name(slot),
+            'classroom': _slot_room(slot),
+            'classroom_type': (
+                slot.classroom.room_type if slot.classroom_id else 'Lab'
+            ),
             'batch': slot.batch,
             'programme': slot.programme,
             'branch': slot.branch,
             'section': slot.section,
+            'enrollment_count': slot.enrollment_count,
             'day': slot.day_of_week,
             'start_time': slot.start_time,
             'end_time': slot.end_time,
@@ -400,23 +464,33 @@ def _override_conflicts(slot, version, block, new_day, new_hours, new_room):
                           'detail': f'Room {new_room.room_id} is already occupied at {when}.'})
 
     # Every instructor of this course, as a person, across all their courses.
-    teachers = Curriculum_Instructor.objects.filter(
-        curriculum_id=slot.curriculum_id,
-    ).values('instructor_id')
-    taught_by_them = Curriculum_Instructor.objects.filter(
-        instructor_id__in=teachers,
-    ).values('curriculum_id')
-    if others.filter(curriculum_id__in=taught_by_them).exists():
+    if slot.course_instructor_id:
+        faculty_clash = others.filter(
+            course_instructor__instructor_id=slot.course_instructor.instructor_id,
+        ).exists()
+    else:
+        teachers = Curriculum_Instructor.objects.filter(
+            curriculum_id=slot.curriculum_id,
+        ).values('instructor_id')
+        taught_by_them = Curriculum_Instructor.objects.filter(
+            instructor_id__in=teachers,
+        ).values('curriculum_id')
+        faculty_clash = others.filter(curriculum_id__in=taught_by_them).exists()
+    if faculty_clash:
         conflicts.append({'type': 'FACULTY_CLASH',
                           'detail': f'An instructor of this course has another class at {when}.'})
 
-    # 'Common' spans all branches and '' spans all sections, as in the solver.
-    same_students = Q(batch=slot.batch, programme=slot.programme)
-    if slot.branch != WHOLE_BATCH_BRANCH:
-        same_students &= Q(branch=slot.branch) | Q(branch=WHOLE_BATCH_BRANCH)
-    if slot.section:
-        same_students &= Q(section=slot.section) | Q(section='')
-    if others.filter(same_students).exists():
+    if slot.student_ids:
+        cohort_clash = others.filter(student_ids__overlap=slot.student_ids).exists()
+    else:
+        # 'Common' spans all branches and '' spans all sections, as in the solver.
+        same_students = Q(batch=slot.batch, programme=slot.programme)
+        if slot.branch != WHOLE_BATCH_BRANCH:
+            same_students &= Q(branch=slot.branch) | Q(branch=WHOLE_BATCH_BRANCH)
+        if slot.section:
+            same_students &= Q(section=slot.section) | Q(section='')
+        cohort_clash = others.filter(same_students).exists()
+    if cohort_clash:
         conflicts.append({
             'type': 'COHORT_CLASH',
             'detail': (
@@ -425,10 +499,11 @@ def _override_conflicts(slot, version, block, new_day, new_hours, new_room):
             ),
         })
 
-    in_basket = ElectiveBasketCurriculum.objects.filter(
+    in_basket = bool(slot.curriculum_id) and ElectiveBasketCurriculum.objects.filter(
         curriculum_id=slot.curriculum_id,
         basket__academic_year=version.academic_year,
         basket__semester_type=version.semester_type,
+        basket__semester=slot.curriculum.sem,
     ).exists()
     if in_basket:
         conflicts.append({
@@ -437,7 +512,10 @@ def _override_conflicts(slot, version, block, new_day, new_hours, new_room):
                        'at the same hours; regenerate the timetable instead.'),
         })
 
-    requirement = CourseWeeklyRequirement.objects.filter(curriculum_id=slot.curriculum_id).first()
+    requirement = (
+        CourseWeeklyRequirement.objects.filter(curriculum_id=slot.curriculum_id).first()
+        if slot.curriculum_id else None
+    )
     allowed_types = eligible_room_types(
         slot.slot_type, requirement.preferred_room_type if requirement else 'any',
     )
@@ -448,14 +526,17 @@ def _override_conflicts(slot, version, block, new_day, new_hours, new_room):
                       f'not {new_room.room_type}.',
         })
 
-    cohort_sizes = count_cohort_students(
-        Student.objects.filter(batch=slot.batch,
-                               programme__in=student_programmes_for(slot.programme))
-        .select_related('id__department')
-    )
-    needed = effective_cohort_size(
-        cohort_sizes, slot.batch, slot.programme, slot.branch, slot.section,
-    )
+    if slot.student_ids:
+        needed = math.ceil(slot.enrollment_count * CAPACITY_BUFFER)
+    else:
+        cohort_sizes = count_cohort_students(
+            Student.objects.filter(batch=slot.batch,
+                                   programme__in=student_programmes_for(slot.programme))
+            .select_related('id__department')
+        )
+        needed = effective_cohort_size(
+            cohort_sizes, slot.batch, slot.programme, slot.branch, slot.section,
+        )
     if new_room.capacity < needed:
         conflicts.append({
             'type': 'CAPACITY',
@@ -477,7 +558,7 @@ def override_timetable_slot(request):
           "slot_id": 1420,
           "new_day": 3,
           "new_start_hour": 15,
-          "new_room_id": "CR102",
+          "new_room_id": "CR-102",
           "lock": true
         }
 
@@ -518,7 +599,9 @@ def override_timetable_slot(request):
     # locked, so two concurrent overrides cannot both pass the clash checks.
     with transaction.atomic():
         try:
-            slot = TimetableSlot.objects.select_related('curriculum').get(pk=slot_id)
+            slot = TimetableSlot.objects.select_related(
+                'curriculum', 'course_instructor__instructor_id',
+            ).get(pk=slot_id)
         except TimetableSlot.DoesNotExist:
             return Response(
                 {'error': f'Slot {slot_id} not found.'},
@@ -561,8 +644,11 @@ def override_timetable_slot(request):
             block_slot.day_of_week = new_day
             block_slot.start_hour = hour
             block_slot.classroom_id = new_room_id
+            block_slot.room_label = ''
             block_slot.is_locked = lock
-            block_slot.save(update_fields=['day_of_week', 'start_hour', 'classroom_id', 'is_locked'])
+            block_slot.save(update_fields=[
+                'day_of_week', 'start_hour', 'classroom_id', 'room_label', 'is_locked',
+            ])
         slot.refresh_from_db()
 
     return Response({
@@ -585,7 +671,7 @@ def override_timetable_slot(request):
 def publish_timetable_version(request, version_id):
     """
     Promote a version to Published status (Dean Academic only).
-    Archives the previously published version for the same term.
+    Archives the previously published version for the same curriculum semester.
     """
     if not _is_dean(request):
         return Response(
@@ -596,9 +682,9 @@ def publish_timetable_version(request, version_id):
     from applications.academic_procedures.models import TimetableVersion
 
     try:
-        term = TimetableVersion.objects.values('academic_year', 'semester_type').get(
-            pk=int(version_id),
-        )
+        term = TimetableVersion.objects.values(
+            'academic_year', 'semester_type', 'semester_number',
+        ).get(pk=int(version_id))
     except TimetableVersion.DoesNotExist:
         return Response(
             {'error': f'TimetableVersion {version_id} not found.'},
@@ -633,10 +719,16 @@ def publish_timetable_version(request, version_id):
         version.publish_notes = request.data.get('publish_notes', '')
         version.save(update_fields=['status', 'publish_notes'])
 
+    semester_label = (
+        f', semester {version.semester_number}' if version.semester_number else ''
+    )
     return Response({
         'status': 'success',
         'version_id': version.id,
-        'message': f'Version {version.version_number} published for {version.semester_type} {version.academic_year}.',
+        'message': (
+            f'Version {version.version_number} published for '
+            f'{version.semester_type} {version.academic_year}{semester_label}.'
+        ),
     })
 
 
@@ -671,6 +763,8 @@ def my_schedule(request):
     slots_qs = TimetableSlot.objects.filter(version=published).select_related(
         'curriculum__course_id',
         'curriculum_instructor__instructor_id__user',
+        'course',
+        'course_instructor__instructor_id__id__user',
         'classroom',
     )
 
@@ -689,29 +783,36 @@ def my_schedule(request):
         alias = STUDENT_PROGRAMME_ALIASES.get(stu.programme)
         if alias:
             cohort |= Q(programme=alias[0], branch__iexact=alias[1])
-        slots_qs = slots_qs.filter(cohort, batch=stu.batch, section__in=sections)
+        legacy_cohort = Q(course__isnull=True) & cohort & Q(
+            batch=stu.batch, section__in=sections,
+        )
+        registered_cohort = Q(
+            course__isnull=False,
+            student_ids__contains=[stu.pk],
+        )
+        slots_qs = slots_qs.filter(legacy_cohort | registered_cohort)
     elif extra.user_type == 'faculty':
         # The slot stores only the chief instructor, but the solver books every
         # instructor of a course for its hours, so match on the course.
         taught = Curriculum_Instructor.objects.filter(
             instructor_id=extra,
         ).values('curriculum_id')
-        slots_qs = slots_qs.filter(curriculum_id__in=taught)
+        slots_qs = slots_qs.filter(
+            Q(curriculum_id__in=taught)
+            | Q(course_instructor__instructor_id=extra)
+        )
     else:
         return Response({'slots': []})
 
     data = []
     for slot in slots_qs.order_by('day_of_week', 'start_hour'):
-        instructor_name = ''
-        if slot.curriculum_instructor and slot.curriculum_instructor.instructor_id:
-            u = slot.curriculum_instructor.instructor_id.user
-            instructor_name = u.get_full_name() or u.username
+        course_code, course_name, _semester = _slot_course(slot)
 
         data.append({
-            'course_code': slot.curriculum.course_code,
-            'course_name': slot.curriculum.course_id.course_name,
-            'faculty': instructor_name,
-            'classroom': slot.classroom_id,
+            'course_code': course_code,
+            'course_name': course_name,
+            'faculty': _slot_faculty_name(slot),
+            'classroom': _slot_room(slot),
             'day': slot.day_of_week,
             'start_time': slot.start_time,
             'end_time': slot.end_time,
@@ -747,13 +848,13 @@ def room_utilization(request):
     slots = TimetableSlot.objects.filter(
         version_id=version_id,
         classroom_id=room_id,
-    ).values('day_of_week', 'start_hour', 'curriculum__course_code')
+    ).select_related('version', 'curriculum__course_id', 'course')
 
     matrix: dict = defaultdict(dict)
-    for s in slots:
-        day = s['day_of_week']
-        hour = s['start_hour']
-        matrix[day][hour] = s['curriculum__course_code']
+    for slot in slots:
+        day = slot.day_of_week
+        hour = slot.start_hour
+        matrix[day][hour] = _slot_course(slot)[0]
 
     # Fill unused slots with None
     for day in DAYS:

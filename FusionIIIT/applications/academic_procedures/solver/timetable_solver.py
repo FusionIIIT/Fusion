@@ -28,8 +28,9 @@ import logging
 import math
 import time
 import uuid
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
+from types import SimpleNamespace
 from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
@@ -100,7 +101,7 @@ LAB_STARTS_3H = [9, 10, 14, 15]            # block of 3 consecutive hours
 class SessionRecord:
     """One atomic scheduling unit passed into the solver."""
     session_id: str          # Unique key, e.g. "cur123-L1"
-    curriculum_id: int
+    curriculum_id: Optional[int]
     curriculum_instructor_id: Optional[int]
     course_code: str
     course_name: str
@@ -128,6 +129,19 @@ class SessionRecord:
     # same hours as the primary instructor, so they take part in clash checks.
     co_instructor_ids: List[int] = field(default_factory=list)
 
+    # Modern registered-course source. Legacy sessions leave these empty.
+    course_id: Optional[int] = None
+    course_instructor_id: Optional[int] = None
+    faculty_ids: List[object] = field(default_factory=list)
+    student_ids: List[str] = field(default_factory=list)
+    room_label: str = ''
+
+    @property
+    def subject_key(self):
+        if self.course_id is not None:
+            return f'course:{self.course_id}'
+        return f'curriculum:{self.curriculum_id}'
+
 
 @dataclass
 class SolverResult:
@@ -136,6 +150,7 @@ class SolverResult:
     status: str
     version_id: Optional[int] = None
     slots_created: int = 0
+    courses_scheduled: int = 0
     solve_time_sec: float = 0.0
     conflicts: List[dict] = field(default_factory=list)
     message: str = ''
@@ -225,6 +240,8 @@ def faculty_keys(sess: SessionRecord, ci_to_faculty_pk: Dict[int, object]) -> se
     use the person, not the row.  An id with no known person falls back to
     itself so it still clashes with itself.
     """
+    if sess.faculty_ids:
+        return set(sess.faculty_ids)
     keys = set()
     for ci_id in [sess.curriculum_instructor_id, *sess.co_instructor_ids]:
         if ci_id is not None:
@@ -272,8 +289,11 @@ def cohort_atoms(sess: SessionRecord, index) -> set:
     return atoms
 
 
-def lock_key(curriculum_id, slot_type, batch, programme, branch, section) -> str:
-    return f'{curriculum_id}-{slot_type}-{batch}-{programme}-{branch}-{section}'
+def lock_key(subject, slot_type, batch, programme, branch, section) -> str:
+    subject = str(subject)
+    if not subject.startswith(('curriculum:', 'course:')):
+        subject = f'curriculum:{subject}'
+    return f'{subject}-{slot_type}-{batch}-{programme}-{branch}-{section}'
 
 
 def pick_lock_source(versions) -> Optional[int]:
@@ -305,7 +325,9 @@ def build_locked_map(locked_slots) -> Dict[str, List[dict]]:
             if slot.lab_block_id in seen_blocks:
                 continue
             seen_blocks.add(slot.lab_block_id)
-        key = lock_key(slot.curriculum_id, slot.slot_type, slot.batch,
+        course_id = getattr(slot, 'course_id', None)
+        subject = f'course:{course_id}' if course_id else f'curriculum:{slot.curriculum_id}'
+        key = lock_key(subject, slot.slot_type, slot.batch,
                        slot.programme, slot.branch, slot.section)
         locked_map[key].append({
             'day': slot.day_of_week,
@@ -391,10 +413,15 @@ def sanitize_locked_sessions(
     for s in sessions:
         if s.locked_day is None:
             continue
+        student_resources = (
+            [('student', student_id) for student_id in s.student_ids]
+            if s.student_ids
+            else [('cohort', atom) for atom in cohort_atoms(s, index)]
+        )
         resources = (
             [('room', s.locked_room)]
             + [('faculty', k) for k in faculty_keys(s, ci_to_faculty_pk)]
-            + [('cohort', a) for a in cohort_atoms(s, index)]
+            + student_resources
         )
         for offset in range(s.block_size):
             hour = s.locked_hour + offset
@@ -443,9 +470,13 @@ class WholeCollegeTimetableSolver:
     """
 
     def __init__(self, academic_year: int, semester_type: str,
-                 capacity_buffer: float = CAPACITY_BUFFER, created_by=None):
+                 capacity_buffer: float = CAPACITY_BUFFER, created_by=None,
+                 semester_number: Optional[int] = None,
+                 course_source: str = 'legacy'):
         self.academic_year = academic_year
         self.semester_type = semester_type
+        self.semester_number = semester_number
+        self.course_source = course_source
         self.capacity_buffer = capacity_buffer
         self.created_by = created_by  # auth.User recorded on the version
 
@@ -500,11 +531,16 @@ class WholeCollegeTimetableSolver:
             )
 
         if not sessions:
-            self._mark_infeasible(version, 'No floated curricula found for this term.')
+            scope = (
+                f'semester {self.semester_number}'
+                if self.semester_number is not None else 'this term'
+            )
+            message = f'No floated curricula found for {scope}.'
+            self._mark_infeasible(version, message)
             return SolverResult(
                 status='INFEASIBLE',
                 version_id=version.id,
-                message='No floated curricula found for this term.',
+                message=message,
             )
 
         # ── Step 3: FC-02 build & solve CP-SAT model ──────────────────── #
@@ -522,6 +558,9 @@ class WholeCollegeTimetableSolver:
         Query the database, build SessionRecord objects, and prune domains.
         Returns (rooms_dict, sessions, baskets, faculty_prefs, cohort_sizes).
         """
+        if self.course_source == 'registered':
+            return self._ingest_registered_courses(version)
+
         from django.db.models import Count
         from applications.academic_procedures.models import (
             Classroom, CourseWeeklyRequirement, TimetableSlot, TimetableVersion,
@@ -544,6 +583,8 @@ class WholeCollegeTimetableSolver:
 
         # ── Floated curricula ─────────────────────────────────────────── #
         floated = Curriculum.objects.filter(floated=True).select_related('course_id')
+        if self.semester_number is not None:
+            floated = floated.filter(sem=self.semester_number)
 
         # ── Instructor mappings ───────────────────────────────────────── #
         # Chief instructor first: it becomes the instructor stored on the slot.
@@ -561,6 +602,8 @@ class WholeCollegeTimetableSolver:
             TimetableVersion.objects.filter(
                 academic_year=self.academic_year,
                 semester_type=self.semester_type,
+                semester_number=self.semester_number,
+                course_source='legacy',
             ).exclude(pk=version.pk)
             .annotate(slot_count=Count('slots'))
             .values_list('id', 'version_number', 'slot_count')
@@ -670,11 +713,15 @@ class WholeCollegeTimetableSolver:
                 )
 
         # ── Elective baskets ──────────────────────────────────────────── #
+        basket_filters = {
+            'academic_year': self.academic_year,
+            'semester_type': self.semester_type,
+        }
+        if self.semester_number is not None:
+            basket_filters['semester'] = self.semester_number
         baskets = list(
-            ElectiveBasket.objects.filter(
-                academic_year=self.academic_year,
-                semester_type=self.semester_type,
-            ).prefetch_related('electivebasketcurriculum_set')
+            ElectiveBasket.objects.filter(**basket_filters)
+            .prefetch_related('electivebasketcurriculum_set')
         )
 
         # ── Faculty preferences ───────────────────────────────────────── #
@@ -709,6 +756,277 @@ class WholeCollegeTimetableSolver:
             )
 
         return rooms, sessions, baskets, faculty_prefs, cohort_sizes, ci_to_faculty_pk
+
+    def _ingest_registered_courses(self, version):
+        """Build sessions from modern, term-specific student registrations.
+
+        A registered course is the source of truth for whether it is active.
+        Large enrolments are split into synthetic sections that fit the largest
+        real classroom. Practical blocks use a virtual ``LAB`` resource until
+        the institute's lab-room inventory is available.
+        """
+        from django.db.models import Count, Q
+        from applications.academic_procedures.models import (
+            Classroom, FacultyPreference, TimetableSlot, TimetableVersion,
+            TimetableConflictLog, course_registration,
+        )
+        from applications.programme_curriculum.models import CourseInstructor
+
+        rooms: Dict[str, object] = {
+            room.room_id: room
+            for room in Classroom.objects.filter(is_active=True)
+        }
+        physical_rooms = dict(rooms)
+        max_capacity = max(
+            (room.capacity for room in physical_rooms.values()), default=0,
+        )
+        max_group_size = math.floor(max_capacity / self.capacity_buffer)
+
+        registration_term = (
+            'Summer Semester'
+            if self.semester_type == 'Summer Term'
+            else self.semester_type
+        )
+        if registration_term == 'Even Semester':
+            session = f'{self.academic_year - 1}-{str(self.academic_year)[-2:]}'
+        else:
+            session = f'{self.academic_year}-{str(self.academic_year + 1)[-2:]}'
+
+        registration_filter = Q(working_year=self.academic_year) | Q(
+            working_year__isnull=True,
+            session=session,
+        )
+        registrations = list(
+            course_registration.objects.filter(
+                registration_filter,
+                semester_type=registration_term,
+                semester_id__semester_no=self.semester_number,
+            ).select_related(
+                'course_id',
+                'student_id__id__department',
+                'semester_id',
+            ).order_by('course_id_id', 'student_id_id', 'pk')
+        )
+
+        # A student can have duplicate rows for different registration types;
+        # one person still occupies only one seat in that course.
+        students_by_course: Dict[int, Dict[str, object]] = defaultdict(dict)
+        courses = {}
+        for registration in registrations:
+            students_by_course[registration.course_id_id][registration.student_id_id] = (
+                registration.student_id
+            )
+            courses[registration.course_id_id] = registration.course_id
+
+        offerings_by_course: Dict[int, List[object]] = defaultdict(list)
+        for offering in CourseInstructor.objects.filter(
+                course_id_id__in=courses,
+                year=self.academic_year,
+                semester_type=registration_term,
+        ).select_related('instructor_id'):
+            offerings_by_course[offering.course_id_id].append(offering)
+
+        previous_version_id = pick_lock_source(
+            TimetableVersion.objects.filter(
+                academic_year=self.academic_year,
+                semester_type=self.semester_type,
+                semester_number=self.semester_number,
+                course_source='registered',
+            ).exclude(pk=version.pk)
+            .annotate(slot_count=Count('slots'))
+            .values_list('id', 'version_number', 'slot_count')
+        )
+        locked_map = build_locked_map(
+            TimetableSlot.objects.filter(version_id=previous_version_id, is_locked=True)
+            if previous_version_id is not None else []
+        )
+
+        sessions: List[SessionRecord] = []
+        conflicts: List[dict] = []
+        session_counter: Dict[Tuple, int] = defaultdict(int)
+
+        def normalise_hours(value):
+            value = int(value or 0)
+            # Some imported L-T-P values use 20/30 for 2/3 hours.
+            if value >= 10 and value % 10 == 0:
+                value //= 10
+            return value
+
+        def most_common(values, fallback):
+            values = [value for value in values if value not in (None, '')]
+            return Counter(values).most_common(1)[0][0] if values else fallback
+
+        def split_students(course, students, needs_physical_room):
+            students = sorted(students, key=lambda student: student.pk)
+            if not needs_physical_room or not max_group_size or len(students) <= max_group_size:
+                sections = {student.section or '' for student in students}
+                label = sections.pop() if len(sections) == 1 else ''
+                return [(label, students)]
+
+            natural: Dict[str, List[object]] = defaultdict(list)
+            for student in students:
+                natural[student.section or ''].append(student)
+            if len(natural) > 1 and all(
+                    len(group) <= max_group_size for group in natural.values()):
+                return sorted(natural.items())
+
+            groups = []
+            for index in range(0, len(students), max_group_size):
+                label = chr(ord('A') + len(groups))
+                groups.append((label, students[index:index + max_group_size]))
+            return groups
+
+        for course_id, student_map in sorted(students_by_course.items()):
+            course = courses[course_id]
+            lecture_hours = normalise_hours(course.lecture_hours)
+            tutorial_hours = normalise_hours(course.tutorial_hours)
+            practical_hours = normalise_hours(course.pratical_hours)
+            if lecture_hours + tutorial_hours + practical_hours == 0:
+                conflicts.append({
+                    'severity': 'WARNING',
+                    'error_code': 'NO_CONTACT_HOURS',
+                    'description': (
+                        f'{course.code} has registrations but no L-T-P contact hours; '
+                        'it was not placed on the timetable.'
+                    ),
+                })
+                continue
+
+            student_groups = split_students(
+                course,
+                list(student_map.values()),
+                needs_physical_room=bool(lecture_hours or tutorial_hours),
+            )
+            offerings = offerings_by_course.get(course_id, [])
+
+            for section, students in student_groups:
+                offering = next(
+                    (item for item in offerings if item.section_label == section),
+                    None,
+                ) or next(
+                    (item for item in offerings if not item.section_label),
+                    None,
+                ) or (offerings[0] if offerings else None)
+
+                student_ids = [student.pk for student in students]
+                batch = most_common((student.batch for student in students), 0)
+                programme = str(most_common(
+                    (student.programme for student in students), 'Unknown',
+                ))[:15]
+                branches = {
+                    student.id.department.name
+                    for student in students
+                    if student.id.department is not None
+                }
+                branch = next(iter(branches)) if len(branches) == 1 else WHOLE_BATCH_BRANCH
+                branch = str(branch)[:15]
+                effective_size = math.ceil(len(student_ids) * self.capacity_buffer)
+                faculty_ids = [offering.instructor_id_id] if offering else []
+                subject = f'course:{course_id}'
+
+                def make_sessions(count, slot_type, block_size=1, eligible=None,
+                                  room_label=''):
+                    for _ in range(count):
+                        counter_key = (course_id, section, slot_type)
+                        session_counter[counter_key] += 1
+                        pending_locks = locked_map.get(lock_key(
+                            subject, slot_type, batch, programme, branch, section,
+                        ))
+                        lock = pending_locks.pop(0) if pending_locks else None
+                        sessions.append(SessionRecord(
+                            session_id=(
+                                f'course{course_id}-{slot_type[:1]}'
+                                f'{session_counter[counter_key]}-s{section or "all"}'
+                            ),
+                            curriculum_id=None,
+                            curriculum_instructor_id=None,
+                            course_id=course_id,
+                            course_instructor_id=offering.pk if offering else None,
+                            faculty_ids=faculty_ids,
+                            student_ids=student_ids,
+                            course_code=course.code,
+                            course_name=course.name,
+                            slot_type=slot_type,
+                            block_size=block_size,
+                            batch=batch,
+                            programme=programme,
+                            branch=branch,
+                            section=section,
+                            effective_size=effective_size,
+                            eligible_rooms=list(eligible or []),
+                            room_label=room_label,
+                            locked_day=lock['day'] if lock else None,
+                            locked_hour=lock['hour'] if lock else None,
+                            locked_room=lock['room'] if lock else None,
+                        ))
+
+                for slot_type, count in (
+                        (LECTURE, lecture_hours), (TUTORIAL, tutorial_hours)):
+                    if not count:
+                        continue
+                    allowed_types = eligible_room_types(slot_type, 'any')
+                    eligible = [
+                        room_id for room_id, room in physical_rooms.items()
+                        if room.capacity >= effective_size
+                        and room.room_type in allowed_types
+                    ]
+                    if not eligible:
+                        conflicts.append({
+                            'severity': 'CRITICAL',
+                            'error_code': 'NO_ELIGIBLE_ROOM',
+                            'description': (
+                                f'No active room with capacity≥{effective_size} for '
+                                f'{course.code} section {section or "all"} ({slot_type}).'
+                            ),
+                        })
+                    else:
+                        make_sessions(count, slot_type, eligible=eligible)
+
+                if practical_hours:
+                    block_size = 3 if practical_hours % 3 == 0 else min(2, practical_hours)
+                    practical_count = math.ceil(practical_hours / block_size)
+                    virtual_lab = f'__LAB__{course_id}_{section or "all"}'
+                    rooms[virtual_lab] = SimpleNamespace(
+                        room_id=virtual_lab,
+                        capacity=effective_size,
+                        room_type='Computer Lab',
+                        is_active=True,
+                        is_virtual=True,
+                    )
+                    make_sessions(
+                        practical_count,
+                        PRACTICAL,
+                        block_size=block_size,
+                        eligible=[virtual_lab],
+                        room_label='LAB',
+                    )
+
+        if conflicts:
+            self._log_conflicts(version, conflicts)
+            critical = [item for item in conflicts if item['severity'] == 'CRITICAL']
+            if critical:
+                raise CapacityBottleneck(
+                    f'{len(critical)} active course groups have no eligible room. '
+                    f'First: {critical[0]["description"]}',
+                    conflicts=conflicts,
+                )
+
+        faculty_prefs = list(FacultyPreference.objects.filter(
+            academic_year=self.academic_year,
+            semester_type=self.semester_type,
+        ))
+        lock_notes, lock_conflicts = sanitize_locked_sessions(
+            sessions, rooms, {}, {},
+        )
+        if lock_notes or lock_conflicts:
+            self._log_conflicts(version, lock_notes + lock_conflicts)
+        if lock_conflicts:
+            raise LockedSlotConflict(
+                f'{len(lock_conflicts)} locked slots clash with each other.',
+                conflicts=lock_notes + lock_conflicts,
+            )
+
+        return rooms, sessions, [], faculty_prefs, {}, {}
 
     # ------------------------------------------------------------------ #
     # FC-02 / FC-03: Build & solve CP-SAT model                           #
@@ -815,7 +1133,7 @@ class WholeCollegeTimetableSolver:
         course_day_sessions: Dict[Tuple, List] = defaultdict(list)
         for sess in sessions:
             for (day, hour, room_id), var in x[sess.session_id].items():
-                key = (sess.curriculum_id, sess.batch, sess.programme, sess.branch,
+                key = (sess.subject_key, sess.batch, sess.programme, sess.branch,
                        sess.section, day)
                 course_day_sessions[key].append(var)
 
@@ -892,6 +1210,7 @@ class WholeCollegeTimetableSolver:
 
         # ── Extract solution & persist ─────────────────────────────────── #
         slot_records = self._extract_and_persist(solver, x, sessions, version)
+        courses_scheduled = len({session.subject_key for session in sessions})
 
         version.status = 'Draft'
         quality = '' if status_str == 'OPTIMAL' else ' (time limit reached; not proven optimal)'
@@ -899,8 +1218,10 @@ class WholeCollegeTimetableSolver:
             status=status_str,
             version_id=version.id,
             slots_created=slot_records,
+            courses_scheduled=courses_scheduled,
             message=(
                 f'Whole-college generation complete: {slot_records} slots allocated '
+                f'for {courses_scheduled} active courses '
                 f'in {solver.WallTime():.1f}s (objective={solver.ObjectiveValue():.0f})'
                 f'{quality}.'
             ),
@@ -924,9 +1245,14 @@ class WholeCollegeTimetableSolver:
         )
         for sess in sessions:
             basket = basket_of.get(sess.curriculum_id)
-            atoms = cohort_atoms(sess, index)
+            atoms = cohort_atoms(sess, index) if not sess.student_ids else []
             for (day, start_hour, _room), var in x[sess.session_id].items():
                 for offset in range(sess.block_size):
+                    if sess.student_ids:
+                        for student_id in sess.student_ids:
+                            key = (('student', student_id), day, start_hour + offset)
+                            singles[key].append(var)
+                        continue
                     for atom in atoms:
                         key = (atom, day, start_hour + offset)
                         if basket is None:
@@ -1025,11 +1351,16 @@ class WholeCollegeTimetableSolver:
                     version=version,
                     curriculum_id=sess.curriculum_id,
                     curriculum_instructor_id=sess.curriculum_instructor_id,
-                    classroom_id=room_id,
+                    course_id=sess.course_id,
+                    course_instructor_id=sess.course_instructor_id,
+                    classroom_id=None if room_id.startswith('__LAB__') else room_id,
+                    room_label=sess.room_label,
                     batch=sess.batch,
                     programme=sess.programme,
                     branch=sess.branch,
                     section=sess.section,
+                    enrollment_count=len(sess.student_ids),
+                    student_ids=sess.student_ids,
                     day_of_week=day,
                     start_hour=actual_hour,
                     slot_type=sess.slot_type,
@@ -1070,6 +1401,8 @@ class WholeCollegeTimetableSolver:
                     version = TimetableVersion.objects.create(
                         academic_year=self.academic_year,
                         semester_type=self.semester_type,
+                        semester_number=self.semester_number,
+                        course_source=self.course_source,
                         version_number=next_v,
                         status='Draft',
                         created_by=self.created_by,
@@ -1152,6 +1485,8 @@ class LockedSlotConflict(CapacityBottleneck):
 def run_whole_college_timetable_generation(
     academic_year: int,
     semester_type: str = 'Odd Semester',
+    semester_number: Optional[int] = None,
+    course_source: str = 'registered',
     timeout_seconds: int = 60,
 ) -> Tuple[bool, str]:
     """
@@ -1159,7 +1494,12 @@ def run_whole_college_timetable_generation(
 
     Returns (success: bool, message: str).
     """
-    solver = WholeCollegeTimetableSolver(academic_year, semester_type)
+    solver = WholeCollegeTimetableSolver(
+        academic_year,
+        semester_type,
+        semester_number=semester_number,
+        course_source=course_source,
+    )
     result = solver.solve(timeout_seconds=timeout_seconds)
     success = result.status in ('OPTIMAL', 'FEASIBLE')
     return success, result.message

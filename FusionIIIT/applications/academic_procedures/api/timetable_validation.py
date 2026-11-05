@@ -10,6 +10,12 @@ The choice lists mirror the model choices in ``academic_procedures.models``
 import re
 
 SEMESTER_TYPES = ('Odd Semester', 'Even Semester', 'Summer Term')
+SEMESTER_NUMBERS = tuple(range(1, 9))
+SEMESTERS_BY_TYPE = {
+    'Odd Semester': (1, 3, 5, 7),
+    'Even Semester': (2, 4, 6, 8),
+    'Summer Term': SEMESTER_NUMBERS,
+}
 ROOM_TYPES = (
     'Lecture Hall', 'Tutorial Room', 'Computer Lab', 'Hardware Lab',
     'Mechanical Workshop', 'Seminar Room',
@@ -66,6 +72,21 @@ def parse_bool(value, name):
     if isinstance(value, (int, float)) and value in (0, 1):
         return bool(value)
     raise ValueError(f'{name} must be true or false.')
+
+
+def clean_semester_number(value, semester_type):
+    """Validate a semester number and its compatibility with the term type."""
+    semester_number = parse_int(
+        value, 'semester_number', choices=SEMESTER_NUMBERS,
+    )
+    allowed = SEMESTERS_BY_TYPE.get(semester_type)
+    if allowed is None:
+        raise ValueError(f'semester_type must be one of {SEMESTER_TYPES}.')
+    if semester_number not in allowed:
+        raise ValueError(
+            f'semester_number must be one of {list(allowed)} for {semester_type}.'
+        )
+    return semester_number
 
 
 def clean_str(value, name, max_length):

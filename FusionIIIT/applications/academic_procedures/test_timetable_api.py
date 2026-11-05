@@ -65,7 +65,8 @@ class TimetableTestCase(TestCase):
                                              room_type='Tutorial Room')
 
         self.draft = TimetableVersion.objects.create(
-            academic_year=2026, semester_type='Odd Semester', version_number=1)
+            academic_year=2026, semester_type='Odd Semester', semester_number=3,
+            version_number=1)
         self.client = APIClient()
 
     # ── fixtures ──────────────────────────────────────────────────────── #
@@ -91,11 +92,11 @@ class TimetableTestCase(TestCase):
                                category='GEN', section=section or None)
         return user
 
-    def _curriculum(self, code, branch, batch=2024):
+    def _curriculum(self, code, branch, batch=2024, semester=3):
         return Curriculum.objects.create(
             course_code=code, course_id=self.course, credits=4,
             course_type='Professional Core', programme='B.Tech', branch=branch,
-            batch=batch, sem=3, floated=True)
+            batch=batch, sem=semester, floated=True)
 
     def _teach(self, curriculum, user, chief=True):
         return Curriculum_Instructor.objects.create(
@@ -133,6 +134,18 @@ class PermissionAndValidationTests(TimetableTestCase):
                 format='json')
             self.assertEqual(response.status_code, 400, timeout)
 
+    def test_generate_rejects_semester_that_does_not_match_term(self):
+        response = self.as_user(self.admin).post(
+            BASE + 'generate/',
+            {
+                'academic_year': 2026,
+                'semester_type': 'Odd Semester',
+                'semester_number': 4,
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, 400)
+
     def test_drafts_are_hidden_from_non_admins(self):
         self._slot(self.cse1, self.ci_cse1, self.lh1, 1, 9)
         versions = self.as_user(self.student).get(BASE + 'versions/')
@@ -168,6 +181,26 @@ class PermissionAndValidationTests(TimetableTestCase):
         response = self.as_user(self.admin).get(
             BASE + 'versions/', {'semester_type': 'Monsoon Semester'})
         self.assertEqual(response.status_code, 400)
+
+    def test_versions_can_be_filtered_by_semester_number(self):
+        sem3 = TimetableVersion.objects.create(
+            academic_year=2026, semester_type='Odd Semester',
+            semester_number=3, version_number=2,
+        )
+        TimetableVersion.objects.create(
+            academic_year=2026, semester_type='Odd Semester',
+            semester_number=5, version_number=3,
+        )
+        response = self.as_user(self.admin).get(
+            BASE + 'versions/',
+            {
+                'academic_year': 2026,
+                'semester_type': 'Odd Semester',
+                'semester_number': 3,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([version['id'] for version in response.data], [sem3.id])
 
 
 class OverrideTests(TimetableTestCase):
@@ -271,15 +304,21 @@ class PublishTests(TimetableTestCase):
 
     def test_publishing_archives_only_the_same_term(self):
         old = TimetableVersion.objects.create(academic_year=2026, semester_type='Odd Semester',
-                                              version_number=2, status='Published')
+                                              semester_number=3, version_number=2,
+                                              status='Published')
+        other_semester = TimetableVersion.objects.create(
+            academic_year=2026, semester_type='Odd Semester', semester_number=5,
+            version_number=3, status='Published')
         other_term = TimetableVersion.objects.create(academic_year=2026, semester_type='Even Semester',
-                                                     version_number=1, status='Published')
+                                                     semester_number=4, version_number=1,
+                                                     status='Published')
         self._slot(self.cse1, self.ci_cse1, self.lh1, 1, 9)
         response = self.as_user(self.dean).patch(BASE + f'version/{self.draft.pk}/publish/')
         self.assertEqual(response.status_code, 200, response.data)
         statuses = dict(TimetableVersion.objects.values_list('pk', 'status'))
         self.assertEqual(statuses[self.draft.pk], 'Published')
         self.assertEqual(statuses[old.pk], 'Archived')
+        self.assertEqual(statuses[other_semester.pk], 'Published')
         self.assertEqual(statuses[other_term.pk], 'Published')
 
 
@@ -301,7 +340,7 @@ class ConcurrentPublishTests(TransactionTestCase):
                                         room_type='Lecture Hall')
         self.v1, self.v2 = [
             TimetableVersion.objects.create(academic_year=2026, semester_type='Odd Semester',
-                                            version_number=n)
+                                            semester_number=3, version_number=n)
             for n in (1, 2)
         ]
         for version in (self.v1, self.v2):
@@ -448,7 +487,13 @@ class GenerationIntegrationTests(TimetableTestCase):
 
     def generate(self):
         return self.as_user(self.admin).post(
-            BASE + 'generate/', {'academic_year': 2026, 'timeout_seconds': 30}, format='json')
+            BASE + 'generate/', {
+                'academic_year': 2026,
+                'semester_type': 'Odd Semester',
+                'semester_number': 3,
+                'course_source': 'legacy',
+                'timeout_seconds': 30,
+            }, format='json')
 
     def assertNoClashes(self, version_id):
         slots = list(TimetableSlot.objects.filter(version_id=version_id))
@@ -472,10 +517,21 @@ class GenerationIntegrationTests(TimetableTestCase):
         self.assertEqual(response.status_code, 200, response.data)
         version = TimetableVersion.objects.get(pk=response.data['version_id'])
         self.assertEqual(version.status, 'Draft')
+        self.assertEqual(version.semester_number, 3)
         self.assertEqual(version.created_by, self.admin)
         # 4 floated curricula x default 3 lectures + 1 tutorial
+        self.assertEqual(response.data['courses_scheduled'], 4)
         self.assertEqual(version.slots.count(), 16)
         self.assertNoClashes(version.pk)
+
+    def test_generation_only_includes_the_selected_semester(self):
+        sem5 = self._curriculum('CS501', 'CSE', semester=5)
+        self._teach(sem5, self.prof1)
+        response = self.generate()
+        self.assertEqual(response.status_code, 200, response.data)
+        slots = TimetableSlot.objects.filter(version_id=response.data['version_id'])
+        self.assertEqual(slots.count(), 16)
+        self.assertFalse(slots.filter(curriculum=sem5).exists())
 
     def test_locks_carry_forward_and_removed_locks_stay_removed(self):
         first = self.generate().data['version_id']

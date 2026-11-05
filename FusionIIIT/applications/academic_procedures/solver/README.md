@@ -35,9 +35,12 @@ The Django solver and REST API are consumed by the React admin console in
 
 ### Solver pipeline (`WholeCollegeTimetableSolver.solve()`)
 
-1. **Ingest & prune** (`_ingest_and_prune`) — reads floated curricula, rooms,
-   weekly requirements, elective baskets, faculty preferences, and any
-   `is_locked` slots from a prior version (for incremental rescheduling).
+1. **Ingest & prune** (`_ingest_and_prune`) — by default reads registered
+   courses for the selected working year, term, and semester, including actual
+   student enrolments and modern `CourseInstructor` offerings. The legacy
+   floated-curriculum source remains available for old versions/tests. It also
+   reads rooms, faculty preferences, and any `is_locked` slots from a prior
+   version (for incremental rescheduling).
    Builds one `SessionRecord` per lecture/tutorial/practical occurrence and
    prunes its eligible-room domain by capacity + room-type affinity. If any
    session has zero eligible rooms, this raises `CapacityBottleneck` and the
@@ -98,12 +101,20 @@ specific term.
    python manage.py migrate academic_procedures
    ```
 3. Seed classroom inventory — the solver has nothing to assign rooms from
-   until `Classroom` rows exist. Either via Django admin, or via the API:
+   until `Classroom` rows exist. To replace the local room inventory with the
+   institute CR/L seating-capacity data (and remove stale generated versions
+   that still reference old rooms), run:
+   ```bash
+   python manage.py seed_timetable_rooms --replace --clear-timetables
+   ```
+   The class timetable uses each room's physical capacity. `CR` rooms map to
+   `Tutorial Room` and `L` rooms map to `Lecture Hall`, matching the solver's
+   room-type vocabulary. Rooms can also be added individually via the API:
    ```bash
    curl -X POST $HOST/academic-procedures/api/timetable/classrooms/ \
      -H "Authorization: Token $ACADADMIN_TOKEN" \
      -H "Content-Type: application/json" \
-     -d '{"room_id":"L101","building":"Main","capacity":250,"room_type":"Lecture Hall"}'
+      -d '{"room_id":"L-102","building":"LHTC","capacity":126,"room_type":"Lecture Hall"}'
    ```
 4. (Optional) Set per-curriculum session counts via `weekly-requirements/` —
    any curriculum without one defaults to 3 lectures + 1 tutorial + 0
@@ -116,7 +127,11 @@ specific term.
 Fusion-client → **Calendar & Feedback → Semester Timetable**
 (`AdminSemesterTimetable.jsx`, slug `semester-timetable`):
 
-1. Set **Academic Year**, **Semester**, and solver **Timeout (s)**.
+1. Set **Academic Year**, **Term Type**, **Semester Number**, and solver
+   **Timeout (s)**. Odd terms allow semesters 1/3/5/7; even terms allow
+   2/4/6/8. Courses are sourced from Fusion registrations for the selected
+   working year/term/semester. Until lab inventory is loaded, practical blocks
+   appear under the virtual room label `LAB`.
 2. Click **Generate Schedule**. Success shows solver status, slot count, and
    solve time; infeasibility shows the reason and opens the **Conflict Log**
    tab with the specific capacity/constraint bottleneck.
@@ -135,7 +150,7 @@ Fusion-client → **Calendar & Feedback → Semester Timetable**
 curl -X POST $HOST/academic-procedures/api/timetable/generate/ \
   -H "Authorization: Token $ACADADMIN_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"academic_year": 2026, "semester_type": "Odd Semester", "timeout_seconds": 60}'
+   -d '{"academic_year": 2025, "semester_type": "Odd Semester", "semester_number": 3, "course_source": "registered", "timeout_seconds": 120}'
 ```
 Returns `200` with `version_id`/`slots_created`/`solve_time_sec` on success,
 `422` with `conflicts: [...]` if infeasible, `504` with `status: "timeout"` if
@@ -149,7 +164,8 @@ from applications.academic_procedures.solver.timetable_solver import (
     run_whole_college_timetable_generation,
 )
 success, message = run_whole_college_timetable_generation(
-    academic_year=2026, semester_type='Odd Semester', timeout_seconds=60,
+    academic_year=2025, semester_type='Odd Semester', semester_number=3,
+    course_source='registered', timeout_seconds=120,
 )
 print(success, message)
 ```

@@ -86,6 +86,21 @@ class ParseBoolTests(unittest.TestCase):
                 v.parse_bool(value, 'lock')
 
 
+class SemesterNumberTests(unittest.TestCase):
+
+    def test_accepts_semesters_matching_the_term_type(self):
+        self.assertEqual(v.clean_semester_number('3', 'Odd Semester'), 3)
+        self.assertEqual(v.clean_semester_number(6, 'Even Semester'), 6)
+        self.assertEqual(v.clean_semester_number(4, 'Summer Term'), 4)
+
+    def test_rejects_out_of_range_or_wrong_parity(self):
+        for value, semester_type in (
+                (0, 'Odd Semester'), (9, 'Odd Semester'),
+                (4, 'Odd Semester'), (3, 'Even Semester')):
+            with self.assertRaises(ValueError, msg=(value, semester_type)):
+                v.clean_semester_number(value, semester_type)
+
+
 class StringAndClassroomTests(unittest.TestCase):
 
     def test_clean_str(self):
@@ -163,6 +178,10 @@ class ChoicesMatchModelsTests(unittest.TestCase):
     def test_semester_types(self):
         self.assertEqual(list(v.SEMESTER_TYPES),
                          _choice_values('TimetableVersion', 'SEMESTER_TYPE_CHOICES'))
+
+    def test_semester_numbers(self):
+        self.assertEqual(list(v.SEMESTER_NUMBERS),
+                         _choice_values('TimetableVersion', 'SEMESTER_NUMBER_CHOICES'))
 
     def test_solver_days_and_hours(self):
         self.assertEqual(ts.DAYS, _choice_values('TimetableSlot', 'DAY_CHOICES'))

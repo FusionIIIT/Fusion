@@ -2861,7 +2861,8 @@ class TimetableVersion(models.Model):
     """Snapshot / version of a whole-college timetable generation run.
 
     Supports the draft → review → approved → published lifecycle described
-    in WF-01.  Only one version per (academic_year, semester_type) should have
+    in WF-01. Only one version per
+    (academic_year, semester_type, semester_number) should have
     status='Published' at any time.
     """
 
@@ -2878,11 +2879,36 @@ class TimetableVersion(models.Model):
         ('Even Semester', 'Even Semester'),
         ('Summer Term', 'Summer Term'),
     ]
+    SEMESTER_NUMBER_CHOICES = [
+        (1, 'Semester 1'),
+        (2, 'Semester 2'),
+        (3, 'Semester 3'),
+        (4, 'Semester 4'),
+        (5, 'Semester 5'),
+        (6, 'Semester 6'),
+        (7, 'Semester 7'),
+        (8, 'Semester 8'),
+    ]
+    COURSE_SOURCE_CHOICES = [
+        ('legacy', 'Legacy floated curriculum'),
+        ('registered', 'Registered term courses'),
+    ]
 
     academic_year = models.PositiveSmallIntegerField(
         help_text='Start year of the academic year, e.g. 2026 for 2026-27',
     )
     semester_type = models.CharField(max_length=20, choices=SEMESTER_TYPE_CHOICES)
+    semester_number = models.PositiveSmallIntegerField(
+        choices=SEMESTER_NUMBER_CHOICES,
+        null=True,
+        blank=True,
+        help_text='Curriculum semester scheduled by this run (1-8)',
+    )
+    course_source = models.CharField(
+        max_length=15,
+        choices=COURSE_SOURCE_CHOICES,
+        default='legacy',
+    )
     version_number = models.PositiveSmallIntegerField(default=1)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='Draft')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -2910,8 +2936,9 @@ class TimetableVersion(models.Model):
         ordering = ['-academic_year', '-version_number']
 
     def __str__(self):
+        semester = f'-S{self.semester_number}' if self.semester_number else ''
         return (
-            f'TT-{self.academic_year}-{self.semester_type} '
+            f'TT-{self.academic_year}-{self.semester_type}{semester} '
             f'v{self.version_number} [{self.status}]'
         )
 
@@ -2959,6 +2986,8 @@ class TimetableSlot(models.Model):
     # Read-only FK to Curriculum (existing production table).
     curriculum = models.ForeignKey(
         'academic_information.Curriculum',
+        null=True,
+        blank=True,
         on_delete=models.CASCADE,
         db_column='curriculum_id',
         related_name='timetable_slots',
@@ -2971,10 +3000,34 @@ class TimetableSlot(models.Model):
         db_column='curriculum_instructor_id',
         related_name='timetable_slots',
     )
+    course = models.ForeignKey(
+        'programme_curriculum.Course',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        db_column='modern_course_id',
+        related_name='timetable_slots',
+    )
+    course_instructor = models.ForeignKey(
+        'programme_curriculum.CourseInstructor',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        db_column='modern_course_instructor_id',
+        related_name='timetable_slots',
+    )
     classroom = models.ForeignKey(
         Classroom,
+        null=True,
+        blank=True,
         on_delete=models.PROTECT,
         related_name='timetable_slots',
+    )
+    room_label = models.CharField(
+        max_length=20,
+        blank=True,
+        default='',
+        help_text='Display-only room for unallocated facilities such as LAB',
     )
 
     # Cohort identification (denormalised for fast filtering).
@@ -2982,6 +3035,13 @@ class TimetableSlot(models.Model):
     programme = models.CharField(max_length=15)
     branch = models.CharField(max_length=15)
     section = models.CharField(max_length=8, blank=True, default='')
+    enrollment_count = models.PositiveIntegerField(default=0)
+    student_ids = ArrayField(
+        models.CharField(max_length=20),
+        blank=True,
+        default=list,
+        help_text='Students represented by a registered-course timetable slot',
+    )
 
     day_of_week = models.PositiveSmallIntegerField(choices=DAY_CHOICES)
     start_hour = models.PositiveSmallIntegerField(
@@ -3020,9 +3080,14 @@ class TimetableSlot(models.Model):
 
     def __str__(self):
         day_label = dict(self.DAY_CHOICES).get(self.day_of_week, self.day_of_week)
+        course_code = (
+            self.curriculum.course_code if self.curriculum_id
+            else self.course.code if self.course_id else 'Unknown'
+        )
+        room = self.room_label or self.classroom_id or 'Unassigned'
         return (
-            f'{self.curriculum.course_code} | {day_label} {self.start_time} | '
-            f'{self.classroom_id} | {self.slot_type}'
+            f'{course_code} | {day_label} {self.start_time} | '
+            f'{room} | {self.slot_type}'
         )
 
 
