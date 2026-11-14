@@ -144,7 +144,6 @@ INSTALLED_APPS = [
     'applications.office_module',
     'applications.globals',
     'applications.central_mess',
-    'applications.complaint_system',
     'applications.filetracking',
     'applications.health_center',
     'applications.online_cms',
