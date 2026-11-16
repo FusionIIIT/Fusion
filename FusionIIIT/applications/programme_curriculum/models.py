@@ -275,10 +275,19 @@ class Seminar(models.Model):
 
 
 class TeachingCredit(models.Model):
-    """Store teaching credit details for PhD and M.Tech programmes"""
+    """Store teaching credit details for PhD and M.Tech programmes.
 
-    code = models.CharField(max_length=10, null=False, blank=False, unique=True)
+    Versioned like Course: a code whose credit changed over the years keeps one
+    row per version, so older semesters still resolve to the credit they had.
+    """
+
+    code = models.CharField(max_length=10, null=False, blank=False)
     name = models.CharField(max_length=100, null=False, blank=False)
+    version = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        default=1.0,
+        validators=[MinValueValidator(1.0), DecimalValidator(max_digits=5, decimal_places=1)])
     credit = models.PositiveIntegerField(default=0, null=False, blank=False)
     discipline = models.ForeignKey(Discipline, on_delete=models.CASCADE, null=False)
     programme_type = models.CharField(
@@ -288,12 +297,13 @@ class TeachingCredit(models.Model):
         blank=False
     )
     working_teaching_credit = models.BooleanField(default=True)
+    latest_version = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ('code', 'discipline')
+        unique_together = ('code', 'discipline', 'version')
 
     def __str__(self):
-        return f"{self.code} - {self.name} ({self.discipline.acronym})"
+        return f"{self.code} - {self.name} v{self.version} ({self.discipline.acronym})"
 
 
 class Batch(models.Model):
