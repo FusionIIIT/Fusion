@@ -9,6 +9,7 @@ from applications.academic_procedures.models import(
     ThesisRegistration, ThesisEvaluation, ThesisTopic,
     ProgressSeminarRegistration, ProgressSeminarEntry, TeachingCreditAllocation,
     resolve_progress_seminar_catalog_entry, DEFAULT_PROGRESS_SEMINAR_CREDIT,
+    allocation_teaching_credit, DEFAULT_TEACHING_CREDIT,
 )
 from applications.programme_curriculum.models import Course as Courses ,  Batch, CourseInstructor, Semester
 from applications.examination.models import(hidden_grades , ResultAnnouncement, authentication, PublishedResultStudent)
@@ -223,15 +224,24 @@ def _phd_extra_records(student, semester_no, require_announced=False):
 
     for alloc in TeachingCreditAllocation.objects.filter(
         student=student, semester__semester_no=semester_no
-    ).select_related('allocated_course'):
-        if not (alloc.allocated_course and alloc.result):
+    ).select_related('allocated_course', 'teaching_credit', 'semester'):
+        if not alloc.result:
+            continue
+        # The teaching-credit catalogue entry (code, name and its own credit);
+        # the course taught is only a fallback for results without one.
+        entry = allocation_teaching_credit(alloc)
+        if entry:
+            code, name, credit = entry.code, entry.name, entry.credit or DEFAULT_TEACHING_CREDIT
+        elif alloc.allocated_course:
+            course = alloc.allocated_course
+            code, name, credit = course.code, f"{course.name} (Teaching Credit)", course.credit
+        else:
             continue
         grade = 'S' if alloc.result == 'satisfactory' else 'X'
-        credit = alloc.allocated_course.credit
         records.append({
             "key": f"teaching_credit_{alloc.id}",
-            "code": alloc.allocated_course.code,
-            "name": f"{alloc.allocated_course.name} (Teaching Credit)",
+            "code": code,
+            "name": name,
             "display_credit": credit,
             "display_grade": grade,
             "grade_items": [(Decimal(str(credit)), grade)],

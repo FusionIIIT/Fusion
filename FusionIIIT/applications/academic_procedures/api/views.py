@@ -10206,6 +10206,7 @@ from applications.academic_procedures.models import (
     OpenSeminarConsent, OpenSeminarRPCComment,
     TeachingCreditAllocation, TeachingCreditEvaluationResponse,
     resolve_progress_seminar_credit, resolve_teaching_credit_credit,
+    allocation_teaching_credit_credit,
 )
 from applications.programme_curriculum.models import (
     ThesisSlot, SeminarSlot as ProgressSeminarSlot, TeachingCreditSlot,
@@ -12881,12 +12882,12 @@ def _teaching_credits_completed(student):
     """Registering for teaching credit (TeachingCreditRegistration) or being
     allocated a course (TeachingCreditAllocation) isn't earning the credit --
     only a semester marked 'completed'/'satisfactory' counts, at that
-    semester's own catalog credit value."""
+    result's own catalog credit value."""
     return sum(
-        resolve_teaching_credit_credit(student, alloc.semester)
+        allocation_teaching_credit_credit(alloc)
         for alloc in TeachingCreditAllocation.objects.filter(
             student=student, status='completed', result='satisfactory',
-        )
+        ).select_related('teaching_credit', 'semester')
     )
 
 
