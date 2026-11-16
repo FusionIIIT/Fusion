@@ -53,7 +53,8 @@ from applications.programme_curriculum.models import ( CourseInstructor, CourseS
 
 from applications.academic_procedures.models import ( MTechGraduateSeminarReport, PhDProgressExamination, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
                                                      FinalRegistration, SemesterMarks,backlog_course,
-                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim, Assignment, StipendRequest, CourseReplacementRequest, SwayamReplacementRequest, CourseDropRequest, CourseAddRequest, BatchChangeHistory, FeedbackQuestion, FeedbackResponse, FeedbackFilled, FeedbackOption, PhDCourseRegistrationRequest)
+                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim, Assignment, StipendRequest, CourseReplacementRequest, SwayamReplacementRequest, CourseDropRequest, CourseAddRequest, BatchChangeHistory, FeedbackQuestion, FeedbackResponse, FeedbackFilled, FeedbackOption, PhDCourseRegistrationRequest,
+                                                     session_working_year)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
 from applications.online_cms.models import Student_grades
@@ -6017,13 +6018,9 @@ def working_year_for_session(session, semester_type):
 
     An Odd semester runs from August of the session's first year; Even and
     Summer semesters run in its second year. Falls back to the current year
-    only when the session cannot be read.
+    only when the session or semester type cannot be read.
     """
-    match = re.match(r'^\s*(\d{4})\s*-\s*\d{2,4}\s*$', str(session or ''))
-    if not match:
-        return datetime.datetime.now().year
-    start = int(match.group(1))
-    return start if str(semester_type or '').startswith('Odd') else start + 1
+    return session_working_year(session, semester_type) or datetime.datetime.now().year
 
 
 # Processes multiple add requests in batch
