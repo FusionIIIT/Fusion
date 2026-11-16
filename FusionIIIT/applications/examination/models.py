@@ -93,3 +93,70 @@ class PublishedResultStudent(models.Model):
 
     def __str__(self):
         return f"{self.announcement_id} - {self.roll_no}"
+
+
+# ─── Seating Arrangement ─────────────────────────────────────────────────────
+
+class ExamRoom(models.Model):
+    """Classrooms / halls used for exams, with their seating capacity."""
+    room_no = models.CharField(max_length=20, unique=True)
+    seating_capacity = models.PositiveIntegerField(default=45)
+    # cols: number of columns in the physical room layout
+    # rows = ceil(seating_capacity / cols)
+    cols = models.PositiveIntegerField(default=9, help_text="Number of columns in the room layout")
+    block = models.CharField(max_length=10, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['room_no']
+
+    def __str__(self):
+        return f"{self.room_no} (cap: {self.seating_capacity}, {self.cols} cols)"
+
+
+class SeatingArrangement(models.Model):
+    """One row = one student assigned to a seat for a given exam slot."""
+    TITLE_CHOICES = [
+        ('midsem', 'Mid-Semester Examination'),
+        ('endsem', 'End-Semester Examination'),
+    ]
+    SHIFT_CHOICES = [
+        ('morning', 'Morning Shift'),
+        ('evening', 'Evening Shift'),
+        ('afternoon', 'Evening Shift'),
+    ]
+    PROGRAMME_CHOICES = [
+        ('UG', 'Undergraduate'),
+        ('PG', 'Postgraduate'),
+        ('PHD', 'PhD'),
+        ('ALL', 'All'),
+    ]
+
+    exam_title = models.CharField(max_length=20, choices=TITLE_CHOICES)
+    exam_date = models.DateField()
+    shift = models.CharField(max_length=20, choices=SHIFT_CHOICES)
+    academic_year = models.CharField(max_length=10)
+    programme_type = models.CharField(max_length=10, choices=PROGRAMME_CHOICES, default='ALL')
+    course_code = models.CharField(max_length=20)
+    course_name = models.CharField(max_length=200)
+    room_no = models.CharField(max_length=20)
+    student_roll = models.CharField(max_length=20)
+    student_name = models.CharField(max_length=200)
+    seat_no = models.PositiveIntegerField()
+    row_no = models.PositiveIntegerField(default=1)  # physical row in classroom (1-indexed)
+    col_no = models.PositiveIntegerField(default=1)  # physical column in classroom (1-indexed)
+    is_excluded = models.BooleanField(default=False)  # exclude from seating
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['exam_date', 'shift', 'room_no', 'seat_no']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['exam_date', 'shift', 'room_no', 'seat_no'],
+                name='unique_seat_per_slot',
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.exam_date} {self.shift} | {self.room_no} #{self.seat_no} | {self.student_roll}"
