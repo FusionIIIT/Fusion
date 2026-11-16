@@ -190,6 +190,27 @@ print(success, message)
   be honoured (room gone, too small, wrong type, or bad hour); that session
   was scheduled freely instead.
 
+### Whole-term and relax mode (registered source)
+
+- Omit `semester_number` with `course_source: "registered"` to generate every
+  semester of the term (all odd or all even) in one run, so rooms and faculty
+  can never be double-booked across semesters.
+- `relax: true` (registered source only; 400 on legacy) turns an infeasible
+  problem into a best-effort timetable. Rooms, faculty and lab blocks stay
+  hard. Student overlaps become penalties (1000 per student-hour), and a
+  session that cannot be placed is dropped (50000 per session-hour). The
+  response adds `relaxed`, `unplaced_sessions` and `clashing_students`, and the
+  conflict log gets `UNPLACED_SESSION`, `STUDENT_CLASH` (top 20) and
+  `STUDENT_CLASH_SUMMARY` entries.
+- Pre-flight warnings are logged on every registered run:
+  `COURSE_HOURS_ANOMALY` (L-T-P over 10 h/week, usually a data error),
+  `STUDENT_OVERLOAD` (a student registered for more than 40 h/week),
+  `LARGE_ROOM_SHORTAGE` (more hours need big rooms than exist) and
+  `NO_INSTRUCTOR`. Fix these in the data first; relax mode only reports what
+  remains.
+- Large whole-term relax runs usually hit the time limit with a `FEASIBLE`
+  (not proven optimal) result. Use a long `timeout_seconds` (240+).
+
 ### Scheduling rules worth knowing
 
 - **Faculty clashes are per person**, not per `Curriculum_Instructor` row, and

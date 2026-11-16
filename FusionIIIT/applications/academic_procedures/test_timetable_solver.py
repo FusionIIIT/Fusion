@@ -35,11 +35,15 @@ class _Version:
 class _Solver(ts.WholeCollegeTimetableSolver):
     """Real model and constraints; DB reads/writes replaced by in-memory state."""
 
-    def __init__(self, basket_members=None):
-        super().__init__(academic_year=2026, semester_type='Odd Semester')
+    def __init__(self, basket_members=None, relax=False):
+        super().__init__(academic_year=2026, semester_type='Odd Semester', relax=relax)
         self.basket_members = basket_members or {}
         self.assigned = None
         self.failure = None
+        self.logged = []
+
+    def _log_conflicts(self, version, conflicts):
+        self.logged += conflicts
 
     def _basket_member_ids(self, basket):
         return self.basket_members[basket]
@@ -80,8 +84,8 @@ def session(n, ci=None, batch=2024, branch='CSE', section='', rooms=('R1',),
 
 
 def solve(sessions, rooms=('R1', 'R2'), ci_to_faculty=None, baskets=(),
-          basket_members=None, timeout=10, prefs=()):
-    solver = _Solver(basket_members)
+          basket_members=None, timeout=10, prefs=(), relax=False):
+    solver = _Solver(basket_members, relax=relax)
     result = solver._build_and_solve(
         _Version(), {r: room(r) for r in rooms}, sessions, list(baskets), list(prefs),
         {}, ci_to_faculty or {}, timeout, 1,
@@ -582,5 +586,133 @@ class PureHelperTests(unittest.TestCase):
         self.assertEqual([c['error_code'] for c in conflicts], ['LOCK_CONFLICT'])
 
 
+def student_session(n, students, lock=None, rooms=('R1',), block=1, faculty=(),
+                    slot_type=ts.LECTURE, size=40, code=None):
+    sess = session(n, rooms=rooms, lock=lock, block=block, slot_type=slot_type)
+    sess.course_id = n
+    sess.student_ids = list(students)
+    sess.faculty_ids = list(faculty)
+    sess.effective_size = size
+    if code:
+        sess.course_code = code
+    return sess
+
+
+@unittest.skipUnless(ts._ORTOOLS_AVAILABLE, 'ortools is not installed')
+class RelaxModeTests(unittest.TestCase):
+
+    def clashing_pair(self):
+        a = student_session(1, ['s1', 's2'], lock=(1, 10, 'R1'), rooms=('R1',))
+        b = student_session(2, ['s2', 's3'], lock=(1, 10, 'R2'), rooms=('R2',))
+        return [a, b]
+
+    def test_strict_mode_rejects_a_forced_student_clash(self):
+        result, _ = solve(self.clashing_pair())
+        self.assertEqual(result.status, 'INFEASIBLE')
+
+    def test_relax_keeps_both_classes_and_reports_the_clash(self):
+        result, solver = solve(self.clashing_pair(), relax=True)
+        self.assertIn(result.status, FREE)
+        self.assertTrue(result.relaxed)
+        self.assertEqual(result.unplaced_sessions, 0)
+        self.assertEqual(result.clashing_students, 1)
+        codes = {c['error_code'] for c in solver.logged}
+        self.assertIn('STUDENT_CLASH', codes)
+
+    def test_relax_never_double_books_a_room(self):
+        a = student_session(1, ['s1'], lock=(1, 10, 'R1'))
+        b = student_session(2, ['s2'], lock=(1, 10, 'R1'))
+        result, solver = solve([a, b], relax=True)
+        self.assertIn(result.status, FREE)
+        self.assertEqual(result.unplaced_sessions, 1)
+        self.assertIn('UNPLACED_SESSION', {c['error_code'] for c in solver.logged})
+
+    def test_relax_never_double_books_a_teacher(self):
+        a = student_session(1, ['s1'], lock=(1, 10, 'R1'), faculty=['f'], rooms=('R1',))
+        b = student_session(2, ['s2'], lock=(1, 10, 'R2'), faculty=['f'], rooms=('R2',))
+        result, _ = solve([a, b], relax=True)
+        self.assertEqual(result.unplaced_sessions, 1)
+
+    def test_relax_drops_overflow_when_the_week_is_too_full(self):
+        week = len(ts.DAYS) * len(ts.HOURS)
+        many = [student_session(i, [f'p{i}'], rooms=('R1',)) for i in range(week + 2)]
+        strict, _ = solve(many, rooms=('R1',), timeout=30)
+        self.assertEqual(strict.status, 'INFEASIBLE')
+        result, solver = solve(many, rooms=('R1',), timeout=30, relax=True)
+        self.assertIn(result.status, FREE)
+        self.assertEqual(result.unplaced_sessions, 2)
+        self.assertEqual(len(solver.assigned), week)
+
+    def test_relax_reports_a_session_with_no_valid_slot(self):
+        orphan = student_session(1, ['s1'], rooms=())
+        ok = student_session(2, ['s2'])
+        strict, _ = solve([orphan, ok])
+        self.assertEqual(strict.status, 'INFEASIBLE')
+        result, solver = solve([orphan, ok], relax=True)
+        self.assertIn(result.status, FREE)
+        self.assertEqual(result.unplaced_sessions, 1)
+
+    def test_relax_matches_strict_when_the_data_is_feasible(self):
+        sessions = [student_session(i, ['s1', 's2'], rooms=('R1', 'R2')) for i in range(1, 5)]
+        result, solver = solve(sessions, relax=True)
+        self.assertIn(result.status, FREE)
+        self.assertEqual((result.unplaced_sessions, result.clashing_students), (0, 0))
+        self.assertEqual(solver.logged, [])
+
+    def test_relax_prefers_a_small_clash_over_dropping_a_class(self):
+        sessions = [student_session(i, ['s1'], rooms=('R1',)) for i in range(1, 42)]
+        result, _ = solve(sessions, rooms=('R1',), timeout=30, relax=True)
+        self.assertIn(result.status, FREE)
+        self.assertEqual(result.unplaced_sessions, 1)  # week has 40 room-hours
+
+
+class PreflightTests(unittest.TestCase):
+
+    def codes(self, sessions, rooms):
+        return {c['error_code']: c for c in ts.preflight_conflicts(sessions, rooms)}
+
+    def test_flags_students_over_the_weekly_limit(self):
+        sessions = [student_session(i, ['s1']) for i in range(1, 42)]
+        found = self.codes(sessions, {'R1': room('R1')})
+        self.assertIn('STUDENT_OVERLOAD', found)
+        self.assertIn('s1 (41h)', found['STUDENT_OVERLOAD']['description'])
+
+    def test_flags_absurd_course_hours(self):
+        sessions = [student_session(i, ['s1'], code='BAD1') for i in range(1, 12)]
+        self.assertIn('COURSE_HOURS_ANOMALY', self.codes(sessions, {'R1': room('R1')}))
+
+    def test_flags_large_room_shortage(self):
+        sessions = [student_session(i, [f'p{i}'], size=200) for i in range(1, 42)]
+        found = self.codes(sessions, {'R1': room('R1', 240), 'R2': room('R2', 60)})
+        self.assertIn('LARGE_ROOM_SHORTAGE', found)
+        self.assertIn('41 class hours', found['LARGE_ROOM_SHORTAGE']['description'])
+
+    def test_clean_data_has_no_warnings(self):
+        sessions = [student_session(1, ['s1'], faculty=['f'])]
+        self.assertEqual(ts.preflight_conflicts(sessions, {'R1': room('R1')}), [])
+
+    def test_student_clashes_counts_people_and_pairs(self):
+        a = student_session(1, ['s1', 's2'], block=2, code='A')
+        b = student_session(2, ['s2', 's3'], code='B')
+        people, pairs = ts.student_clashes([a, b], {'s1': (1, 9), 's2': (1, 10)})
+        self.assertEqual(people, 1)
+        self.assertEqual(pairs, {('A', 'B'): 1})
+
+
 if __name__ == '__main__':
     unittest.main()
+
+class ChooseGroupSizeTests(unittest.TestCase):
+    def test_keeps_largest_tier_when_big_rooms_suffice(self):
+        from applications.academic_procedures.solver.timetable_solver import choose_group_size
+        self.assertEqual(choose_group_size([(200, 3)], [240, 240, 126]), 218)
+
+    def test_splits_to_smaller_rooms_when_big_rooms_are_scarce(self):
+        from applications.academic_procedures.solver.timetable_solver import choose_group_size
+        loads = [(200, 4)] * 20
+        size = choose_group_size(loads, [240, 240] + [126] * 4)
+        self.assertLessEqual(size, 114)
+
+    def test_no_rooms(self):
+        from applications.academic_procedures.solver.timetable_solver import choose_group_size
+        self.assertEqual(choose_group_size([(50, 3)], []), 0)

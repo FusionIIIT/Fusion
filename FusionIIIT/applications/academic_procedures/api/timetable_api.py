@@ -181,9 +181,13 @@ def generate_timetable(request):
         {
           "academic_year": 2026,
           "semester_type": "Odd Semester",
-          "semester_number": 3,
+          "semester_number": 3,        // omit for registered courses to
+                                       // schedule the whole odd/even term
           "course_source": "registered",
-          "timeout_seconds": 60        // optional, default 60
+          "timeout_seconds": 60,       // optional, default 60
+          "relax": false               // true: never fail; leave unplaceable
+                                       // classes out / allow student clashes
+                                       // and list them in the conflict log
         }
 
     Returns 200 with version_id and metrics on success, 422 on infeasibility,
@@ -212,6 +216,7 @@ def generate_timetable(request):
             request.data.get('timeout_seconds', 60), 'timeout_seconds',
             minimum=1, maximum=MAX_TIMEOUT_SECONDS,
         )
+        relax = parse_bool(request.data.get('relax', False), 'relax')
         if semester_number is not None:
             semester_number = clean_semester_number(semester_number, semester_type)
     except ValueError as exc:
@@ -224,8 +229,8 @@ def generate_timetable(request):
         )
     if course_source not in ('registered', 'legacy'):
         return _bad_request('course_source must be registered or legacy.')
-    if course_source == 'registered' and semester_number is None:
-        return _bad_request('semester_number is required for registered courses.')
+    if course_source == 'legacy' and relax:
+        return _bad_request('relax is only supported for registered courses.')
 
     try:
         from applications.academic_procedures.solver.timetable_solver import (
@@ -237,6 +242,7 @@ def generate_timetable(request):
             semester_number=semester_number,
             course_source=course_source,
             created_by=request.user,
+            relax=relax,
         )
         result = solver.solve(timeout_seconds=timeout_seconds)
     except Exception as exc:
@@ -255,6 +261,9 @@ def generate_timetable(request):
             'course_source': course_source,
             'slots_created': result.slots_created,
             'courses_scheduled': result.courses_scheduled,
+            'relaxed': result.relaxed,
+            'unplaced_sessions': result.unplaced_sessions,
+            'clashing_students': result.clashing_students,
             'solve_time_sec': round(result.solve_time_sec, 2),
             'message': result.message,
         }, status=status.HTTP_200_OK)

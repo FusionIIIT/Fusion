@@ -556,3 +556,21 @@ class GenerationIntegrationTests(TimetableTestCase):
         version = TimetableVersion.objects.get(pk=response.data['version_id'])
         self.assertEqual(version.status, 'Infeasible')
         self.assertTrue(version.conflict_logs.filter(error_code='NO_ELIGIBLE_ROOM').exists())
+
+    def test_relax_is_rejected_for_the_legacy_source(self):
+        response = self.as_user(self.admin).post(
+            BASE + 'generate/', {
+                'academic_year': 2026, 'semester_type': 'Odd Semester',
+                'semester_number': 3, 'course_source': 'legacy',
+                'relax': True, 'timeout_seconds': 30,
+            }, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_registered_source_accepts_a_whole_term_request(self):
+        response = self.as_user(self.admin).post(
+            BASE + 'generate/', {
+                'academic_year': 2026, 'semester_type': 'Odd Semester',
+                'course_source': 'registered', 'relax': True,
+                'timeout_seconds': 30,
+            }, format='json')
+        self.assertNotEqual(response.status_code, 400, response.data)

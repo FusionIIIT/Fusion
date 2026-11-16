@@ -90,6 +90,20 @@ WEIGHT_FAC_FATIGUE   = 50   # BR-SC-04
 WEIGHT_SEAT_WASTE    = 10   # BR-SC-05
 WEIGHT_FAC_PREF      = 30   # BR-SC-06
 
+# Relax mode only: what a violated hard rule costs.  Leaving one session-hour
+# unplaced is worth ~50 students sharing an hour with two classes, so the
+# solver sacrifices a few students before dropping a whole class.
+WEIGHT_UNPLACED      = 50000  # per session-hour left unscheduled
+WEIGHT_STUDENT_CLASH = 1000   # per student per clashing hour
+
+# A student cannot attend more than DAYS * HOURS hours of class in a week.
+WEEKLY_SLOT_CAPACITY = 40
+# A single course above this many weekly contact hours is almost certainly a
+# data-entry error (e.g. a practical stored as 25 instead of 2.5).
+MAX_PLAUSIBLE_COURSE_HOURS = 10
+MAX_HOURS_PER_COMPONENT = 6
+DEFAULT_HOURS = {'lecture': 3, 'tutorial': 1, 'practical': 2}
+
 # Valid lab-block start hours (must not cross lunch)
 LAB_STARTS_2H = [9, 10, 11, 14, 15, 16]   # block of 2 consecutive hours
 LAB_STARTS_3H = [9, 10, 14, 15]            # block of 3 consecutive hours
@@ -154,6 +168,10 @@ class SolverResult:
     solve_time_sec: float = 0.0
     conflicts: List[dict] = field(default_factory=list)
     message: str = ''
+    # Relax mode: what had to be given up to obtain a timetable.
+    relaxed: bool = False
+    unplaced_sessions: int = 0
+    clashing_students: int = 0
 
 
 # ── Pure helpers (no Django, no OR-Tools; unit-testable on their own) ────────
@@ -458,6 +476,160 @@ def sanitize_locked_sessions(
 
 # ── Main solver class ─────────────────────────────────────────────────────────
 
+def _preview(items, limit=5) -> str:
+    items = list(items)
+    text = ', '.join(str(item) for item in items[:limit])
+    return text + (f' and {len(items) - limit} more' if len(items) > limit else '')
+
+
+ROOM_UTILISATION_TARGET = 0.95
+
+
+def choose_group_size(course_loads, room_capacities, buffer=CAPACITY_BUFFER,
+                      weekly_slots=WEEKLY_SLOT_CAPACITY,
+                      utilisation=ROOM_UTILISATION_TARGET):
+    """Largest section size whose room-hour demand fits the room supply.
+
+    ``course_loads`` is a list of (students, weekly room hours).  Splitting a
+    big course into more, smaller sections moves its demand from the scarce
+    biggest rooms onto the many mid-sized ones.  Returns the largest group
+    size (a room capacity tier divided by the buffer) for which, at every room
+    size, the hours that need at least that size fit in the rooms offering it;
+    falls back to the largest tier (no extra splitting) when none does, since
+    extra sections also add total room-hours.
+    """
+    caps = sorted({c for c in room_capacities if c > 0}, reverse=True)
+    if not caps:
+        return 0
+    tiers = [math.floor(cap / buffer) for cap in caps]
+
+    def fits(group_size):
+        needed = defaultdict(float)
+        for students, hours in course_loads:
+            sections = max(1, math.ceil(students / group_size))
+            size = math.ceil(math.ceil(students / sections) * buffer)
+            needed[size] += sections * hours
+        if sum(needed.values()) > len(room_capacities) * weekly_slots * utilisation:
+            return False
+        for threshold in needed:
+            demand = sum(h for size, h in needed.items() if size >= threshold)
+            supply = sum(1 for c in room_capacities if c >= threshold) * weekly_slots * utilisation
+            if demand > supply:
+                return False
+        return True
+
+    for group_size in tiers:
+        if group_size > 0 and fits(group_size):
+            return group_size
+    return tiers[0]
+
+
+def preflight_conflicts(sessions: List[SessionRecord], rooms: Dict[str, object]) -> List[dict]:
+    """Data problems that make a timetable impossible or suspicious.
+
+    Cheap, solver-free checks that name the cause the CP-SAT model could only
+    answer with a bare INFEASIBLE.  Everything is a WARNING: strict runs still
+    fail in the solver, relax runs report these as the reasons for any
+    sacrificed classes.
+    """
+    conflicts: List[dict] = []
+
+    # A course whose weekly hours are absurd is a data-entry error.
+    hours_by_group: Dict[Tuple, int] = defaultdict(int)
+    for sess in sessions:
+        hours_by_group[(sess.course_code, sess.section)] += sess.block_size
+    absurd = sorted({code for (code, _), hours in hours_by_group.items()
+                     if hours > MAX_PLAUSIBLE_COURSE_HOURS})
+    if absurd:
+        conflicts.append({
+            'severity': 'WARNING', 'error_code': 'COURSE_HOURS_ANOMALY',
+            'description': (
+                f'{len(absurd)} courses have more than {MAX_PLAUSIBLE_COURSE_HOURS} '
+                f'weekly contact hours, which is probably a data error in the '
+                f'course L-T-P values: {_preview(absurd)}.'
+            ),
+        })
+
+    # A student cannot attend more hours than the week has.
+    load: Dict[object, int] = defaultdict(int)
+    for sess in sessions:
+        for student_id in sess.student_ids:
+            load[student_id] += sess.block_size
+    overloaded = sorted(((h, sid) for sid, h in load.items()
+                         if h > WEEKLY_SLOT_CAPACITY), reverse=True)
+    if overloaded:
+        conflicts.append({
+            'severity': 'WARNING', 'error_code': 'STUDENT_OVERLOAD',
+            'description': (
+                f'{len(overloaded)} students are registered for more than '
+                f'{WEEKLY_SLOT_CAPACITY} class hours a week, so no timetable can '
+                f'seat them without a clash: '
+                f'{_preview(f"{sid} ({h}h)" for h, sid in overloaded)}.'
+            ),
+        })
+
+    # Hours that need a room of at least a given size vs. the rooms that big.
+    capacities = sorted(
+        (room.capacity for room_id, room in rooms.items()
+         if not room_id.startswith('__LAB__')), reverse=True)
+    need: Dict[int, int] = defaultdict(int)
+    for sess in sessions:
+        if sess.slot_type != PRACTICAL:
+            need[sess.effective_size] += sess.block_size
+    for size in sorted(need, reverse=True):
+        demand = sum(h for sz, h in need.items() if sz >= size)
+        supply = sum(1 for cap in capacities if cap >= size) * WEEKLY_SLOT_CAPACITY
+        if demand > supply:
+            conflicts.append({
+                'severity': 'WARNING', 'error_code': 'LARGE_ROOM_SHORTAGE',
+                'description': (
+                    f'{demand} class hours need a room seating at least {size}, '
+                    f'but the {supply // WEEKLY_SLOT_CAPACITY} such rooms offer only '
+                    f'{supply} hours a week.  Add a larger room or split the cohort.'
+                ),
+            })
+            break
+
+    no_instructor = sorted({s.course_code for s in sessions if not s.faculty_ids
+                            and s.course_id is not None})
+    if no_instructor:
+        conflicts.append({
+            'severity': 'INFO', 'error_code': 'NO_INSTRUCTOR',
+            'description': (
+                f'{len(no_instructor)} courses have no instructor recorded, so '
+                f'faculty clashes cannot be checked for them: {_preview(no_instructor)}.'
+            ),
+        })
+    return conflicts
+
+
+def student_clashes(sessions: List[SessionRecord],
+                    placement: Dict[str, Tuple[int, int]]):
+    """Students booked into two classes at the same hour.
+
+    ``placement`` maps session_id -> (day, start_hour) for placed sessions.
+    Returns (number of clashing students, {(course, course): student-hours}).
+    """
+    occupied: Dict[Tuple, List[str]] = defaultdict(list)
+    for sess in sessions:
+        spot = placement.get(sess.session_id)
+        if spot is None:
+            continue
+        day, start = spot
+        for offset in range(sess.block_size):
+            for student_id in sess.student_ids:
+                occupied[(student_id, day, start + offset)].append(sess.course_code)
+    pairs: Dict[Tuple[str, str], int] = defaultdict(int)
+    people = set()
+    for (student_id, _day, _hour), courses in occupied.items():
+        if len(courses) > 1:
+            people.add(student_id)
+            for i in range(len(courses)):
+                for j in range(i + 1, len(courses)):
+                    pairs[tuple(sorted((courses[i], courses[j])))] += 1
+    return len(people), dict(pairs)
+
+
 class WholeCollegeTimetableSolver:
     """
     CP-SAT-based whole-college timetable solver.
@@ -472,7 +644,14 @@ class WholeCollegeTimetableSolver:
     def __init__(self, academic_year: int, semester_type: str,
                  capacity_buffer: float = CAPACITY_BUFFER, created_by=None,
                  semester_number: Optional[int] = None,
-                 course_source: str = 'legacy'):
+                 course_source: str = 'legacy', relax: bool = False,
+                 split_large: bool = False):
+        # relax=True never fails on infeasible data: sessions that cannot be
+        # placed are left out and students may be double-booked, both reported
+        # in the conflict log.  Rooms and faculty stay hard.  semester_number
+        # None means every semester of the term (registered source only).
+        self.relax = relax
+        self.split_large = split_large
         self.academic_year = academic_year
         self.semester_type = semester_type
         self.semester_number = semester_number
@@ -781,6 +960,7 @@ class WholeCollegeTimetableSolver:
             (room.capacity for room in physical_rooms.values()), default=0,
         )
         max_group_size = math.floor(max_capacity / self.capacity_buffer)
+        room_capacities = [room.capacity for room in physical_rooms.values()]
 
         registration_term = (
             'Summer Semester'
@@ -796,11 +976,15 @@ class WholeCollegeTimetableSolver:
             working_year__isnull=True,
             session=session,
         )
+        semester_filter = (
+            {'semester_id__semester_no': self.semester_number}
+            if self.semester_number is not None else {}
+        )
         registrations = list(
             course_registration.objects.filter(
                 registration_filter,
                 semester_type=registration_term,
-                semester_id__semester_no=self.semester_number,
+                **semester_filter,
             ).select_related(
                 'course_id',
                 'student_id__id__department',
@@ -845,18 +1029,37 @@ class WholeCollegeTimetableSolver:
         conflicts: List[dict] = []
         session_counter: Dict[Tuple, int] = defaultdict(int)
 
-        def normalise_hours(value):
+        defaulted: Dict[str, List[str]] = defaultdict(list)
+
+        def normalise_hours(value, kind=None, course=None):
             value = int(value or 0)
             # Some imported L-T-P values use 20/30 for 2/3 hours.
             if value >= 10 and value % 10 == 0:
                 value //= 10
+            if value > MAX_HOURS_PER_COMPONENT and kind:
+                if course is not None:
+                    defaulted[course.code].append(f'{kind}={value}->{DEFAULT_HOURS[kind]}')
+                value = DEFAULT_HOURS[kind]
             return value
 
         def most_common(values, fallback):
             values = [value for value in values if value not in (None, '')]
             return Counter(values).most_common(1)[0][0] if values else fallback
 
+        nonlocal_group = {'size': max_group_size}
+        if self.split_large and room_capacities:
+            loads = []
+            for course_id, student_map in students_by_course.items():
+                course = courses[course_id]
+                hours = (normalise_hours(course.lecture_hours, 'lecture', course)
+                         + normalise_hours(course.tutorial_hours, 'tutorial', course))
+                if hours:
+                    loads.append((len(student_map), hours))
+            nonlocal_group['size'] = choose_group_size(
+                loads, room_capacities, self.capacity_buffer)
+
         def split_students(course, students, needs_physical_room):
+            max_group_size = nonlocal_group['size']
             students = sorted(students, key=lambda student: student.pk)
             if not needs_physical_room or not max_group_size or len(students) <= max_group_size:
                 sections = {student.section or '' for student in students}
@@ -870,17 +1073,19 @@ class WholeCollegeTimetableSolver:
                     len(group) <= max_group_size for group in natural.values()):
                 return sorted(natural.items())
 
+            count = math.ceil(len(students) / max_group_size)
+            size = math.ceil(len(students) / count)
             groups = []
-            for index in range(0, len(students), max_group_size):
+            for index in range(0, len(students), size):
                 label = chr(ord('A') + len(groups))
-                groups.append((label, students[index:index + max_group_size]))
+                groups.append((label, students[index:index + size]))
             return groups
 
         for course_id, student_map in sorted(students_by_course.items()):
             course = courses[course_id]
-            lecture_hours = normalise_hours(course.lecture_hours)
-            tutorial_hours = normalise_hours(course.tutorial_hours)
-            practical_hours = normalise_hours(course.pratical_hours)
+            lecture_hours = normalise_hours(course.lecture_hours, 'lecture', course)
+            tutorial_hours = normalise_hours(course.tutorial_hours, 'tutorial', course)
+            practical_hours = normalise_hours(course.pratical_hours, 'practical', course)
             if lecture_hours + tutorial_hours + practical_hours == 0:
                 conflicts.append({
                     'severity': 'WARNING',
@@ -972,11 +1177,13 @@ class WholeCollegeTimetableSolver:
                     ]
                     if not eligible:
                         conflicts.append({
-                            'severity': 'CRITICAL',
+                            # Relax mode drops the class and reports it.
+                            'severity': 'WARNING' if self.relax else 'CRITICAL',
                             'error_code': 'NO_ELIGIBLE_ROOM',
                             'description': (
                                 f'No active room with capacity≥{effective_size} for '
                                 f'{course.code} section {section or "all"} ({slot_type}).'
+                                + (' Not placed on the timetable.' if self.relax else '')
                             ),
                         })
                     else:
@@ -1026,6 +1233,23 @@ class WholeCollegeTimetableSolver:
                 conflicts=lock_notes + lock_conflicts,
             )
 
+        diagnostics = preflight_conflicts(sessions, rooms)
+        if defaulted:
+            diagnostics.append({
+                'severity': 'WARNING',
+                'error_code': 'HOURS_DEFAULTED',
+                'description': (
+                    f'Implausible L-T-P hours were replaced with defaults '
+                    f'(lecture {DEFAULT_HOURS["lecture"]}, tutorial {DEFAULT_HOURS["tutorial"]}, '
+                    f'practical {DEFAULT_HOURS["practical"]}) for the timetable only; '
+                    'course data is unchanged: ' + '; '.join(
+                        f'{code} ({", ".join(sorted(set(items)))})'
+                        for code, items in sorted(defaulted.items()))
+                ),
+            })
+        if diagnostics:
+            self._log_conflicts(version, diagnostics)
+
         return rooms, sessions, [], faculty_prefs, {}, {}
 
     # ------------------------------------------------------------------ #
@@ -1071,7 +1295,8 @@ class WholeCollegeTimetableSolver:
         # ── BR-HC-03: Exactly one slot per session ─────────────────────── #
         # A session with no possible slot must fail the run, not vanish from it.
         unschedulable = [s for s in sessions if not all_vars[s.session_id]]
-        conflicts = [{
+        relax = self.relax
+        conflicts = [] if relax else [{
             'severity': 'CRITICAL',
             'error_code': 'NO_VALID_SLOT',
             'description': (
@@ -1081,7 +1306,7 @@ class WholeCollegeTimetableSolver:
             'curriculum_id_ref': s.curriculum_id,
         } for s in unschedulable]
         groups = self._basket_groups(baskets, sessions)
-        conflicts += basket_mismatches(groups, sessions)
+        conflicts += basket_mismatches(groups, sessions)  # structural: never relaxed
         if conflicts:
             message = (
                 f'{len(conflicts)} problems make this timetable impossible. '
@@ -1091,8 +1316,19 @@ class WholeCollegeTimetableSolver:
             return SolverResult(status='INFEASIBLE', version_id=version.id,
                                 message=message, conflicts=conflicts)
 
+        # In relax mode every session may instead be left unplaced, at a price
+        # high enough that the solver only does so when nothing else works.
+        unplaced: Dict[str, object] = {}
         for sess in sessions:
-            model.AddExactlyOne(all_vars[sess.session_id])
+            if not all_vars[sess.session_id]:
+                continue  # relax mode only: no valid slot at all; reported below
+            if relax:
+                skip = model.NewBoolVar(f'unplaced_{sess.session_id}')
+                unplaced[sess.session_id] = skip
+                model.AddExactlyOne(all_vars[sess.session_id] + [skip])
+                penalty_terms.append((skip, WEIGHT_UNPLACED * sess.block_size))
+            else:
+                model.AddExactlyOne(all_vars[sess.session_id])
             # A locked session has a single variable, so ExactlyOne forces it.
 
         # ── Build resource-conflict index maps ─────────────────────────── #
@@ -1122,7 +1358,8 @@ class WholeCollegeTimetableSolver:
 
         # ── BR-HC-06 / BR-HC-10: Cohort clash-freedom & elective baskets ─ #
         basket_of = {cur: i for i, members in enumerate(groups) for cur in members}
-        self._add_cohort_constraints(model, sessions, x, basket_of)
+        penalty_terms += self._add_cohort_constraints(
+            model, sessions, x, basket_of, relax=relax)
         self._add_elective_constraints(model, sessions, x, groups)
 
         # ── BR-HC-09: Lab continuity ───────────────────────────────────── #
@@ -1209,8 +1446,32 @@ class WholeCollegeTimetableSolver:
             return SolverResult(status=status_str, version_id=version.id, message=message)
 
         # ── Extract solution & persist ─────────────────────────────────── #
-        slot_records = self._extract_and_persist(solver, x, sessions, version)
-        courses_scheduled = len({session.subject_key for session in sessions})
+        dropped = [s for s in sessions if s.session_id in unplaced
+                   and solver.Value(unplaced[s.session_id]) == 1]
+        dropped += [s for s in unschedulable if relax]
+        dropped_ids = {s.session_id for s in dropped}
+        placed = [s for s in sessions if s.session_id not in dropped_ids]
+        slot_records = self._extract_and_persist(solver, x, placed, version)
+        courses_scheduled = len({session.subject_key for session in placed})
+
+        relax_note = ''
+        clash_count = 0
+        if relax:
+            placement = {
+                s.session_id: next(
+                    (key[:2] for key, var in x[s.session_id].items()
+                     if solver.Value(var) == 1), None)
+                for s in placed
+            }
+            clash_count, clash_pairs = student_clashes(placed, placement)
+            report = self._relax_report(dropped, clash_count, clash_pairs)
+            if report:
+                self._log_conflicts(version, report)
+            relax_note = (
+                f' RELAXED: {len(dropped)} sessions left unplaced, '
+                f'{clash_count} students with a clash; see the conflict log.'
+                if dropped or clash_count else ' Relax mode was not needed.'
+            )
 
         version.status = 'Draft'
         quality = '' if status_str == 'OPTIMAL' else ' (time limit reached; not proven optimal)'
@@ -1223,15 +1484,53 @@ class WholeCollegeTimetableSolver:
                 f'Whole-college generation complete: {slot_records} slots allocated '
                 f'for {courses_scheduled} active courses '
                 f'in {solver.WallTime():.1f}s (objective={solver.ObjectiveValue():.0f})'
-                f'{quality}.'
+                f'{quality}.{relax_note}'
             ),
+            relaxed=relax,
+            unplaced_sessions=len(dropped),
+            clashing_students=clash_count,
         )
+
+    def _relax_report(self, dropped, clash_count, clash_pairs) -> List[dict]:
+        """Conflict-log entries naming everything relax mode gave up."""
+        report = []
+        by_course: Dict[Tuple, List] = defaultdict(list)
+        for sess in dropped:
+            by_course[(sess.course_code, sess.section, sess.slot_type)].append(sess)
+        for (code, section, slot_type), items in sorted(by_course.items()):
+            report.append({
+                'severity': 'WARNING',
+                'error_code': 'UNPLACED_SESSION',
+                'description': (
+                    f'{code}{" section " + section if section else ""}: '
+                    f'{len(items)} {slot_type} session(s) could not be placed '
+                    f'({items[0].effective_size} seats needed). Add rooms of that '
+                    f'size, split the cohort, or reduce its weekly hours.'
+                ),
+            })
+        worst = sorted(clash_pairs.items(), key=lambda kv: -kv[1])[:20]
+        for (a, b), hours in worst:
+            report.append({
+                'severity': 'WARNING',
+                'error_code': 'STUDENT_CLASH',
+                'description': (
+                    f'{a} and {b} overlap for {hours} student-hours a week '
+                    f'(students registered for both, e.g. backlog or overloaded).'
+                ),
+            })
+        if clash_count:
+            report.append({
+                'severity': 'WARNING',
+                'error_code': 'STUDENT_CLASH_SUMMARY',
+                'description': f'{clash_count} students have at least one clashing hour.',
+            })
+        return report
 
     # ------------------------------------------------------------------ #
     # Cohort and elective basket constraints (BR-HC-06, FC-03)             #
     # ------------------------------------------------------------------ #
 
-    def _add_cohort_constraints(self, model, sessions, x, basket_of):
+    def _add_cohort_constraints(self, model, sessions, x, basket_of, relax=False):
         """BR-HC-06: a group of students attends at most one class per hour.
 
         Different courses of one elective basket run in parallel on purpose
@@ -1260,6 +1559,22 @@ class WholeCollegeTimetableSolver:
                         else:
                             in_basket[key][basket][sess.curriculum_id].append(var)
 
+        penalties: List[Tuple[object, int]] = []
+        if relax:
+            # Per-student clashes become a penalty.  Students with identical
+            # timetables share one constraint, weighted by how many they are.
+            shared: Dict[Tuple, List] = {}
+            for key in [k for k in singles if k[0][0] == 'student']:
+                var_list = singles.pop(key)
+                if len(var_list) > 1:
+                    signature = tuple(sorted(v.Index() for v in var_list))
+                    entry = shared.setdefault(signature, [var_list, 0])
+                    entry[1] += 1
+            for number, (var_list, students) in enumerate(shared.values()):
+                excess = model.NewIntVar(0, len(var_list) - 1, f'clash_{number}')
+                model.Add(sum(var_list) - 1 <= excess)
+                penalties.append((excess, WEIGHT_STUDENT_CLASH * students))
+
         for key in set(singles) | set(in_basket):
             occupants = list(singles.get(key, []))
             for basket, by_course in in_basket.get(key, {}).items():
@@ -1277,6 +1592,7 @@ class WholeCollegeTimetableSolver:
                 occupants.append(busy)
             if len(occupants) > 1:
                 model.AddAtMostOne(occupants)
+        return penalties
 
     def _basket_groups(self, baskets, sessions) -> List[List[int]]:
         """Curriculum ids per elective basket, limited to scheduled courses.
