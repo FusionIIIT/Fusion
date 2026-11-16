@@ -1,11 +1,16 @@
+import datetime
+
 from django.contrib.auth.models import User
 from django.test import SimpleTestCase, TestCase
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
+from applications.academic_information.models import Calendar
 from applications.academic_information.utils import (
     allocation_year_problem,
+    check_for_registration_complete,
     expected_allocation_year,
+    pre_registration_window,
 )
 from applications.academic_procedures.api.views import working_year_for_session
 from applications.globals.models import Designation, HoldsDesignation
@@ -77,3 +82,29 @@ class AllocationRefusesTheWrongYearTests(TestCase):
         response = self.client.post('/aims/api/check-allocation', {
             'batch': 2024, 'sem': 6, 'year': 2027, 'programme_type': 'UG'}, format='json')
         self.assertNotEqual(response.status_code, 400)
+
+
+class PreRegistrationWindowTests(TestCase):
+    """Calendar entries are named after the year the window was set up, not the term's."""
+
+    def make(self, description, start):
+        return Calendar.objects.create(description=description, from_date=start,
+                                       to_date=start + datetime.timedelta(days=3))
+
+    def test_a_january_semester_uses_the_window_set_up_the_november_before(self):
+        november = self.make('Pre Registration 6 2026', datetime.date(2026, 11, 13))
+        self.assertEqual(pre_registration_window(6, 2027), november)
+
+    def test_next_years_round_is_not_taken_for_this_term(self):
+        this_round = self.make('Pre Registration 6 2026', datetime.date(2026, 11, 13))
+        self.make('Pre Registration 6 2027', datetime.date(2027, 11, 12))
+        self.assertEqual(pre_registration_window(6, 2027), this_round)
+
+    def test_an_august_semester_uses_the_window_of_the_same_year(self):
+        june = self.make('Pre Registration 5 2026', datetime.date(2026, 6, 20))
+        self.make('Pre Registration 5 2025', datetime.date(2025, 6, 18))
+        self.assertEqual(pre_registration_window(5, 2026), june)
+
+    def test_no_window_for_the_term_is_reported_as_not_found(self):
+        self.make('Pre Registration 6 2025', datetime.date(2025, 11, 14))
+        self.assertEqual(check_for_registration_complete(2024, 6, 2027, 'UG')['status'], -3)

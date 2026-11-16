@@ -125,10 +125,30 @@ def allocation_progress(batch, sem, programme_type):
     }
 
 
+def pre_registration_window(sem, year):
+    """The Pre Registration calendar entry for semester ``sem`` of the term that
+    runs in calendar year ``year``.
+
+    Entries are named after the year the window was set up, so the January
+    2027 semester's is "Pre Registration 6 2026". Of the entries for the term
+    year and the year before, this takes the latest one that opened within
+    the eight months before the term starts (or its first two months).
+    """
+    year = int(year)
+    term_start = datetime.date(year, 1 if int(sem) % 2 == 0 else 8, 1)
+    earliest = term_start - datetime.timedelta(days=240)
+    latest = term_start + datetime.timedelta(days=60)
+    return (Calendar.objects
+            .filter(description__in=[f"Pre Registration {sem} {year}",
+                                     f"Pre Registration {sem} {year - 1}"],
+                    from_date__gte=earliest, from_date__lte=latest)
+            .order_by('-from_date').first())
+
+
 def check_for_registration_complete(batch, sem, year, programme_type):
     date = datetime.date.today()
     try:
-        pre_registration_date = Calendar.objects.filter(description=f"Pre Registration {sem} {year}").first()
+        pre_registration_date = pre_registration_window(sem, year)
         if not pre_registration_date:
             return {"status": -3, "message": "No such registration found"}
         
