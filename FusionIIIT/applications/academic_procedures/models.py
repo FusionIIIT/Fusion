@@ -1950,8 +1950,19 @@ class TeachingCreditRegistration(models.Model):
     remarks               = models.CharField(max_length=500, blank=True)
 
     class Meta:
-        unique_together = ('student', 'semester')
         db_table = 'TeachingCreditRegistration'
+        # One enrollment per semester, unless each names its catalogue entry
+        # (a semester can carry both Teaching Work I and II).
+        constraints = [
+            models.UniqueConstraint(
+                fields=['student', 'semester'],
+                condition=models.Q(teaching_credit__isnull=True),
+                name='tc_registration_one_per_semester'),
+            models.UniqueConstraint(
+                fields=['student', 'semester', 'teaching_credit'],
+                condition=models.Q(teaching_credit__isnull=False),
+                name='tc_registration_one_per_entry'),
+        ]
 
     def __str__(self):
         return f"{self.student} — {self.teaching_credit_slot.name} ({self.semester})"
@@ -2240,10 +2251,14 @@ def resolve_teaching_credit_catalog_entry(student, semester):
     ).select_related('teaching_credit_slot').prefetch_related(
         'teaching_credit_slot__teaching_credits'
     ).first()
-    if not reg or not reg.teaching_credit_slot:
+    if not reg:
+        return None
+    if reg.teaching_credit_id:
+        return reg.teaching_credit
+    if not reg.teaching_credit_slot:
         return None
     discipline = getattr(getattr(student, 'batch_id', None), 'discipline', None)
-    manager = reg.teaching_credit_slot.teaching_credits
+    manager = reg.teaching_credit_slot.teaching_credits.order_by('-latest_version', '-version')
     entry = (manager.filter(discipline=discipline).first() if discipline else None) or manager.first()
     return entry
 
@@ -2253,6 +2268,18 @@ def resolve_teaching_credit_credit(student, semester):
     via resolve_teaching_credit_catalog_entry(), falling back to
     DEFAULT_TEACHING_CREDIT only when no catalog entry can be found."""
     entry = resolve_teaching_credit_catalog_entry(student, semester)
+    return entry.credit if entry and entry.credit else DEFAULT_TEACHING_CREDIT
+
+
+def allocation_teaching_credit(alloc):
+    """The catalogue entry a TeachingCreditAllocation's result is for: its own
+    teaching_credit when set, else the semester's registration."""
+    return alloc.teaching_credit or resolve_teaching_credit_catalog_entry(alloc.student, alloc.semester)
+
+
+def allocation_teaching_credit_credit(alloc):
+    """Credit one TeachingCreditAllocation is worth, from its catalogue entry."""
+    entry = allocation_teaching_credit(alloc)
     return entry.credit if entry and entry.credit else DEFAULT_TEACHING_CREDIT
 
 
@@ -2696,8 +2723,18 @@ class TeachingCreditAllocation(models.Model):
 
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='teaching_credit_allocations')
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    # The catalogue entry this result is for. Set when it is known directly
+    # (results entered from the grade sheets); otherwise it is resolved from
+    # the semester's TeachingCreditRegistration.
+    teaching_credit = models.ForeignKey(
+        TeachingCredit, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='allocations',
+    )
 
-    choice_1 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice1')
+    # Optional only for results entered from the grade sheets, which do not
+    # record the course taught; the student-facing registration requires it.
+    choice_1 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice1',
+                                 null=True, blank=True)
     choice_2 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice2', null=True, blank=True)
     choice_3 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice3', null=True, blank=True)
     choice_4 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice4', null=True, blank=True)
@@ -2725,7 +2762,16 @@ class TeachingCreditAllocation(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('student', 'semester')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['student', 'semester'],
+                condition=models.Q(teaching_credit__isnull=True),
+                name='tc_allocation_one_per_semester'),
+            models.UniqueConstraint(
+                fields=['student', 'semester', 'teaching_credit'],
+                condition=models.Q(teaching_credit__isnull=False),
+                name='tc_allocation_one_per_entry'),
+        ]
 
     def __str__(self):
         return f"Teaching Credit — {self.student.id.user.get_full_name()} ({self.semester})"

@@ -528,6 +528,7 @@ class TeachingCreditForm(ModelForm):
         widgets = {
             'code': forms.TextInput(attrs={'placeholder': 'Teaching Credit Code (e.g., CS897)', 'max_length': 10}),
             'name': forms.TextInput(attrs={'placeholder': 'Teaching Credit Name', 'max_length': 100}),
+            'version': forms.NumberInput(attrs={'placeholder': 'Version', 'step': '0.1'}),
             'credit': forms.NumberInput(attrs={'placeholder': 'Credits'}),
             'discipline': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
             'programme_type': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),

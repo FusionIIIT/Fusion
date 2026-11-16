@@ -5249,6 +5249,8 @@ def admin_view_all_teaching_credits(request):
             "programme_type": tc.programme_type,
             "programme_type_display": tc.get_programme_type_display(),
             "credits": tc.credit,
+            "version": str(tc.version),
+            "latest_version": tc.latest_version,
             "working_teaching_credit": tc.working_teaching_credit
         }
         for tc in teaching_credits
@@ -5276,10 +5278,12 @@ def add_teaching_credit(request):
         teaching_credit = TeachingCredit.objects.create(
             code=data['code'],
             name=data['name'],
+            version=data.get('version') or 1.0,
             credit=data['credit'],
             discipline=discipline,
             programme_type=data['programme_type'],
-            working_teaching_credit=data.get('working_teaching_credit', True)
+            working_teaching_credit=data.get('working_teaching_credit', True),
+            latest_version=data.get('latest_version', True),
         )
 
         return JsonResponse({
@@ -5290,7 +5294,7 @@ def add_teaching_credit(request):
 
     except IntegrityError:
         return JsonResponse({
-            'error': 'A teaching credit with this code already exists for this discipline'
+            'error': 'A teaching credit with this code and version already exists for this discipline'
         }, status=400)
     except Http404:
         return JsonResponse({'error': 'Not found'}, status=404)
@@ -5344,6 +5348,9 @@ def update_teaching_credit(request, teaching_credit_id):
             'discipline_name': tc.discipline.name,
             'discipline_acronym': tc.discipline.acronym,
             'programme_type': tc.programme_type,
+            'version': str(tc.version),
+            'latest_version': tc.latest_version,
+            'working_teaching_credit': tc.working_teaching_credit,
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -5357,6 +5364,9 @@ def update_teaching_credit(request, teaching_credit_id):
             tc.credit = data.get('credit', tc.credit)
             tc.discipline = discipline
             tc.programme_type = data.get('programme_type', tc.programme_type)
+            tc.version = data.get('version') or tc.version
+            tc.latest_version = data.get('latest_version', tc.latest_version)
+            tc.working_teaching_credit = data.get('working_teaching_credit', tc.working_teaching_credit)
             tc.save()
 
             return JsonResponse({
@@ -5367,7 +5377,7 @@ def update_teaching_credit(request, teaching_credit_id):
 
         except IntegrityError:
             return JsonResponse({
-                'error': 'A teaching credit with this code already exists for this discipline'
+                'error': 'A teaching credit with this code and version already exists for this discipline'
             }, status=400)
         except Http404:
             return JsonResponse({'error': 'Not found'}, status=404)
