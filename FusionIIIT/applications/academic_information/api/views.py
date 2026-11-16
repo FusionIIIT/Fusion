@@ -12,7 +12,8 @@ from django.contrib.auth.decorators import login_required
 import xlsxwriter
 from applications.academic_procedures.models import course_registration
 from applications.academic_information.utils import (
-    allocate, check_for_registration_complete, publish_allocations,
+    allocate, allocation_year_problem, check_for_registration_complete,
+    publish_allocations,
 )
 from applications.globals.models import (HoldsDesignation,Designation)
 from django.shortcuts import get_object_or_404
@@ -299,11 +300,17 @@ def check_allocation_api(request):
         try:
             batch = int(batch)
             sem = int(sem)
+            int(year)
         except ValueError:
             return Response(
-                {"status": -3, "message": "Invalid batch or semester value"},
+                {"status": -3, "message": "Invalid batch, semester or year value"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        problem = allocation_year_problem(batch, sem, year, programme_type)
+        if problem:
+            return Response({"status": -3, "message": problem},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         result = check_for_registration_complete(batch, sem, year, programme_type)
 
@@ -351,8 +358,16 @@ def start_allocation_api(request):
         if not batch or not semester or not year:
             return JsonResponse({"error": "Missing required fields"}, status=400)
 
-        batch = int(batch)
-        semester = int(semester)
+        try:
+            batch = int(batch)
+            semester = int(semester)
+            int(year)
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "Batch, semester and year must be numbers"}, status=400)
+
+        problem = allocation_year_problem(batch, semester, year, programme_type)
+        if problem:
+            return JsonResponse({"error": problem}, status=400)
 
         skip_course_ids = data.get("skip_course_ids") or []
         if not isinstance(skip_course_ids, list):

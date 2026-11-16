@@ -6012,6 +6012,20 @@ def admin_list_add_requests(request):
         logger.error(f"Error listing add requests for admin: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'An error occurred while fetching requests'}, status=500)
 
+def working_year_for_session(session, semester_type):
+    """The calendar year a term runs in, from its session ("2026-27") and type.
+
+    An Odd semester runs from August of the session's first year; Even and
+    Summer semesters run in its second year. Falls back to the current year
+    only when the session cannot be read.
+    """
+    match = re.match(r'^\s*(\d{4})\s*-\s*\d{2,4}\s*$', str(session or ''))
+    if not match:
+        return datetime.datetime.now().year
+    start = int(match.group(1))
+    return start if str(semester_type or '').startswith('Odd') else start + 1
+
+
 # Processes multiple add requests in batch
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -6114,7 +6128,8 @@ def approve_add_requests(request):
                         semester_id=semester,
                         session=add_request.academic_year,
                         semester_type=add_request.semester_type,
-                        working_year=datetime.datetime.now().year,
+                        working_year=working_year_for_session(
+                            add_request.academic_year, add_request.semester_type),
                         registration_type=registration_type,
                         # Section chosen at request time (cross-section backlog/improvement).
                         course_instructor=add_request.course_instructor,
@@ -12179,7 +12194,7 @@ def phd_admin_process_requests(request):
                     semester_id=req.semester,
                     session=req.academic_year,
                     semester_type=req.semester_type,
-                    working_year=datetime.datetime.now().year,
+                    working_year=working_year_for_session(req.academic_year, req.semester_type),
                     registration_type=registration_type,
                 )
                 # Mirror UG: link the replaced (old) registration to the new one.
