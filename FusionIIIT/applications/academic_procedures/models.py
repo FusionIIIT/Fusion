@@ -1,4 +1,5 @@
 import datetime
+import re
 from decimal import Decimal
 
 from django.db import models
@@ -723,6 +724,29 @@ class StudentRegistrationChecks(models.Model):
         db_table = 'StudentRegistrationChecks'
 
 
+def session_working_year(session, semester_type):
+    """The calendar year a term runs in, from its session ("2026-27") and type.
+
+    An Odd semester runs from August of the session's first year; Even and
+    Summer semesters run in its second year. None when the session or the
+    semester type is missing or cannot be read.
+    """
+    match = re.match(r'^\s*(\d{4})\s*-\s*\d{2,4}\s*$', str(session or ''))
+    semester_type = str(semester_type or '').strip()
+    if not match or not semester_type:
+        return None
+    start = int(match.group(1))
+    return start if semester_type.startswith('Odd') else start + 1
+
+
+class CourseRegistrationQuerySet(models.QuerySet):
+    def bulk_create(self, objs, *args, **kwargs):
+        objs = list(objs)
+        for obj in objs:
+            obj.fill_working_year()
+        return super().bulk_create(objs, *args, **kwargs)
+
+
 class course_registration(models.Model):
     '''
             Current Purpose : stores information regarding the process of registration of a student for a course 
@@ -775,6 +799,23 @@ class course_registration(models.Model):
     )
     # grade = models.CharField(max_length=10)
     #course_registration_year = models.IntegerField()
+
+    # save() and bulk_create() fill in the working year from the session, so
+    # no view has to remember to. QuerySet.update() and raw SQL do not.
+    objects = CourseRegistrationQuerySet.as_manager()
+
+    def fill_working_year(self):
+        if self.working_year is None:
+            self.working_year = session_working_year(self.session, self.semester_type)
+
+    def save(self, *args, **kwargs):
+        had_year = self.working_year is not None
+        self.fill_working_year()
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None and not had_year and self.working_year is not None:
+            kwargs['update_fields'] = {*update_fields, 'working_year'}
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return str(self.semester_id.semester_no)
     class Meta:
