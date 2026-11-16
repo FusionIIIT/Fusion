@@ -170,6 +170,29 @@ def check_for_registration_complete(batch, sem, year, programme_type):
         return {"status": -3, "message": f"Internal Server Error: {str(e)}"}
 
 
+def expected_allocation_year(batch, sem, programme_type):
+    """The calendar year semester ``sem`` of a UG or PG batch runs in.
+
+    UG and PG batches start in August, so semester n of batch B runs in
+    B + n // 2: an Odd semester from August of that year, an Even semester
+    from January of the next. Returns None for PhD, whose batches have more
+    than one intake.
+    """
+    if (programme_type or '').upper() not in ('UG', 'PG'):
+        return None
+    return int(batch) + int(sem) // 2
+
+
+def allocation_year_problem(batch, sem, year, programme_type):
+    """The refusal message when ``year`` is not the year the semester runs in."""
+    expected = expected_allocation_year(batch, sem, programme_type)
+    if expected is None or int(year) == expected:
+        return None
+    _, semester_type, session = _allocation_term(expected, sem)
+    return (f"Semester {sem} of Batch {batch} is the {semester_type} of {session}, "
+            f"which runs in {expected}. Choose Year {expected}.")
+
+
 def _allocation_term(year, sem):
     """Return the canonical course-registration values for an allocation term."""
     working_year = int(year)
