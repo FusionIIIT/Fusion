@@ -93,9 +93,10 @@ class PreRegistrationSubmitTests(TestCase):
         self.assertFalse(self.is_done())
 
     def test_a_submit_that_fails_to_save_keeps_nothing(self):
-        response = self.submit([self.choice(self.core_slot, self.core),
-                                self.choice(self.elective_slot, self.elective_a),
-                                self.choice(self.elective_slot, self.elective_a)])
+        with self.assertLogs('applications.academic_procedures.api.views', level='ERROR'):
+            response = self.submit([self.choice(self.core_slot, self.core),
+                                    self.choice(self.elective_slot, self.elective_a),
+                                    self.choice(self.elective_slot, self.elective_a)])
         self.assertEqual(response.status_code, 400)
         self.assertIn(b'could not be saved', response.content)
         self.assertEqual(self.saved_courses(), [])

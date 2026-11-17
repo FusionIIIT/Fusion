@@ -3375,6 +3375,11 @@ def submit_preregistration(request):
                 reg_check.pre_registration_flag = True
                 reg_check.save()
     except IntegrityError:
+        # Logged so a submit that can never succeed -- e.g. a course listed in two
+        # slots of the semester, which the form makes the student rank twice --
+        # can be traced; the student only sees the message below.
+        logger.exception("Pre-registration of %s for semester %s could not be saved",
+                         student.id_id, next_semester.semester_no)
         return JsonResponse(
             {"error": "Your choices could not be saved. Reload the page, check your choices "
                       "and submit again."},
