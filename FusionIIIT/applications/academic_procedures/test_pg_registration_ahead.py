@@ -44,7 +44,7 @@ class PgRegistrationTermTests(SimpleTestCase):
 
 
 class PgRegistrationAheadTests(TestCase):
-    """PG registers into whichever semester the calendar opens, not only the current one."""
+    """PG registers into its current or next semester, whichever the calendar opens."""
 
     def setUp(self):
         self.now = datetime.datetime.now()
@@ -86,11 +86,18 @@ class PgRegistrationAheadTests(TestCase):
         self.open_window(2)
         self.assertEqual(pg_registration_semester(self.student), (2, None))
 
-    def test_any_open_semester_ahead_can_be_registered(self):
+    def test_a_promoted_student_registers_into_the_current_semester(self):
         self.open_window(3)
-        self.assertEqual(pg_registration_semester(self.student), (3, None))
+        promoted = self.make_student('25MDS001', 'M.Des', self.batch, 3)
+        self.assertEqual(pg_registration_semester(promoted), (3, None))
 
-    def test_each_student_takes_the_earliest_open_semester_not_behind_them(self):
+    def test_a_window_two_semesters_ahead_is_another_batchs(self):
+        self.open_window(3)
+        semester_no, error = pg_registration_semester(self.student)
+        self.assertEqual(semester_no, 1)
+        self.assertEqual(error.status_code, 400)
+
+    def test_each_batch_takes_its_own_window(self):
         self.open_window(2)
         self.open_window(4)
         senior = self.make_student('25MDS001', 'M.Des', self.batch, 3)

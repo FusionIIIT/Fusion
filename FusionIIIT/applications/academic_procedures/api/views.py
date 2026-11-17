@@ -3064,10 +3064,13 @@ _PG_REGISTRATION_EVENT = re.compile(r'^PG Registration (\d+) (\d{4})$')
 def pg_registration_semester(student, now=None):
     """The semester a PG student registers into, and why registration is shut.
 
-    PG registration is pre-registration: the office opens it for a semester by
-    adding a "PG Registration <semester> <year>" calendar event, and students
-    register into that semester whatever semester they are in now, as long as
-    it is not behind them. With several open, the earliest one is used.
+    The office opens PG registration for a semester by adding a
+    "PG Registration <semester> <year>" calendar event, as UG does with
+    "Pre Registration". A student registers into their current semester (when
+    promoted before the window opens) or the next one (pre-registration, before
+    promotion), never further ahead: PG batches are a year apart, so a window
+    opened for one batch never reaches another. If both are open, the current
+    semester is used.
 
     Returns (semester_no, None) while a window is open. Otherwise returns a
     400 response with the semester it is about: the window that opens next,
@@ -3079,7 +3082,7 @@ def pg_registration_semester(student, now=None):
     windows = []
     for event in Calendar.objects.filter(description__startswith='PG Registration '):
         match = _PG_REGISTRATION_EVENT.match(event.description)
-        if not match or int(match.group(2)) != now.year or int(match.group(1)) < current:
+        if not match or int(match.group(2)) != now.year or int(match.group(1)) not in (current, current + 1):
             continue
         start, end = _calendar_window_bounds(event)
         windows.append((int(match.group(1)), start, end))
@@ -3102,9 +3105,9 @@ def pg_registration_semester(student, now=None):
 
 def registration_semester(student, now=None):
     """(semester_no, error_response) for a PG or PhD student's thesis and
-    course registration. PG registers ahead into whichever semester the
-    calendar opens (pg_registration_semester); PhD registers into the
-    semester it is in, under that term's PhD window."""
+    course registration. PG registers into its current or next semester,
+    whichever the calendar opens (pg_registration_semester); PhD registers
+    into the semester it is in, under that term's PhD window."""
     category = _student_programme_category(student)
     if category == 'PG':
         return pg_registration_semester(student, now)
@@ -11771,7 +11774,8 @@ def phd_course_slots(request):
     """
     GET /stu/phd/course-slots/
     Returns the CourseSlots of the semester the student registers into (the
-    current one for PhD; the one the calendar opens for PG), excluding slots
+    current one for PhD; the current or next one, as the calendar opens, for
+    PG), excluding slots
     already registered or requested (pending/approved).
     """
     student, err = _resolve_phd_student(request)
