@@ -1520,6 +1520,8 @@ def database_report_filters(request):
         'semesters': semesters,
         'programme_categories': categories,
         'ug_batches': _ug_curriculum_batches() if 'UG' in categories else [],
+        'discipline_batches': _curriculum_batches(Batch.objects.filter(
+            curriculum__programme__category__in=categories)),
     })
 
 
@@ -1527,12 +1529,16 @@ UG_BATCH_NAMES = ('B.Tech', 'B.Des')
 
 
 def _ug_curriculum_batches():
-    """Each undergraduate discipline batch that has a curriculum, for picking
-    one discipline of a year. The curriculum is named only when a discipline
-    has more than one batch that year."""
+    return _curriculum_batches(Batch.objects.filter(name__in=UG_BATCH_NAMES))
+
+
+def _curriculum_batches(batches):
+    """Each of ``batches`` that has a curriculum, labelled by programme and
+    discipline, for picking one discipline of a year. The curriculum is named
+    only when a discipline has more than one batch that year."""
     from collections import Counter
-    batches = list(Batch.objects.filter(
-        name__in=UG_BATCH_NAMES, curriculum__isnull=False,
+    batches = list(batches.filter(
+        curriculum__isnull=False,
     ).select_related('discipline', 'curriculum').order_by('-year', 'name', 'discipline__acronym'))
     seen = Counter((b.year, b.name, b.discipline.acronym) for b in batches)
     options = []
@@ -2665,3 +2671,109 @@ def database_branch_wise_student_count(request):
         for c in _student_counts(
             request, ('batch', 'programme', 'batch_id__discipline__acronym'))
     ]})
+
+
+def _semester_term(terms, semester_no):
+    """The semester type of ``semester_no`` among a student's graded (semester,
+    type) terms: the Odd or Even one its number implies, or the only other one
+    when grades were filed under that."""
+    types = sorted(t for n, t in terms if n == semester_no)
+    expected = 'Odd Semester' if semester_no % 2 else 'Even Semester'
+    if expected in types:
+        return expected
+    return types[0] if types else None
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_spi_cpi(request):
+    """Each student's SPI and CPI for one semester, from the same calculation
+    the transcript uses.
+
+    ``batch`` (a year) is required. ``batch_id`` narrows it to one programme
+    and discipline of that year. ``semester`` picks the semester; without it,
+    each student's latest semester that has grades is used. A summer term is
+    not a semester here, so the CPI is the transcript's figure at the end of
+    the semester shown.
+    """
+    from collections import defaultdict
+    from applications.academic_procedures.models import course_replacement
+    from applications.examination.api.views import (
+        calculate_cpi_for_student, calculate_spi_for_student,
+    )
+    from applications.globals.programme_scope import scopes_for, scope_students
+    from applications.online_cms.models import Student_grades
+
+    year = (request.query_params.get('batch') or '').strip()
+    batch_id = (request.query_params.get('batch_id') or '').strip()
+    semester = (request.query_params.get('semester') or '').strip()
+    if not year:
+        return Response({'detail': 'Required: batch.'}, status=400)
+    if not year.isdigit():
+        return Response({'detail': f"Batch '{year}' is not a year."}, status=400)
+    if semester and not (semester.isdigit() and int(semester) > 0):
+        return Response({'detail': f"Semester '{semester}' is not a semester number."},
+                        status=400)
+    semester_no = int(semester) if semester else None
+
+    students = Student.objects.filter(batch=int(year))
+    if batch_id:
+        batch = Batch.objects.filter(
+            id=batch_id if batch_id.isdigit() else None, year=int(year)).first()
+        if not batch:
+            return Response({'detail': f"No discipline batch '{batch_id}' in {year}."},
+                            status=400)
+        students = students.filter(batch_id=batch)
+    students = list(scope_students(students, scopes_for(request.user))
+                    .select_related('id__user', 'batch_id__discipline').order_by('id_id'))
+
+    rolls = [s.id_id for s in students]
+    terms = defaultdict(set)
+    for roll, number, semester_type in (
+            Student_grades.objects
+            .filter(roll_no__in=rolls, semester__isnull=False)
+            .exclude(semester_type='Summer Semester')
+            .values_list('roll_no', 'semester', 'semester_type').distinct()):
+        terms[roll].add((number, semester_type))
+
+    # Loaded once for the batch instead of once per student's CPI.
+    replacements = defaultdict(list)
+    for rep in course_replacement.objects.filter(
+        Q(old_course_registration__student_id__in=rolls) |
+        Q(new_course_registration__student_id__in=rolls)
+    ).select_related('old_course_registration__course_id',
+                     'new_course_registration__course_id'):
+        for roll in {rep.old_course_registration.student_id_id,
+                     rep.new_course_registration.student_id_id}:
+            replacements[roll].append(rep)
+
+    rows = []
+    for student in students:
+        own = terms.get(student.id_id, set())
+        number = semester_no or max((n for n, _ in own), default=None)
+        semester_type = _semester_term(own, number) if number else None
+        user = student.id.user
+        row = {
+            'roll_no': student.id_id,
+            'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'discipline': (f'{student.batch_id.name} {student.batch_id.discipline.acronym}'
+                           if student.batch_id_id else student.programme),
+            'semester': number if semester_type else None,
+            'spi': None,
+            'cpi': None,
+        }
+        if semester_type:
+            spi, _, _ = calculate_spi_for_student(student, number, semester_type)
+            cpi, _, _ = calculate_cpi_for_student(
+                student, number, semester_type, replacements=replacements[student.id_id])
+            row['spi'], row['cpi'] = float(spi), float(cpi)
+        rows.append(row)
+
+    return Response({
+        'count': len(rows),
+        'students': len(rows),
+        'with_grades': sum(1 for r in rows if r['spi'] is not None),
+        'rows': rows,
+    })
