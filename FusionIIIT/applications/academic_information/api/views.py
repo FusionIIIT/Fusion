@@ -2696,11 +2696,16 @@ def database_spi_cpi(request):
     and discipline of that year. ``semester`` picks the semester; without it,
     each student's latest semester that has grades is used. A summer term is
     not a semester here, so the CPI is the transcript's figure at the end of
-    the semester shown.
+    the semester shown. A PG or PhD semester graded only through its thesis,
+    progress seminar or teaching credit counts as a semester with grades.
     """
     from collections import defaultdict
-    from applications.academic_procedures.models import course_replacement
+    from applications.academic_procedures.models import (
+        ProgressSeminarEntry, TeachingCreditAllocation, ThesisRegistration,
+        course_replacement,
+    )
     from applications.examination.api.views import (
+        PROGRAMME_TYPE_BUCKETS, _phd_extra_records,
         calculate_cpi_for_student, calculate_spi_for_student,
     )
     from applications.globals.programme_scope import scopes_for, scope_students
@@ -2737,6 +2742,31 @@ def database_spi_cpi(request):
             .exclude(semester_type='Summer Semester')
             .values_list('roll_no', 'semester', 'semester_type').distinct()):
         terms[roll].add((number, semester_type))
+
+    # A PG or PhD semester can be graded only through its thesis, progress
+    # seminar or teaching credit; the transcript gives such a semester its own
+    # row, so it counts here too, typed by its number as the transcript types
+    # it. Candidate semesters come from three queries for the whole batch, and
+    # _phd_extra_records keeps those with a grade, as the transcript does.
+    thesis_students = {s.id_id: s for s in students if s.programme in
+                       PROGRAMME_TYPE_BUCKETS['PHD'] + PROGRAMME_TYPE_BUCKETS['PG']}
+    if thesis_students:
+        candidates = defaultdict(set)
+        for queryset, roll_field in (
+            (ThesisRegistration.objects.filter(student__in=list(thesis_students)), 'student'),
+            (ProgressSeminarEntry.objects.filter(thesis__student__in=list(thesis_students)),
+             'thesis__student'),
+            (TeachingCreditAllocation.objects.filter(student__in=list(thesis_students)), 'student'),
+        ):
+            for roll, number in queryset.values_list(roll_field, 'semester__semester_no'):
+                if number is not None:
+                    candidates[roll].add(number)
+        for roll, numbers in candidates.items():
+            graded = {n for n, _ in terms[roll]}
+            for number in sorted(numbers - graded):
+                if _phd_extra_records(thesis_students[roll], number):
+                    terms[roll].add(
+                        (number, 'Odd Semester' if number % 2 else 'Even Semester'))
 
     # Loaded once for the batch instead of once per student's CPI.
     replacements = defaultdict(list)

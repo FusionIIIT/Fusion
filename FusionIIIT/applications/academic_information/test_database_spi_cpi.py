@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework.authtoken.models import Token
 
 from applications.academic_information.models import Student
+from applications.academic_procedures.models import ThesisEvaluation, ThesisRegistration
 from applications.globals.models import Designation, ExtraInfo, HoldsDesignation
 from applications.online_cms.models import Student_grades
 from applications.programme_curriculum.models import (
@@ -12,6 +13,8 @@ from applications.programme_curriculum.models import (
     Curriculum,
     Discipline,
     Programme,
+    Semester,
+    ThesisSlot,
 )
 
 URL = '/aims/api/database/spi-cpi/'
@@ -90,6 +93,24 @@ class DatabaseSpiCpiTests(TestCase):
 
     def test_a_discipline_narrows_the_batch(self):
         self.assertEqual(set(self.report(batch=2024, batch_id=self.ece.id)), {'24BEC001'})
+
+    def test_a_phd_semester_graded_only_by_its_thesis_counts(self):
+        programme = Programme.objects.create(category='PHD', name='PhD', programme_begin_year=2024)
+        curriculum = Curriculum.objects.create(programme=programme, name='PhD 2024', no_of_semester=8)
+        phd = Batch.objects.create(name='PhD (Odd)', year=2024, curriculum=curriculum,
+                                   discipline=self.cse.discipline)
+        self.student('24PCS001', phd, [(1, 'Odd Semester', 'CS101', 'A')])
+        Student.objects.filter(id_id='24PCS001').update(programme='PhD')
+        semester = Semester.objects.create(curriculum=curriculum, semester_no=2)
+        registration = ThesisRegistration.objects.create(
+            student_id='24PCS001', semester=semester, credits=3,
+            thesis_slot=ThesisSlot.objects.create(semester=semester, name='Thesis'))
+        ThesisEvaluation.objects.create(registration=registration, block_number=1, grade='S')
+
+        # As on the transcript: S carries no weight, so SPI 0.0 and the CPI so far.
+        for params in ({'batch': 2024}, {'batch': 2024, 'semester': 2}):
+            row = self.report(**params)['24PCS001']
+            self.assertEqual((row['semester'], row['spi'], row['cpi']), (2, 0.0, 9.0), params)
 
     def test_bad_filters_are_refused(self):
         for params in ({}, {'batch': 'x'}, {'batch': 2024, 'semester': '0'},
