@@ -2694,10 +2694,12 @@ def database_spi_cpi(request):
 
     ``batch`` (a year) is required. ``batch_id`` narrows it to one programme
     and discipline of that year. ``semester`` picks the semester; without it,
-    each student's latest semester that has grades is used. A summer term is
-    not a semester here, so the CPI is the transcript's figure at the end of
-    the semester shown. A PG or PhD semester graded only through its thesis,
-    progress seminar or teaching credit counts as a semester with grades.
+    each student's latest graded term is used, as the transcript's last row:
+    a summer term graded after the latest semester is that term, labelled as
+    the transcript labels it ("Summer 2"). A chosen semester gives the figures
+    at the end of that semester, before any summer term. A PG or PhD semester
+    graded only through its thesis, progress seminar or teaching credit counts
+    as a semester with grades.
     """
     from collections import defaultdict
     from applications.academic_procedures.models import (
@@ -2707,6 +2709,7 @@ def database_spi_cpi(request):
     from applications.examination.api.views import (
         PROGRAMME_TYPE_BUCKETS, _phd_extra_records,
         calculate_cpi_for_student, calculate_spi_for_student,
+        format_semester_display,
     )
     from applications.globals.programme_scope import scopes_for, scope_students
     from applications.online_cms.models import Student_grades
@@ -2735,13 +2738,15 @@ def database_spi_cpi(request):
                     .select_related('id__user', 'batch_id__discipline').order_by('id_id'))
 
     rolls = [s.id_id for s in students]
-    terms = defaultdict(set)
+    terms, summers = defaultdict(set), defaultdict(set)
     for roll, number, semester_type in (
             Student_grades.objects
             .filter(roll_no__in=rolls, semester__isnull=False)
-            .exclude(semester_type='Summer Semester')
             .values_list('roll_no', 'semester', 'semester_type').distinct()):
-        terms[roll].add((number, semester_type))
+        if semester_type == 'Summer Semester':
+            summers[roll].add(number)
+        else:
+            terms[roll].add((number, semester_type))
 
     # A PG or PhD semester can be graded only through its thesis, progress
     # seminar or teaching credit; the transcript gives such a semester its own
@@ -2784,13 +2789,20 @@ def database_spi_cpi(request):
         own = terms.get(student.id_id, set())
         number = semester_no or max((n for n, _ in own), default=None)
         semester_type = _semester_term(own, number) if number else None
+        label = number
+        # A summer term comes after the regular semester of its number, so
+        # when it is the latest graded term it is the one shown, with its CPI.
+        summer = max(summers.get(student.id_id, ()), default=None)
+        if not semester_no and summer is not None and (number is None or summer >= number):
+            number, semester_type = summer, 'Summer Semester'
+            label = format_semester_display(number, semester_type)
         user = student.id.user
         row = {
             'roll_no': student.id_id,
             'student_name': f'{user.first_name} {user.last_name}'.strip(),
             'discipline': (f'{student.batch_id.name} {student.batch_id.discipline.acronym}'
                            if student.batch_id_id else student.programme),
-            'semester': number if semester_type else None,
+            'semester': label if semester_type else None,
             'spi': None,
             'cpi': None,
         }

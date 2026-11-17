@@ -86,6 +86,17 @@ class DatabaseSpiCpiTests(TestCase):
         # SPI is the Odd term's F; CPI counts the cleared retake, as on the transcript.
         self.assertEqual((row['semester'], row['spi'], row['cpi']), (1, 2.0, 7.0))
 
+    def test_a_summer_term_after_the_latest_semester_is_the_latest(self):
+        # CS101 failed in semester 1 and cleared with an A in the summer after semester 2.
+        self.student('24BCS003', self.cse, [(1, 'Odd Semester', 'CS101', 'F'),
+                                            (2, 'Even Semester', 'CS201', 'B'),
+                                            (2, 'Summer Semester', 'CS101', 'A')])
+        row = self.report(batch=2024)['24BCS003']
+        self.assertEqual((row['semester'], row['spi'], row['cpi']), ('Summer 1', 9.0, 8.0))
+        # A chosen semester stops before its summer term.
+        row = self.report(batch=2024, semester=2)['24BCS003']
+        self.assertEqual((row['spi'], row['cpi']), (7.0, 4.5))
+
     def test_a_student_without_grades_is_listed_without_figures(self):
         row = self.report(batch=2024)['24BEC001']
         self.assertEqual((row['semester'], row['spi'], row['cpi']), (None, None, None))
