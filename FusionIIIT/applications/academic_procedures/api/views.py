@@ -3057,6 +3057,78 @@ def get_pg_phd_registration_eligibility(current_date, category, user_sem, year=d
         return _check_registration_window(f"PhD Registration {term} {user_sem} {ay}", "PhD registration")
     return _check_registration_window(f"PG Registration {user_sem} {year}", "PG registration")
 
+
+_PG_REGISTRATION_EVENT = re.compile(r'^PG Registration (\d+) (\d{4})$')
+
+
+def pg_registration_semester(student, now=None):
+    """The semester a PG student registers into, and why registration is shut.
+
+    The office opens PG registration for a semester by adding a
+    "PG Registration <semester> <year>" calendar event, as UG does with
+    "Pre Registration". A student registers into their current semester (when
+    promoted before the window opens) or the next one (pre-registration, before
+    promotion), never further ahead: PG batches are a year apart, so a window
+    opened for one batch never reaches another. If both are open, the current
+    semester is used.
+
+    Returns (semester_no, None) while a window is open. Otherwise returns a
+    400 response with the semester it is about: the window that opens next,
+    else the one that closed last, else the semester the student would
+    register into next, naming the calendar event that is missing.
+    """
+    now = now or datetime.datetime.now()
+    current = student.curr_semester_no or 0
+    windows = []
+    for event in Calendar.objects.filter(description__startswith='PG Registration '):
+        match = _PG_REGISTRATION_EVENT.match(event.description)
+        if not match or int(match.group(2)) != now.year or int(match.group(1)) not in (current, current + 1):
+            continue
+        start, end = _calendar_window_bounds(event)
+        windows.append((int(match.group(1)), start, end))
+
+    open_semesters = [n for n, start, end in windows if start <= now <= end]
+    if open_semesters:
+        return min(open_semesters), None
+    upcoming = sorted((start, n, end) for n, start, end in windows if now < start)
+    if upcoming:
+        start, semester_no, end = upcoming[0]
+        return semester_no, JsonResponse({"error": f"PG registration will start from "
+                                                   f"{_fmt_window_dt(start)} to {_fmt_window_dt(end)}"}, status=400)
+    if windows:
+        _end, semester_no = max((end, n) for n, start, end in windows)
+        return semester_no, JsonResponse({"error": "PG registration period has ended"}, status=400)
+    semester_no = pre_registration_target_semester(student)
+    return semester_no, _check_registration_window(
+        f"PG Registration {semester_no} {now.year}", "PG registration")
+
+
+def registration_semester(student, now=None):
+    """(semester_no, error_response) for a PG or PhD student's thesis and
+    course registration. PG registers into its current or next semester,
+    whichever the calendar opens (pg_registration_semester); PhD registers
+    into the semester it is in, under that term's PhD window."""
+    category = _student_programme_category(student)
+    if category == 'PG':
+        return pg_registration_semester(student, now)
+    now = now or datetime.datetime.now()
+    return student.curr_semester_no, get_pg_phd_registration_eligibility(
+        now.date(), category or 'PHD', student.curr_semester_no, now.year)
+
+
+def pg_registration_term(semester_no, today=None):
+    """(session, semester_type, working_year) of the term a PG semester
+    registered today belongs to. Odd semesters run July to December, so they
+    always fall in the session starting this year. An even semester
+    registered from July on is the coming one (pre-registration); registered
+    between January and June it is the one running now."""
+    today = today or datetime.date.today()
+    semester_type = get_semester_type(semester_no)
+    start = today.year if (semester_type == "Odd Semester" or today.month >= 7) else today.year - 1
+    session = f"{start}-{str(start + 1)[-2:]}"
+    return session, semester_type, session_working_year(session, semester_type)
+
+
 def get_student_registrtion_check(student, sem):
     return StudentRegistrationChecks.objects.filter(student_id=student, semester_id=sem).first()
 
@@ -10308,24 +10380,25 @@ def student_thesis_enrollment_api(request):
     except Exception as e:
         return JsonResponse({'error': f'User setup error: {type(e).__name__}: {e}'}, status=400)
 
-    if request.method == 'POST':
-        _elig = get_pg_phd_registration_eligibility(
-            timezone.now().date(), _student_programme_category(student),
-            student.curr_semester_no, datetime.datetime.now().year)
-        if isinstance(_elig, JsonResponse):
+    # A POST registers into the semester registration is open for. A GET shows
+    # that semester when the registration page asks (?registration=1), and the
+    # student's current semester otherwise (Registered Courses).
+    semester_no = student.curr_semester_no
+    if request.method == 'POST' or request.query_params.get('registration'):
+        semester_no, _elig = registration_semester(student)
+        if request.method == 'POST' and isinstance(_elig, JsonResponse):
             return _elig
 
     try:
-        # Resolve current semester
         if not student.batch_id or not student.batch_id.curriculum:
             return JsonResponse({'error': 'Student batch or curriculum is not configured'}, status=400)
         try:
             semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum,
-                semester_no=student.curr_semester_no,
+                semester_no=semester_no,
             )
         except Semester.DoesNotExist:
-            return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
+            return JsonResponse({'error': f'Semester {semester_no} not found in curriculum'}, status=400)
 
         # Thesis topic info
         topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
@@ -10440,6 +10513,9 @@ def student_thesis_enrollment_api(request):
         session = f"{year}-{str(year + 1)[2:]}"
     else:
         session = f"{year - 1}-{str(year)[2:]}"
+    if _student_programme_category(student) == 'PG':
+        # PG may register ahead, so take the term of the semester registered.
+        session, _semester_type, year = pg_registration_term(semester.semester_no, now.date())
 
     reg = ThesisRegistration.objects.create(
         student=student,
@@ -11200,20 +11276,21 @@ def student_progress_seminar_enrollment_api(request):
     try:
         if not student.batch_id or not student.batch_id.curriculum:
             return JsonResponse({'error': 'Student batch or curriculum is not configured'}, status=400)
+        # A POST registers into the semester registration is open for. A GET
+        # shows that semester when the registration page asks
+        # (?registration=1), and the current semester otherwise.
+        semester_no = student.curr_semester_no
+        if request.method == 'POST' or request.query_params.get('registration'):
+            semester_no, _elig = registration_semester(student)
+            if request.method == 'POST' and isinstance(_elig, JsonResponse):
+                return _elig
         try:
             semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum,
-                semester_no=student.curr_semester_no,
+                semester_no=semester_no,
             )
         except Semester.DoesNotExist:
-            return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
-
-        if request.method == 'POST':
-            _elig = get_pg_phd_registration_eligibility(
-                timezone.now().date(), _student_programme_category(student),
-                student.curr_semester_no, datetime.datetime.now().year)
-            if isinstance(_elig, JsonResponse):
-                return _elig
+            return JsonResponse({'error': f'Semester {semester_no} not found in curriculum'}, status=400)
 
         topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
         topic_approved = topic is not None and topic.status == 'dean_approved'
@@ -11282,6 +11359,9 @@ def student_progress_seminar_enrollment_api(request):
     now = _dt.datetime.now()
     year, month = now.year, now.month
     session = f"{year}-{str(year + 1)[2:]}" if month >= 7 else f"{year - 1}-{str(year)[2:]}"
+    if _student_programme_category(student) == 'PG':
+        # PG may register ahead, so take the term of the semester registered.
+        session, _semester_type, year = pg_registration_term(semester.semester_no, now.date())
 
     reg = ProgressSeminarRegistration.objects.create(
         student=student,
@@ -11450,20 +11530,21 @@ def student_teaching_credit_enrollment_api(request):
     try:
         if not student.batch_id or not student.batch_id.curriculum:
             return JsonResponse({'error': 'Student batch or curriculum is not configured'}, status=400)
+        # A POST registers into the semester registration is open for. A GET
+        # shows that semester when the registration page asks
+        # (?registration=1), and the current semester otherwise.
+        semester_no = student.curr_semester_no
+        if request.method == 'POST' or request.query_params.get('registration'):
+            semester_no, _elig = registration_semester(student)
+            if request.method == 'POST' and isinstance(_elig, JsonResponse):
+                return _elig
         try:
             semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum,
-                semester_no=student.curr_semester_no,
+                semester_no=semester_no,
             )
         except Semester.DoesNotExist:
-            return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
-
-        if request.method == 'POST':
-            _elig = get_pg_phd_registration_eligibility(
-                timezone.now().date(), _student_programme_category(student),
-                student.curr_semester_no, datetime.datetime.now().year)
-            if isinstance(_elig, JsonResponse):
-                return _elig
+            return JsonResponse({'error': f'Semester {semester_no} not found in curriculum'}, status=400)
 
         comprehensive_exam_passed = ComprehensiveExam.objects.filter(
             student=student, status='passed'
@@ -11533,6 +11614,9 @@ def student_teaching_credit_enrollment_api(request):
     now = _dt.datetime.now()
     year, month = now.year, now.month
     session = f"{year}-{str(year + 1)[2:]}" if month >= 7 else f"{year - 1}-{str(year)[2:]}"
+    if _student_programme_category(student) == 'PG':
+        # PG may register ahead, so take the term of the semester registered.
+        session, _semester_type, year = pg_registration_term(semester.semester_no, now.date())
 
     reg = TeachingCreditRegistration.objects.create(
         student=student,
@@ -11689,20 +11773,23 @@ def phd_student_status(request):
 def phd_course_slots(request):
     """
     GET /stu/phd/course-slots/
-    Returns the CourseSlots in the PhD student's current-semester curriculum,
-    excluding slots already registered or requested (pending/approved).
+    Returns the CourseSlots of the semester the student registers into (the
+    current one for PhD; the current or next one, as the calendar opens, for
+    PG), excluding slots
+    already registered or requested (pending/approved).
     """
     student, err = _resolve_phd_student(request)
     if err:
         return err
 
+    semester_no, _elig = registration_semester(student)
     try:
         semester = Semester.objects.get(
             curriculum=student.batch_id.curriculum,
-            semester_no=student.curr_semester_no,
+            semester_no=semester_no,
         )
     except Semester.DoesNotExist:
-        return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
+        return JsonResponse({'error': f'Semester {semester_no} not found in curriculum'}, status=400)
 
     taken_slot_ids = set(
         PhDCourseRegistrationRequest.objects.filter(
@@ -11717,9 +11804,6 @@ def phd_course_slots(request):
     ]
     # Registration window (same Calendar gate enforced at submit) so the form only renders when open.
     import json as _json
-    _elig = get_pg_phd_registration_eligibility(
-        timezone.now().date(), _student_programme_category(student),
-        student.curr_semester_no, datetime.datetime.now().year)
     registration_open = _elig is None
     registration_message = '' if registration_open else _json.loads(_elig.content).get('error', 'Registration is not open.')
     return JsonResponse({
@@ -11805,7 +11889,7 @@ def _phd_bl_source_courses(student):
 def phd_course_slot_courses(request):
     """
     GET /stu/phd/course-slots/courses/?slot_id=<id>
-    Returns the courses within a slot in the student's current semester.
+    Returns the courses within a slot of the semester the student registers into.
     """
     student, err = _resolve_phd_student(request)
     if err:
@@ -11815,14 +11899,15 @@ def phd_course_slot_courses(request):
     if not slot_id:
         return JsonResponse({'error': 'slot_id query parameter is required'}, status=400)
 
+    semester_no, _elig = registration_semester(student)
     try:
         semester = Semester.objects.get(
             curriculum=student.batch_id.curriculum,
-            semester_no=student.curr_semester_no,
+            semester_no=semester_no,
         )
         slot = CourseSlot.objects.get(id=slot_id, semester=semester)
     except (Semester.DoesNotExist, CourseSlot.DoesNotExist):
-        return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
+        return JsonResponse({'error': f'Course slot not found in semester {semester_no}'}, status=404)
 
     # A BL slot clears a past course, so it is driven by the student's own
     # below-C+ grades rather than the slot list; the slot list is only the pool
@@ -11861,16 +11946,14 @@ def phd_submit_course_request(request):
     """
     POST /stu/phd/course-request/
     Body: { "slot_id": <id>, "course_id": <id> }
-    Creates a Pending PhDCourseRegistrationRequest for the student's current semester.
-    One request per slot per semester.
+    Creates a Pending PhDCourseRegistrationRequest for the semester the student
+    registers into (see registration_semester). One request per slot per semester.
     """
     student, err = _resolve_phd_student(request)
     if err:
         return err
 
-    _elig = get_pg_phd_registration_eligibility(
-        timezone.now().date(), _student_programme_category(student) or 'PHD',
-        student.curr_semester_no, datetime.datetime.now().year)
+    semester_no, _elig = registration_semester(student)
     if isinstance(_elig, JsonResponse):
         return _elig
 
@@ -11883,13 +11966,13 @@ def phd_submit_course_request(request):
     try:
         semester = Semester.objects.get(
             curriculum=student.batch_id.curriculum,
-            semester_no=student.curr_semester_no,
+            semester_no=semester_no,
         )
         slot = CourseSlot.objects.get(id=slot_id, semester=semester)
     except Semester.DoesNotExist:
-        return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
+        return JsonResponse({'error': f'Semester {semester_no} not found in curriculum'}, status=400)
     except CourseSlot.DoesNotExist:
-        return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
+        return JsonResponse({'error': f'Course slot not found in semester {semester_no}'}, status=404)
 
     is_bl = slot.name.startswith('BL')
     source_course = None
@@ -11941,9 +12024,13 @@ def phd_submit_course_request(request):
             return JsonResponse({'error': f"{source_course.code} is already being cleared "
                                           f"through {clash.course_slot.name} this semester."}, status=400)
 
-    academic_year, semester_type = generate_current_session(
-        datetime.datetime.now().year, student.curr_semester_no
-    )
+    if _student_programme_category(student) == 'PG':
+        # PG may register ahead, so take the term of the semester registered.
+        academic_year, semester_type, _working_year = pg_registration_term(semester_no)
+    else:
+        academic_year, semester_type = generate_current_session(
+            datetime.datetime.now().year, student.curr_semester_no
+        )
 
     # unique_together is (student, semester, course_slot) regardless of status,
     # so a prior Rejected request for this slot must be reused, not re-created.
