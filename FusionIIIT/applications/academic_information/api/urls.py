@@ -54,6 +54,8 @@ urlpatterns = [
         name='database_branch_wise_student_count'),
     url(r'^database/remaining-core-grades/$', views.database_course_grades,
         name='database_remaining_core_grades'),
+    url(r'^database/spi-cpi/$', views.database_spi_cpi,
+        name='database_spi_cpi'),
     url(r'^export-all-courses-zip/$', views.export_all_courses_zip, name='export-all-courses-zip'),
     url(r'^generate_preregistration_report',views.generate_preregistration_report, name = "generate_preregistration_report"),
     url(r'^calendar/$',        views.list_calendar,   name='list_calendar'),
