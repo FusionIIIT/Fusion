@@ -3305,20 +3305,6 @@ def submit_preregistration(request):
     except Student.DoesNotExist:
         return Response({"error": "Student profile not found"}, status=400)
 
-    for reg in registrations:
-        slot_id = reg.get("slot_id")
-        course_id = reg.get("course_id")
-        priority = reg.get("priority")
-
-        InitialRegistration.objects.create(
-            course_id_id=course_id,
-            semester_id_id=next_semester.id,
-            student_id=student,
-            course_slot_id_id=slot_id,
-            priority=priority,
-            timestamp=timezone.now()
-        )
-
     # The replaced registration is taken from the request body, so check it is
     # this student's before any row is written.
     backlog_entries = []
@@ -3335,35 +3321,70 @@ def submit_preregistration(request):
                     status=400)
         backlog_entries.append((reg, prev_reg))
 
+    now = timezone.now()
+    choices = [
+        InitialRegistration(
+            course_id_id=reg.get("course_id"),
+            semester_id_id=next_semester.id,
+            student_id=student,
+            course_slot_id_id=reg.get("slot_id"),
+            priority=reg.get("priority"),
+            timestamp=now,
+        )
+        for reg in registrations
+    ]
     for reg, prev_reg in backlog_entries:
-        slot_id = reg.get("slot_id")
-        course_id = reg.get("course_id")
-        priority = reg.get("priority")
-
         # The repeated course carries the grade, so it decides backlog vs improvement.
         _sg = latest_grade(student.id_id, prev_reg.course_id) if prev_reg else None
         reg_type = registration_type_for_grade(_sg.grade if _sg else None)
-
-        InitialRegistration.objects.create(
-            course_id_id=course_id,
+        choices.append(InitialRegistration(
+            course_id_id=reg.get("course_id"),
             semester_id_id=next_semester.id,
             student_id=student,
-            course_slot_id_id=slot_id,
-            priority=priority,
+            course_slot_id_id=reg.get("slot_id"),
+            priority=reg.get("priority"),
             registration_type=(reg_type if reg_type != 'Regular' else 'Backlog'),
             old_course_registration=prev_reg,
-            timestamp=timezone.now()
-        )
+            timestamp=now,
+        ))
 
-    # Optionally, update the StudentRegistrationChecks record to mark pre-registration as complete.
-    reg_check, created = StudentRegistrationChecks.objects.get_or_create(
-        student_id=student, semester_id_id=next_semester.id,
-        defaults={'pre_registration_flag': True}
-    )
-    if not created:
-        reg_check.pre_registration_flag = True
-        reg_check.save()
-        
+    # The choices and the mark that pre-registration is done are saved together.
+    # Saved one by one, a submit that failed or was cut off part way kept the
+    # choices written so far without the mark: the page offered the form again,
+    # the office search could not find the student, and every resubmit failed
+    # on the choices already saved.
+    try:
+        with transaction.atomic():
+            # One submit at a time for a student, so a double click cannot save twice.
+            Student.objects.select_for_update().get(pk=student.pk)
+            if StudentRegistrationChecks.objects.filter(
+                    student_id=student, semester_id=next_semester,
+                    pre_registration_flag=True).exists():
+                return JsonResponse(
+                    {"error": "Your pre-registration for this semester is already submitted."},
+                    status=400)
+            # Choices left by an earlier submit that never finished; this one replaces them.
+            InitialRegistration.objects.filter(
+                student_id=student, semester_id=next_semester).delete()
+            InitialRegistration.objects.bulk_create(choices)
+            reg_check, created = StudentRegistrationChecks.objects.get_or_create(
+                student_id=student, semester_id_id=next_semester.id,
+                defaults={'pre_registration_flag': True}
+            )
+            if not created:
+                reg_check.pre_registration_flag = True
+                reg_check.save()
+    except IntegrityError:
+        # Logged so a submit that can never succeed -- e.g. a course listed in two
+        # slots of the semester, which the form makes the student rank twice --
+        # can be traced; the student only sees the message below.
+        logger.exception("Pre-registration of %s for semester %s could not be saved",
+                         student.id_id, next_semester.semester_no)
+        return JsonResponse(
+            {"error": "Your choices could not be saved. Reload the page, check your choices "
+                      "and submit again."},
+            status=400)
+
     return JsonResponse({"status": "success"}, status=201)
 
 
