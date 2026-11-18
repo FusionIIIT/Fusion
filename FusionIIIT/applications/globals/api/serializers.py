@@ -7,11 +7,10 @@ from notifications.models import Notification
 from applications.globals.models import (ExtraInfo, HoldsDesignation, DepartmentInfo,
                                         Designation, Announcement)
 
-from applications.placement_cell.api.serializers import (SkillSerializer, HasSerializer,
-                                                        EducationSerializer, CourseSerializer, ExperienceSerializer,
-                                                        ProjectSerializer, AchievementSerializer, PublicationSerializer,
-                                                        PatentSerializer, PlacementStatusSerializer, NotifyStudentSerializer,
-                                                        StudentBankDetailsSerializer)
+from applications.globals.api.serializers_profile import (SkillSerializer, HasSerializer,
+                                                         EducationSerializer, CourseSerializer, ExperienceSerializer,
+                                                         ProjectSerializer, AchievementSerializer, PublicationSerializer,
+                                                         PatentSerializer, StudentBankDetailsSerializer)
 
 User = get_user_model()
 
