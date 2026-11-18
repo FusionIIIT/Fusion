@@ -1,5 +1,5 @@
 import logging
-from venv import logger
+logger = logging.getLogger(__name__)
 from django.forms import ValidationError
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
