@@ -3,7 +3,6 @@
 {% load static semanticui %}
 
 
-
 {% block title %}
     Dashboard
 {% endblock %}
@@ -49,10 +48,6 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" href="{% url 'office_module:directorOffice' %}">
-                    Director Office
-                    <i class="right floated chevron right icon"></i>
-                </a>
 
             </div>
 
@@ -62,8 +57,6 @@
         {% comment %}
             The left-rail segment ends here!
         {% endcomment %} -->
-
-
 
 
         {% comment %}
@@ -102,35 +95,7 @@
                     <i class="right floated chevron right icon"></i>
                 </div>
 
-                <a class="item" data-tab="tab1content1" onclick="pnd()">
-                   Office of Dean P & D 
-                   <i class="right floated chevron right icon"></i>
-                </a>
 
-                <a class="item" data-tab="tab1content2" onclick="rspc()">
-                   Office of Dean RSPC
-                   <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="tab1content3" onclick="stud()">
-                    Office of Dean Students
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="tab1content4" onclick="acad()">
-                    Office of Dean Acad
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="tab1content5" onclick="purchase()">
-                    Puchase Office
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="tab1content6" onclick="registrar()">
-                    Registrar Office
-                    <i class="right floated chevron right icon"></i>
-                </a>
                 <a class="item" href="/hr2/administrativeProfile/">
                     Administrative Profile
                     <i class="right floated chevron right icon"></i>
@@ -151,55 +116,6 @@
 
 
         
-        <div class="ui tab" data-tab="tab1content1" id="pnd">
-            <div class="ui vertical segment">
-                {% block tab1content1 %}
-                    {% include 'officeModule/directorOffice/deanP&D.html' %}
-                {% endblock %}
-            </div>
-        </div>
-
-
-        <div class="ui tab" data-tab="tab1content2" id="rspc">
-            <div class="ui vertical segment">
-                {% block tab1content2 %}
-                    {% include 'officeModule/directorOffice/deanRSPC.html' %}
-                {% endblock %}
-            </div>
-        </div>
-
-
-        <div class="ui tab" data-tab="tab1content3" id="stud">
-            <div class="ui vertical segment">
-                {% block tab1content3 %}
-                    {% include 'officeModule/directorOffice/deanStudents.html' %}
-                {% endblock %}
-            </div>
-        </div>
-
-        <div class="ui tab" data-tab="tab1content4" id="acad">
-            <div class="ui vertical segment">
-                {% block tab1content4 %}
-                    {% include 'officeModule/directorOffice/deanAcademics.html' %}
-                {% endblock %}
-            </div>
-        </div>
-
-        <div class="ui tab" data-tab="tab1content5" id="purchase">
-            <div class="ui vertical segment">
-                {% block tab1content5 %}
-                    {% include 'officeModule/directorOffice/purchaseOffice.html' %}
-                {% endblock %}
-            </div>
-        </div>
-
-        <div class="ui tab" data-tab="tab1content6" id="registrar">
-            <div class="ui vertical segment">
-                {% block tab1content6 %}
-                    {% include 'officeModule/directorOffice/registrar.html' %}
-                {% endblock %}
-            </div>
-        </div>
 
 
 <!-- Faculty info -->
@@ -431,9 +347,6 @@
            <!-- End of faculty info div -->
 
 
-
-
-
            <!-- Div for student search form -->
     <div id="student_form" style="display:none;">
         
@@ -591,7 +504,6 @@
                 </div>
 
 
-
             </div>
 
             <div id="moremem"></div>
@@ -659,8 +571,6 @@
         </form>
     </div>
 <!-- End of div for meetings -->
-
-
 
 
         {% comment %}
@@ -1029,7 +939,6 @@
                 </div>
 
 
-
                 <br>
                 
                 <div id="faculty_stats_graph" style="height: 260px; width: 90%;"> </div>
@@ -1308,7 +1217,6 @@
                     </table>
 
 
-
                 </div>
 
 
@@ -1444,7 +1352,6 @@
                 </div>
 
 
-
                 <!-- div section for display of HOD data -->
                 <div id="HOD_info" style="display: none;">
                     <table style="border: 1px solid lightblue" class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
@@ -1469,8 +1376,6 @@
                     </table>
                       
                 </div>
-
-
 
 
 <!--  end of HOD section -->
@@ -1515,7 +1420,6 @@
                 </div>
 
 
-
             </div>
 
             <br> <br> <br> <br> 
@@ -1544,14 +1448,11 @@
         {% comment %}The right-rail segment ends here!{% endcomment %}
 
 
-
-
         {% comment %}The right-margin segment!{% endcomment %}
         <div class="column"></div>
 
     </div>
     {% comment %}The grid ends here!{% endcomment %}
-
 
 
 {% endblock %}
@@ -1706,7 +1607,6 @@
                     $('#me_17').append('<li>' + response.top_17_me[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_me[1] + '</li>' + '<li>' + response.top_17_me[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_me[3] + '</li>' + '<li>' + response.top_17_me[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_me[5] + '</li>');
 
                     $('#design_17').append('<li>' + response.top_17_design[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_design[1] + '</li>' + '<li>' + response.top_17_design[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_design[3] + '</li>' + '<li>' + response.top_17_design[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_design[5] + '</li>');
-
 
 
                 },
@@ -1923,8 +1823,6 @@
                 //$('#cse_table').children('tbody').append('</tr>')
 
 
-
-
                 $('#ece_table').children('tbody').html('')
                 //$('#particular_stats').html('');
                 
@@ -1935,9 +1833,6 @@
               
                 }
                 
-
-
-
 
 
                 $('#me_table').children('tbody').html('')
@@ -1952,9 +1847,6 @@
                 
 
 
-
-
-
                 $('#ns_table').children('tbody').html('')
                 //$('#particular_stats').html('');
                 
@@ -1964,9 +1856,6 @@
                     $('#ns_table').children('tbody').append('</tr>')
                 }
                 
-
-
-
 
 
                 $('#des_table').children('tbody').html('')
@@ -2058,9 +1947,6 @@
                 
 
 
-
-
-
                 $('#office').children('tbody').html('')
                 //$('#particular_stats').html('');
                 
@@ -2073,9 +1959,6 @@
                 
 
 
-
-
-
                 $('#placement').children('tbody').html('')
                 //$('#particular_stats').html('');
                 
@@ -2085,9 +1968,6 @@
                     $('#placement').children('tbody').append('</tr>')
                 }
                 
-
-
-
 
 
                 $('#others').children('tbody').html('')
@@ -2471,12 +2351,6 @@
 
 </script> 
 <!-- End of script of plan meetings -->
-
-
-
-
-
-
 
 
 {% endblock %}
