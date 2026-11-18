@@ -355,15 +355,22 @@ def publish_allocations(batch, sem, year, programme_type):
     }
 
 @transaction.atomic
-def random_algo(batch,sem,year,course_slot, programme_type, skip_course_ids=None) :
+def random_algo(batch,sem,year,slot_ids, programme_type, skip_course_ids=None) :
+    """Allot the choices made in the slots ``slot_ids`` by priority.
+
+    A first choice gets its course while seats last; otherwise the student
+    falls through to their next choice. ``slot_ids`` are the slots of one
+    name across curricula (OE13 of every discipline), allotted together so
+    they share the courses' seats.
+    """
     # zero seats makes the "slot full" branch below push these students to
     # their next priority, so skipping reuses the existing fall-through
     skip_course_ids = {int(c) for c in (skip_course_ids or [])}
-    unique_course = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q( course_slot_id__name = course_slot ) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)).values_list('course_id',flat=True).distinct()
-    slot_filter = (Q(semester_id__semester_no = sem) & Q( course_slot_id__name = course_slot ) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type))
+    unique_course = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(course_slot_id__in=slot_ids) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)).values_list('course_id',flat=True).distinct()
+    slot_filter = (Q(semester_id__semester_no = sem) & Q(course_slot_id__in=slot_ids) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type))
     already_allocated_students = set(FinalRegistration.objects.filter(
         Q(semester_id__semester_no=sem)
-        & Q(course_slot_id__name=course_slot)
+        & Q(course_slot_id__in=slot_ids)
         & Q(student_id__batch=batch)
         & Q(student_id__batch_id__curriculum__programme__category=programme_type)
     ).values_list('student_id_id', flat=True))
@@ -488,16 +495,35 @@ def allocate(request):
     unique_course_slot = (InitialRegistration.objects.filter(scope)
                           .exclude(course_slot_id__isnull=True)
                           .values('course_slot_id').distinct())
+    slots = CourseSlot.objects.in_bulk([e['course_slot_id'] for e in unique_course_slot])
 
-    unique_course_name = []
+    # Slots of one name are one set of courses across curricula (OE13 of
+    # every discipline). When any of them is an Open Elective, all of them
+    # are allotted together by priority (random_algo): curricula do not
+    # always type their copy Open Elective. In batch 2023 semester 8
+    # "Project" was an Open Elective for CSE but typed "Project" by ECE and
+    # SM and named "PROJECT" by ME, and every student there was allotted all
+    # three ranked courses. Any other slot gives a student every course they
+    # chose (PC4). This comes from the curriculum only, never from what
+    # students submitted: the form makes every student rank the courses of
+    # every slot, PC4 included.
+    def slot_group(slot):
+        return slot.name.strip().casefold()
+
+    elective_groups = {slot_group(slot) for slot in slots.values()
+                       if slot.type == "Open Elective"}
+    # Only a group allotted by priority is marked done, so a slot allotted in
+    # full never skips an elective slot of the same name.
+    allotted_groups = set()
     skipped_students = 0
 
     try:
         with transaction.atomic():
             for entry in unique_course_slot:
-                course_slot_object = CourseSlot.objects.get(id=entry['course_slot_id'])
+                course_slot_object = slots[entry['course_slot_id']]
 
-                if course_slot_object.type != "Open Elective":
+                group = slot_group(course_slot_object)
+                if group not in elective_groups:
                     already_allocated_students = FinalRegistration.objects.filter(
                         semester_id__semester_no=sem,
                         course_slot_id=course_slot_object,
@@ -539,15 +565,14 @@ def allocate(request):
                     FinalRegistration.objects.bulk_create(
                         slot_rows, ignore_conflicts=True)
 
-                    unique_course_name.append(course_slot_object.name)
-
-                elif course_slot_object.type == "Open Elective":
-                    if course_slot_object.name not in unique_course_name:
-                        stat = random_algo(batch, sem, year, course_slot_object.name,
-                                           programme_type, skip_course_ids)
-                        unique_course_name.append(course_slot_object.name)
-                        if stat == -1:
-                            raise Exception(f"Seats not enough for course_slot {course_slot_object.name}")
+                elif group not in allotted_groups:
+                    allotted_groups.add(group)
+                    same_group = [slot_id for slot_id, slot in slots.items()
+                                  if slot_group(slot) == group]
+                    stat = random_algo(batch, sem, year, same_group,
+                                       programme_type, skip_course_ids)
+                    if stat == -1:
+                        raise Exception(f"Seats not enough for course_slot {course_slot_object.name}")
 
             publication = publish_allocations(
                 batch, sem, year, programme_type)
