@@ -228,7 +228,6 @@ Safari 10 before testing.
 * Scholarship and Awards Portal
 * Employee Management
 * Course Management
-* Complaint System
 * File Tracking System
 * Health Centre Mangement
 * Visitor's Hostel Management
