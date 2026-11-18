@@ -11,7 +11,7 @@ from applications.academic_procedures.models import (
     StudentRegistrationChecks,
     course_registration,
 )
-from applications.online_cms.models import Student_grades
+from applications.examination.models import Student_grades
 from applications.globals.models import Designation, ExtraInfo, HoldsDesignation
 from applications.programme_curriculum.models import (
     Batch,

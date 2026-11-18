@@ -57,7 +57,7 @@ from applications.academic_procedures.models import ( MTechGraduateSeminarReport
                                                      session_working_year)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
-from applications.online_cms.models import Student_grades
+from applications.examination.models import Student_grades
 
 from applications.academic_procedures.views import (get_user_semester, get_acad_year,
                                                     get_currently_registered_courses,

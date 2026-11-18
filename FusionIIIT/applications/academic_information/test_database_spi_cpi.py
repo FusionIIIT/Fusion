@@ -6,7 +6,7 @@ from rest_framework.authtoken.models import Token
 from applications.academic_information.models import Student
 from applications.academic_procedures.models import ThesisEvaluation, ThesisRegistration
 from applications.globals.models import Designation, ExtraInfo, HoldsDesignation
-from applications.online_cms.models import Student_grades
+from applications.examination.models import Student_grades
 from applications.programme_curriculum.models import (
     Batch,
     Course,

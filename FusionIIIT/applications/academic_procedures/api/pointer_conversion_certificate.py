@@ -46,7 +46,7 @@ def resolve_student_cpi(student):
     summer term included, as Grade Validation and the grade card count it.
     Returns (cpi, semester), or (0.0, None) when no result is out yet."""
     from applications.examination.api.views import result_declared_for
-    from applications.online_cms.models import Student_grades
+    from applications.examination.models import Student_grades
 
     term_order = {'Odd Semester': 0, 'Even Semester': 1, 'Summer Semester': 2}
     terms = sorted(
