@@ -17,7 +17,7 @@ from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill, Update_Payment,
                       Payments, Rebate,Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_main, Reg_records ,Deregistration_Request, Semdates)
-from notification.views import central_mess_notif
+from .notifications import central_mess_notif
 
 
 today_g = datetime.today()

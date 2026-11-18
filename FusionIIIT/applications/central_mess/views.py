@@ -26,7 +26,7 @@ from .handlers import (add_mess_feedback, add_sem_dates, add_vacation_food_reque
                        handle_rebate_response, add_special_food_request, handle_update_payment_response,
                        handle_special_request, add_bill_base_amount, add_mess_committee,  handle_reg_response, handle_dreg_response, update_month_bill,handle_add_reg)
 
-from notification.views import central_mess_notif
+from .notifications import central_mess_notif
 
 import csv
 import openpyxl

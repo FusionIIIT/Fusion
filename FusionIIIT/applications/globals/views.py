@@ -850,8 +850,6 @@ def   profile(request, username=None):
      "student",
     "CC convenor",
     "Mechatronic convenor",
-    "mess_committee",
-    "mess_convener",
     "alumini",
     "Electrical_AE",
     "Electrical_JE",
@@ -863,8 +861,6 @@ def   profile(request, username=None):
     "Convener",
     "cc1convener",
     "CC2 convener",
-    "mess_convener_mess2",
-    "mess_committee_mess2"
 ]
 
     # queryset = HoldsDesignation.objects.select_related('user','working','designation').filter(Q(working=user))

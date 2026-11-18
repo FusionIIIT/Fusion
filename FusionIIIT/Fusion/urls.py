@@ -61,7 +61,6 @@ urlpatterns = [
 
 
     url(r'^eis/', include('applications.eis.urls')),
-    url(r'^mess/', include('applications.central_mess.urls')),
     url(r'^complaint/', include('applications.complaint_system.urls')),
     url(r'^healthcenter/', include('applications.health_center.urls')),
     url(r'^leave/', include('applications.leave.urls')),
