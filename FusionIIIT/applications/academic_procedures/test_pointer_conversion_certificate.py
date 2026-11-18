@@ -127,7 +127,7 @@ class PointerConversionCertificateTests(TestCase):
     def test_cpi_from_the_last_declared_term(self):
         """A summer term after the last semester counts once its result is out."""
         from applications.examination.models import ResultAnnouncement
-        from applications.online_cms.models import Student_grades
+        from applications.examination.models import Student_grades
         from applications.programme_curriculum.models import Course
 
         regular = Course.objects.create(code='CS1001', name='Regular', credit=4)

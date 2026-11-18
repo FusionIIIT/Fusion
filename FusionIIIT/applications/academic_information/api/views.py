@@ -1981,7 +1981,7 @@ def _bulk_credits_earned_rows(students):
     from applications.examination.api.views import (
         grade_conversion, superseded_course_codes,
     )
-    from applications.online_cms.models import Student_grades
+    from applications.examination.models import Student_grades
 
     NON_EARN = {"F", "I", "X", "AU", "CD", "—", ""}
     FAILING_GRADES = {"F", "I", "X", "AU", "CD"}
@@ -2140,7 +2140,7 @@ def database_course_grades(request):
     """
     from applications.examination.api.views import grade_conversion
     from applications.globals.programme_scope import scopes_for, scope_students
-    from applications.online_cms.models import Student_grades
+    from applications.examination.models import Student_grades
 
     batch_id = (request.query_params.get('batch_id') or '').strip()
     year = (request.query_params.get('batch') or '').strip()
@@ -2239,7 +2239,7 @@ def database_active_backlogs(request):
         REMARK_KIND_BY_GRADE, grade_conversion, superseded_course_codes,
     )
     from applications.globals.programme_scope import scopes_for, scope_students
-    from applications.online_cms.models import Student_grades
+    from applications.examination.models import Student_grades
 
     batch = (request.query_params.get('batch') or '').strip()
     students = Student.objects.all()
@@ -2712,7 +2712,7 @@ def database_spi_cpi(request):
         format_semester_display,
     )
     from applications.globals.programme_scope import scopes_for, scope_students
-    from applications.online_cms.models import Student_grades
+    from applications.examination.models import Student_grades
 
     year = (request.query_params.get('batch') or '').strip()
     batch_id = (request.query_params.get('batch_id') or '').strip()

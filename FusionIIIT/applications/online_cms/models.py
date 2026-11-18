@@ -262,40 +262,6 @@ class GradingScheme_grades(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.pk, self.course_id)
 
-class Student_grades(models.Model):
-    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
-    semester = models.IntegerField(default=1)
-    year = models.IntegerField(default=2016)
-    roll_no = models.TextField(max_length=2000)
-    grade = models.TextField(max_length=2000)
-    batch = models.IntegerField(default=2021)
-    remarks = models.CharField(max_length=500,null=True)
-    verified = models.BooleanField(default=False) 
-    reSubmit = models.BooleanField(default=True) 
-    academic_year = models.CharField(max_length=9, null=True)
-    
-    SEMESTER_TYPE_CHOICES = [
-        ("Odd Semester", "Odd Semester"),
-        ("Even Semester", "Even Semester"),
-        ("Summer Semester", "Summer Semester"),
-    ]
-    semester_type = models.CharField(
-        max_length=20,
-        choices=SEMESTER_TYPE_CHOICES,
-        null=True
-    )
-    # The offering (course+section+faculty) that produced this grade. Grade
-    # submission is scoped to the offering's instructor, and this disambiguates
-    # section-wise rows for the same course. Nullable for pre-feature rows.
-    course_instructor = models.ForeignKey(CourseInstructor, null=True, blank=True, on_delete=models.SET_NULL)
-
-    class Meta:
-        # Transcripts, SPI/CPI and the grade reports read a student's grades by
-        # roll number; without this each read scanned every grade row.
-        indexes = [models.Index(fields=['roll_no'], name='student_grades_roll_no_idx')]
-
-    def __str__(self):
-        return '{} - {}'.format(self.pk, self.course_id)
 
 class Attendance(models.Model):
     student_id = models.ForeignKey(Student,on_delete=models.CASCADE)

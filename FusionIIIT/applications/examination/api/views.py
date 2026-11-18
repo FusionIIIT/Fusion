@@ -28,7 +28,7 @@ from applications.globals.programme_scope import (
     programme_display_name,
 )
 from applications.academic_information.models import(Student)
-from applications.online_cms.models import(Student_grades)
+from applications.examination.models import(Student_grades)
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view,permission_classes
