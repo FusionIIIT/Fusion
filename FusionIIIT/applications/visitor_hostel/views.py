@@ -20,7 +20,6 @@ from django.shortcuts import HttpResponse, get_object_or_404, redirect, render
 from applications.globals.models import *
 from applications.visitor_hostel.forms import *
 from applications.visitor_hostel.models import *
-from applications.complaint_system.models import Caretaker
 # from notification.views import visitor_hostel_caretaker_notif
 import numpy as np
 from django.contrib.auth.models import User

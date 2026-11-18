@@ -11,7 +11,7 @@ from applications.globals.models import User , ExtraInfo, HoldsDesignation
 
 from notifications.models import Notification
 from .models import Caretaker, StudentComplain, Supervisor, Workers, SectionIncharge
-from notification.views import  complaint_system_notif
+from .notifications import complaint_system_notif
 
 
 from applications.filetracking.sdk.methods import *
