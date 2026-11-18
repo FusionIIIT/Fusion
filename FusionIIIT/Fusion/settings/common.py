@@ -137,7 +137,6 @@ INSTALLED_APPS = [
     'applications.globals',
     'applications.filetracking',
     'applications.programme_curriculum',
-    'applications.placement_cell',
     'applications.scholarships',
     'allauth',
     'allauth.account',

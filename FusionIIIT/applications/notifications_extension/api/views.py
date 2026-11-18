@@ -20,7 +20,6 @@ from notifications.models import Notification
 from rest_framework import status
 from .serializers import NotificationSerializer
 from notification.views import (leave_module_notif,
-    placement_cell_notif,
     academics_module_notif,
     office_module_notif,
     visitors_hostel_notif,
@@ -53,19 +52,6 @@ class LeaveModuleNotificationAPIView(APIView):
         recipient = User.objects.get(pk=recipient_id)            
         # Trigger the notification function
         leave_module_notif(sender, recipient, type, date)
-
-        return Response({'message': 'Notification sent successfully'}, status=status.HTTP_201_CREATED)
-
-class PlacementCellNotificationAPIView(APIView):
-    def post(self, request, *args, **kwargs):
-        # Extract data from the request, you can customize this based on your needs
-        sender = request.user
-        recipient_id = request.data.get('recipient')
-        type = request.data.get('type')
-        User = get_user_model()
-        recipient = User.objects.get(pk=recipient_id)
-        # Trigger the notification function
-        placement_cell_notif(sender, recipient, type)
 
         return Response({'message': 'Notification sent successfully'}, status=status.HTTP_201_CREATED)
 
