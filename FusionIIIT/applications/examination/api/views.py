@@ -4828,7 +4828,7 @@ class GradeSummaryAPI(APIView):
                         COUNT(CASE WHEN sg.grade = 'X' THEN 1 END) as grade_x,
                         COUNT(sg.id) as total_students
                     FROM 
-                        online_cms_student_grades sg
+                        examination_student_grades sg
                         INNER JOIN programme_curriculum_course pc ON sg.course_id_id = pc.id
                         LEFT JOIN programme_curriculum_courseinstructor ci ON (
                             ci.course_id_id = pc.id 
