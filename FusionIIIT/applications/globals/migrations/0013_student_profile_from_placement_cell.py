@@ -39,12 +39,23 @@ def create_tables_if_missing(apps, schema_editor):
 
 
 def move_content_types(apps, schema_editor):
-    """Relabel the models' content types, so their permissions carry over."""
+    """Relabel the models' content types, so their permissions carry over.
+
+    If both a placement_cell and a globals content type exist for a model,
+    stop: relabelling one would leave its permission grants split between
+    the two.
+    """
     ContentType = apps.get_model('contenttypes', 'ContentType')
     for name in PROFILE_MODELS:
         model = name.lower()
-        if not ContentType.objects.filter(app_label='globals', model=model).exists():
-            ContentType.objects.filter(app_label='placement_cell', model=model).update(app_label='globals')
+        old = ContentType.objects.filter(app_label='placement_cell', model=model)
+        if ContentType.objects.filter(app_label='globals', model=model).exists():
+            if old.exists():
+                raise RuntimeError(
+                    'Both placement_cell.%s and globals.%s content types exist; '
+                    'merge them by hand before migrating.' % (model, model))
+            continue
+        old.update(app_label='globals')
 
 
 def move_content_types_back(apps, schema_editor):
