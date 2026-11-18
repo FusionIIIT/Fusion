@@ -136,7 +136,6 @@ INSTALLED_APPS = [
     'applications.notifications_extension',
     'applications.globals',
     'applications.filetracking',
-    'applications.online_cms',
     'applications.programme_curriculum',
     'applications.placement_cell',
     'applications.scholarships',

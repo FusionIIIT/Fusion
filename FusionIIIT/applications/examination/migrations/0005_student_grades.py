@@ -5,8 +5,10 @@ in the same table (online_cms_student_grades) with every row, column and
 index as they are; no table is created, copied or altered on a database
 that already has it.
 
-online_cms/0007 removes the model from online_cms's side, also without
-touching the table.
+online_cms/0007 removed the model from online_cms's side, also without
+touching the table. online_cms itself has since been removed, so this
+migration no longer depends on it: on a new database it creates the table
+itself (create_table_if_missing), and examination/0006 then renames it.
 """
 
 from django.db import migrations, models
@@ -44,7 +46,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('examination', '0004_auto_20260625_1637'),
         ('programme_curriculum', '0058_teaching_credit_versions'),
-        ('online_cms', '0006_student_grades_roll_no_index'),
         ('contenttypes', '0002_remove_content_type_name'),
     ]
 
