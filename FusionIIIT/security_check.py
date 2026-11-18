@@ -25,7 +25,7 @@ import glob
 
 APPS = [
     "academic_information", "academic_procedures",
-    "examination", "online_cms", "programme_curriculum",
+    "examination", "programme_curriculum",
 ]
 APP_DIR = "applications"
 AUTH_DECORATORS = ("login_required", "require_designation", "role_required")
