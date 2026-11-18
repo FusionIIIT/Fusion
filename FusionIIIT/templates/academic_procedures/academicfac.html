@@ -95,7 +95,7 @@
                         {% for course in assigned_courses %}
                         <tr>
                             <td colspan="2"> {{course.course_id.name }}</td>
-                            <td colspan="2"> <a href="{% url 'programme_curriculum:view_a_course' course.course_id.id %}">{{course.course_id.code }}</a></td>
+                            <td colspan="2"> {{course.course_id.code }}</td>
                             <td colspan="2"> {{course.course_id.version }}</td>
                             <td colspan="2"> {{course.year }}</td>
                             <td colspan="2"> {{course.semester_no }}</td>
@@ -134,7 +134,7 @@
                         <tbody>
                             {% for obj in courses_list %}
                             <tr>
-                                <td><a href="{% url 'programme_curriculum:view_a_course' obj.course_id_id %}">{{obj.course_id__code}}</a></td>
+                                <td>{{obj.course_id__code}}</td>
                                 <td>{{obj.course_id__name}}</td>
                                 <td>{{ obj.year}}</td>
                                 <td>{{obj.semester_no}}</td>
