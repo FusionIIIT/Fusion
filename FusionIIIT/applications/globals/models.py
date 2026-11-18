@@ -429,3 +429,10 @@ class Announcement(models.Model):
 
     def __str__(self):
         return self.title
+
+
+# Student profile records (moved from placement_cell); see models_profile.py.
+from .models_profile import (  # noqa: E402,F401
+    Achievement, Course, Education, Experience, Has, Patent, Project,
+    Publication, Skill, StudentBankDetails,
+)
