@@ -53,7 +53,8 @@ from applications.programme_curriculum.models import ( CourseInstructor, CourseS
 
 from applications.academic_procedures.models import ( MTechGraduateSeminarReport, PhDProgressExamination, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
                                                      FinalRegistration, SemesterMarks,backlog_course,
-                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim, Assignment, StipendRequest, CourseReplacementRequest, SwayamReplacementRequest, CourseDropRequest, CourseAddRequest, BatchChangeHistory, FeedbackQuestion, FeedbackResponse, FeedbackFilled, FeedbackOption, PhDCourseRegistrationRequest)
+                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim, Assignment, StipendRequest, CourseReplacementRequest, SwayamReplacementRequest, CourseDropRequest, CourseAddRequest, BatchChangeHistory, FeedbackQuestion, FeedbackResponse, FeedbackFilled, FeedbackOption, PhDCourseRegistrationRequest,
+                                                     session_working_year)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
 from applications.online_cms.models import Student_grades
@@ -3056,9 +3057,131 @@ def get_pg_phd_registration_eligibility(current_date, category, user_sem, year=d
         return _check_registration_window(f"PhD Registration {term} {user_sem} {ay}", "PhD registration")
     return _check_registration_window(f"PG Registration {user_sem} {year}", "PG registration")
 
+
+_PG_REGISTRATION_EVENT = re.compile(r'^PG Registration (\d+) (\d{4})$')
+
+
+def pg_registration_semester(student, now=None):
+    """The semester a PG student registers into, and why registration is shut.
+
+    The office opens PG registration for a semester by adding a
+    "PG Registration <semester> <year>" calendar event, as UG does with
+    "Pre Registration". A student registers into their current semester (when
+    promoted before the window opens) or the next one (pre-registration, before
+    promotion), never further ahead: PG batches are a year apart, so a window
+    opened for one batch never reaches another. If both are open, the current
+    semester is used.
+
+    Returns (semester_no, None) while a window is open. Otherwise returns a
+    400 response with the semester it is about: the window that opens next,
+    else the one that closed last, else the semester the student would
+    register into next, naming the calendar event that is missing.
+    """
+    now = now or datetime.datetime.now()
+    current = student.curr_semester_no or 0
+    windows = []
+    for event in Calendar.objects.filter(description__startswith='PG Registration '):
+        match = _PG_REGISTRATION_EVENT.match(event.description)
+        if not match or int(match.group(2)) != now.year or int(match.group(1)) not in (current, current + 1):
+            continue
+        start, end = _calendar_window_bounds(event)
+        windows.append((int(match.group(1)), start, end))
+
+    open_semesters = [n for n, start, end in windows if start <= now <= end]
+    if open_semesters:
+        return min(open_semesters), None
+    upcoming = sorted((start, n, end) for n, start, end in windows if now < start)
+    if upcoming:
+        start, semester_no, end = upcoming[0]
+        return semester_no, JsonResponse({"error": f"PG registration will start from "
+                                                   f"{_fmt_window_dt(start)} to {_fmt_window_dt(end)}"}, status=400)
+    if windows:
+        _end, semester_no = max((end, n) for n, start, end in windows)
+        return semester_no, JsonResponse({"error": "PG registration period has ended"}, status=400)
+    semester_no = pre_registration_target_semester(student)
+    return semester_no, _check_registration_window(
+        f"PG Registration {semester_no} {now.year}", "PG registration")
+
+
+def registration_semester(student, now=None):
+    """(semester_no, error_response) for a PG or PhD student's thesis and
+    course registration. PG registers into its current or next semester,
+    whichever the calendar opens (pg_registration_semester); PhD registers
+    into the semester it is in, under that term's PhD window."""
+    category = _student_programme_category(student)
+    if category == 'PG':
+        return pg_registration_semester(student, now)
+    now = now or datetime.datetime.now()
+    return student.curr_semester_no, get_pg_phd_registration_eligibility(
+        now.date(), category or 'PHD', student.curr_semester_no, now.year)
+
+
+def pg_registration_term(semester_no, today=None):
+    """(session, semester_type, working_year) of the term a PG semester
+    registered today belongs to. Odd semesters run July to December, so they
+    always fall in the session starting this year. An even semester
+    registered from July on is the coming one (pre-registration); registered
+    between January and June it is the one running now."""
+    today = today or datetime.date.today()
+    semester_type = get_semester_type(semester_no)
+    start = today.year if (semester_type == "Odd Semester" or today.month >= 7) else today.year - 1
+    session = f"{start}-{str(start + 1)[-2:]}"
+    return session, semester_type, session_working_year(session, semester_type)
+
+
 def get_student_registrtion_check(student, sem):
     return StudentRegistrationChecks.objects.filter(student_id=student, semester_id=sem).first()
 
+
+
+_TERM_ORDER = {'Odd Semester': 0, 'Even Semester': 1, 'Summer Semester': 2}
+
+
+def repeat_options(student):
+    """What each of the student's registrations allows in a backlog slot.
+
+    Returns {registration_id: (registration, grade, repeat_as, problem)}. A
+    registration can be repeated when it is the student's latest attempt at
+    the course and its result is in: F, X or CD make the repeat a Backlog,
+    C, D+ or D an Improvement (registration_type_for_grade). Otherwise
+    ``problem`` says why not and ``repeat_as`` is None. Grades are matched on
+    course code and term, because a grade and its registration are sometimes
+    kept under different versions of the course.
+    """
+    registrations = list(course_registration.objects.filter(student_id=student)
+                         .select_related('course_id', 'semester_id'))
+    grades = {}
+    for code, session, semester_type, grade in (
+            Student_grades.objects.filter(roll_no=student.id_id).order_by('id')
+            .values_list('course_id__code', 'academic_year', 'semester_type', 'grade')):
+        grades[(code, session, semester_type)] = grade
+
+    def term(registration):
+        return (registration.session or '',
+                _TERM_ORDER.get(registration.semester_type, -1), registration.id)
+
+    latest_attempt = {}
+    for registration in registrations:
+        code = registration.course_id.code
+        if code not in latest_attempt or term(registration) > term(latest_attempt[code]):
+            latest_attempt[code] = registration
+
+    options = {}
+    for registration in registrations:
+        code = registration.course_id.code
+        grade = grades.get((code, registration.session, registration.semester_type))
+        repeat_as, problem = None, None
+        if latest_attempt[code] is not registration:
+            problem = f"{code} was taken again later; only the latest attempt can be repeated."
+        elif grade is None:
+            problem = f"{code} has no result yet, so it cannot be repeated."
+        elif grade not in _PHD_BL_ALLOWED_GRADES:
+            problem = (f"{code} cannot be repeated with grade {grade}: only F, X or CD "
+                       "(backlog) or C, D+ or D (improvement) can.")
+        else:
+            repeat_as = registration_type_for_grade(grade)
+        options[registration.id] = (registration, grade, repeat_as, problem)
+    return options
 
 
 def get_student_registrations(student, semester):
@@ -3158,7 +3281,17 @@ def get_preregistration_data(request):
             eligibility_resp = get_pre_registration_eligibility(timezone.now().date(), next_sem_no)
             if isinstance(eligibility_resp, JsonResponse):
                 return eligibility_resp
-            prev_registrations = serializers.CourseRegistrationSerializer(course_registration.objects.filter(student_id=student), many=True).data
+            # Only the registrations the student may repeat in a backlog slot,
+            # each with its grade and whether it would be a backlog or an
+            # improvement.
+            repeatable = [(reg, grade, repeat_as)
+                          for reg, grade, repeat_as, problem in repeat_options(student).values()
+                          if problem is None]
+            prev_registrations = serializers.CourseRegistrationSerializer(
+                [reg for reg, _, _ in repeatable], many=True).data
+            for row, (_, grade, repeat_as) in zip(prev_registrations, repeatable):
+                row['grade'] = grade
+                row['repeat_as'] = repeat_as
             for slot in course_slots:
                 courses = slot.courses.all()
                 course_choices = [
@@ -3232,65 +3365,95 @@ def submit_preregistration(request):
     except Student.DoesNotExist:
         return Response({"error": "Student profile not found"}, status=400)
 
-    for reg in registrations:
-        slot_id = reg.get("slot_id")
-        course_id = reg.get("course_id")
-        priority = reg.get("priority")
-
-        InitialRegistration.objects.create(
-            course_id_id=course_id,
-            semester_id_id=next_semester.id,
-            student_id=student,
-            course_slot_id_id=slot_id,
-            priority=priority,
-            timestamp=timezone.now()
-        )
-
-    # The replaced registration is taken from the request body, so check it is
-    # this student's before any row is written.
+    # A backlog or improvement repeats one of the student's own registrations,
+    # once, and only one that repeat_options allows. The page offers only
+    # those, but the repeated registration comes from the request body, so it
+    # is checked here before any row is written.
+    options = repeat_options(student) if backlog_registrations else {}
     backlog_entries = []
+    repeated = set()
     for reg in backlog_registrations:
-        prev_registration_id = reg.get("prev_registration_id")
-        prev_reg = None
-        if prev_registration_id:
-            prev_reg = course_registration.objects.filter(
-                id=prev_registration_id, student_id=student
-            ).first()
-            if not prev_reg:
-                return JsonResponse(
-                    {"error": "The course being repeated is not one of your registrations."},
-                    status=400)
-        backlog_entries.append((reg, prev_reg))
+        try:
+            prev_registration_id = int(reg.get("prev_registration_id"))
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {"error": "Choose the earlier registration each backlog course repeats."},
+                status=400)
+        if prev_registration_id not in options:
+            return JsonResponse(
+                {"error": "The course being repeated is not one of your registrations."},
+                status=400)
+        prev_reg, _grade, repeat_as, problem = options[prev_registration_id]
+        if problem:
+            return JsonResponse({"error": problem}, status=400)
+        if prev_registration_id in repeated:
+            return JsonResponse(
+                {"error": f"{prev_reg.course_id.code} is repeated in more than one backlog slot."},
+                status=400)
+        repeated.add(prev_registration_id)
+        backlog_entries.append((reg, prev_reg, repeat_as))
 
-    for reg, prev_reg in backlog_entries:
-        slot_id = reg.get("slot_id")
-        course_id = reg.get("course_id")
-        priority = reg.get("priority")
-
-        # The repeated course carries the grade, so it decides backlog vs improvement.
-        _sg = latest_grade(student.id_id, prev_reg.course_id) if prev_reg else None
-        reg_type = registration_type_for_grade(_sg.grade if _sg else None)
-
-        InitialRegistration.objects.create(
-            course_id_id=course_id,
+    now = timezone.now()
+    choices = [
+        InitialRegistration(
+            course_id_id=reg.get("course_id"),
             semester_id_id=next_semester.id,
             student_id=student,
-            course_slot_id_id=slot_id,
-            priority=priority,
-            registration_type=(reg_type if reg_type != 'Regular' else 'Backlog'),
-            old_course_registration=prev_reg,
-            timestamp=timezone.now()
+            course_slot_id_id=reg.get("slot_id"),
+            priority=reg.get("priority"),
+            timestamp=now,
         )
+        for reg in registrations
+    ]
+    for reg, prev_reg, repeat_as in backlog_entries:
+        choices.append(InitialRegistration(
+            course_id_id=reg.get("course_id"),
+            semester_id_id=next_semester.id,
+            student_id=student,
+            course_slot_id_id=reg.get("slot_id"),
+            priority=reg.get("priority"),
+            registration_type=repeat_as,
+            old_course_registration=prev_reg,
+            timestamp=now,
+        ))
 
-    # Optionally, update the StudentRegistrationChecks record to mark pre-registration as complete.
-    reg_check, created = StudentRegistrationChecks.objects.get_or_create(
-        student_id=student, semester_id_id=next_semester.id,
-        defaults={'pre_registration_flag': True}
-    )
-    if not created:
-        reg_check.pre_registration_flag = True
-        reg_check.save()
-        
+    # The choices and the mark that pre-registration is done are saved together.
+    # Saved one by one, a submit that failed or was cut off part way kept the
+    # choices written so far without the mark: the page offered the form again,
+    # the office search could not find the student, and every resubmit failed
+    # on the choices already saved.
+    try:
+        with transaction.atomic():
+            # One submit at a time for a student, so a double click cannot save twice.
+            Student.objects.select_for_update().get(pk=student.pk)
+            if StudentRegistrationChecks.objects.filter(
+                    student_id=student, semester_id=next_semester,
+                    pre_registration_flag=True).exists():
+                return JsonResponse(
+                    {"error": "Your pre-registration for this semester is already submitted."},
+                    status=400)
+            # Choices left by an earlier submit that never finished; this one replaces them.
+            InitialRegistration.objects.filter(
+                student_id=student, semester_id=next_semester).delete()
+            InitialRegistration.objects.bulk_create(choices)
+            reg_check, created = StudentRegistrationChecks.objects.get_or_create(
+                student_id=student, semester_id_id=next_semester.id,
+                defaults={'pre_registration_flag': True}
+            )
+            if not created:
+                reg_check.pre_registration_flag = True
+                reg_check.save()
+    except IntegrityError:
+        # Logged so a submit that can never succeed -- e.g. a course listed in two
+        # slots of the semester, which the form makes the student rank twice --
+        # can be traced; the student only sees the message below.
+        logger.exception("Pre-registration of %s for semester %s could not be saved",
+                         student.id_id, next_semester.semester_no)
+        return JsonResponse(
+            {"error": "Your choices could not be saved. Reload the page, check your choices "
+                      "and submit again."},
+            status=400)
+
     return JsonResponse({"status": "success"}, status=201)
 
 
@@ -6012,6 +6175,16 @@ def admin_list_add_requests(request):
         logger.error(f"Error listing add requests for admin: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'An error occurred while fetching requests'}, status=500)
 
+def working_year_for_session(session, semester_type):
+    """The calendar year a term runs in, from its session ("2026-27") and type.
+
+    An Odd semester runs from August of the session's first year; Even and
+    Summer semesters run in its second year. Falls back to the current year
+    only when the session or semester type cannot be read.
+    """
+    return session_working_year(session, semester_type) or datetime.datetime.now().year
+
+
 # Processes multiple add requests in batch
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -6114,7 +6287,8 @@ def approve_add_requests(request):
                         semester_id=semester,
                         session=add_request.academic_year,
                         semester_type=add_request.semester_type,
-                        working_year=datetime.datetime.now().year,
+                        working_year=working_year_for_session(
+                            add_request.academic_year, add_request.semester_type),
                         registration_type=registration_type,
                         # Section chosen at request time (cross-section backlog/improvement).
                         course_instructor=add_request.course_instructor,
@@ -7640,8 +7814,11 @@ def hod_review_api(request, pk):
         data = thesis_to_dict(thesis)
         return JsonResponse(data, status=200)
 
-    # POST
-    if not is_hod or thesis.status not in ['hod_pending','hod_rejected','dean_pending','dean_rejected']:
+    # POST. The HOD acts on a topic that is with them: forwarded by the
+    # supervisor (hod_pending) or sent back by the Dean (dean_rejected). Once
+    # they send it back to the supervisor (hod_rejected) it needs the
+    # supervisor's fresh consent before it can come back.
+    if not is_hod or thesis.status not in ['hod_pending', 'dean_rejected']:
         return JsonResponse({"error":"Forbidden or invalid stage"}, status=403)
 
     d = request.data
@@ -7656,7 +7833,9 @@ def hod_review_api(request, pk):
             description=f"{thesis.student.id.user.get_full_name()}'s thesis topic has been "
                         f"approved by the HOD and is awaiting your final approval.",
         )
-        for recipient in filter(None, [thesis.student.id.user, thesis.supervisor.id.user]):
+        co_supervisor_user = thesis.co_supervisor.id.user if thesis.co_supervisor else None
+        for recipient in filter(None, [thesis.student.id.user, thesis.supervisor.id.user,
+                                       co_supervisor_user]):
             _thesis_notify(
                 sender=user,
                 recipient=recipient,
@@ -7671,7 +7850,10 @@ def hod_review_api(request, pk):
         thesis.co_supervisor_consented = False
         thesis.dean_remarks            = ''
         thesis.save()
-        for recipient in filter(None, [thesis.supervisor.id.user, thesis.student.id.user]):
+        # The co-supervisor must consent again before it can come back.
+        co_supervisor_user = thesis.co_supervisor.id.user if thesis.co_supervisor else None
+        for recipient in filter(None, [thesis.supervisor.id.user, thesis.student.id.user,
+                                       co_supervisor_user]):
             _thesis_notify(
                 sender=user,
                 recipient=recipient,
@@ -7690,11 +7872,13 @@ def hod_review_api(request, pk):
 @role_required(['Dean Academic'])
 def dean_dashboard(request):
     """
-    GET /dean/dashboard/ → {pending, approved}
-    for theses with status in dean_pending/dean_approved.
+    GET /dean/dashboard/ → {pending, approved, rejected}
+    pending: approved by the HOD, awaiting the Dean; approved: dean_approved;
+    rejected: sent back to the HOD by the Dean (dean_rejected).
     """
     data = {'pending': [], 'approved': [], 'rejected':[]}
-    qs = ThesisTopic.objects.filter(status__in=['dean_pending','dean_approved', 'hod_approved'])
+    qs = ThesisTopic.objects.filter(
+        status__in=['dean_pending', 'dean_approved', 'hod_approved', 'dean_rejected'])
     for t in qs:
         dto = thesis_to_dict(t)
         bucket = 'pending' if t.status=='dean_pending' or t.status=='hod_approved' else \
@@ -7755,6 +7939,17 @@ def dean_review_api(request, pk):
             description=f"Dean Academic rejected {thesis.student.id.user.get_full_name()}'s "
                         f"thesis topic. Remarks: {thesis.dean_remarks or '—'}",
         )
+        recipients = [thesis.student.id.user, thesis.supervisor.id.user]
+        if thesis.co_supervisor:
+            recipients.append(thesis.co_supervisor.id.user)
+        for recipient in recipients:
+            _thesis_notify(
+                sender=request.user,
+                recipient=recipient,
+                verb='Thesis topic sent back to HOD by Dean Academic',
+                description=f"Dean Academic sent {thesis.student.id.user.get_full_name()}'s "
+                            f"thesis topic back to the HOD. Remarks: {thesis.dean_remarks or '—'}",
+            )
 
     return JsonResponse({"status":thesis.status}, status=200)
 
@@ -10296,24 +10491,25 @@ def student_thesis_enrollment_api(request):
     except Exception as e:
         return JsonResponse({'error': f'User setup error: {type(e).__name__}: {e}'}, status=400)
 
-    if request.method == 'POST':
-        _elig = get_pg_phd_registration_eligibility(
-            timezone.now().date(), _student_programme_category(student),
-            student.curr_semester_no, datetime.datetime.now().year)
-        if isinstance(_elig, JsonResponse):
+    # A POST registers into the semester registration is open for. A GET shows
+    # that semester when the registration page asks (?registration=1), and the
+    # student's current semester otherwise (Registered Courses).
+    semester_no = student.curr_semester_no
+    if request.method == 'POST' or request.query_params.get('registration'):
+        semester_no, _elig = registration_semester(student)
+        if request.method == 'POST' and isinstance(_elig, JsonResponse):
             return _elig
 
     try:
-        # Resolve current semester
         if not student.batch_id or not student.batch_id.curriculum:
             return JsonResponse({'error': 'Student batch or curriculum is not configured'}, status=400)
         try:
             semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum,
-                semester_no=student.curr_semester_no,
+                semester_no=semester_no,
             )
         except Semester.DoesNotExist:
-            return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
+            return JsonResponse({'error': f'Semester {semester_no} not found in curriculum'}, status=400)
 
         # Thesis topic info
         topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
@@ -10428,6 +10624,9 @@ def student_thesis_enrollment_api(request):
         session = f"{year}-{str(year + 1)[2:]}"
     else:
         session = f"{year - 1}-{str(year)[2:]}"
+    if _student_programme_category(student) == 'PG':
+        # PG may register ahead, so take the term of the semester registered.
+        session, _semester_type, year = pg_registration_term(semester.semester_no, now.date())
 
     reg = ThesisRegistration.objects.create(
         student=student,
@@ -11188,20 +11387,21 @@ def student_progress_seminar_enrollment_api(request):
     try:
         if not student.batch_id or not student.batch_id.curriculum:
             return JsonResponse({'error': 'Student batch or curriculum is not configured'}, status=400)
+        # A POST registers into the semester registration is open for. A GET
+        # shows that semester when the registration page asks
+        # (?registration=1), and the current semester otherwise.
+        semester_no = student.curr_semester_no
+        if request.method == 'POST' or request.query_params.get('registration'):
+            semester_no, _elig = registration_semester(student)
+            if request.method == 'POST' and isinstance(_elig, JsonResponse):
+                return _elig
         try:
             semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum,
-                semester_no=student.curr_semester_no,
+                semester_no=semester_no,
             )
         except Semester.DoesNotExist:
-            return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
-
-        if request.method == 'POST':
-            _elig = get_pg_phd_registration_eligibility(
-                timezone.now().date(), _student_programme_category(student),
-                student.curr_semester_no, datetime.datetime.now().year)
-            if isinstance(_elig, JsonResponse):
-                return _elig
+            return JsonResponse({'error': f'Semester {semester_no} not found in curriculum'}, status=400)
 
         topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
         topic_approved = topic is not None and topic.status == 'dean_approved'
@@ -11270,6 +11470,9 @@ def student_progress_seminar_enrollment_api(request):
     now = _dt.datetime.now()
     year, month = now.year, now.month
     session = f"{year}-{str(year + 1)[2:]}" if month >= 7 else f"{year - 1}-{str(year)[2:]}"
+    if _student_programme_category(student) == 'PG':
+        # PG may register ahead, so take the term of the semester registered.
+        session, _semester_type, year = pg_registration_term(semester.semester_no, now.date())
 
     reg = ProgressSeminarRegistration.objects.create(
         student=student,
@@ -11438,20 +11641,21 @@ def student_teaching_credit_enrollment_api(request):
     try:
         if not student.batch_id or not student.batch_id.curriculum:
             return JsonResponse({'error': 'Student batch or curriculum is not configured'}, status=400)
+        # A POST registers into the semester registration is open for. A GET
+        # shows that semester when the registration page asks
+        # (?registration=1), and the current semester otherwise.
+        semester_no = student.curr_semester_no
+        if request.method == 'POST' or request.query_params.get('registration'):
+            semester_no, _elig = registration_semester(student)
+            if request.method == 'POST' and isinstance(_elig, JsonResponse):
+                return _elig
         try:
             semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum,
-                semester_no=student.curr_semester_no,
+                semester_no=semester_no,
             )
         except Semester.DoesNotExist:
-            return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
-
-        if request.method == 'POST':
-            _elig = get_pg_phd_registration_eligibility(
-                timezone.now().date(), _student_programme_category(student),
-                student.curr_semester_no, datetime.datetime.now().year)
-            if isinstance(_elig, JsonResponse):
-                return _elig
+            return JsonResponse({'error': f'Semester {semester_no} not found in curriculum'}, status=400)
 
         comprehensive_exam_passed = ComprehensiveExam.objects.filter(
             student=student, status='passed'
@@ -11521,6 +11725,9 @@ def student_teaching_credit_enrollment_api(request):
     now = _dt.datetime.now()
     year, month = now.year, now.month
     session = f"{year}-{str(year + 1)[2:]}" if month >= 7 else f"{year - 1}-{str(year)[2:]}"
+    if _student_programme_category(student) == 'PG':
+        # PG may register ahead, so take the term of the semester registered.
+        session, _semester_type, year = pg_registration_term(semester.semester_no, now.date())
 
     reg = TeachingCreditRegistration.objects.create(
         student=student,
@@ -11677,20 +11884,23 @@ def phd_student_status(request):
 def phd_course_slots(request):
     """
     GET /stu/phd/course-slots/
-    Returns the CourseSlots in the PhD student's current-semester curriculum,
-    excluding slots already registered or requested (pending/approved).
+    Returns the CourseSlots of the semester the student registers into (the
+    current one for PhD; the current or next one, as the calendar opens, for
+    PG), excluding slots
+    already registered or requested (pending/approved).
     """
     student, err = _resolve_phd_student(request)
     if err:
         return err
 
+    semester_no, _elig = registration_semester(student)
     try:
         semester = Semester.objects.get(
             curriculum=student.batch_id.curriculum,
-            semester_no=student.curr_semester_no,
+            semester_no=semester_no,
         )
     except Semester.DoesNotExist:
-        return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
+        return JsonResponse({'error': f'Semester {semester_no} not found in curriculum'}, status=400)
 
     taken_slot_ids = set(
         PhDCourseRegistrationRequest.objects.filter(
@@ -11705,9 +11915,6 @@ def phd_course_slots(request):
     ]
     # Registration window (same Calendar gate enforced at submit) so the form only renders when open.
     import json as _json
-    _elig = get_pg_phd_registration_eligibility(
-        timezone.now().date(), _student_programme_category(student),
-        student.curr_semester_no, datetime.datetime.now().year)
     registration_open = _elig is None
     registration_message = '' if registration_open else _json.loads(_elig.content).get('error', 'Registration is not open.')
     return JsonResponse({
@@ -11793,7 +12000,7 @@ def _phd_bl_source_courses(student):
 def phd_course_slot_courses(request):
     """
     GET /stu/phd/course-slots/courses/?slot_id=<id>
-    Returns the courses within a slot in the student's current semester.
+    Returns the courses within a slot of the semester the student registers into.
     """
     student, err = _resolve_phd_student(request)
     if err:
@@ -11803,14 +12010,15 @@ def phd_course_slot_courses(request):
     if not slot_id:
         return JsonResponse({'error': 'slot_id query parameter is required'}, status=400)
 
+    semester_no, _elig = registration_semester(student)
     try:
         semester = Semester.objects.get(
             curriculum=student.batch_id.curriculum,
-            semester_no=student.curr_semester_no,
+            semester_no=semester_no,
         )
         slot = CourseSlot.objects.get(id=slot_id, semester=semester)
     except (Semester.DoesNotExist, CourseSlot.DoesNotExist):
-        return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
+        return JsonResponse({'error': f'Course slot not found in semester {semester_no}'}, status=404)
 
     # A BL slot clears a past course, so it is driven by the student's own
     # below-C+ grades rather than the slot list; the slot list is only the pool
@@ -11849,16 +12057,14 @@ def phd_submit_course_request(request):
     """
     POST /stu/phd/course-request/
     Body: { "slot_id": <id>, "course_id": <id> }
-    Creates a Pending PhDCourseRegistrationRequest for the student's current semester.
-    One request per slot per semester.
+    Creates a Pending PhDCourseRegistrationRequest for the semester the student
+    registers into (see registration_semester). One request per slot per semester.
     """
     student, err = _resolve_phd_student(request)
     if err:
         return err
 
-    _elig = get_pg_phd_registration_eligibility(
-        timezone.now().date(), _student_programme_category(student) or 'PHD',
-        student.curr_semester_no, datetime.datetime.now().year)
+    semester_no, _elig = registration_semester(student)
     if isinstance(_elig, JsonResponse):
         return _elig
 
@@ -11871,13 +12077,13 @@ def phd_submit_course_request(request):
     try:
         semester = Semester.objects.get(
             curriculum=student.batch_id.curriculum,
-            semester_no=student.curr_semester_no,
+            semester_no=semester_no,
         )
         slot = CourseSlot.objects.get(id=slot_id, semester=semester)
     except Semester.DoesNotExist:
-        return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
+        return JsonResponse({'error': f'Semester {semester_no} not found in curriculum'}, status=400)
     except CourseSlot.DoesNotExist:
-        return JsonResponse({'error': 'Course slot not found in current semester'}, status=404)
+        return JsonResponse({'error': f'Course slot not found in semester {semester_no}'}, status=404)
 
     is_bl = slot.name.startswith('BL')
     source_course = None
@@ -11929,9 +12135,13 @@ def phd_submit_course_request(request):
             return JsonResponse({'error': f"{source_course.code} is already being cleared "
                                           f"through {clash.course_slot.name} this semester."}, status=400)
 
-    academic_year, semester_type = generate_current_session(
-        datetime.datetime.now().year, student.curr_semester_no
-    )
+    if _student_programme_category(student) == 'PG':
+        # PG may register ahead, so take the term of the semester registered.
+        academic_year, semester_type, _working_year = pg_registration_term(semester_no)
+    else:
+        academic_year, semester_type = generate_current_session(
+            datetime.datetime.now().year, student.curr_semester_no
+        )
 
     # unique_together is (student, semester, course_slot) regardless of status,
     # so a prior Rejected request for this slot must be reused, not re-created.
@@ -12179,7 +12389,7 @@ def phd_admin_process_requests(request):
                     semester_id=req.semester,
                     session=req.academic_year,
                     semester_type=req.semester_type,
-                    working_year=datetime.datetime.now().year,
+                    working_year=working_year_for_session(req.academic_year, req.semester_type),
                     registration_type=registration_type,
                 )
                 # Mirror UG: link the replaced (old) registration to the new one.

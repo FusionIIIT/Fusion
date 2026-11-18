@@ -397,7 +397,10 @@ def previous_term_cpi(student, before_semester):
     return None
 
 
-def calculate_cpi_for_student(student, selected_semester, semester_type, require_announced=False):
+def calculate_cpi_for_student(student, selected_semester, semester_type, require_announced=False,
+                              replacements=None):
+    # replacements: the student's course_replacement rows, for callers that
+    # load them for many students at once (see superseded_course_codes).
     total_unit = Decimal('0')
     if selected_semester % 2 == 0 and semester_type == 'Summer Semester':
         grades = (
@@ -430,7 +433,7 @@ def calculate_cpi_for_student(student, selected_semester, semester_type, require
                             > grade_conversion.get((prev.grade or '').strip(), -1)):
             best_by_code[code] = g
 
-    superseded_codes = superseded_course_codes(student, best_by_code.keys())
+    superseded_codes = superseded_course_codes(student, best_by_code.keys(), replacements=replacements)
 
     totals = {'points': Decimal('0'), 'credits': Decimal('0'), 'earned': Decimal('0')}
     for code, best_record in best_by_code.items():

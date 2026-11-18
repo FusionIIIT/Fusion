@@ -288,6 +288,12 @@ class Student_grades(models.Model):
     # submission is scoped to the offering's instructor, and this disambiguates
     # section-wise rows for the same course. Nullable for pre-feature rows.
     course_instructor = models.ForeignKey(CourseInstructor, null=True, blank=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        # Transcripts, SPI/CPI and the grade reports read a student's grades by
+        # roll number; without this each read scanned every grade row.
+        indexes = [models.Index(fields=['roll_no'], name='student_grades_roll_no_idx')]
+
     def __str__(self):
         return '{} - {}'.format(self.pk, self.course_id)
 
