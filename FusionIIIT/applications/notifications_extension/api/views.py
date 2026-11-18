@@ -27,7 +27,6 @@ from notification.views import (leave_module_notif,
     healthcare_center_notif,
     file_tracking_notif,
     scholarship_portal_notif,
-    complaint_system_notif,
     office_dean_PnD_notif,
     office_module_DeanS_notif,
     gymkhana_voting,
@@ -142,22 +141,6 @@ class ScholarshipPortalNotificationAPIView(APIView):
         recipient = User.objects.get(pk=recipient_id)
         # Trigger the notification function
         scholarship_portal_notif(sender, recipient, type)
-
-        return Response({'message': 'Notification sent successfully'}, status=status.HTTP_201_CREATED)
-
-class ComplaintSystemNotificationAPIView(APIView):
-    def post(self, request, *args, **kwargs):
-        # Extract data from the request, you can customize this based on your needs
-        sender = request.user
-        recipient_id = request.data.get('recipient')
-        type = request.data.get('type')
-        complaint_id = request.data.get('complaint_id')
-        student = request.data.get('student')
-        message = request.data.get('message')
-        User = get_user_model()
-        recipient = User.objects.get(pk=recipient_id)
-        # Trigger the notification function
-        complaint_system_notif(sender, recipient, type, complaint_id, student, message)
 
         return Response({'message': 'Notification sent successfully'}, status=status.HTTP_201_CREATED)
 

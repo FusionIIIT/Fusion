@@ -75,11 +75,6 @@
                     </a>
                 {% endif %}
 
-                {% if request.session.moduleAccessRights.complaint_management %}
-                <a class="item" href="{% url 'complaint:complaint' %}">
-                    <h4>Complaint System</h4>
-                </a>
-                {% endif %}
                 {% if request.session.moduleAccessRights.placement_cell %}
                     <a class="item" href="{% url 'placement:placement' %}">
                         <h4>Placement Cell</h4>
