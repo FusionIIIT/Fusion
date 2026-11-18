@@ -7745,8 +7745,11 @@ def hod_review_api(request, pk):
         data = thesis_to_dict(thesis)
         return JsonResponse(data, status=200)
 
-    # POST
-    if not is_hod or thesis.status not in ['hod_pending','hod_rejected','dean_pending','dean_rejected']:
+    # POST. The HOD acts on a topic that is with them: forwarded by the
+    # supervisor (hod_pending) or sent back by the Dean (dean_rejected). Once
+    # they send it back to the supervisor (hod_rejected) it needs the
+    # supervisor's fresh consent before it can come back.
+    if not is_hod or thesis.status not in ['hod_pending', 'dean_rejected']:
         return JsonResponse({"error":"Forbidden or invalid stage"}, status=403)
 
     d = request.data
@@ -7795,11 +7798,13 @@ def hod_review_api(request, pk):
 @role_required(['Dean Academic'])
 def dean_dashboard(request):
     """
-    GET /dean/dashboard/ → {pending, approved}
-    for theses with status in dean_pending/dean_approved.
+    GET /dean/dashboard/ → {pending, approved, rejected}
+    pending: approved by the HOD, awaiting the Dean; approved: dean_approved;
+    rejected: sent back to the HOD by the Dean (dean_rejected).
     """
     data = {'pending': [], 'approved': [], 'rejected':[]}
-    qs = ThesisTopic.objects.filter(status__in=['dean_pending','dean_approved', 'hod_approved'])
+    qs = ThesisTopic.objects.filter(
+        status__in=['dean_pending', 'dean_approved', 'hod_approved', 'dean_rejected'])
     for t in qs:
         dto = thesis_to_dict(t)
         bucket = 'pending' if t.status=='dean_pending' or t.status=='hod_approved' else \
@@ -7860,6 +7865,17 @@ def dean_review_api(request, pk):
             description=f"Dean Academic rejected {thesis.student.id.user.get_full_name()}'s "
                         f"thesis topic. Remarks: {thesis.dean_remarks or '—'}",
         )
+        recipients = [thesis.student.id.user, thesis.supervisor.id.user]
+        if thesis.co_supervisor:
+            recipients.append(thesis.co_supervisor.id.user)
+        for recipient in recipients:
+            _thesis_notify(
+                sender=request.user,
+                recipient=recipient,
+                verb='Thesis topic sent back to HOD by Dean Academic',
+                description=f"Dean Academic sent {thesis.student.id.user.get_full_name()}'s "
+                            f"thesis topic back to the HOD. Remarks: {thesis.dean_remarks or '—'}",
+            )
 
     return JsonResponse({"status":thesis.status}, status=200)
 
