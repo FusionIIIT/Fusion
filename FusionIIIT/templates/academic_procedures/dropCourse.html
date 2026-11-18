@@ -157,7 +157,7 @@ $(function() {
                     <tr>
                     <td><center>{{ forloop.counter }}.</center></td>
                     <td><center>
-                        <a href="{% url 'programme_curriculum:view_a_course' items.course_id.id %}">{{ items.course_id.code }}</a>
+                        {{ items.course_id.code }}
                     </td>
                     <td>
                         {{ items.course_id.name}}
