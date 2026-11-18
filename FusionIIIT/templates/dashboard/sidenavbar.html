@@ -52,18 +52,6 @@
 
                
                
-                {% if request.session.moduleAccessRights.visitor_hostel %}
-                <a class="item" href="{% url 'visitorhostel:visitorhostel' %}">
-                    <h4>Visitor's Hostel</h4>
-                </a>
-                {% endif %}
-
-                {% if request.session.moduleAccessRights.phc %}
-                <a class="item" href="{% url 'healthcenter:healthcenter' %}">
-                    <h4>Healthcare Center</h4>
-                </a>
-                {% endif %}
-
                 {% if request.session.moduleAccessRights.fts %}
                     <a class="item" href="{% url 'filetracking:filetracking' %}">
                         <h4> File Tracking </h4>
@@ -80,9 +68,6 @@
                         <h4>Placement Cell</h4>
                     </a>
                 {% endif %}
-                <!-- <a class = "item" href="{% url 'estate_module_home' %}">
-                    <h4> Establishment Module </h4>
-                </a> -->
                 {% if request.session.moduleAccessRights.department %}
                     <a class="item" href="{% url 'dep:dep' %}">
                             <h4> Department Portal </h4>
