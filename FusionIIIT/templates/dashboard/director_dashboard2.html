@@ -43,10 +43,6 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class="item" href="{% url 'globals:profile' %}">
-                    View Profile
-                    <i class="right floated chevron right icon"></i>
-                </a>
 
 
             </div>
@@ -881,7 +877,7 @@
                             <div class="item">
                                 <i class="user icon"></i>
                               <div class="content">
-                                <a class="header" href="{% url 'globals:profile' %}">{{ cse_fac.user.first_name }} {{ cse_fac.user.last_name }}</a>
+                                <div class="header">{{ cse_fac.user.first_name }} {{ cse_fac.user.last_name }}</div>
                               </div>
                             </div>
                             {% endfor %}

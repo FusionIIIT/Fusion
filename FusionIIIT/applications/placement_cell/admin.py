@@ -1,55 +1,21 @@
 from django.contrib import admin
 
-from .models import (Achievement, ChairmanVisit, Coauthor, Coinventor, Course,
-                     Education, Experience, Has, Interest, MessageOfficer, Conference,
-                     NotifyStudent, Patent, PlacementRecord, PlacementSchedule,
-                     PlacementStatus, Project, Publication, Skill, Extracurricular,
+from .models import (ChairmanVisit, Coauthor, Coinventor, Interest, MessageOfficer, Conference,
+                     NotifyStudent, PlacementRecord, PlacementSchedule,
+                     PlacementStatus, Extracurricular,
                      StudentPlacement, StudentRecord, Role, CompanyDetails, Reference)
+
+# The student profile models (Project, Skill, Has, Education, Experience, Course,
+# Publication, Achievement, Patent) are registered in globals/admin.py.
 
 
 # Register your models here.
-class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('unique_id', 'project_name', 'project_status', 'sdate')
-
-
-class SkillAdmin(admin.ModelAdmin):
-    fields = ['skill']
-
-
-class HasAdmin(admin.ModelAdmin):
-    list_display = ('skill_id', 'unique_id')
-
-
-class EducationAdmin(admin.ModelAdmin):
-    list_display = ('unique_id', 'degree', 'institute', 'stream', 'sdate', 'edate')
-
-
-class ExperienceAdmin(admin.ModelAdmin):
-    list_display = ('unique_id', 'title', 'status', 'company', 'location', 'sdate', 'edate')
-
-
-class CourseAdmin(admin.ModelAdmin):
-    list_display = ('unique_id', 'course_name', 'sdate', 'edate')
-
-
-class PublicationAdmin(admin.ModelAdmin):
-    list_display = ('unique_id', 'publication_title', 'publisher', 'publication_date')
-
-
-class AchievementAdmin(admin.ModelAdmin):
-    list_display = ('unique_id', 'achievement', 'achievement_type', 'issuer', 'date_earned')
-
-
 class CoauthorAdmin(admin.ModelAdmin):
     list_display = ('publication_id', 'coauthor_name')
 
 
 class InterestAdmin(admin.ModelAdmin):
     list_display = ('unique_id', 'interest')
-
-
-class PatentAdmin(admin.ModelAdmin):
-    list_display = ('unique_id', 'patent_name', 'patent_office', 'patent_date')
 
 
 class CoinventorAdmin(admin.ModelAdmin):
@@ -93,16 +59,7 @@ class ReferenceAdmin(admin.ModelAdmin):
     list_display = ('reference_name', 'post', 'email', 'mobile_number')
 
 
-admin.site.register(Project, ProjectAdmin)
-admin.site.register(Skill, SkillAdmin)
-admin.site.register(Has, HasAdmin)
-admin.site.register(Education, EducationAdmin)
-admin.site.register(Experience, ExperienceAdmin)
-admin.site.register(Course, CourseAdmin)
-admin.site.register(Publication, PublicationAdmin)
-admin.site.register(Achievement, AchievementAdmin)
 admin.site.register(Coauthor, CoauthorAdmin)
-admin.site.register(Patent, PatentAdmin)
 admin.site.register(Coinventor, CoinventorAdmin)
 admin.site.register(Interest, InterestAdmin)
 admin.site.register(StudentPlacement, StudentPlacementAdmin)

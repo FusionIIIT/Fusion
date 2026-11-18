@@ -58,11 +58,6 @@
                     </a>
                 {% endif %}
 
-                {% if request.session.moduleAccessRights.placement_cell %}
-                    <a class="item" href="{% url 'placement:placement' %}">
-                        <h4>Placement Cell</h4>
-                    </a>
-                {% endif %}
                 
                 {% if request.session.moduleAccessRights.rspc %}
                 <a class="item " href="/research_procedures">
