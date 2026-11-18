@@ -16,7 +16,7 @@ from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation,Faculty,DepartmentInfo)
 from applications.eis.models import (faculty_about, emp_research_projects)
 from .models import Information
-from notification.views import department_notif
+from applications.department.notifications import department_notif
 from .models import SpecialRequest, Announcements , Information
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
