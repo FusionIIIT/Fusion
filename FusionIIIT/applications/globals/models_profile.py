@@ -6,8 +6,8 @@ placement_cell; globals now owns them, because globals serves the
 profile (/api/profile/, /api/profile_update/, /api/profile_delete/ and
 /api/profile/bank-details/).
 
-The tables still have the names placement_cell gave them; renaming them
-is a separate change.
+Their tables were renamed from placement_cell_* to globals_* by
+globals/0014.
 """
 
 import datetime
@@ -49,7 +49,7 @@ class Project(models.Model):
     edate = models.DateField(null=True, blank=True)
 
     class Meta:
-        db_table = 'placement_cell_project'
+        db_table = 'globals_project'
 
     def clean(self):
         super().clean()
@@ -63,7 +63,7 @@ class Skill(models.Model):
     skill = models.CharField(max_length=30, default='')
 
     class Meta:
-        db_table = 'placement_cell_skill'
+        db_table = 'globals_skill'
 
     def __str__(self):
         return self.skill
@@ -78,7 +78,7 @@ class Has(models.Model):
     )
 
     class Meta:
-        db_table = 'placement_cell_has'
+        db_table = 'globals_has'
         unique_together = (('skill_id', 'unique_id'),)
 
     def __str__(self):
@@ -95,7 +95,7 @@ class Education(models.Model):
     edate = models.DateField(null=True, blank=True)
 
     class Meta:
-        db_table = 'placement_cell_education'
+        db_table = 'globals_education'
 
     def clean(self):
         super().clean()
@@ -114,7 +114,7 @@ class Experience(models.Model):
     edate = models.DateField(null=True, blank=True)
 
     class Meta:
-        db_table = 'placement_cell_experience'
+        db_table = 'globals_experience'
 
     def clean(self):
         super().clean()
@@ -133,7 +133,7 @@ class Course(models.Model):
     edate = models.DateField(null=True, blank=True)
 
     class Meta:
-        db_table = 'placement_cell_course'
+        db_table = 'globals_course'
 
     def clean(self):
         super().clean()
@@ -151,7 +151,7 @@ class Publication(models.Model):
     publication_date = models.DateField(_("Date"), default=datetime.date.today)
 
     class Meta:
-        db_table = 'placement_cell_publication'
+        db_table = 'globals_publication'
 
     def __str__(self):
         return '{} - {}'.format(self.unique_id.id, self.publication_title)
@@ -165,7 +165,7 @@ class Patent(models.Model):
     patent_date = models.DateField()
 
     class Meta:
-        db_table = 'placement_cell_patent'
+        db_table = 'globals_patent'
 
     def __str__(self):
         return '{} - {}'.format(self.unique_id.id, self.patent_name)
@@ -181,7 +181,7 @@ class Achievement(models.Model):
     date_earned = models.DateField(_("Date"), default=datetime.date.today)
 
     class Meta:
-        db_table = 'placement_cell_achievement'
+        db_table = 'globals_achievement'
 
     def __str__(self):
         return '{} - {}'.format(self.unique_id.id, self.achievement)
@@ -202,7 +202,7 @@ class StudentBankDetails(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'placement_cell_studentbankdetails'
+        db_table = 'globals_studentbankdetails'
 
     def __str__(self):
         return f"Bank details for {self.unique_id.id}"
