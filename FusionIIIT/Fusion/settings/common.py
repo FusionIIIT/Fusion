@@ -156,7 +156,6 @@ INSTALLED_APPS = [
     'applications.visitor_hostel',
     'applications.establishment',
     'applications.estate_module',
-    'applications.counselling_cell',
     'applications.hostel_management',
     'applications.research_procedures',
     'applications.income_expenditure',
