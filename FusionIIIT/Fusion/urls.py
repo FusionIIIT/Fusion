@@ -74,7 +74,6 @@ urlpatterns = [
     url(r'^library/', include('applications.library.urls')),
     url(r'^establishment/', include('applications.establishment.urls')),
     url(r'^ocms/', include('applications.online_cms.urls')),
-    url(r'^counselling/', include('applications.counselling_cell.urls')),
     url(r'^hostelmanagement/', include('applications.hostel_management.urls')),
     url(r'^income-expenditure/', include('applications.income_expenditure.urls')),
     url(r'^hr2/', include('applications.hr2.urls')),
