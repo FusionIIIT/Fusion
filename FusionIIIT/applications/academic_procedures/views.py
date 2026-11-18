@@ -30,7 +30,6 @@ from notification.views import AssistantshipClaim_notify,AssistantshipClaim_acad
 from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance)
                                                       
-from applications.central_mess.models import(Monthly_bill, Payments)
 from applications.online_cms.models import (Student_grades)
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester , CourseInstructor)
 from applications.globals.models import (DepartmentInfo, Designation,
@@ -555,16 +554,12 @@ def academic_procedures_student(request):
 
             backlogCourseList.append([i.course_id.course_name, course_details , i.semester_id.semester_no , summer_course])
         
-        # Mess_bill = Monthly_bill.objects.filter(student_id = obj)
-        # Mess_pay = Payments.objects.filter(student_id = obj)
         swayam_course_slots = get_current_semester_swayam_course_slots(curr_sem_id=curr_sem_id)
         swayam_courses = []
         try:
             swayam_courses = swayam_course_slots[0].courses.all()
         except:
             pass    
-        Mess_bill = []
-        Mess_pay = []
         # Branch Change Form save
         if request.method=='POST':
             if True:
@@ -631,8 +626,6 @@ def academic_procedures_student(request):
                             'cur_cpi': cur_cpi,
                            'cur_spi': cur_spi,
                            # 'mincr': minimum_credit,
-                           'Mess_bill' : Mess_bill,
-                           'Mess_pay' : Mess_pay,
                            'lib_d':lib_d,
                            'acad_d':acad_d,
                            'mess_d':mess_d,

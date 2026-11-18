@@ -50,11 +50,6 @@
                 </a>
                 {% endif %}
 
-                {% if request.session.moduleAccessRights.mess_management %}
-                <a class="item" href="{% url 'mess:mess' %}">
-                    <h4>Mess Management</h4>
-                </a>
-                {% endif %}
                
                
                 {% if request.session.moduleAccessRights.visitor_hostel %}

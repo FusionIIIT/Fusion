@@ -23,7 +23,6 @@ from notification.views import (leave_module_notif,
     placement_cell_notif,
     academics_module_notif,
     office_module_notif,
-    central_mess_notif,
     visitors_hostel_notif,
     healthcare_center_notif,
     file_tracking_notif,
@@ -96,22 +95,6 @@ class OfficeModuleNotificationAPIView(APIView):
         office_module_notif(sender, recipient)
 
         return Response({'message': 'Notification sent successfully'}, status=status.HTTP_201_CREATED)
-class CentralMessNotificationAPIView(APIView):
-    def post(self, request, *args, **kwargs):
-        # Extract data from the request, you can customize this based on your needs
-        sender = request.user
-        recipient_id = request.data.get('recipient')
-        type = request.data.get('type')
-        message = request.data.get('message')
-
-        User = get_user_model()
-        recipient = User.objects.get(pk=recipient_id)
-
-        # Trigger the notification function
-        central_mess_notif(sender, recipient, type, message)
-
-        return Response({'message': 'Notification sent successfully'}, status=status.HTTP_201_CREATED)
-
 class VisitorsHostelNotificationAPIView(APIView):
     def post(self, request, *args, **kwargs):
         # Extract data from the request, you can customize this based on your needs
