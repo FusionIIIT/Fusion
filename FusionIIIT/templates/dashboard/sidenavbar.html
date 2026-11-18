@@ -57,11 +57,6 @@
                         <h4> File Tracking </h4>
                     </a>
                 {% endif %}
-                {% if request.session.moduleAccessRights.spacs %}
-                    <a class="item" href="{% url 'spacs:spacs' %}">
-                        <h4>Scholarship Portal</h4>
-                    </a>
-                {% endif %}
 
                 {% if request.session.moduleAccessRights.placement_cell %}
                     <a class="item" href="{% url 'placement:placement' %}">
