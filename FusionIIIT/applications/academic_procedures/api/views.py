@@ -7764,7 +7764,9 @@ def hod_review_api(request, pk):
             description=f"{thesis.student.id.user.get_full_name()}'s thesis topic has been "
                         f"approved by the HOD and is awaiting your final approval.",
         )
-        for recipient in filter(None, [thesis.student.id.user, thesis.supervisor.id.user]):
+        co_supervisor_user = thesis.co_supervisor.id.user if thesis.co_supervisor else None
+        for recipient in filter(None, [thesis.student.id.user, thesis.supervisor.id.user,
+                                       co_supervisor_user]):
             _thesis_notify(
                 sender=user,
                 recipient=recipient,
@@ -7779,7 +7781,10 @@ def hod_review_api(request, pk):
         thesis.co_supervisor_consented = False
         thesis.dean_remarks            = ''
         thesis.save()
-        for recipient in filter(None, [thesis.supervisor.id.user, thesis.student.id.user]):
+        # The co-supervisor must consent again before it can come back.
+        co_supervisor_user = thesis.co_supervisor.id.user if thesis.co_supervisor else None
+        for recipient in filter(None, [thesis.supervisor.id.user, thesis.student.id.user,
+                                       co_supervisor_user]):
             _thesis_notify(
                 sender=user,
                 recipient=recipient,

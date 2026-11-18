@@ -69,6 +69,28 @@ class ThesisTopicSendBackTests(TestCase):
         for user in (self.hod, self.student_user, self.supervisor.id.user, self.co_supervisor.id.user):
             self.assertTrue(Notification.objects.filter(recipient=user).exists(), user.username)
 
+    def test_a_topic_without_a_co_supervisor_is_sent_back_too(self):
+        self.topic.co_supervisor = None
+        self.topic.co_supervisor_consented = False
+        self.topic.save()
+
+        response = self.dean_sends_back()
+
+        self.assertEqual(response.status_code, 200)
+        for user in (self.hod, self.student_user, self.supervisor.id.user):
+            self.assertTrue(Notification.objects.filter(recipient=user).exists(), user.username)
+        self.assertFalse(Notification.objects.filter(recipient=self.co_supervisor.id.user).exists())
+
+    def test_the_hods_send_back_tells_the_co_supervisor_who_must_consent_again(self):
+        self.dean_sends_back()
+        Notification.objects.all().delete()
+
+        self.as_user(self.hod).post(f'{BASE}/hod/thesis/{self.topic.id}/review/',
+                                    {'approve': False, 'remarks': 'Revise.'}, format='json')
+
+        for user in (self.student_user, self.supervisor.id.user, self.co_supervisor.id.user):
+            self.assertTrue(Notification.objects.filter(recipient=user).exists(), user.username)
+
     def test_the_deans_rejected_tab_lists_what_they_sent_back(self):
         self.dean_sends_back()
 
