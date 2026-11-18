@@ -333,20 +333,6 @@ def AssistantshipClaim_account_notify(sender, stu, recipient):
                 url=url, module=module, verb=message)
 
 
-def department_notif(sender, recipient, type):
-    url = 'dep:dep'
-    module = 'department'
-    sender = sender
-    recipient = recipient
-    verb = type
-    flag = "announcement"
-
-    notify.send(sender=sender,
-                recipient=recipient,
-                url=url,
-                module=module,
-                verb=verb,
-                flag=flag)
 def examination_notif(sender, recipient, type):
     url='examination:examination'
     module='examination'

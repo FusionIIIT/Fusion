@@ -17,7 +17,7 @@ from rest_framework import status
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from datetime import date
-from notification.views import department_notif
+from applications.department.notifications import department_notif
 
 
 class ListCreateAnnouncementView(generics.ListCreateAPIView):
