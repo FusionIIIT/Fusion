@@ -451,6 +451,18 @@ def random_algo(batch,sem,year,course_slot, programme_type, skip_course_ids=None
     return 1
 
 @transaction.atomic
+def unslotted_preregistration_choices(scope):
+    """Pre-registration choices in ``scope`` whose course slot was deleted, per course."""
+    rows = (InitialRegistration.objects.filter(scope, course_slot_id__isnull=True)
+            .exclude(course_id__isnull=True)
+            .values('course_id', 'course_id__code', 'course_id__name')
+            .annotate(students=Count('student_id', distinct=True))
+            .order_by('course_id__code'))
+    return [{'course_id': r['course_id'], 'course_code': r['course_id__code'],
+             'course_name': r['course_id__name'], 'students': r['students']}
+            for r in rows]
+
+
 def allocate(request):
     batch = request.POST.get('batch')
     sem = request.POST.get('sem')
@@ -467,9 +479,15 @@ def allocate(request):
             'needs_action': problems,
         }, status=409)
 
-    unique_course_slot = InitialRegistration.objects.filter(
-        Q(semester_id__semester_no=sem) & Q(student_id__batch=batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)
-    ).values('course_slot_id').distinct()
+    scope = (Q(semester_id__semester_no=sem) & Q(student_id__batch=batch)
+             & Q(student_id__batch_id__curriculum__programme__category=programme_type))
+    # A choice loses its slot when the slot is deleted after students picked
+    # it (on_delete=SET_NULL). There is nothing to allot it into, so it is
+    # left out and named in the result instead of stopping the whole batch.
+    unslotted_choices = unslotted_preregistration_choices(scope)
+    unique_course_slot = (InitialRegistration.objects.filter(scope)
+                          .exclude(course_slot_id__isnull=True)
+                          .values('course_slot_id').distinct())
 
     unique_course_name = []
     skipped_students = 0
@@ -546,7 +564,13 @@ def allocate(request):
         if skip_course_ids:
             message += (f" ({len(skip_course_ids)} course(s) skipped"
                         f"; {skipped_students} student(s) left without a course in a single-choice slot)")
+        if unslotted_choices:
+            listed = ", ".join(f"{c['course_code']} {c['course_name']} ({c['students']} student(s))"
+                               for c in unslotted_choices)
+            message += (". Not allotted because the course slot they were chosen in "
+                        f"no longer exists: {listed}")
         return JsonResponse({'status': 1, 'message': message,
+                             'unslotted_choices': unslotted_choices,
                              'skipped_course_ids': sorted(skip_course_ids),
                              'publication': publication,
                              'progress': progress})
