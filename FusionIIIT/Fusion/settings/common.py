@@ -106,10 +106,6 @@ BONAFIDE_PHD_DURATION_YEARS = int(os.environ.get(
     'BONAFIDE_PHD_DURATION_YEARS', '6'))
 
 CELERY_BEAT_SCHEDULE = {
-    'leave-migration-task': {
-        'task': 'applications.leave.tasks.execute_leave_migrations',
-        'schedule': crontab(minute='1', hour='0')
-    },
     'phd-thesis-review-invitations-task': {
         'task': 'applications.academic_procedures.tasks.process_review_invitations',
         'schedule': crontab(minute='0', hour='2')
