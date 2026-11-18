@@ -122,9 +122,7 @@ class Student_grades(models.Model):
     course_instructor = models.ForeignKey(CourseInstructor, null=True, blank=True, on_delete=models.SET_NULL)
 
     class Meta:
-        # The table is still the one online_cms created; renaming it is a
-        # separate change.
-        db_table = 'online_cms_student_grades'
+        db_table = 'examination_student_grades'
         # Transcripts, SPI/CPI and the grade reports read a student's grades by
         # roll number; without this each read scanned every grade row.
         indexes = [models.Index(fields=['roll_no'], name='student_grades_roll_no_idx')]
