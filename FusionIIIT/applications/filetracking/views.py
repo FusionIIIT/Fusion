@@ -1,12 +1,11 @@
 from sqlite3 import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.contrib.auth.models import User
 from django.views.decorators.http import require_POST
-from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.core.paginator import Paginator
 
@@ -15,17 +14,15 @@ from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .utils import *
 from .sdk.methods import *
 from .decorators import *
-from datetime import datetime;
+from datetime import datetime
 
-from timeit import default_timer as time
-from notification.views import office_module_notif, file_tracking_notif
+from notification.views import file_tracking_notif
 
 import io
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
-import json
 import zipfile
 import os
 
