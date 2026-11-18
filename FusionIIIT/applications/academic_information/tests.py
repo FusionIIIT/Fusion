@@ -201,6 +201,46 @@ class AllocationPublicationTests(TestCase):
             student_id=second_student).exists())
         self.assertEqual(FinalRegistration.objects.count(), 2)
 
+    def test_choice_whose_slot_was_deleted_is_reported_and_the_rest_allotted(self):
+        # A slot deleted after students pre-registered leaves their choice with
+        # no slot (on_delete=SET_NULL). Allocation stopped on it with
+        # "CourseSlot matching query does not exist." and allotted nothing.
+        dropped_course = Course.objects.create(
+            code='TT1002', name='Dropped Course', credit=1, syllabus='',
+            ref_books='', max_seats=60)
+        dropped_slot = CourseSlot.objects.create(
+            semester=self.semester, name='Dropped Slot',
+            type='Professional Core')
+        dropped_slot.courses.add(dropped_course)
+        InitialRegistration.objects.create(
+            student_id=self.student, semester_id=self.semester,
+            course_id=dropped_course, course_slot_id=dropped_slot, priority=1,
+            registration_type='Regular')
+        dropped_slot.delete()
+
+        response = allocate(SimpleNamespace(POST={
+            'batch': 2026,
+            'sem': 1,
+            'year': 2026,
+            'programme_type': 'UG',
+            'skip_course_ids': [],
+        }))
+        payload = json.loads(response.content)
+
+        self.assertEqual(payload['status'], 1, payload)
+        self.assertEqual(payload['progress']['remaining_allocations'], 0)
+        self.assertEqual(
+            list(FinalRegistration.objects.values_list('course_id__code', flat=True)),
+            ['TT1001'])
+        self.assertEqual(payload['unslotted_choices'], [{
+            'course_id': dropped_course.id,
+            'course_code': 'TT1002',
+            'course_name': 'Dropped Course',
+            'students': 1,
+        }])
+        self.assertIn('TT1002', payload['message'])
+        self.assertIn('no longer exists', payload['message'])
+
 
 class PhdStudentListTests(TestCase):
     def setUp(self):
