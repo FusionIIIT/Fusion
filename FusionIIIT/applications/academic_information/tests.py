@@ -263,65 +263,85 @@ class AllocationPublicationTests(TestCase):
         return set(FinalRegistration.objects.values_list(
             'student_id_id', 'course_id__code'))
 
-    def test_ranked_choices_in_a_slot_not_typed_open_elective_allot_one_course(self):
-        # Batch 2023 semester 8: three curricula typed their "Project" slot
-        # "Project", and every student was allotted all three ranked courses.
-        slot = CourseSlot.objects.create(
-            semester=self.semester, name='Project', type='Project')
-        btp, internship, internship_2 = (
-            self.new_course(c) for c in ('TP4001', 'TP4002', 'TP4003'))
-        slot.courses.add(btp, internship, internship_2)
-        self.choose(self.student, self.semester, slot,
-                    [(1, internship), (2, btp), (3, internship_2)])
+    def student_in_another_curriculum(self, roll_no):
+        curriculum = Curriculum.objects.create(
+            programme=Programme.objects.get(category='UG'),
+            name=f'Test Curriculum {roll_no}', no_of_semester=8)
+        semester = Semester.objects.create(curriculum=curriculum, semester_no=1)
+        batch = Batch.objects.create(
+            name='B.Tech', discipline=Discipline.objects.create(
+                name=f'Test Discipline {roll_no}', acronym=roll_no[2:5]),
+            year=2026, curriculum=curriculum)
+        user = User.objects.create_user(username=roll_no)
+        student = Student.objects.create(
+            id=ExtraInfo.objects.create(id=roll_no, user=user, user_type='student'),
+            programme='B.Tech', batch=2026, batch_id=batch, category='GEN',
+            curr_semester_no=1, section='E1')
+        return student, semester
+
+    def project_courses(self, prefix):
+        return [self.new_course(f'{prefix}{n}') for n in (1, 2, 3)]
+
+    def test_slot_named_like_an_open_elective_elsewhere_allots_one_course(self):
+        # Batch 2023 semester 8: CSE's "Project" slot was an Open Elective,
+        # ECE typed its copy "Project" and ME named it "PROJECT"; their
+        # students were allotted all three ranked courses.
+        courses = self.project_courses('TP40')
+        elective = CourseSlot.objects.create(
+            semester=self.semester, name='Project', type='Open Elective')
+        elective.courses.add(*courses)
+        self.choose(self.student, self.semester, elective,
+                    [(1, courses[0]), (2, courses[1]), (3, courses[2])])
+        other, other_semester = self.student_in_another_curriculum('26TME001')
+        typed_project = CourseSlot.objects.create(
+            semester=other_semester, name='PROJECT ', type='Project')
+        typed_project.courses.add(*courses)
+        self.choose(other, other_semester, typed_project,
+                    [(1, courses[1]), (2, courses[0]), (3, courses[2])])
 
         payload = self.run_allocation()
 
         self.assertEqual(payload['status'], 1, payload)
-        self.assertEqual(payload['progress']['remaining_allocations'], 0)
-        self.assertEqual(self.allotted(), {('26TCS001', 'TT1001'), ('26TCS001', 'TP4002')})
+        self.assertEqual(payload['progress']['remaining_allocations'], 0, payload)
+        self.assertEqual(self.allotted(), {
+            ('26TCS001', 'TT1001'), ('26TCS001', 'TP401'), ('26TME001', 'TP402')})
 
-    def test_courses_chosen_with_one_priority_are_all_allotted(self):
-        # PC4-style slot: both courses are taken, each chosen with priority 1.
+    def test_courses_of_a_slot_that_is_not_an_elective_are_all_allotted_even_when_ranked(self):
+        # The form makes students rank every slot, PC4 included, so the
+        # ranking must not decide how a slot is allotted; the curriculum does.
         slot = CourseSlot.objects.create(
             semester=self.semester, name='PC4', type='Others')
         first, second = self.new_course('TP4101'), self.new_course('TP4102')
         slot.courses.add(first, second)
-        self.choose(self.student, self.semester, slot, [(1, first), (1, second)])
+        self.choose(self.student, self.semester, slot, [(1, first), (2, second)])
+        other, other_semester = self.student_in_another_curriculum('26TME002')
+        other_slot = CourseSlot.objects.create(
+            semester=other_semester, name='PC4', type='Others')
+        other_slot.courses.add(first, second)
+        self.choose(other, other_semester, other_slot, [(1, first), (1, second)])
 
         payload = self.run_allocation()
 
         self.assertEqual(payload['status'], 1, payload)
         self.assertEqual(self.allotted(), {
-            ('26TCS001', 'TT1001'), ('26TCS001', 'TP4101'), ('26TCS001', 'TP4102')})
+            ('26TCS001', 'TT1001'), ('26TCS001', 'TP4101'), ('26TCS001', 'TP4102'),
+            ('26TME002', 'TP4101'), ('26TME002', 'TP4102')})
 
     def test_open_elective_slot_sharing_a_name_with_another_slot_is_allotted(self):
         # Batch 2023 semester 8: ECE's "Project" slot (type Project) was handled
         # first and its name marked done, so CSE's "Project" Open Elective slot
         # was skipped and its 282 students got no project.
         thesis = self.new_course('TP4201')
-        take_all = CourseSlot.objects.create(
+        typed_project = CourseSlot.objects.create(
             semester=self.semester, name='Project', type='Project')
-        take_all.courses.add(thesis)
-        self.choose(self.student, self.semester, take_all, [(1, thesis)])
-
-        programme = Programme.objects.get(category='UG')
-        curriculum = Curriculum.objects.create(
-            programme=programme, name='Test Other Curriculum', no_of_semester=8)
-        other_semester = Semester.objects.create(curriculum=curriculum, semester_no=1)
-        other_batch = Batch.objects.create(
-            name='B.Tech', discipline=Discipline.objects.create(
-                name='Test Electronics', acronym='TECE'),
-            year=2026, curriculum=curriculum)
-        user = User.objects.create_user(username='26TEC001')
-        other_student = Student.objects.create(
-            id=ExtraInfo.objects.create(id='26TEC001', user=user, user_type='student'),
-            programme='B.Tech', batch=2026, batch_id=other_batch, category='GEN',
-            curr_semester_no=1, section='E1')
+        typed_project.courses.add(thesis)
+        self.choose(self.student, self.semester, typed_project, [(1, thesis)])
+        other, other_semester = self.student_in_another_curriculum('26TEC001')
         btp, internship = self.new_course('TP4202'), self.new_course('TP4203')
         elective = CourseSlot.objects.create(
             semester=other_semester, name='Project', type='Open Elective')
         elective.courses.add(btp, internship)
-        self.choose(other_student, other_semester, elective, [(1, btp), (2, internship)])
+        self.choose(other, other_semester, elective, [(1, btp), (2, internship)])
 
         payload = self.run_allocation()
 
@@ -329,6 +349,22 @@ class AllocationPublicationTests(TestCase):
         self.assertEqual(payload['progress']['remaining_allocations'], 0, payload)
         self.assertEqual(self.allotted(), {
             ('26TCS001', 'TT1001'), ('26TCS001', 'TP4201'), ('26TEC001', 'TP4202')})
+
+    def test_several_first_choices_in_an_elective_slot_are_all_allotted(self):
+        # PhD coursework: 26PCSO02 chose two OE3 courses, both priority 1, and
+        # takes both. Grouping slots by name must not change that.
+        courses = self.project_courses('TP43')
+        elective = CourseSlot.objects.create(
+            semester=self.semester, name='OE3', type='Open Elective')
+        elective.courses.add(*courses)
+        self.choose(self.student, self.semester, elective,
+                    [(1, courses[0]), (1, courses[1])])
+
+        payload = self.run_allocation()
+
+        self.assertEqual(payload['status'], 1, payload)
+        self.assertEqual(self.allotted(), {
+            ('26TCS001', 'TT1001'), ('26TCS001', 'TP431'), ('26TCS001', 'TP432')})
 
 
 class PhdStudentListTests(TestCase):

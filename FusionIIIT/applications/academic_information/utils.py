@@ -356,10 +356,12 @@ def publish_allocations(batch, sem, year, programme_type):
 
 @transaction.atomic
 def random_algo(batch,sem,year,slot_ids, programme_type, skip_course_ids=None) :
-    """Allot each student one course of the slots ``slot_ids``, by priority.
+    """Allot the choices made in the slots ``slot_ids`` by priority.
 
-    ``slot_ids`` are the same-named slots of several curricula (OE13 of every
-    discipline), allotted together so they share the courses' seats.
+    A first choice gets its course while seats last; otherwise the student
+    falls through to their next choice. ``slot_ids`` are the slots of one
+    name across curricula (OE13 of every discipline), allotted together so
+    they share the courses' seats.
     """
     # zero seats makes the "slot full" branch below push these students to
     # their next priority, so skipping reuses the existing fall-through
@@ -495,25 +497,24 @@ def allocate(request):
                           .values('course_slot_id').distinct())
     slots = CourseSlot.objects.in_bulk([e['course_slot_id'] for e in unique_course_slot])
 
-    # A student gets one course of a slot, by priority, when the slot is an
-    # Open Elective or when they ranked its courses (gave them different
-    # priorities). Otherwise every course they chose is theirs: a PC4-style
-    # slot is chosen with priority 1 throughout. The slot type alone is not
-    # enough: batch 2023 semester 8 had ranked "Project" slots typed
-    # "Project", and every student was allotted all three courses.
-    ranked_slot_ids = set(InitialRegistration.objects.filter(scope)
-                          .exclude(course_slot_id__isnull=True)
-                          .values('student_id', 'course_slot_id')
-                          .annotate(priorities=Count('priority', distinct=True))
-                          .filter(priorities__gt=1)
-                          .values_list('course_slot_id', flat=True))
-    by_priority = {slot_id for slot_id, slot in slots.items()
-                   if slot.type == "Open Elective" or slot_id in ranked_slot_ids}
+    # Slots of one name are one set of courses across curricula (OE13 of
+    # every discipline). When any of them is an Open Elective, all of them
+    # are allotted together by priority (random_algo): curricula do not
+    # always type their copy Open Elective. In batch 2023 semester 8
+    # "Project" was an Open Elective for CSE but typed "Project" by ECE and
+    # SM and named "PROJECT" by ME, and every student there was allotted all
+    # three ranked courses. Any other slot gives a student every course they
+    # chose (PC4). This comes from the curriculum only, never from what
+    # students submitted: the form makes every student rank the courses of
+    # every slot, PC4 included.
+    def slot_group(slot):
+        return slot.name.strip().casefold()
 
-    # random_algo allots the slots of one name together, across curricula.
-    # Only those slots mark the name as done: a same-named slot allotted in
-    # full (ECE's "Project") must not skip an Open Elective one (CSE's).
-    allotted_by_priority = set()
+    elective_groups = {slot_group(slot) for slot in slots.values()
+                       if slot.type == "Open Elective"}
+    # Only a group allotted by priority is marked done, so a slot allotted in
+    # full never skips an elective slot of the same name.
+    allotted_groups = set()
     skipped_students = 0
 
     try:
@@ -521,7 +522,8 @@ def allocate(request):
             for entry in unique_course_slot:
                 course_slot_object = slots[entry['course_slot_id']]
 
-                if course_slot_object.id not in by_priority:
+                group = slot_group(course_slot_object)
+                if group not in elective_groups:
                     already_allocated_students = FinalRegistration.objects.filter(
                         semester_id__semester_no=sem,
                         course_slot_id=course_slot_object,
@@ -563,11 +565,11 @@ def allocate(request):
                     FinalRegistration.objects.bulk_create(
                         slot_rows, ignore_conflicts=True)
 
-                elif course_slot_object.name not in allotted_by_priority:
-                    allotted_by_priority.add(course_slot_object.name)
-                    same_name = [slot_id for slot_id in by_priority
-                                 if slots[slot_id].name == course_slot_object.name]
-                    stat = random_algo(batch, sem, year, same_name,
+                elif group not in allotted_groups:
+                    allotted_groups.add(group)
+                    same_group = [slot_id for slot_id, slot in slots.items()
+                                  if slot_group(slot) == group]
+                    stat = random_algo(batch, sem, year, same_group,
                                        programme_type, skip_course_ids)
                     if stat == -1:
                         raise Exception(f"Seats not enough for course_slot {course_slot_object.name}")
