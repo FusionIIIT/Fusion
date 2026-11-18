@@ -143,7 +143,6 @@ INSTALLED_APPS = [
     'applications.gymkhana',
     'applications.office_module',
     'applications.globals',
-    'applications.central_mess',
     'applications.complaint_system',
     'applications.filetracking',
     'applications.finance_accounts',
