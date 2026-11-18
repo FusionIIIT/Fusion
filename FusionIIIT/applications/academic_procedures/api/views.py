@@ -3134,6 +3134,56 @@ def get_student_registrtion_check(student, sem):
 
 
 
+_TERM_ORDER = {'Odd Semester': 0, 'Even Semester': 1, 'Summer Semester': 2}
+
+
+def repeat_options(student):
+    """What each of the student's registrations allows in a backlog slot.
+
+    Returns {registration_id: (registration, grade, repeat_as, problem)}. A
+    registration can be repeated when it is the student's latest attempt at
+    the course and its result is in: F, X or CD make the repeat a Backlog,
+    C, D+ or D an Improvement (registration_type_for_grade). Otherwise
+    ``problem`` says why not and ``repeat_as`` is None. Grades are matched on
+    course code and term, because a grade and its registration are sometimes
+    kept under different versions of the course.
+    """
+    registrations = list(course_registration.objects.filter(student_id=student)
+                         .select_related('course_id', 'semester_id'))
+    grades = {}
+    for code, session, semester_type, grade in (
+            Student_grades.objects.filter(roll_no=student.id_id).order_by('id')
+            .values_list('course_id__code', 'academic_year', 'semester_type', 'grade')):
+        grades[(code, session, semester_type)] = grade
+
+    def term(registration):
+        return (registration.session or '',
+                _TERM_ORDER.get(registration.semester_type, -1), registration.id)
+
+    latest_attempt = {}
+    for registration in registrations:
+        code = registration.course_id.code
+        if code not in latest_attempt or term(registration) > term(latest_attempt[code]):
+            latest_attempt[code] = registration
+
+    options = {}
+    for registration in registrations:
+        code = registration.course_id.code
+        grade = grades.get((code, registration.session, registration.semester_type))
+        repeat_as, problem = None, None
+        if latest_attempt[code] is not registration:
+            problem = f"{code} was taken again later; only the latest attempt can be repeated."
+        elif grade is None:
+            problem = f"{code} has no result yet, so it cannot be repeated."
+        elif grade not in _PHD_BL_ALLOWED_GRADES:
+            problem = (f"{code} cannot be repeated with grade {grade}: only F, X or CD "
+                       "(backlog) or C, D+ or D (improvement) can.")
+        else:
+            repeat_as = registration_type_for_grade(grade)
+        options[registration.id] = (registration, grade, repeat_as, problem)
+    return options
+
+
 def get_student_registrations(student, semester):
     """
     Returns a QuerySet of InitialRegistration entries for the given student and semester.
@@ -3231,7 +3281,17 @@ def get_preregistration_data(request):
             eligibility_resp = get_pre_registration_eligibility(timezone.now().date(), next_sem_no)
             if isinstance(eligibility_resp, JsonResponse):
                 return eligibility_resp
-            prev_registrations = serializers.CourseRegistrationSerializer(course_registration.objects.filter(student_id=student), many=True).data
+            # Only the registrations the student may repeat in a backlog slot,
+            # each with its grade and whether it would be a backlog or an
+            # improvement.
+            repeatable = [(reg, grade, repeat_as)
+                          for reg, grade, repeat_as, problem in repeat_options(student).values()
+                          if problem is None]
+            prev_registrations = serializers.CourseRegistrationSerializer(
+                [reg for reg, _, _ in repeatable], many=True).data
+            for row, (_, grade, repeat_as) in zip(prev_registrations, repeatable):
+                row['grade'] = grade
+                row['repeat_as'] = repeat_as
             for slot in course_slots:
                 courses = slot.courses.all()
                 course_choices = [
@@ -3305,21 +3365,33 @@ def submit_preregistration(request):
     except Student.DoesNotExist:
         return Response({"error": "Student profile not found"}, status=400)
 
-    # The replaced registration is taken from the request body, so check it is
-    # this student's before any row is written.
+    # A backlog or improvement repeats one of the student's own registrations,
+    # once, and only one that repeat_options allows. The page offers only
+    # those, but the repeated registration comes from the request body, so it
+    # is checked here before any row is written.
+    options = repeat_options(student) if backlog_registrations else {}
     backlog_entries = []
+    repeated = set()
     for reg in backlog_registrations:
-        prev_registration_id = reg.get("prev_registration_id")
-        prev_reg = None
-        if prev_registration_id:
-            prev_reg = course_registration.objects.filter(
-                id=prev_registration_id, student_id=student
-            ).first()
-            if not prev_reg:
-                return JsonResponse(
-                    {"error": "The course being repeated is not one of your registrations."},
-                    status=400)
-        backlog_entries.append((reg, prev_reg))
+        try:
+            prev_registration_id = int(reg.get("prev_registration_id"))
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {"error": "Choose the earlier registration each backlog course repeats."},
+                status=400)
+        if prev_registration_id not in options:
+            return JsonResponse(
+                {"error": "The course being repeated is not one of your registrations."},
+                status=400)
+        prev_reg, _grade, repeat_as, problem = options[prev_registration_id]
+        if problem:
+            return JsonResponse({"error": problem}, status=400)
+        if prev_registration_id in repeated:
+            return JsonResponse(
+                {"error": f"{prev_reg.course_id.code} is repeated in more than one backlog slot."},
+                status=400)
+        repeated.add(prev_registration_id)
+        backlog_entries.append((reg, prev_reg, repeat_as))
 
     now = timezone.now()
     choices = [
@@ -3333,17 +3405,14 @@ def submit_preregistration(request):
         )
         for reg in registrations
     ]
-    for reg, prev_reg in backlog_entries:
-        # The repeated course carries the grade, so it decides backlog vs improvement.
-        _sg = latest_grade(student.id_id, prev_reg.course_id) if prev_reg else None
-        reg_type = registration_type_for_grade(_sg.grade if _sg else None)
+    for reg, prev_reg, repeat_as in backlog_entries:
         choices.append(InitialRegistration(
             course_id_id=reg.get("course_id"),
             semester_id_id=next_semester.id,
             student_id=student,
             course_slot_id_id=reg.get("slot_id"),
             priority=reg.get("priority"),
-            registration_type=(reg_type if reg_type != 'Regular' else 'Backlog'),
+            registration_type=repeat_as,
             old_course_registration=prev_reg,
             timestamp=now,
         ))
