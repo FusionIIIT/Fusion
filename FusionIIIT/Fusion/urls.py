@@ -59,9 +59,7 @@ urlpatterns = [
     url(r'^placement/', include('applications.placement_cell.api.urls')),
     url(r'^filetracking/', include('applications.filetracking.urls')),
     url(r'^spacs/', include('applications.scholarships.urls')),
-    url(r'^gymkhana/', include('applications.gymkhana.urls')),
     url(r'^ocms/', include('applications.online_cms.urls')),
-    url(r'^hostelmanagement/', include('applications.hostel_management.urls')),
     url(r'^examination/', include('applications.examination.urls')),
 
     path(

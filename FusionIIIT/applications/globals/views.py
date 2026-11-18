@@ -17,7 +17,6 @@ from applications.academic_information.models import Student
 from applications.globals.forms import IssueForm, WebFeedbackForm
 from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
                                          Issue, IssueImage, DepartmentInfo,ModuleAccess)
-from applications.gymkhana.views import coordinator_club
 from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddEducation, AddExperience,
                                                AddPatent, AddProfile,
@@ -29,7 +28,6 @@ from applications.placement_cell.models import (Achievement, Course, Education,
 from Fusion.settings.common import LOGIN_URL
 from notifications.models import Notification
 from .models import *
-from applications.hostel_management.models import (HallCaretaker,HallWarden)
 
 
 from django.contrib.auth.views import PasswordResetView
@@ -778,25 +776,12 @@ def dashboard(request):
         name_ = get_object_or_404(Designation, id = i)
         roll_.append(str(name_.name))
 
-    hall_caretakers = HallCaretaker.objects.all().select_related()
-    hall_wardens = HallWarden.objects.all().select_related()
-
-    hall_caretaker_user = []
-    for caretaker in hall_caretakers:
-        hall_caretaker_user.append(caretaker.staff.id.user)
-
-    hall_warden_user = []
-    for warden in hall_wardens:
-        hall_warden_user.append(warden.faculty.id.user)
     print("modules are")
     print(request.session.get('moduleAccessRights'))
     context={
         'notifications':notifs,
         'Curr_desig' : roll_,
-        'club_details' : coordinator_club(request),
         'designation' : designation,
-        'hall_caretaker': hall_caretaker_user,
-        'hall_warden': hall_warden_user,
         
     }
     # a=HoldsDesignation.objects.select_related('user','working','designation').filter(designation = user)

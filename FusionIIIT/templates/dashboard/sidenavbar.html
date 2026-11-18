@@ -96,20 +96,10 @@
                     </a>
                 {% endif %}
                 
-                {% if request.session.moduleAccessRights.gymkhana %}
-                    <a class = "item" href="/gymkhana">
-                        <h4> Gymkhana </h4>
-                    </a>
-                {% endif %}
 
                 {% if request.session.moduleAccessRights.iwd %}
 				    <a class="item" href="/iwdModuleV2">
                         <h4>Institute Work Departments</h4>
-                    </a>
-                {% endif %}
-                {% if request.session.moduleAccessRights.hostel_management %}
-                    <a class="item" href="/hostelmanagement">
-                        <h4>Hostel Management</h4>
                     </a>
                 {% endif %}
                 {% if request.session.moduleAccessRights.other_academics %}
