@@ -86,8 +86,6 @@
                         <td colspan="2"><h4>Semester No</h4></td>
                         <!-- <td colspan="2"><h4>Year</h4></td> -->
 
-                        <td colspan="2"><h4>Download Roll List</h4></td>
-                            
                         </tr>
                     </thead>
                     <tbody>
@@ -102,15 +100,6 @@
                             <!-- <td colspan="2"> {{course.batch_id.year }}</td> -->
 
                             <!-- <td colspan="2"><a href="">Roll List</a></td> -->
-        
-                            <td colspan="2">
-                                <form method="post" action="/aims/generateSheet">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="course" value="{{ course.course_id.id }}">
-                                    <input type="hidden" name="batch" value="">
-                                    <button class="ui button green" type="submit">Roll List</button>
-                                </form>
-                            </td>
         
                         </tr>
                         {%endfor%}

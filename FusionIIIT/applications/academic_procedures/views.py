@@ -96,7 +96,7 @@ def academic_procedures(request):
         # return HttpResponseRedirect('/logout/')
 
     elif request.session.get('currentDesignationSelected') in ["acadadmin", "studentacadadmin"]:
-        return HttpResponseRedirect('/aims/')
+        return HttpResponseRedirect('/dashboard/')
 
     elif str(request.user) == "rizwan":
         return HttpResponseRedirect('/academic-procedures/account/')
@@ -264,7 +264,7 @@ def account(request):
     assistant_pen_list = AssistantshipClaim.objects.filter(ta_supervisor_remark = True).filter(thesis_supervisor_remark = True).filter(acad_approval = True).filter(account_approval = False)
     assistant_account_length = len(assistant_account_list.filter(acad_approval = True).filter(account_approval = False))
     return render(request,
-                        '../templates/ais/account.html' ,
+                        '../templates/academic_procedures/account.html' ,
                         {
                             'assistant_account_length' : assistant_account_length,
                             'assistant_account_list' : assistant_account_list ,
@@ -2423,7 +2423,7 @@ def acad_person(request):
 
         batch_grade_data = get_batch_grade_verification_data(result_year)
 
-        return HttpResponseRedirect('/aims/')
+        return HttpResponseRedirect('/dashboard/')
     else:
         return HttpResponse('user not found')
 
@@ -3196,9 +3196,9 @@ def verify_marks(request):
         obj = MarkSubmissionCheck.objects.select_related().get(curr_id = curr_id)
         obj.verified = True
         obj.save()
-        return HttpResponseRedirect('/aims/')
+        return HttpResponseRedirect('/dashboard/')
     except Exception as e:
-        return HttpResponseRedirect('/aims/')
+        return HttpResponseRedirect('/dashboard/')
 
 
 
