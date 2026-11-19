@@ -1,6 +1,6 @@
 """The student's course registration receipt (courses, credits and previous CPI) for the React app.
 
-Moved unchanged from academic_procedures/views.py (the old server-rendered pages).
+Moved unchanged from academic_procedures/views.py (the old server-rendered pages, since removed).
 """
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
