@@ -1539,14 +1539,16 @@ def _curriculum_batches(batches):
     from collections import Counter
     batches = list(batches.filter(
         curriculum__isnull=False,
-    ).select_related('discipline', 'curriculum').order_by('-year', 'name', 'discipline__acronym'))
+    ).select_related('discipline', 'curriculum__programme').order_by('-year', 'name', 'discipline__acronym'))
     seen = Counter((b.year, b.name, b.discipline.acronym) for b in batches)
     options = []
     for b in batches:
         label = f'{b.name} {b.discipline.acronym}'
         if seen[(b.year, b.name, b.discipline.acronym)] > 1:
             label += f' ({b.curriculum})'
-        options.append({'id': b.id, 'year': b.year, 'label': label})
+        # UG, PG or PHD, so a report can offer only the disciplines of a chosen programme.
+        category = (b.curriculum.programme.category or '').upper()
+        options.append({'id': b.id, 'year': b.year, 'label': label, 'category': category})
     return options
 
 
@@ -2692,7 +2694,8 @@ def database_spi_cpi(request):
     """Each student's SPI and CPI for one semester, from the same calculation
     the transcript uses.
 
-    ``batch`` (a year) is required. ``batch_id`` narrows it to one programme
+    ``batch`` (a year) is required. ``programme_type`` (UG, PG or PHD)
+    narrows it to that kind of programme, and ``batch_id`` to one programme
     and discipline of that year. ``semester`` picks the semester; without it,
     each student's latest graded term is used, as the transcript's last row:
     a summer term graded after the latest semester is that term, labelled as
@@ -2700,6 +2703,9 @@ def database_spi_cpi(request):
     at the end of that semester, before any summer term. A PG or PhD semester
     graded only through its thesis, progress seminar or teaching credit counts
     as a semester with grades.
+
+    TU and TP are the total credits and total points behind the CPI, as the
+    examination result sheet shows them (calculate_cpi_for_student).
     """
     from collections import defaultdict
     from applications.academic_procedures.models import (
@@ -2715,6 +2721,7 @@ def database_spi_cpi(request):
     from applications.examination.models import Student_grades
 
     year = (request.query_params.get('batch') or '').strip()
+    programme_type = (request.query_params.get('programme_type') or '').strip().upper()
     batch_id = (request.query_params.get('batch_id') or '').strip()
     semester = (request.query_params.get('semester') or '').strip()
     if not year:
@@ -2724,9 +2731,14 @@ def database_spi_cpi(request):
     if semester and not (semester.isdigit() and int(semester) > 0):
         return Response({'detail': f"Semester '{semester}' is not a semester number."},
                         status=400)
+    if programme_type and programme_type not in PROGRAMME_TYPE_BUCKETS:
+        return Response({'detail': f"Programme '{programme_type}' is not UG, PG or PHD."},
+                        status=400)
     semester_no = int(semester) if semester else None
 
     students = Student.objects.filter(batch=int(year))
+    if programme_type:
+        students = students.filter(programme__in=PROGRAMME_TYPE_BUCKETS[programme_type])
     if batch_id:
         batch = Batch.objects.filter(
             id=batch_id if batch_id.isdigit() else None, year=int(year)).first()
@@ -2805,12 +2817,15 @@ def database_spi_cpi(request):
             'semester': label if semester_type else None,
             'spi': None,
             'cpi': None,
+            'tu': None,
+            'tp': None,
         }
         if semester_type:
             spi, _, _ = calculate_spi_for_student(student, number, semester_type)
-            cpi, _, _ = calculate_cpi_for_student(
+            cpi, tu, tp = calculate_cpi_for_student(
                 student, number, semester_type, replacements=replacements[student.id_id])
             row['spi'], row['cpi'] = float(spi), float(cpi)
+            row['tu'], row['tp'] = float(tu), float(tp)
         rows.append(row)
 
     return Response({

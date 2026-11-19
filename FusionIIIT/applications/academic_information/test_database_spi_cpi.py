@@ -75,7 +75,10 @@ class DatabaseSpiCpiTests(TestCase):
         self.assertEqual(set(rows), {'24BCS001', '24BCS002', '24BEC001'})
         self.assertEqual(rows['24BCS001'], {
             'roll_no': '24BCS001', 'student_name': 'Student 24BCS001',
-            'discipline': 'B.Tech CSE', 'semester': 2, 'spi': 8.0, 'cpi': 8.4})
+            'discipline': 'B.Tech CSE', 'semester': 2, 'spi': 8.0, 'cpi': 8.4,
+            # TU and TP are the CPI's totals, as on the result sheet: 4 credits at A (0.9),
+            # 4 at B (0.7) and 2 at O (1.0) are 10 credits and 8.4 points, so TP 84.
+            'tu': 10.0, 'tp': 84.0})
 
     def test_a_chosen_semester_gives_that_semesters_figures(self):
         rows = self.report(batch=2024, semester=1)
@@ -99,11 +102,31 @@ class DatabaseSpiCpiTests(TestCase):
 
     def test_a_student_without_grades_is_listed_without_figures(self):
         row = self.report(batch=2024)['24BEC001']
-        self.assertEqual((row['semester'], row['spi'], row['cpi']), (None, None, None))
+        self.assertEqual((row['semester'], row['spi'], row['cpi'], row['tu'], row['tp']),
+                         (None, None, None, None, None))
         self.assertEqual(self.report(batch=2024, semester=5)['24BCS001']['spi'], None)
 
     def test_a_discipline_narrows_the_batch(self):
         self.assertEqual(set(self.report(batch=2024, batch_id=self.ece.id)), {'24BEC001'})
+
+    def test_a_chosen_semester_gives_its_tu_and_tp(self):
+        row = self.report(batch=2024, semester=1)['24BCS001']
+        self.assertEqual((row['tu'], row['tp']), (4.0, 36.0))
+
+    def test_a_programme_type_narrows_the_batch(self):
+        programme = Programme.objects.create(category='PG', name='M.Tech', programme_begin_year=2024)
+        curriculum = Curriculum.objects.create(programme=programme, name='M.Tech 2024', no_of_semester=4)
+        mtech = Batch.objects.create(name='M.Tech', year=2024, curriculum=curriculum,
+                                     discipline=self.cse.discipline)
+        self.student('24MCS001', mtech, [(1, 'Odd Semester', 'CS101', 'A')])
+        Student.objects.filter(id_id='24MCS001').update(programme='M.Tech')
+
+        self.assertEqual(set(self.report(batch=2024, programme_type='PG')), {'24MCS001'})
+        self.assertEqual(set(self.report(batch=2024, programme_type='ug')),
+                         {'24BCS001', '24BCS002', '24BEC001'})
+        self.assertEqual(set(self.report(batch=2024, programme_type='PHD')), set())
+        self.assertEqual(set(self.report(batch=2024)),
+                         {'24BCS001', '24BCS002', '24BEC001', '24MCS001'})
 
     def test_a_phd_semester_graded_only_by_its_thesis_counts(self):
         programme = Programme.objects.create(category='PHD', name='PhD', programme_begin_year=2024)
@@ -125,11 +148,14 @@ class DatabaseSpiCpiTests(TestCase):
 
     def test_bad_filters_are_refused(self):
         for params in ({}, {'batch': 'x'}, {'batch': 2024, 'semester': '0'},
-                       {'batch': 2024, 'batch_id': self.older.id}):
+                       {'batch': 2024, 'batch_id': self.older.id},
+                       {'batch': 2024, 'programme_type': 'MBA'}):
             self.assertEqual(self.client.get(URL, params).status_code, 400, params)
 
     def test_the_filters_offer_every_discipline_batch(self):
         response = self.client.get('/aims/api/database/filters/')
         self.assertEqual(response.status_code, 200, response.content)
-        labels = {(b['year'], b['label']) for b in response.json()['discipline_batches']}
-        self.assertTrue({(2024, 'B.Tech CSE'), (2024, 'B.Tech ECE'), (2023, 'B.Tech CSE')} <= labels)
+        labels = {(b['year'], b['label'], b['category'])
+                  for b in response.json()['discipline_batches']}
+        self.assertTrue({(2024, 'B.Tech CSE', 'UG'), (2024, 'B.Tech ECE', 'UG'),
+                         (2023, 'B.Tech CSE', 'UG')} <= labels)
