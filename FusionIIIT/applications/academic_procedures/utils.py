@@ -41,15 +41,24 @@ def frontend_base_url():
         "emailed links will point at the development server")
     return getattr(settings, 'FRONTEND_URL', 'http://localhost:5173').rstrip('/')
 
+def invitation_response_url(inv, action):
+    """The page an examiner opens to accept or reject a review invitation."""
+    return f"{frontend_base_url()}/thesis-invitation/{inv.token}/{action}"
+
+
+def review_form_url(inv):
+    """The page an examiner who accepted fills the review in."""
+    return f"{frontend_base_url()}/thesis-evaluation/{inv.token}"
+
+
 def send_invitation_email(inv):
     """
     Send the initial invitation email to the professor with template rendering.
     """
     try:
         thesis_title = inv.submission.thesis.research_theme
-        frontend_url = frontend_base_url()
-        accept_url = f"{frontend_url}/thesis-invitation/{inv.token}/accept"
-        reject_url = f"{frontend_url}/thesis-invitation/{inv.token}/reject"
+        accept_url = invitation_response_url(inv, 'accept')
+        reject_url = invitation_response_url(inv, 'reject')
         expires_at = inv.expires_at.strftime('%Y-%m-%d') if inv.expires_at else 'N/A'
 
 
@@ -85,8 +94,7 @@ def send_review_form_email(inv):
     """
     try:
         thesis_title = inv.submission.thesis.research_theme
-        frontend_url = frontend_base_url()
-        review_url = f"{frontend_url}/thesis-evaluation/{inv.token}"
+        review_url = review_form_url(inv)
 
         context = {
             'prof_name': inv.prof_name,
