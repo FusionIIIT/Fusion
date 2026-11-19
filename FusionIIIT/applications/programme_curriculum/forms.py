@@ -7,7 +7,6 @@ from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, 
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
-from applications.filetracking.sdk.methods import *
 from django.db.models import Q
 from datetime import datetime
 from django.db.models import Max
