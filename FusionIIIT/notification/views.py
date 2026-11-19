@@ -37,17 +37,6 @@ def leave_module_notif(sender, recipient, type, date=None, role=None):
                 url=url, module=module, verb=verb, role=role)
 
 
-def placement_cell_notif(sender, recipient, type):
-    url = 'placement:placement'
-    module = 'Placement Cell'
-    sender = sender
-    recipient = recipient
-    verb = ''
-
-    notify.send(sender=sender, recipient=recipient,
-                url=url, module=module, verb=verb)
-
-
 def academics_module_notif(sender, recipient, type):
     url = ''
     module = "Academic's Module"
@@ -69,15 +58,6 @@ def office_module_notif(sender, recipient):
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
 
-
-def placement_cellNotif(sender, recipient, type):
-    url = 'placement:placement'
-    module = 'Placement Cell'
-    sender = sender
-    recipient = recipient
-    verb = ''
-
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def visitors_hostel_notif(sender, recipient, type, role=None):
     url='visitorhostel:visitorhostel'

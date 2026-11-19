@@ -9,8 +9,10 @@ keep their placement_cell names and every row, column, index and constraint
 as they are; nothing is created, copied or altered on a database that
 already has them. Renaming the tables is a separate change.
 
-placement_cell/0017 removes them from placement_cell's side, also without
-touching the tables.
+placement_cell/0017 removed them from placement_cell's side, also without
+touching the tables. placement_cell itself has since been removed from
+Fusion, so this no longer depends on its migrations; on a brand-new
+database create_tables_if_missing below creates the tables.
 """
 
 import datetime
@@ -71,7 +73,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('globals', '0012_acad_role_module_access'),
         ('academic_information', '0010_normalize_phd_programme'),
-        ('placement_cell', '0016_studentbankdetails'),
         ('contenttypes', '0002_remove_content_type_name'),
     ]
 

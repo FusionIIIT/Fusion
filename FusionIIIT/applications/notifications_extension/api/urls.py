@@ -6,7 +6,6 @@
 from django.urls import path
 from .views import (
     LeaveModuleNotificationAPIView,
-    PlacementCellNotificationAPIView,
     AcademicsModuleNotificationAPIView,
     OfficeModuleNotificationAPIView,
     VisitorsHostelNotificationAPIView,
@@ -32,7 +31,6 @@ urlpatterns = [
     path('delete/', Delete.as_view(),name='delete'),
     path('mark_as_read/', MarkAsRead.as_view(),name='mark_as_read'),
     path('leave_module_notification/', LeaveModuleNotificationAPIView.as_view(), name='leave_module_notification'),
-    path('placement_cell_notification/', PlacementCellNotificationAPIView.as_view(), name='placement_cell_notification'),
     path('academics_module_notification/', AcademicsModuleNotificationAPIView.as_view(), name='academics_module_notification'),
     path('office_module_notification/', OfficeModuleNotificationAPIView.as_view(), name='office_module_notification'),
     path('visitors_hostel_notification/', VisitorsHostelNotificationAPIView.as_view(), name='visitors_hostel_notification'),
