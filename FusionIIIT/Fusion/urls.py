@@ -20,10 +20,7 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
-from django.urls import path
 
-from applications.globals.views import RateLimitedPasswordResetView
 
 
 def serve_media(request, path, document_root=None):
@@ -46,71 +43,16 @@ def serve_media(request, path, document_root=None):
 
 urlpatterns = [
     url(r'^', include('applications.globals.urls')),
-    url(r'^feeds/', include('applications.feeds.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^academic-procedures/', include('applications.academic_procedures.urls')),
     url(r'^aims/', include('applications.academic_information.urls')),
-    url(r'^notifications/', include('applications.notifications_extension.urls')),
-    url(r'^estate/', include('applications.estate_module.urls')),
-    url(r'^dep/', include('applications.department.urls')),
     url(r'^programme_curriculum/',include('applications.programme_curriculum.urls')),
-    url(r'^iwdModuleV2/', include('applications.iwdModuleV2.urls')),
     url(r'^__debug__/', include(debug_toolbar.urls)),
-    url(r'^research_procedures/', include('applications.research_procedures.urls')),
-    url(r'^accounts/', include('allauth.urls')),
 
 
     url(r'^eis/', include('applications.eis.urls')),
-    url(r'^mess/', include('applications.central_mess.urls')),
-    url(r'^complaint/', include('applications.complaint_system.urls')),
-    url(r'^healthcenter/', include('applications.health_center.urls')),
-    url(r'^leave/', include('applications.leave.urls')),
-    url(r'^placement/', include('applications.placement_cell.api.urls')),
-    url(r'^filetracking/', include('applications.filetracking.urls')),
     url(r'^spacs/', include('applications.scholarships.urls')),
-    url(r'^visitorhostel/', include('applications.visitor_hostel.urls')),
-    url(r'^office/', include('applications.office_module.urls')),
-    url(r'^finance/', include('applications.finance_accounts.urls')),
-    url(r'^purchase-and-store/', include('applications.ps1.urls')),
-    url(r'^gymkhana/', include('applications.gymkhana.urls')),
-    url(r'^library/', include('applications.library.urls')),
-    url(r'^establishment/', include('applications.establishment.urls')),
-    url(r'^ocms/', include('applications.online_cms.urls')),
-    url(r'^counselling/', include('applications.counselling_cell.urls')),
-    url(r'^hostelmanagement/', include('applications.hostel_management.urls')),
-    url(r'^income-expenditure/', include('applications.income_expenditure.urls')),
-    url(r'^hr2/', include('applications.hr2.urls')),
-    url(r'^recruitment/', include('applications.recruitment.urls')),
     url(r'^examination/', include('applications.examination.urls')),
-    url(r'^otheracademic/', include('applications.otheracademic.urls')),
 
-    path(
-        'password-reset/',
-        RateLimitedPasswordResetView.as_view(
-            template_name='registration/password_reset_form.html',
-        ),
-        name='reset_password',
-    ),
-    path(
-        'password-reset/done/',
-        auth_views.PasswordResetDoneView.as_view(
-            template_name='registration/password_reset_done.html'
-        ),
-        name='password_reset_done',
-    ),
-    path(
-        'reset/<uidb64>/<token>/',
-        auth_views.PasswordResetConfirmView.as_view(
-            template_name='registration/password_reset_confirm.html',
-        ),
-        name='password_reset_confirm',
-    ),
-    path(
-        'reset/done/',
-        auth_views.PasswordResetCompleteView.as_view(
-            template_name='registration/password_reset_complete.html'
-        ),
-        name='password_reset_complete',
-    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT,
            view=serve_media)

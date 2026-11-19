@@ -25,7 +25,7 @@ import glob
 
 APPS = [
     "academic_information", "academic_procedures",
-    "examination", "online_cms", "programme_curriculum",
+    "examination", "programme_curriculum",
 ]
 APP_DIR = "applications"
 AUTH_DECORATORS = ("login_required", "require_designation", "role_required")
@@ -34,10 +34,9 @@ INBODY_AUTH = ("_user_from_request", "user_holds_role", "user_holds_any_role",
                "require_designation(", "role_required(")
 # Endpoints that are public catalog reads BY DESIGN (unauthenticated twins exist).
 PUBLIC_ALLOWLIST = {
-    "view_all_programmes", "view_all_working_curriculums", "view_all_courses",
-    "view_all_discplines", "view_all_batches", "view_a_course", "view_a_courseslot",
+    "view_all_courses", "view_a_courseslot",
     "view_a_semester_of_a_curriculum", "view_curriculums_of_a_programme",
-    "view_semesters_of_a_curriculum", "faculty_view_a_course",
+    "view_semesters_of_a_curriculum",
 }
 
 # A decorator header may be separated from its def/class by comment or blank

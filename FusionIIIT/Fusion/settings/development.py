@@ -15,7 +15,7 @@ DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fusionlab',
-        'HOST': os.environ.get("DB_HOST", default='localhost'),
+        'HOST': os.environ.get("DB_HOST", default='127.0.0.1'),
         'USER': 'fusion_admin',
         'PASSWORD': 'hello123',
     }
@@ -61,12 +61,6 @@ if DEBUG:
         'INTERCEPT_REDIRECTS': False,
     }
     
-CRONJOBS = [
-    # the below job will update the bill at every minute can be used for testing
-    # ('* * * * *', 'applications.central_mess.tasks.generate_bill'), 
-    
-    #the below job which we need to add in production server, to update the mess bill of student everyday at 10 pm in night
-    ('0 22 * * *', 'applications.central_mess.tasks.generate_bill'),
-]
+CRONJOBS = []
 
 CRONTAB_DJANGO_MANAGE_PATH = '/home/owlman/Desktop/Fuse/Fusion/FusionIIIT/manage.py'

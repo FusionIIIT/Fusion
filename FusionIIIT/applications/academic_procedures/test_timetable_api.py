@@ -183,9 +183,9 @@ class PermissionAndValidationTests(TimetableTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_versions_can_be_filtered_by_semester_number(self):
-        sem3 = TimetableVersion.objects.create(
+        sem7 = TimetableVersion.objects.create(
             academic_year=2026, semester_type='Odd Semester',
-            semester_number=3, version_number=2,
+            semester_number=7, version_number=2,
         )
         TimetableVersion.objects.create(
             academic_year=2026, semester_type='Odd Semester',
@@ -196,11 +196,11 @@ class PermissionAndValidationTests(TimetableTestCase):
             {
                 'academic_year': 2026,
                 'semester_type': 'Odd Semester',
-                'semester_number': 3,
+                'semester_number': 7,
             },
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual([version['id'] for version in response.data], [sem3.id])
+        self.assertEqual([version['id'] for version in response.data], [sem7.id])
 
 
 class OverrideTests(TimetableTestCase):

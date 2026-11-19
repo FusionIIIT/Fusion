@@ -813,7 +813,7 @@ def my_schedule(request):
         ).values('curriculum_id')
         slots_qs = slots_qs.filter(
             Q(curriculum_id__in=taught)
-            | Q(course_instructor__instructor_id=extra)
+            | Q(course_instructor__instructor_id__id=extra)
         )
     else:
         return Response({'slots': []})

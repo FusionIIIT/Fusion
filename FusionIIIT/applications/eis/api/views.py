@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from applications.eis.models import *
-from applications.eis.views import countries
+from applications.eis.constants import countries
 from applications.globals.models import HoldsDesignation
 
 from . import serializers

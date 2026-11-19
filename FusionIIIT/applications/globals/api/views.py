@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
 from applications.academic_information.models import Student
-from applications.placement_cell.models import (Achievement, Course, Education,
-                                                Experience, Has, Patent,
-                                                Project, Publication, Skill,
-                                                StudentBankDetails)
+from applications.globals.models_profile import (Achievement, Course, Education,
+                                                 Experience, Has, Patent,
+                                                 Project, Publication, Skill,
+                                                 StudentBankDetails)
 from applications.programme_curriculum.models import (
     Course as CurriculumCourse, CourseSlot, CourseInstructor
 )
@@ -411,39 +411,40 @@ def profile_update(request):
 def profile_delete(request, id):
     user = request.user
     profile = user.extrainfo
-    # All records are scoped to the requesting user's own profile via unique_id__extrainfo.
+    # All records are scoped to the requesting user's own profile: unique_id is the
+    # Student, whose primary key (Student.id) is the user's ExtraInfo.
     # Using get_object_or_404 with the ownership filter ensures that a record belonging
     # to another user is indistinguishable from a missing record (no ID enumeration).
     if 'deleteskill' in request.data:
-        skill = get_object_or_404(Has, id=id, unique_id__extrainfo=profile)
+        skill = get_object_or_404(Has, id=id, unique_id__id=profile)
         skill.delete()
         return Response({'message': 'Skill deleted successfully'}, status=status.HTTP_200_OK)
     elif 'deleteedu' in request.data:
-        education = get_object_or_404(Education, id=id, unique_id__extrainfo=profile)
+        education = get_object_or_404(Education, id=id, unique_id__id=profile)
         education.delete()
         return Response({'message': 'Education deleted successfully'}, status=status.HTTP_200_OK)
     elif 'deletecourse' in request.data:
-        course = get_object_or_404(Course, id=id, unique_id__extrainfo=profile)
+        course = get_object_or_404(Course, id=id, unique_id__id=profile)
         course.delete()
         return Response({'message': 'Course deleted successfully'}, status=status.HTTP_200_OK)
     elif 'deleteexp' in request.data:
-        experience = get_object_or_404(Experience, id=id, unique_id__extrainfo=profile)
+        experience = get_object_or_404(Experience, id=id, unique_id__id=profile)
         experience.delete()
         return Response({'message': 'Experience deleted successfully'}, status=status.HTTP_200_OK)
     elif 'deletepro' in request.data:
-        project = get_object_or_404(Project, id=id, unique_id__extrainfo=profile)
+        project = get_object_or_404(Project, id=id, unique_id__id=profile)
         project.delete()
         return Response({'message': 'Project deleted successfully'}, status=status.HTTP_200_OK)
     elif 'deleteach' in request.data:
-        achievement = get_object_or_404(Achievement, id=id, unique_id__extrainfo=profile)
+        achievement = get_object_or_404(Achievement, id=id, unique_id__id=profile)
         achievement.delete()
         return Response({'message': 'Achievement deleted successfully'}, status=status.HTTP_200_OK)
     elif 'deletepub' in request.data:
-        publication = get_object_or_404(Publication, id=id, unique_id__extrainfo=profile)
+        publication = get_object_or_404(Publication, id=id, unique_id__id=profile)
         publication.delete()
         return Response({'message': 'Publication deleted successfully'}, status=status.HTTP_200_OK)
     elif 'deletepat' in request.data:
-        patent = get_object_or_404(Patent, id=id, unique_id__extrainfo=profile)
+        patent = get_object_or_404(Patent, id=id, unique_id__id=profile)
         patent.delete()
         return Response({'message': 'Patent deleted successfully'}, status=status.HTTP_200_OK)
     return Response({'error': 'Wrong attribute'}, status=status.HTTP_400_BAD_REQUEST)

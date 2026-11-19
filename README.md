@@ -224,12 +224,10 @@ Safari 10 before testing.
 * Academic workflows
 * Finance and Accounting
 * Placement Cell
-* Mess management
 * Gymkhana Activities
 * Scholarship and Awards Portal
 * Employee Management
 * Course Management
-* Complaint System
 * File Tracking System
 * Health Centre Mangement
 * Visitor's Hostel Management

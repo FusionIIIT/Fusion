@@ -75,7 +75,6 @@ SERVER_EMAIL = 'fusionmailservice@iiitdmj.ac.in'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 ACCOUNT_USERNAME_MIN_LENGTH = 3
 
-SOCIALACCOUNT_ADAPTER = 'applications.globals.adapters.MySocialAccountAdapter'
 
 
 # CELERY STUFF
@@ -106,10 +105,6 @@ BONAFIDE_PHD_DURATION_YEARS = int(os.environ.get(
     'BONAFIDE_PHD_DURATION_YEARS', '6'))
 
 CELERY_BEAT_SCHEDULE = {
-    'leave-migration-task': {
-        'task': 'applications.leave.tasks.execute_leave_migrations',
-        'schedule': crontab(minute='1', hour='0')
-    },
     'phd-thesis-review-invitations-task': {
         'task': 'applications.academic_procedures.tasks.process_review_invitations',
         'schedule': crontab(minute='0', hour='2')
@@ -137,40 +132,14 @@ INSTALLED_APPS = [
     'applications.academic_procedures',
     'applications.examination',
     'applications.academic_information',
-    'applications.leave',
-    'applications.library',
-    'applications.notifications_extension',
-    'applications.gymkhana',
-    'applications.office_module',
     'applications.globals',
-    'applications.central_mess',
-    'applications.complaint_system',
-    'applications.filetracking',
-    'applications.finance_accounts',
-    'applications.health_center',
-    'applications.online_cms',
-    'applications.ps1',
     'applications.programme_curriculum',
-    'applications.placement_cell',
-    'applications.otheracademic',
-    'applications.recruitment',
     'applications.scholarships',
-    'applications.visitor_hostel',
-    'applications.establishment',
-    'applications.estate_module',
-    'applications.counselling_cell',
-    'applications.hostel_management',
-    'applications.research_procedures',
-    'applications.income_expenditure',
-    'applications.hr2',
-    'applications.department',
-    'applications.iwdModuleV2',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     # 'allauth.socialaccount.providers.google',
     'semanticuiforms',
-    'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
     'django_cleanup.apps.CleanupConfig',
