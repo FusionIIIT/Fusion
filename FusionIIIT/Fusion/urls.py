@@ -51,7 +51,6 @@ urlpatterns = [
 
 
     url(r'^eis/', include('applications.eis.urls')),
-    url(r'^filetracking/', include('applications.filetracking.urls')),
     url(r'^spacs/', include('applications.scholarships.urls')),
     url(r'^examination/', include('applications.examination.urls')),
 
