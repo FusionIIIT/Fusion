@@ -50,10 +50,10 @@
                     </div>
                 </form>
                 {% if 'staff' != request.user.extrainfo.user_type %}
-                <a class="item" href="{% url 'globals:profile' %}">
+                <div class="item">
                     <img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}">
                     {{request.user.first_name}} {{request.user.last_name}}
-                </a>
+                </div>
                 {% endif %}
                 {% if 'staff' == request.user.extrainfo.user_type %}
                 <a class="item" href="/hr2/administrativeProfile/">
@@ -74,11 +74,6 @@
                                             Leave
                                         </span>
                                     </a>
-                                    <a class="item" data-tab="placementModule">
-                                        <span style="color: #000;">
-                                            Placement
-                                        </span>
-                                    </a>
                                 </div>
                             </div>
                             <div class="three wide column">
@@ -86,8 +81,6 @@
                                     <div class="ui animated fluid list"
                                         id="new-message-list" style="min-width: 20vw; max-height: 28.5vh; overflow-y: auto;">
                                     </div>
-                                </div>
-                                <div class="ui tab" data-tab="placementModule">
                                 </div>
                             </div>
                         </div>
