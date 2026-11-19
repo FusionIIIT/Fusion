@@ -21,17 +21,6 @@
 }
 </style>
 <div class="ui divider"></div>
-<form class="ui form" action="/aims/generateSheet" method="post" id="form8_8">
-    {% csrf_token %}
-    <input type="number" hidden="true" name = "batch" value= "{{ batch }}">
-    <input type="text" hidden="true" name = "course" value="{{ course }}">
-
-    <div class="field">
-        <button class="ui fluid primary button" type="submit">
-            Generatet Excel Sheet
-        </button>
-    </div>
-</form>
 
 {% if students %}
 
