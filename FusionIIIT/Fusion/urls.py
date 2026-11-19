@@ -20,10 +20,7 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
-from django.urls import path
 
-from applications.globals.views import RateLimitedPasswordResetView
 
 
 def serve_media(request, path, document_root=None):
@@ -52,7 +49,6 @@ urlpatterns = [
     url(r'^notifications/', include('applications.notifications_extension.urls')),
     url(r'^programme_curriculum/',include('applications.programme_curriculum.urls')),
     url(r'^__debug__/', include(debug_toolbar.urls)),
-    url(r'^accounts/', include('allauth.urls')),
 
 
     url(r'^eis/', include('applications.eis.urls')),
@@ -60,33 +56,5 @@ urlpatterns = [
     url(r'^spacs/', include('applications.scholarships.urls')),
     url(r'^examination/', include('applications.examination.urls')),
 
-    path(
-        'password-reset/',
-        RateLimitedPasswordResetView.as_view(
-            template_name='registration/password_reset_form.html',
-        ),
-        name='reset_password',
-    ),
-    path(
-        'password-reset/done/',
-        auth_views.PasswordResetDoneView.as_view(
-            template_name='registration/password_reset_done.html'
-        ),
-        name='password_reset_done',
-    ),
-    path(
-        'reset/<uidb64>/<token>/',
-        auth_views.PasswordResetConfirmView.as_view(
-            template_name='registration/password_reset_confirm.html',
-        ),
-        name='password_reset_confirm',
-    ),
-    path(
-        'reset/done/',
-        auth_views.PasswordResetCompleteView.as_view(
-            template_name='registration/password_reset_complete.html'
-        ),
-        name='password_reset_complete',
-    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT,
            view=serve_media)
