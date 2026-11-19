@@ -1,7 +1,6 @@
 """Registration and semester helpers used by the academic_procedures API.
 
-Moved unchanged from views.py (the old server-rendered pages), which still
-imports them from here until those pages are removed.
+Moved unchanged from views.py (the old server-rendered pages, since removed).
 """
 import json
 from itertools import chain
@@ -15,7 +14,7 @@ from applications.programme_curriculum.models import CourseSlot
 
 from .models import FinalRegistration, Register, StudentRegistrationChecks, course_registration
 
-# Evaluated once, when the module is first imported (as it was in views.py).
+# Evaluated once, when the module is first imported (as it was in the old views.py).
 demo_date = timezone.now()
 
 

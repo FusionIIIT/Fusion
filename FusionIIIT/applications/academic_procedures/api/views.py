@@ -13056,10 +13056,10 @@ def _student_completed_credits(student):
     or, like _compute_open_seminar_eligibility, report them as their own fields.
 
     Reads Student_grades (the table the current React grade-submission flow
-    and transcript both actually use), not SemesterMarks -- that table is
-    only ever written by an old, disconnected legacy Django-template grading
-    view (academic_procedures/views.py::course_marks_data) and is empty for
-    students graded through the current flow.
+    and transcript both actually use), not SemesterMarks -- that table was
+    only ever written by an old legacy Django-template grading view (the
+    removed academic_procedures/views.py::course_marks_data) and is empty
+    for students graded through the current flow.
     """
     total = Student_grades.objects.filter(roll_no=student.id_id).exclude(
         grade__isnull=True
