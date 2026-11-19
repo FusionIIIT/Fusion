@@ -32,7 +32,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 import re
 
-from notification.views import prog_and_curr_notif
+from notification.views import PC_COURSE_PROPOSALS, prog_and_curr_notif
 # from applications.academic_information.models import Student
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
 from applications.globals.access import IsAcadAdminOrDean, require_designation, user_holds_role, _user_from_request, has_any_role
@@ -2353,7 +2353,7 @@ def filetracking(request, proposal_id):
                         f"Course Proposal Form '{file_data}' "
                         f"By {data.get('uploader')} - {data.get('designation')}"
                     )
-                    prog_and_curr_notif(uploader_user,receiver_user,notification_data)
+                    prog_and_curr_notif(uploader_user, receiver_user, notification_data, role=receiver_des)
                     
                     return JsonResponse({
                         'status': 'success',
@@ -2759,7 +2759,7 @@ def forward_course_forms(request, ProposalId):
                     if flag_updated 
                     else f'The course "{file_data}" was added successfully'
                 )
-                prog_and_curr_notif(uploader_id, receiver_id, notification_data)
+                prog_and_curr_notif(uploader_id, receiver_id, notification_data, url=PC_COURSE_PROPOSALS)
 
                 if prerequisite_course_ids:
                     new_course.pre_requisit_courses.add(*valid_courses)
@@ -2827,7 +2827,8 @@ def forward_course_forms(request, ProposalId):
                         f"Course Proposal Form '{file_data}' "
                         f"By {data.get('uploader')} - {data.get('designation')}"
                     )
-                    prog_and_curr_notif(uploader_user,receiver_user,notification_data)
+                    prog_and_curr_notif(uploader_user, receiver_user, notification_data,
+                                        role=receiver_designation.name)
                     
                 except IntegrityError:
                     return JsonResponse({
@@ -3085,7 +3086,7 @@ def reject_form(request, ProposalId):
                 f'The Course "{file2.code} - {file2.name}" was Rejected by '
                 f'{username} ({designation})'
             )
-            prog_and_curr_notif(request.user, receiver_user, notification_message)
+            prog_and_curr_notif(request.user, receiver_user, notification_message, url=PC_COURSE_PROPOSALS)
         except User.DoesNotExist:
             # Continue even if notification fails
             pass
