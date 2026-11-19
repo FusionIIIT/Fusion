@@ -46,7 +46,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^academic-procedures/', include('applications.academic_procedures.urls')),
     url(r'^aims/', include('applications.academic_information.urls')),
-    url(r'^notifications/', include('applications.notifications_extension.urls')),
     url(r'^programme_curriculum/',include('applications.programme_curriculum.urls')),
     url(r'^__debug__/', include(debug_toolbar.urls)),
 
