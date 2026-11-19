@@ -51,7 +51,15 @@ import datetime
 unlike the previous registration logic that was done with priority """
 
 
-demo_date = timezone.now()
+# demo_date and the registration helpers live in helpers.py, shared with the API.
+from .helpers import (demo_date, get_acad_year, get_add_course_options,  # noqa: E402
+                      get_add_or_drop_course_date_eligibility, get_branch_courses, get_cpi,
+                      get_current_credits, get_currently_registered_course,
+                      get_currently_registered_courses, get_detailed_sem_courses,
+                      get_drop_course_options, get_faculty_list, get_final_registration_choices,
+                      get_final_registration_eligibility, get_final_registration_window,
+                      get_registration_courses, get_replace_course_options, get_sem_courses,
+                      get_student_registrtion_check, get_user_semester)
 # demo_date = demo_date - datetime.timedelta(days = 180)
 # demo_date = demo_date + datetime.timedelta(days = 180)
 # demo_date = demo_date + datetime.timedelta(days = 3)
@@ -1452,34 +1460,8 @@ def get_pre_registration_eligibility(current_date, user_sem, year):
     except Exception as e:
         return False, None
 
-def get_final_registration_window():
-    return Calendar.objects.all().filter(
-        description="Physical Reporting at the Institute"
-    ).first()
 
-def get_final_registration_eligibility(current_date):
-    try:
-        frd = Calendar.objects.all().filter(description="Physical Reporting at the Institute").first()
-        frd_start_date = frd.from_date
-        frd_end_date = frd.to_date
-        if current_date>=frd_start_date and current_date<=frd_end_date:
-            return True
-        else :
-            return False
-    except Exception as e:
-        return False
 
-def get_add_or_drop_course_date_eligibility(current_date):
-    try:
-        add_drop_course_date = Calendar.objects.all().filter(description="Last Date for Adding/Dropping of course").first()
-        adc_start_date = add_drop_course_date.from_date
-        adc_end_date = add_drop_course_date.to_date
-        if current_date>=adc_start_date and current_date<=adc_end_date:
-            return True
-        else :
-            return False
-    except Exception as e:
-        return False
 
 def get_course_verification_date_eligibilty(current_date):
     try:
@@ -1520,12 +1502,6 @@ def get_drop_course_date_eligibility(current_date, user_sem, year):
 def get_user_branch(user_details):
     return user_details.department.name
 
-def get_acad_year(user_sem, year):
-        if user_sem%2 == 1:
-            acad_year = str(year) + "-" + str(year+1)
-        elif user_sem%2 == 0:
-            acad_year = str(year-1) + "-" + str(year)
-        return acad_year
 
 @require_designation("student")
 @transaction.atomic
@@ -1668,8 +1644,6 @@ def auto_pre_registration(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
     
-def get_student_registrtion_check(obj, sem):
-    return StudentRegistrationChecks.objects.all().filter(student_id = obj, semester_id = sem).first()
 
 
 @login_required(login_url='/accounts/login')
@@ -1907,9 +1881,6 @@ def user_check(request):
     else:
         return False
 
-def get_cpi(id):
-    obj =  Student.objects.select_related('id','id__user','id__department').get(id = id)
-    return obj.cpi
 
 @require_designation("student")
 def register(request):
@@ -2174,161 +2145,25 @@ def add_thesis(request):
     return HttpResponseRedirect('/academic-procedures/main/')
 
 
-def get_final_registration_choices(branch_courses,batch):
-    course_option = []
-    unavailable_courses = []
-    for courseslot in branch_courses:
-        max_limit = courseslot.max_registration_limit
-        lis = []
-        for course in courseslot.courses.all():
-            if FinalRegistration.objects.filter(student_id__batch_id__year = batch, course_id = course).count() < max_limit:
-                lis.append(course)
-            else:
-                unavailable_courses.append(course)
-        course_option.append((courseslot, lis))
-    return course_option, unavailable_courses
-
-def get_add_course_options(branch_courses, current_register, batch):
-
-    course_option = []
-    courses = current_register
-    slots = []
-    for c in current_register:
-        slots.append(c[0])
-    for courseslot in branch_courses:
-        if courseslot.type == "Swayam":
-            continue
-        max_limit = courseslot.max_registration_limit
-        if courseslot not in slots:
-            lis = []
-            for course in courseslot.courses.all():
-                # print(course)
-                if course_registration.objects.filter(student_id__batch_id__year = batch, course_id = course).count() < max_limit:
-                    lis.append(course)
-            course_option.append((courseslot, lis))
-    return course_option
-
-def get_drop_course_options(current_register):
-    courses = []
-    for item in current_register:
-        if item[0].type != "Professional Core":
-            courses.append(item[1])
-    return courses
-
-def get_replace_course_options( current_register, batch):
-    replace_options = []
-
-    for registered_course in current_register:
-        courseslot_id = registered_course[0]
-        course_id = registered_course[1]
-
-        courseslot = courseslot_id
-        coursename = course_id.name
-        lis = []
-
-        if 'Elective' in courseslot.type:
-            for course in courseslot.courses.all():
-                if course != course_id:
-                    lis.append(course)
-            replace_options.append((courseslot, coursename, lis))
-
-    return replace_options
 
 
 
-def get_user_semester(roll_no, ug_flag, masters_flag, phd_flag):
-    roll = str(roll_no)
-    now = demo_date
-    year, month = now.year, int(now.month)
-    y = str(year)
-    if(ug_flag):
-        if(roll[2].isdigit()):
-            roll = int(roll[:4])
-        else:
-            roll = int("20"+roll[:2])        
-        user_year = year - roll
-    elif(masters_flag or phd_flag):
-        roll =  int(roll[:2])
-        user_year = int(y[-2:]) - roll
-    sem = 'odd'
-    if month >= 7 and month<=12:
-        sem = 'odd'
-    else:
-        sem = 'even'
-    if sem == 'odd':
-        return user_year * 2 + 1
-    else:
-        return user_year * 2
 
 
 
-def get_branch_courses(roll_no, user_sem, branch):
-    roll = str(roll_no)
-    try:
-        year = int(roll[:4])
-    except:
-        year = int(roll[:2])
-        year = 2000 + year
-    courses = Curriculum.objects.all().select_related().filter(batch=(year))
-    courses = courses.filter(sem = user_sem)
-    courses = courses.filter(floated = True)
-    course_list = []
-    for course in courses:
-        if branch.lower() == course.branch.lower() :
-            course_list.append(course)
-        elif course.branch.lower() == 'common':
-            course_list.append(course)
-    return course_list
-
-
-def get_sem_courses(sem_id, batch):
-    courses = []
-    course_slots = CourseSlot.objects.all().filter(semester_id = sem_id)
-    for slot in course_slots:
-        courses.append(slot)
-    return courses
-
-
-def get_currently_registered_courses(id, user_sem):
-    obj = Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=id, semester=user_sem)
-    ans = []
-    for i in obj:
-        course = Curriculum.objects.select_related().get(curriculum_id=i.curr_id.curriculum_id)
-        ans.append(course)
-    return ans
-
-def get_currently_registered_course(id, sem_id, courseregobj=False):
-    if (type(sem_id) == int):
-        obj = course_registration.objects.all().filter(student_id = id, semester_id__semester_no=sem_id)
-    else:
-        obj = course_registration.objects.all().filter(student_id = id).order_by('-semester_id__semester_no')
-    courses = []
-    for i in obj:
-        if (courseregobj):
-            courses.append(i)
-        else:
-            courses.append((i.course_slot_id,i.course_id))
-    return courses
-
-
-def get_current_credits(obj):
-    credits = 0
-    for i in obj:
-        credits = credits + i[1].credit
-    return credits
 
 
 
-def get_faculty_list():
-    f1 = HoldsDesignation.objects.select_related().filter(designation=Designation.objects.get(name = "Assistant Professor"))
-    f2 = HoldsDesignation.objects.select_related().filter(designation=Designation.objects.get(name = "Professor"))
-    f3 = HoldsDesignation.objects.select_related().filter(designation=Designation.objects.get(name = "Associate Professor"))
 
-    faculty = list(chain(f1,f2,f3))
-    faculty_list = []
-    for i in faculty:
-        faculty_list.append(i)
-    return faculty_list
+
+
+
+
+
+
+
+
+
 
 
 def get_thesis_flag(student):
@@ -2935,26 +2770,6 @@ def auto_verify_registration(request):
             academics_module_notif(academicadmin, student_id.id.user, 'Registration Declined - '+reject_reason)
             return JsonResponse({'status': 'success', 'message': 'Successfully Rejected'})
 
-def get_registration_courses(courses):
-    x = [[]]
-    
-    for temp in courses:
-        flag = False
-        i = str(temp.course_code)
-        i = i[:5]
-        for j in x:
-            if j:
-                name = j[0]
-                name = str(name.course_code)
-                name = name[:5]
-                if i.upper() == name.upper():
-                    j.append(temp)
-                    flag = True
-                else :
-                    continue
-        if not flag:
-            x.append([temp])
-    return x
 
 
 
@@ -3374,46 +3189,7 @@ def generate_grade_sheet_pdf(request):
         return response
     return HttpResponse("PDF could not be generated")
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def generate_course_registration_receipt(request):
-    try:
-        current_user = request.user
-        current_user = ExtraInfo.objects.all().filter(user=current_user).first()
-        current_user = Student.objects.all().filter(id = current_user.id).first()
-
-        batch = current_user.batch_id
-        curr_id = batch.curriculum
-        curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = current_user.curr_semester_no)
-        courses = course_registration.objects.filter(student_id = current_user, semester_id = curr_sem_id)
-
-        course_list = []
-        for course in courses:
-            course_list.append({
-                'course_code': course.course_id.code,
-                'course_name': course.course_id.name,
-                'credits': course.course_id.credit
-            })
-        
-        # CPI as of the last completed term, summer terms included.
-        from applications.examination.api.views import previous_term_cpi
-        prev_sem = (current_user.curr_semester_no or 0) - 1
-        prev_sem_cpi = previous_term_cpi(current_user, current_user.curr_semester_no)
-
-        context = {
-            'current_courseregistrations': course_list,
-            'semester_no': current_user.curr_semester_no,
-            'name': request.user.first_name + request.user.last_name,
-            'roll_no' : current_user.id_id,
-            'batch': batch.name+' '+str(batch.year),
-            'branch': curr_id.name.split(' ')[0],
-            'prev_semester_no': prev_sem if prev_sem >= 1 else None,
-            'prev_sem_cpi': prev_sem_cpi,
-        }
-        return JsonResponse(context)
-    
-    except Exception as e:
-        return JsonResponse({'error': 'Unable to retrieve data', 'details': str(e)})
+from .api.course_registration_receipt import generate_course_registration_receipt  # noqa: E402,F401  (moved; still routed by urls.py)
 
 def get_spi(course_list,grade_list):
     spi = 0.0
@@ -4049,22 +3825,6 @@ def mdue(request):
 
 
 
-def get_detailed_sem_courses(sem_id):
-    course_slots = CourseSlot.objects.filter(semester_id=sem_id)
-    # Serialize queryset of course slots into JSON
-    course_slots_json = serialize('json', course_slots)
-    # Convert JSON string into Python object
-    course_slots_data = json.loads(course_slots_json)
-    
-    # Iterate over each course slot data and include associated course data
-    for slot_data in course_slots_data:
-        # Retrieve associated courses for the current course slot
-        slot = CourseSlot.objects.get(id=slot_data['pk'])
-        courses = list(slot.courses.all().values())
-        # Add courses data to the course slot data
-        slot_data['courses'] = courses
-    
-    return course_slots_data
 
 
 @login_required(login_url='/accounts/login')

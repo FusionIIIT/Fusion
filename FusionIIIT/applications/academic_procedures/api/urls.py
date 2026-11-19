@@ -3,14 +3,13 @@ from . import views
 from . import (bonafide_certificate, demand_letter, fee_certificate,
                fee_structure, fee_structure_certificate,
                medium_of_instruction_certificate,
-               pointer_conversion_certificate)
-from .. import views as procedures_views
+               pointer_conversion_certificate, course_registration_receipt)
 
 
 urlpatterns = [
     # Also reachable here because only /api/ paths are proxied to Django in
     # production; the bare path returns the client's index.html instead.
-    url(r'^course_reg_receipt/$', procedures_views.generate_course_registration_receipt,
+    url(r'^course_reg_receipt/$', course_registration_receipt.generate_course_registration_receipt,
         name='course_reg_receipt_api'),
     url(r'^acad/bonafide/student/$', bonafide_certificate.bonafide_student,
         name='bonafide-student'),

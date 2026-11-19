@@ -38,12 +38,6 @@
                     <div class="active content" style="margin-top: 22px;">
                         <div class="link items" style="display: flex;flex-direction: column;gap: 10px;">
                
-                {% if request.session.moduleAccessRights.course_registration %}
-			    <a class = "item" href="/academic-procedures">
-			        <h4> Academics </h4>
-			    </a>
-			    {% endif %}
-
                 {% if request.session.moduleAccessRights.program_and_curriculum %}
                 <a class="item" href="/programme_curriculum">
                     <h4> Programme And Curriculum </h4>
