@@ -1208,6 +1208,26 @@ class WholeCollegeTimetableSolver:
                         room_label='LAB',
                     )
 
+        # ── Pre-flight checks (run always, even before the capacity raise) ─── #
+        # This ensures LARGE_ROOM_SHORTAGE / STUDENT_OVERLOAD diagnostics are
+        # logged even when a strict run is about to abort on NO_ELIGIBLE_ROOM.
+        diagnostics = preflight_conflicts(sessions, rooms)
+        if defaulted:
+            diagnostics.append({
+                'severity': 'WARNING',
+                'error_code': 'HOURS_DEFAULTED',
+                'description': (
+                    f'Implausible L-T-P hours were replaced with defaults '
+                    f'(lecture {DEFAULT_HOURS["lecture"]}, tutorial {DEFAULT_HOURS["tutorial"]}, '
+                    f'practical {DEFAULT_HOURS["practical"]}) for the timetable only; '
+                    'course data is unchanged: ' + '; '.join(
+                        f'{code} ({", ".join(sorted(set(items)))})'
+                        for code, items in sorted(defaulted.items()))
+                ),
+            })
+        if diagnostics:
+            self._log_conflicts(version, diagnostics)
+
         if conflicts:
             self._log_conflicts(version, conflicts)
             critical = [item for item in conflicts if item['severity'] == 'CRITICAL']
@@ -1232,23 +1252,6 @@ class WholeCollegeTimetableSolver:
                 f'{len(lock_conflicts)} locked slots clash with each other.',
                 conflicts=lock_notes + lock_conflicts,
             )
-
-        diagnostics = preflight_conflicts(sessions, rooms)
-        if defaulted:
-            diagnostics.append({
-                'severity': 'WARNING',
-                'error_code': 'HOURS_DEFAULTED',
-                'description': (
-                    f'Implausible L-T-P hours were replaced with defaults '
-                    f'(lecture {DEFAULT_HOURS["lecture"]}, tutorial {DEFAULT_HOURS["tutorial"]}, '
-                    f'practical {DEFAULT_HOURS["practical"]}) for the timetable only; '
-                    'course data is unchanged: ' + '; '.join(
-                        f'{code} ({", ".join(sorted(set(items)))})'
-                        for code, items in sorted(defaulted.items()))
-                ),
-            })
-        if diagnostics:
-            self._log_conflicts(version, diagnostics)
 
         return rooms, sessions, [], faculty_prefs, {}, {}
 

@@ -217,6 +217,7 @@ def generate_timetable(request):
             minimum=1, maximum=MAX_TIMEOUT_SECONDS,
         )
         relax = parse_bool(request.data.get('relax', False), 'relax')
+        split_large = parse_bool(request.data.get('split_large', False), 'split_large')
         if semester_number is not None:
             semester_number = clean_semester_number(semester_number, semester_type)
     except ValueError as exc:
@@ -231,6 +232,8 @@ def generate_timetable(request):
         return _bad_request('course_source must be registered or legacy.')
     if course_source == 'legacy' and relax:
         return _bad_request('relax is only supported for registered courses.')
+    if course_source == 'legacy' and split_large:
+        return _bad_request('split_large is only supported for registered courses.')
 
     try:
         from applications.academic_procedures.solver.timetable_solver import (
@@ -243,6 +246,7 @@ def generate_timetable(request):
             course_source=course_source,
             created_by=request.user,
             relax=relax,
+            split_large=split_large,
         )
         result = solver.solve(timeout_seconds=timeout_seconds)
     except Exception as exc:
@@ -259,6 +263,7 @@ def generate_timetable(request):
             'version_id': result.version_id,
             'semester_number': semester_number,
             'course_source': course_source,
+            'split_large': split_large,
             'slots_created': result.slots_created,
             'courses_scheduled': result.courses_scheduled,
             'relaxed': result.relaxed,
