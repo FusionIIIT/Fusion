@@ -59,18 +59,19 @@ from applications.academic_procedures.models import ( MTechGraduateSeminarReport
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
 from applications.examination.models import Student_grades
 
-from applications.academic_procedures.views import (get_user_semester, get_acad_year,
-                                                    get_currently_registered_courses,
-                                                    get_current_credits, get_branch_courses,
-                                                    Constants, get_faculty_list,
-                                                    get_registration_courses, get_add_course_options,
-                                                    get_final_registration_eligibility,
-                                                    get_final_registration_window,
-                                                    get_add_or_drop_course_date_eligibility,
-                                                    get_detailed_sem_courses,
-                                                    InitialRegistration)
+from applications.academic_procedures.helpers import (get_user_semester, get_acad_year,
+                                                      get_currently_registered_courses,
+                                                      get_current_credits, get_branch_courses,
+                                                      get_faculty_list,
+                                                      get_registration_courses, get_add_course_options,
+                                                      get_final_registration_eligibility,
+                                                      get_final_registration_window,
+                                                      get_add_or_drop_course_date_eligibility,
+                                                      get_detailed_sem_courses)
+from applications.academic_procedures.models import Constants, InitialRegistration
 
-from applications.academic_procedures.views import get_sem_courses, get_student_registrtion_check, get_cpi, academics_module_notif, get_final_registration_choices, get_currently_registered_course, get_add_course_options, get_drop_course_options, get_replace_course_options
+from applications.academic_procedures.helpers import get_sem_courses, get_student_registrtion_check, get_cpi, get_final_registration_choices, get_currently_registered_course, get_add_course_options, get_drop_course_options, get_replace_course_options
+from notification.views import academics_module_notif
 from applications.examination.api.views import parse_academic_year, calculate_cpi_for_student
 
 from . import serializers
