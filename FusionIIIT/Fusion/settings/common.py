@@ -133,7 +133,6 @@ INSTALLED_APPS = [
     'applications.examination',
     'applications.academic_information',
     'applications.globals',
-    'applications.filetracking',
     'applications.programme_curriculum',
     'applications.scholarships',
     'allauth',
