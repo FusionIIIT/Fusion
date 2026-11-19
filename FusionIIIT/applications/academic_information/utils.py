@@ -602,18 +602,3 @@ def allocate(request):
 
     except Exception as e:
         return JsonResponse({'status': -1, 'message': str(e) or "Allocation failed"})
-
-def view_alloted_course(request) : 
-    batch = request.POST.get('batch')
-    sem = request.POST.get('sem')
-    verified = request.POST.get('year')
-    course = request.POST.get('course')
-
-    registrations = FinalRegistration.objects.filter(Q(student_id__batch = batch) &  Q(semester_id__semester_no = sem) & Q(course_id__code = course))
-    return_list = []
-    for registration in registrations:
-        obj = {
-            'student':registration.student_id.id.id
-        }
-        return_list.append(obj)
-    return JsonResponse({'status':1 , 'student_list':return_list })
