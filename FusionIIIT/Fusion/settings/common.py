@@ -75,7 +75,6 @@ SERVER_EMAIL = 'fusionmailservice@iiitdmj.ac.in'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 ACCOUNT_USERNAME_MIN_LENGTH = 3
 
-SOCIALACCOUNT_ADAPTER = 'applications.globals.adapters.MySocialAccountAdapter'
 
 
 # CELERY STUFF
