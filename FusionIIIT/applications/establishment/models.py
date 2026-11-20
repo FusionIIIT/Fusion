@@ -1,4 +1,3 @@
-from pickle import TRUE
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
@@ -7,17 +6,12 @@ from django.core.exceptions import ValidationError
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 
 class Constants:
-    STATUS = (
+    CPDA_STATUS = (
         ('requested', 'Requested'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
         ('adjustments_pending', 'Adjustments Pending'),
         ('finished', 'Finished'),
-        ('outstanding', 'Outstanding'),
-        ('excellant','Excellent'),
-        ('very good','Very Good'),
-        ('good','Good'),
-        ('poor','Poor')
     )
     REVIEW_STATUS = (
         ('to_assign', 'To Assign'),
@@ -37,10 +31,10 @@ class Constants:
         ('no', 'No')
     )
     APPRAISAL_PERMISSIONS = (
-            ('intermediary', 'Intermediary Staff'),
-            ('sanc_auth', 'Appraisal Sanctioning Authority'),
-            ('sanc_off', 'Appraisal Sanctioning Officer'),
-        )
+        ('intermediary', 'Intermediary Staff'),
+        ('sanc_auth', 'Appraisal Sanctioning Authority'),
+        ('sanc_off', 'Appraisal Sanctioning Officer'),
+    )
     DESIGNATIONS = (
         ('academic', 'Academic Designation'),
         ('administrative', 'Administrative Designation'),
@@ -52,10 +46,14 @@ class Constants:
         ('forwarded', 'Forwarded'),
         ('auto rejected', 'Auto Rejected'),
         ('outstanding', 'Outstanding'),
-        ('excellant','Excellent'),
-        ('very good','Very Good'),
-        ('good','Good'),
-        ('poor','Poor')
+        ('excellant', 'Excellent'),
+        ('very good', 'Very Good'),
+        ('good', 'Good'),
+        ('poor', 'Poor'),
+        ('requested', 'Requested'),
+        ('approved', 'Approved'),
+        ('adjustments_pending', 'Adjustments Pending'),
+        ('finished', 'Finished'),
     )
 
 
