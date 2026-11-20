@@ -35,6 +35,7 @@ import re
 from notification.views import PC_COURSE_PROPOSALS, prog_and_curr_notif
 # from applications.academic_information.models import Student
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
+from applications.programme_curriculum.hod import hod_designation_names
 from applications.globals.access import IsAcadAdminOrDean, require_designation, user_holds_role, _user_from_request, has_any_role
 from applications.globals.programme_scope import (
     ALL_ACAD_ROLES,
@@ -3617,28 +3618,24 @@ def get_superior_data(request):
         is_hod = bool(re.match(r'^hod\s*\(.*\)$', designation, re.IGNORECASE))
         
         if is_professor and user_department:
-            # Get HOD of the same department
-            hod_designation_name = f"HOD ({user_department.name})"
-            try:
-                hod_designation = Designation.objects.get(name__iexact=hod_designation_name)
-                hod = HoldsDesignation.objects.filter(
-                    designation=hod_designation
-                ).select_related('working', 'working__extrainfo').first()
-                
-                if hod:
-                    hod_user = hod.working
-                    hod_extra_info = hod_user.extrainfo
-                    response_data['superior_data'] = {
-                        'username': hod_user.username,
-                        'name': f"{hod_user.first_name} {hod_user.last_name}",
-                        'designation': hod_designation_name,
-                        'department': user_department.name,
-                        'department_id': user_department.id,
-                        'email': hod_user.email,
-                        'phone': hod_extra_info.phone_no
-                    }
-            except Designation.DoesNotExist:
-                pass  # HOD designation for this department doesn't exist
+            # The HOD of the same department, under any spelling of the role:
+            # department "Mechatronics" finds "HOD (MT)", "Design" finds "HOD (Design)".
+            hod = HoldsDesignation.objects.filter(
+                designation__name__in=hod_designation_names(user_department.name)
+            ).select_related('working', 'working__extrainfo', 'designation').order_by('id').first()
+
+            if hod:
+                hod_user = hod.working
+                hod_extra_info = hod_user.extrainfo
+                response_data['superior_data'] = {
+                    'username': hod_user.username,
+                    'name': f"{hod_user.first_name} {hod_user.last_name}",
+                    'designation': hod.designation.name,
+                    'department': user_department.name,
+                    'department_id': user_department.id,
+                    'email': hod_user.email,
+                    'phone': hod_extra_info.phone_no
+                }
         
         elif is_hod:
             # Get Dean Academic
