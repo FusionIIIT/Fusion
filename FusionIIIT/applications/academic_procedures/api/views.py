@@ -49,6 +49,7 @@ from applications.globals.programme_scope import (
 )
 from notifications.signals import notify
 from applications.programme_curriculum.models import ( CourseInstructor, CourseSlot, Course as Courses, Batch, Discipline, Semester)
+from applications.programme_curriculum.hod import hod_designation_names, hod_disciplines_of
 # from applications.programme_curriculum.models import Course
 
 from applications.academic_procedures.models import ( MTechGraduateSeminarReport, PhDProgressExamination, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
@@ -4928,21 +4929,13 @@ def check_role(request, required_role):
 
 def get_allowed_specs(user):
     """
-    Find the HOD's designation name (e.g. "HOD (ECE)"), extract "ECE",
-    and return the list of allowed student specializations.
+    The student specializations an HOD may assign: "HOD (ECE)" -> ECE's list.
+    None when the user is not the HOD of a discipline in the mapping.
     """
-    des = HoldsDesignation.objects.filter(
-        working=user, designation__name__startswith='HOD'
-    ).first()
-    if not des:
-        return None
-    # extract between parentheses
-    raw = des.designation.name
-    try:
-        code = raw.split('(',1)[1].split(')',1)[0].strip()
-    except:
-        return None
-    return HOD_SPECIALIZATION_MAPPING.get(code)
+    for acronym in hod_disciplines_of(user):
+        if acronym in HOD_SPECIALIZATION_MAPPING:
+            return HOD_SPECIALIZATION_MAPPING[acronym]
+    return None
 
 
 @api_view(['GET'])
@@ -7655,30 +7648,21 @@ def supervisor_review_api(request, pk):
 
 
 def get_hod_disciplines(user):
-    """Discipline acronyms this user is HOD of, parsed from designation
-    names like 'HOD (CSE)' -> 'CSE'. Used to scope a dashboard listing to
-    every discipline the user is HOD for."""
-    hod_designations = HoldsDesignation.objects.filter(
-        working=user,
-        designation__name__icontains='HOD'
-    ).values_list('designation__name', flat=True)
-
-    hod_disciplines = []
-    for des_name in hod_designations:
-        if '(' in des_name and ')' in des_name:
-            discipline = des_name[des_name.index('(')+1:des_name.index(')')].strip()
-            hod_disciplines.append(discipline)
-    return hod_disciplines
+    """Discipline acronyms this user is HOD of: 'HOD (CSE)' -> 'CSE', and
+    'HOD (Design)' -> 'Des.' (a role may name the discipline in full). Used to
+    scope a dashboard listing to every discipline the user is HOD for."""
+    return hod_disciplines_of(user)
 
 
 def is_hod_of_discipline(user, discipline_acronym):
-    """True if `user` holds the exact 'HOD (<discipline_acronym>)' designation.
+    """True if `user` holds an HOD role for this discipline, named by its
+    acronym or its full name ('HOD (Des.)' or 'HOD (Design)').
     Used to authorize a single action against one specific discipline."""
     if not discipline_acronym:
         return False
     return HoldsDesignation.objects.filter(
         working=user,
-        designation__name=f"HOD ({discipline_acronym})"
+        designation__name__in=hod_designation_names(discipline_acronym),
     ).exists()
 
 
@@ -7692,10 +7676,13 @@ def _users_holding_designation(designation_name):
 
 
 def _hod_users_for_discipline(discipline_acronym):
-    """Users currently acting as HOD for one specific discipline acronym (e.g. 'CSE')."""
+    """Users currently acting as HOD for one specific discipline acronym (e.g. 'CSE'),
+    under any spelling of its HOD role."""
     if not discipline_acronym:
         return User.objects.none()
-    return _users_holding_designation(f"HOD ({discipline_acronym})")
+    return User.objects.filter(
+        current_designation__designation__name__in=hod_designation_names(discipline_acronym)
+    ).distinct()
 
 
 def _dean_academic_users():
@@ -14974,22 +14961,13 @@ def teaching_credit_to_dict(reg, include_evaluations=False):
 
 
 def _hod_discipline_acronyms(user):
-    """Mirrors get_hod_disciplines used elsewhere -- discipline acronyms this user is HOD of."""
-    hod_designations = HoldsDesignation.objects.filter(
-        working=user, designation__name__icontains='HOD'
-    ).values_list('designation__name', flat=True)
-    acronyms = []
-    for des_name in hod_designations:
-        if '(' in des_name and ')' in des_name:
-            acronyms.append(des_name[des_name.index('(') + 1:des_name.index(')')].strip())
-    return acronyms
+    """Discipline acronyms this user is HOD of (same as get_hod_disciplines)."""
+    return hod_disciplines_of(user)
 
 
 def _is_hod_of_student(user, student):
     acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
-    if not acronym:
-        return False
-    return HoldsDesignation.objects.filter(working=user, designation__name=f"HOD ({acronym})").exists()
+    return is_hod_of_discipline(user, acronym)
 
 
 # 1. Student
