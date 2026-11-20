@@ -1,11 +1,12 @@
-from django.conf.urls import url
+from django.urls import path, include
 from . import views
-from django.urls import include,path
+
 app_name = 'establishment'
 
 urlpatterns = [
-    url(r'^$', views.establishment, name='establishment'),
-    url(r'cpda/', views.cpda, name='cpda'),
-    url(r'ltc/', views.ltc, name='ltc'),
-    url(r'appraisal/', views.appraisal, name='appraisal')
+    path('', views.establishment, name='establishment'),
+    path('cpda/', views.cpda, name='cpda'),
+    path('ltc/', views.ltc, name='ltc'),
+    path('appraisal/', views.appraisal, name='appraisal'),
+    path('api/', include('applications.establishment.api.urls')),
 ]
