@@ -35,7 +35,11 @@ from applications.programme_curriculum.models import (
 BASE = '/academic-procedures/api'
 
 
-class HodDisciplineNameTests(TestCase):
+class HodFixtures:
+    """Design, Liberal Arts, CSE and Mechatronics disciplines, a Design and a
+    Liberal Arts student, a supervisor, and helpers to add people and call the
+    API as them."""
+
     def setUp(self):
         programme = Programme.objects.create(category='PG', name='M.Des', programme_begin_year=2025)
         self.curriculum = Curriculum.objects.create(programme=programme, name='M.Des 2025', no_of_semester=4)
@@ -83,6 +87,8 @@ class HodDisciplineNameTests(TestCase):
         self.assertEqual(response.status_code, 200)
         return [row['id'] for row in response.json()['pending']]
 
+
+class HodDisciplineNameTests(HodFixtures, TestCase):
     # -- which disciplines an HOD role covers ------------------------------
 
     def test_full_name_and_short_name_both_mean_the_same_discipline(self):
