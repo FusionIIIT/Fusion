@@ -286,7 +286,7 @@ class Issue(models.Model):
 
         user(User) - to link the user who is reporting the issue
        report_type(char) - to store the issue type (eg: feature request, bug report etc ) 
-       module(char) -  to store in which module the issue was found(eg : Academic, Mess etc)
+       module(char) - to store in which module the issue was found
        closed(boolean) -  to denote whether the issue has been resolved or not
        text(Text) -  textual description of the issue
        title(char) -  to store the title of the issue
@@ -332,7 +332,6 @@ class ModuleAccess(models.Model):
     purchase_and_store = models.BooleanField(default=False)
     rspc = models.BooleanField(default=False)
     hostel_management = models.BooleanField(default=False)
-    mess_management = models.BooleanField(default=False)
     gymkhana = models.BooleanField(default=False)
     placement_cell = models.BooleanField(default=False)
     visitor_hostel = models.BooleanField(default=False)

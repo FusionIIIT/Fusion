@@ -48,7 +48,6 @@ class DemandLetterTestCase(TestCase):
                 {'head': 'Tuition Fee', 'general': 71750, 'concession': 'NIL'},
                 {'head': 'Hostel Fees', 'general': 11000, 'concession': 11000},
             ],
-            mess_advance_per_semester=Decimal(15000),
             notes=['*Note: fees may change.'],
         )
 
@@ -58,11 +57,6 @@ class DemandLetterTestCase(TestCase):
                 'name': 'PDPM IIITDM STUDENT FEE ACCOUNT', 'number': '50030581281',
                 'ifsc': 'IDIB000M694', 'bank_branch': 'INDIAN BANK, Meghawan IIITDM Jabalpur',
                 'account_type': 'Current Account',
-            },
-            mess_fee_account={
-                'name': 'IIITDMJ MESS ACCOUNT', 'number': '50035242857',
-                'ifsc': 'IDIB000M694', 'bank_branch': 'INDIAN BANK, Meghawan IIITDM Jabalpur',
-                'account_type': 'Saving Account',
             },
         )
 
@@ -88,10 +82,11 @@ class DemandLetterTestCase(TestCase):
 
 
 class FigureTests(DemandLetterTestCase):
-    def test_the_academic_and_mess_fee_are_split_apart(self):
+    def test_demand_letter_contains_only_academic_fees(self):
         row = dl.build_demand_row(self.student, self.structure, 3)
         self.assertEqual(row['academic_fee'], '90250.00')
-        self.assertEqual(row['mess_fee'], '15000.00')
+        self.assertNotIn('mess_fee', row)
+        self.assertEqual(row['total_display'], row['academic_fee_display'])
 
     def test_concession_students_get_the_concession_figures(self):
         student = self._student('26BCS2001', category='SC')
@@ -112,10 +107,10 @@ class FigureTests(DemandLetterTestCase):
     def test_programme_short_matches_the_circular(self):
         self.assertEqual(dl._programme_short(self.student), 'B-TECH')
 
-    def test_the_bank_details_come_from_the_shared_record_not_a_constant(self):
+    def test_academic_bank_details_come_from_the_shared_record(self):
         bank = dl._bank_details()
         self.assertEqual(bank['academic']['number'], '50030581281')
-        self.assertEqual(bank['mess']['number'], '50035242857')
+        self.assertNotIn('mess', bank)
 
         accounts = DemandLetterBankAccounts.load()
         accounts.academic_fee_account = {
@@ -173,7 +168,7 @@ class IssuedCertificateTests(DemandLetterTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('fee structure', response.json()['error'].lower())
 
-    def test_the_same_bank_accounts_apply_to_every_programme_and_year(self):
+    def test_the_academic_bank_account_applies_to_every_programme_and_year(self):
         pg_programme = Programme.objects.create(
             category='PG', name='Master of Technology', programme_begin_year=2026)
         pg_curriculum = Curriculum.objects.create(
@@ -183,7 +178,7 @@ class IssuedCertificateTests(DemandLetterTestCase):
             curriculum=pg_curriculum)
         FeeStructure.objects.create(
             programme_category='PG', start_year=2027, semester_count=4,
-            semester_heads=ACADEMIC, mess_advance_per_semester=Decimal(15000))
+            semester_heads=ACADEMIC)
         pg_student = self._student('27MCS0001', batch=pg_batch, semester=1)
 
         response = self.client.post(
@@ -223,6 +218,7 @@ class BankAccountsEndpointTests(DemandLetterTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.json()['academic_fee_account']['number'], '50030581281')
+        self.assertNotIn('mess_fee_account', response.json())
 
     def test_the_accounts_can_be_edited_and_stay_a_single_row(self):
         response = self.client.put(
@@ -231,10 +227,6 @@ class BankAccountsEndpointTests(DemandLetterTestCase):
                 'academic_fee_account': {
                     'name': 'New Account', 'number': '111', 'ifsc': 'ABCD0001234',
                     'bank_branch': 'Somewhere', 'account_type': 'Current Account',
-                },
-                'mess_fee_account': {
-                    'name': 'Mess', 'number': '222', 'ifsc': 'ABCD0001234',
-                    'bank_branch': 'Somewhere', 'account_type': 'Saving Account',
                 },
             },
             format='json')

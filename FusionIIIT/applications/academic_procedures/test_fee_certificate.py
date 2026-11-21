@@ -48,7 +48,6 @@ class FeeCertificateTestCase(TestCase):
                 {'head': 'Tuition Fee', 'general': 71750, 'concession': 'NIL'},
                 {'head': 'Hostel Fees', 'general': 11000, 'concession': 11000},
             ],
-            mess_advance_per_semester=Decimal(15000),
             notes=['*Note: fees may change.'],
         )
 
@@ -78,10 +77,9 @@ class PublishedFiguresTests(FeeCertificateTestCase):
 
     def test_the_general_figures_match_the_published_table(self):
         rows = fc.build_fee_rows(self.student, self.structure, 1)
-        # Grand total plus mess, which the published table leaves out.
         self.assertEqual([row['amount'] for row in rows[:2]],
-                         ['120750.00', '105250.00'])
-        self.assertEqual(fc._total(rows), Decimal('857500.00'))
+                         ['105750.00', '90250.00'])
+        self.assertEqual(fc._total(rows), Decimal('737500.00'))
 
     def test_sc_st_and_pwd_pay_the_concession_figures(self):
         for roll, kwargs in (('26BCS2001', {'category': 'SC'}),
@@ -90,8 +88,8 @@ class PublishedFiguresTests(FeeCertificateTestCase):
             student = self._student(roll, **kwargs)
             rows = fc.build_fee_rows(student, self.structure, 1)
             self.assertEqual([row['amount'] for row in rows[:2]],
-                             ['49000.00', '33500.00'], roll)
-            self.assertEqual(fc._total(rows), Decimal('283500.00'), roll)
+                             ['34000.00', '18500.00'], roll)
+            self.assertEqual(fc._total(rows), Decimal('163500.00'), roll)
 
     def test_only_the_first_semester_carries_the_one_time_heads(self):
         rows = fc.build_fee_rows(self.student, self.structure, 1)
@@ -106,19 +104,18 @@ class PublishedFiguresTests(FeeCertificateTestCase):
             {'head': 'Hostel Fees', 'general': 11000, 'concession': 11000},
         ]
         self.structure.semester_count = 4
-        self.structure.mess_advance_per_semester = Decimal(20000)
         self.structure.one_time_heads = one_time(2000, 1000, 500, 1500, 500,
                                                  1000, 1000, 2500)
         self.structure.save()
 
         rows = fc.build_fee_rows(self.student, self.structure, 1)
-        published = [int(Decimal(row['amount']) - Decimal(20000)) for row in rows]
+        published = [int(Decimal(row['amount'])) for row in rows]
         self.assertEqual(published, [78500, 68500, 78500, 78500])
 
     def test_nil_is_read_as_nothing_rather_than_refused(self):
         student = self._student('26BCS2100', category='SC')
         rows = fc.build_fee_rows(student, self.structure, 1)
-        self.assertEqual(rows[1]['amount'], '33500.00')
+        self.assertEqual(rows[1]['amount'], '18500.00')
 
 
 class PaidUnpaidTests(FeeCertificateTestCase):
@@ -162,8 +159,7 @@ class StructureBindingTests(FeeCertificateTestCase):
             one_time_heads=one_time(9999),
             semester_heads=ACADEMIC,
             tuition_hostel_heads=[
-                {'head': 'Tuition Fee', 'general': 99999, 'concession': 'NIL'}],
-            mess_advance_per_semester=Decimal(15000))
+                {'head': 'Tuition Fee', 'general': 99999, 'concession': 'NIL'}])
 
         chosen = fc.fee_structure_for(self.student)
         self.assertEqual(chosen.start_year, 2026)
@@ -175,8 +171,7 @@ class StructureBindingTests(FeeCertificateTestCase):
             programme_category='UG', start_year=2027, semester_count=8,
             one_time_heads=one_time(1000), semester_heads=ACADEMIC,
             tuition_hostel_heads=[
-                {'head': 'Tuition Fee', 'general': 80000, 'concession': 'NIL'}],
-            mess_advance_per_semester=Decimal(15000))
+                {'head': 'Tuition Fee', 'general': 80000, 'concession': 'NIL'}])
 
         student = self._student('27BCS0001', batch=newer)
         self.assertEqual(fc.fee_structure_for(student).start_year, 2027)
@@ -200,8 +195,7 @@ class StructureBindingTests(FeeCertificateTestCase):
             programme_category='PG', start_year=2026, semester_count=4,
             one_time_heads=one_time(10000), semester_heads=ACADEMIC,
             tuition_hostel_heads=[
-                {'head': 'Tuition Fee', 'general': 50000, 'concession': 'NIL'}],
-            mess_advance_per_semester=Decimal(20000))
+                {'head': 'Tuition Fee', 'general': 50000, 'concession': 'NIL'}])
 
         student = self._student('26MCS0001', batch=pg_batch)
         self.assertEqual(fc.fee_structure_for(student), pg_structure)

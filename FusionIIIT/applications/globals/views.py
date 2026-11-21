@@ -123,11 +123,6 @@ def about(request):
             'teamName': "Awards & Scholarship Module Team",
         },
 
-        'messTeam': {
-            'teamId': "messTeam",
-            'teamName': "Central Mess Module Team",
-        },
-
         'complaintTeam': {
             'teamId': "complaintTeam",
             'teamName': "Complaint Module Team",
@@ -367,33 +362,6 @@ def about(request):
                             },
                },
 
-               'messTeam': {
-                   'dev1': {'devName': 'Kanishka Munshi',
-                            'devImage': 'team/2015121.jpg',
-                            'devTitle': 'UI/UX Developer'
-                            },
-
-                   'dev2': {'devName': 'Ankita Makker',
-                            'devImage': 'team/2015034.jpg',
-                            'devTitle': '2015034'
-                            },
-
-                   'dev3': {'devName': 'K. Venkateshwar Reddy',
-                            'devImage': 'team/2015117.jpg',
-                            'devTitle': '2015117'
-                            },
-
-                   'dev4': {'devName': 'Pratibha Singh',
-                            'devImage': 'team/2015189.jpg',
-                            'devTitle': '2015189'
-                            },
-
-                   'dev5': {'devName': 'Varnika Jain',
-                            'devImage': 'team/2015268.jpg',
-                            'devTitle': '2015268'
-                            },
-               },
-
                'phcTeam': {
                    'dev1': {'devName': 'Ravuri Abhignya',
                             'devImage': 'zlatan.jpg',
@@ -546,11 +514,6 @@ def about(request):
             'teamName': "Complaint Module",
         },
 
-        'CentralMessTeam': {
-            'teamId': "CentralMessTeam",
-            'teamName': "Mess Module",
-        },
-
         'PlacementTeam': {
             'teamId': "PlacementTeam",
             'teamName': "Placement Module",
@@ -663,18 +626,6 @@ def about(request):
                             },
 
                    'dev2': {'devName': 'Saket Patel',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-               },
-
-               'CentralMessTeam': {
-                   'dev1': {'devName': 'Ankita Makker',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev2': {'devName': 'Vernika Jain',
                             'devImage': 'zlatan.jpg',
                             'devTitle': 'Developer'
                             },
@@ -850,8 +801,6 @@ def   profile(request, username=None):
      "student",
     "CC convenor",
     "Mechatronic convenor",
-    "mess_committee",
-    "mess_convener",
     "alumini",
     "Electrical_AE",
     "Electrical_JE",
@@ -862,9 +811,7 @@ def   profile(request, username=None):
     "Convenor",
     "Convener",
     "cc1convener",
-    "CC2 convener",
-    "mess_convener_mess2",
-    "mess_committee_mess2"
+    "CC2 convener"
 ]
 
     # queryset = HoldsDesignation.objects.select_related('user','working','designation').filter(Q(working=user))

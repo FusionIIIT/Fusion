@@ -92,7 +92,7 @@ def build_fee_rows(student, structure, current_semester, semesters=None):
     """One row per semester, with the status the office would expect.
 
     The first semester carries the one-time heads; every semester carries the
-    recurring ones plus mess, which the published grand total leaves out.
+    recurring ones, excluding charges outside the published academic fee total.
 
     Semesters already behind the student default to Paid, the one they are in
     is left blank so it has to be chosen, and the rest default to Unpaid.

@@ -68,8 +68,7 @@ def financial_year_for(student, semester):
 def build_demand_row(student, structure, semester):
     column = 'concession' if _is_concession(student) else 'general'
     academic_fee = structure.semester_amount(
-        column, semester, with_mess=False).quantize(Decimal('0.01'))
-    mess_fee = Decimal(structure.mess_advance_per_semester or 0).quantize(Decimal('0.01'))
+        column, semester).quantize(Decimal('0.01'))
     category_label = (structure.concession_label if _is_concession(student)
                       else structure.general_label)
     return {
@@ -78,9 +77,7 @@ def build_demand_row(student, structure, semester):
         'category_label': category_label,
         'academic_fee': str(academic_fee),
         'academic_fee_display': indian_currency(academic_fee),
-        'mess_fee': str(mess_fee),
-        'mess_fee_display': indian_currency(mess_fee),
-        'total_display': indian_currency(academic_fee + mess_fee),
+        'total_display': indian_currency(academic_fee),
     }
 
 
@@ -93,10 +90,7 @@ def _bank_account(account):
 
 def _bank_details():
     accounts = DemandLetterBankAccounts.load()
-    return {
-        'academic': _bank_account(accounts.academic_fee_account),
-        'mess': _bank_account(accounts.mess_fee_account),
-    }
+    return {'academic': _bank_account(accounts.academic_fee_account)}
 
 
 def _bank_account_missing(account):
@@ -205,10 +199,6 @@ def render_demand_letter_pdf(context, semester, academic_year_label, due_date,
         Paragraph('Academic Fee', cell_style),
         Paragraph(escape(f"{demand['academic_fee_display']}/-"), cell_style),
     ], [
-        '', '',
-        Paragraph('Mess Fee', cell_style),
-        Paragraph(escape(f"{demand['mess_fee_display']}/-"), cell_style),
-    ], [
         Paragraph('Total Rs. =', cell_bold_right_style), '', '',
         Paragraph(escape(f"{demand['total_display']}/-"), cell_bold_style),
     ]]
@@ -258,17 +248,12 @@ def render_demand_letter_pdf(context, semester, academic_year_label, due_date,
         ]))
         return table
 
-    bank_side_by_side = Table(
-        [[
-            Paragraph('Academic Fee', sub_heading_style),
-            Paragraph('Mess Fee', sub_heading_style),
-        ], [
-            bank_block(bank['academic']),
-            bank_block(bank['mess']),
-        ]],
-        colWidths=[9 * cm, 9 * cm],
+    bank_account_table = Table(
+        [[Paragraph('Academic Fee', sub_heading_style)],
+         [bank_block(bank['academic'])]],
+        colWidths=[9 * cm],
     )
-    bank_side_by_side.setStyle(TableStyle([
+    bank_account_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('LEFTPADDING', (0, 0), (-1, -1), 0),
         ('RIGHTPADDING', (0, 0), (-1, -1), 0),
@@ -292,7 +277,7 @@ def render_demand_letter_pdf(context, semester, academic_year_label, due_date,
         Spacer(1, 0.4 * cm),
         Paragraph('<u>Bank A/c Details for Transferring Fee</u>', sub_heading_style),
         Spacer(1, 0.3 * cm),
-        bank_side_by_side,
+        bank_account_table,
         Spacer(1, 1.3 * cm),
         Paragraph(f'({escape(settings.BONAFIDE_SIGNATORY_NAME)})', signature_style),
     ]
@@ -351,7 +336,7 @@ def demand_letter_student(request):
             'Add one before issuing this certificate.')
 
     bank = _bank_details()
-    if _bank_account_missing(bank['academic']) or _bank_account_missing(bank['mess']):
+    if _bank_account_missing(bank['academic']):
         errors.append(
             'The institute bank account details have not been set up yet. '
             'Add them before issuing this certificate.')
@@ -438,7 +423,7 @@ def generate_demand_letter_pdf(request):
             status=status.HTTP_400_BAD_REQUEST)
 
     bank = _bank_details()
-    if _bank_account_missing(bank['academic']) or _bank_account_missing(bank['mess']):
+    if _bank_account_missing(bank['academic']):
         return Response(
             {'error': 'The institute bank account details have not been '
                       'set up yet.'},

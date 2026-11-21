@@ -1613,12 +1613,11 @@ def verify_course(request):
 #                 lib_d = due.library_due
 #                 pc_d = due.placement_cell_due
 #                 hos_d = due.hostel_due
-#                 mess_d = due.mess_due
 #                 acad_d = due.academic_due
 #             except:
-#                 lib_d, pc_d, hos_d, mess_d, acad_d = 0, 0, 0, 0, 0
+#                 lib_d, pc_d, hos_d, acad_d = 0, 0, 0, 0
 
-#         tot_d = lib_d + acad_d + pc_d + hos_d + mess_d
+#         tot_d = lib_d + acad_d + pc_d + hos_d
 
 #         registers = obj.register_set.all()
 #         course_list = []

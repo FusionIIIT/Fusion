@@ -807,7 +807,6 @@ def submit_nodues_form(request):
 
     There are many actors in this problem like authory of:-
     library,
-    mess,
     hostel,
     Physics Lab,
     ECE Lab,
@@ -838,7 +837,6 @@ def submit_nodues_form(request):
         ece_credential = data.get('ece_credential'),
         library_credential = data.get('library_credential'),
         me_credential = data.get('me_credential'),
-        mess_credential = data.get('mess_credential'),
         physics_credential = data.get('physics_credential'),
         discipline_credential = data.get('discipline_credential'),
 
@@ -851,8 +849,6 @@ def submit_nodues_form(request):
             library_notclear=False,
             hostel_clear=False,
             hostel_notclear=False,
-            mess_clear=False,
-            mess_notclear=False,
             ece_clear=False,
             ece_notclear=False,
             physics_lab_clear=False,
@@ -899,7 +895,6 @@ def submit_nodues_form(request):
             ece_credential = data.get('ece_credential'),
             library_credential = data.get('library_credential'),
             me_credential = data.get('me_credential'),
-            mess_credential = data.get('mess_credential'),
             physics_credential = data.get('physics_credential'),
             discipline_credential = data.get('discipline_credential'),
 
@@ -1061,23 +1056,6 @@ def submit_nodues_form(request):
         
         message = "A new ME application of no dues"
         otheracademic_notif(request.user,me_receiver, 'me_nodues', nodues.id, 'student', message)
-
-        #mess_receiver
-        mess_receiver=User.objects.get(username=data.get('mess_credential'))
-        file_bank= create_file(
-            uploader=request.user.username,
-            uploader_designation=obj,
-            receiver=mess_receiver,
-            receiver_designation="student",
-            src_module="otheracademic",
-            src_object_id=nodues.id,
-            file_extra_JSON={"value": 2},
-            attached_file=None,
-            subject='no_dues'
-        )
-        
-        message = "A new mess application of no dues"
-        otheracademic_notif(request.user,mess_receiver, 'mess_nodues', nodues.id, 'student', message)
 
         #physics_receiver
         physics_receiver=User.objects.get(username=data.get('physics_credential'))
@@ -1716,38 +1694,6 @@ def reject_mecha(request, no_dues_id):
 
 
 @login_required(login_url='/accounts/login')
-def approve_mess(request, no_dues_id):
-    leave_entry = NoDues.objects.get(id=no_dues_id)
-    leave_entry.mess_clear= True
-    leave_entry.mess_notclear = False
-    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
-    message = "mess nodues approved"
-    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
-    leave_entry.save()
-    return redirect('/otheracademic/mess_nodues')  # Realumni
-
-@login_required(login_url='/accounts/login')
-def approve_mess_not(request, no_dues_id):
-    leave_entry = NoDues.objects.get(id=no_dues_id)
-    leave_entry.mess_clear= True
-    leave_entry.mess_notclear = False
-    leave_entry.save()
-    return redirect('/otheracademic/mess_nodues_not')  # Realumni
-    
-
-
-@login_required(login_url='/accounts/login')
-def reject_mess(request, no_dues_id):
-    leave_entry = NoDues.objects.get(id=no_dues_id)
-    leave_entry.mess_clear= False
-    leave_entry.mess_notclear = True
-    nodues_receiver=User.objects.get(username=leave_entry.roll_no_id)
-    message = "mess nodues rejected"
-    otheracademic_notif(request.user,nodues_receiver , 'nodues_status', leave_entry.id, "student", message)
-    leave_entry.save()
-    return redirect('/otheracademic/mess_nodues')  # Red  
-
-@login_required(login_url='/accounts/login')
 def approve_physics(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.physics_lab_clear= True
@@ -1913,23 +1859,6 @@ def ME_nodues_not(request):
     
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/ME_nodues_not.html',{'form_data': form_data})
-
-
-@login_required(login_url='/accounts/login')
-def mess_nodues(request):
-    inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
-    leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
-    
-    form_data = NoDues.objects.filter(id__in=leave_ids)
-    return render(request,'otheracademic/mess_nodues.html',{'form_data': form_data})
-
-@login_required(login_url='/accounts/login')
-def mess_nodues_not(request): 
-    inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
-    leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
-    
-    form_data = NoDues.objects.filter(id__in=leave_ids)
-    return render(request,'otheracademic/mess_nodues_not.html',{'form_data': form_data})
 
 
 @login_required(login_url='/accounts/login')

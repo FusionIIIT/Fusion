@@ -68,13 +68,6 @@ def build_structure_rows(student, structure, odd_semester):
                 'total': str((sem1 + sem2).quantize(Decimal('0.01'))),
             })
 
-    mess = Decimal(structure.mess_advance_per_semester or 0).quantize(Decimal('0.01'))
-    rows.append({
-        'label': 'Mess Advance',
-        'sem1': str(mess), 'sem2': str(mess),
-        'total': str((mess * 2).quantize(Decimal('0.01'))),
-    })
-
     one_time_sem1 = Decimal('0')
     if odd_semester == 1:
         one_time_sem1 = sum(

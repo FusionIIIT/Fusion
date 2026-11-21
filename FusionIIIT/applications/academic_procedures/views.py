@@ -29,7 +29,7 @@ from rest_framework import status
 from notification.views import AssistantshipClaim_notify,AssistantshipClaim_acad_notify,AssistantshipClaim_account_notify,AssistantshipClaim_faculty_notify
 from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance)
-                                                      
+
 from applications.online_cms.models import (Student_grades)
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester , CourseInstructor)
 from applications.globals.models import (DepartmentInfo, Designation,
@@ -39,7 +39,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentReg
                      Register, Thesis, FinalRegistration, ThesisTopicProcess,
                      Constants, FeePayments, SemesterMarks,
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
-                     PhDProgressExamination,CourseRequested, course_registration, course_replacement, MessDue, Assistantship_status , backlog_course)
+                     PhDProgressExamination,CourseRequested, course_registration, course_replacement, Assistantship_status , backlog_course)
 from notification.views import academics_module_notif
 from .forms import BranchChangeForm
 from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDay,Cast
@@ -101,16 +101,6 @@ def academic_procedures(request):
     elif str(request.user) == "rizwan":
         return HttpResponseRedirect('/academic-procedures/account/')
     
-    elif str(request.user) == "talib":
-        Messdue = MessDue.objects.all()
-        dues = Dues.objects.all()
-        return render(request,
-        '../templates/academic_procedures/messdueassistant.html' ,
-        {
-            'Mess_due' : Messdue,
-            'dues' : dues,
-
-        })
     else:
         return HttpResponseRedirect('/dashboard/')
 #
@@ -506,7 +496,7 @@ def academic_procedures_student(request):
 
         # Dues Check
         #Initializing all due with -1 value , since generating no due certificate requires total due=0 
-        lib_d, pc_d, hos_d, mess_d, acad_d = -1, -1, -1, -1, -1
+        lib_d, pc_d, hos_d, acad_d = -1, -1, -1, -1
         if student_flag:
             try:
 
@@ -515,12 +505,11 @@ def academic_procedures_student(request):
                 lib_d = obj.library_due
                 pc_d = obj.placement_cell_due
                 hos_d = obj.hostel_due
-                mess_d = obj.mess_due
                 acad_d = obj.academic_due
             except ObjectDoesNotExist:
                 logging.warning("entry in DB not found for student")
 
-        tot_d = lib_d + acad_d + pc_d + hos_d + mess_d
+        tot_d = lib_d + acad_d + pc_d + hos_d
         obj = Student.objects.select_related('id','id__user','id__department').get(id=request.user.username)
         course_list = []
         for i in registers:
@@ -554,16 +543,14 @@ def academic_procedures_student(request):
 
             backlogCourseList.append([i.course_id.course_name, course_details , i.semester_id.semester_no , summer_course])
         
-        # Mess_bill = Monthly_bill.objects.filter(student_id = obj)
-        # Mess_pay = Payments.objects.filter(student_id = obj)
+
         swayam_course_slots = get_current_semester_swayam_course_slots(curr_sem_id=curr_sem_id)
         swayam_courses = []
         try:
             swayam_courses = swayam_course_slots[0].courses.all()
         except:
             pass    
-        Mess_bill = []
-        Mess_pay = []
+
         # Branch Change Form save
         if request.method=='POST':
             if True:
@@ -630,8 +617,6 @@ def academic_procedures_student(request):
                             'cur_cpi': cur_cpi,
                            'cur_spi': cur_spi,
                            # 'mincr': minimum_credit,
-                           'Mess_bill' : Mess_bill,
-                           'Mess_pay' : Mess_pay,
                            'lib_d':lib_d,
                            'acad_d':acad_d,
                            'mess_d':mess_d,
@@ -3969,7 +3954,6 @@ def update_phdform(request):
 def update_dues(request):
     if request.method == "POST":
         i = request.POST.get('obj_id')
-        md =int(request.POST.get('md'))
         hd = int(request.POST.get('hd'))
         ld = int(request.POST.get('ld'))
         pd = int(request.POST.get('pd'))
@@ -3977,8 +3961,6 @@ def update_dues(request):
         
         dues_object = Dues.objects.get(id = i)
         message = ""
-        if md < 0 and -1*md > dues_object.mess_due :
-            message = message + "Subtracting more value than existing mess due<br>"
         if hd < 0 and -1*hd > dues_object.hostel_due :
             message = message + "Subtracting more value than existing hostel due<br>" 
         if ld < 0 and -1*ld > dues_object.library_due :
@@ -4002,13 +3984,11 @@ def update_dues(request):
 
          
 
-        md += dues_object.mess_due
         hd += dues_object.hostel_due
         ld += dues_object.library_due
         pd += dues_object.placement_cell_due
         ad += dues_object.academic_due
 
-        dues_object.mess_due = md
         dues_object.hostel_due = hd
         dues_object.library_due = ld
         dues_object.placement_cell_due = pd
@@ -4017,44 +3997,6 @@ def update_dues(request):
         dues_object.save()
         content = json.dumps(message)
         return HttpResponse(content)
-
-
-@require_designation("acadadmin", "Dean Academic")
-def mdue(request):
-    if request.method == 'POST':
-        rollno = request.POST.get('rollno')
-        year = request.POST.get('year')
-        month = request.POST.get('month')
-        amount = int(request.POST.get('amount'))
-        desc = request.POST.get('desc')
-        amount1 = amount
-        if desc == "due":
-            amount1 = -1*amount
-        
-        Dues_mess = amount  
-        student = Student.objects.get(id = rollno)
-        
-        messdue_list=MessDue.objects.all().filter(student = student)
-        duesobj = Dues.objects.get(student_id = student)
-        if(messdue_list):
-            new_remaining = messdue_list[len(messdue_list)-1].remaining_amount + amount1
-            Dues_mess = new_remaining
-            messdueobj = MessDue(student = student, month = month, year = year,description = desc, amount = amount, remaining_amount = new_remaining)
-        else:
-            messdueobj=MessDue(student = student, month = month, year = year,description = desc, amount = amount, remaining_amount = amount1)
-        messdueobj.save()
-
-        if Dues_mess >= 0 :
-            duesobj.mess_due = 0
-        else :
-            duesobj.mess_due = -1*Dues_mess
-        duesobj.save()
-        content = json.dumps("success")
-        return HttpResponse(content)
-
-
-
-
 def get_detailed_sem_courses(sem_id):
     course_slots = CourseSlot.objects.filter(semester_id=sem_id)
     # Serialize queryset of course slots into JSON

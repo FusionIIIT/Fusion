@@ -182,24 +182,6 @@
                 </div>
 
 
-                <div class="ui tab" data-tab="CentralMessTeam">
-                    <div class="ui stackable doubling three centered cards">
-                        {% for key, value in CentralMessTeam.items %}
-                            <div class="ui card">
-                                <div class="teamImage image">
-                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
-                                </div>
-                                <div class="content">
-                                    <a class="header">{{ value.devName }}</a>
-                                    <div class="meta">
-                                        <span>{{ value.devTitle }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-
                 <div class="ui tab" data-tab="PlacementTeam">
                     <div class="ui stackable doubling three centered cards">
                         {% for key, value in PlacementTeam.items %}

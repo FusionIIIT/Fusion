@@ -61,7 +61,6 @@ urlpatterns = [
     url(r'^update_acad_assistantship/$', views.update_acad_assis),
     url(r'^update_account_assistantship/$', views.update_account_assistantship),
     url(r'^update_hod_assistantship/$', views.update_hod_assistantship),
-    url(r'^mdue/$', views.mdue),
     url(r'^assis_stat/$', views.assis_stat),
     url(r'^acad_person/allot_courses/' , views.allot_courses, name='allot_courses'),
     url(r'^acad_person/allot_courses_after_add_and_drop/' , views.allot_courses_after_add_and_drop, name='allot_courses_after_add_and_drop'),

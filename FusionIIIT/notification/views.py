@@ -508,8 +508,6 @@ def otheracademic_notif(sender, recipient, type, otheracademic_id,student,messag
        url = ('otheracademic:Ece_nodues')  
     elif type=='library_nodues' :
        url = ('otheracademic:library_nodues')   
-    elif type=='mess_nodues' :
-       url = ('otheracademic:mess_nodues')   
     elif type=='physics_nodues' :
        url = ('otheracademic:Physics_nodues')
     elif type=='discipline_nodues' :

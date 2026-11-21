@@ -6,7 +6,7 @@ from django.utils import timezone
 from .models import (BranchChange, CoursesMtech, FeePayments, FinalRegistration, InitialRegistration,StudentRegistrationChecks,
                      MinimumCredits, Register, Thesis, CourseRequested,
                      ThesisTopicProcess, FeePayment, TeachingCreditRegistration,
-                     SemesterMarks, MarkSubmissionCheck,Dues,MTechGraduateSeminarReport,PhDProgressExamination,AssistantshipClaim,MessDue,Assistantship_status, course_registration,
+                     SemesterMarks, MarkSubmissionCheck,Dues,MTechGraduateSeminarReport,PhDProgressExamination,AssistantshipClaim,Assistantship_status, course_registration,
                      ThesisSubmission, ReviewInvitation)
 
 class RegisterAdmin(admin.ModelAdmin):
@@ -192,7 +192,6 @@ admin.site.register(Dues)
 admin.site.register(AssistantshipClaim)
 admin.site.register(PhDProgressExamination)
 admin.site.register(MTechGraduateSeminarReport)
-admin.site.register(MessDue)
 admin.site.register(Assistantship_status)
 admin.site.register(FeePayments)
 admin.site.register(CourseRequested)
@@ -200,4 +199,3 @@ admin.site.register(InitialRegistration)
 admin.site.register(FinalRegistration)
 admin.site.register(StudentRegistrationChecks)
 admin.site.register(course_registration)
-

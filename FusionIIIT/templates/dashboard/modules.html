@@ -55,24 +55,6 @@
                     {% endif %}
 
 
-                    {% if request.session.moduleAccessRights.mess_management %}
-
-                    <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                        <a class="ui large label" style="height: 120px; width:100%" href="/mess">
-                            <div class="ui centered grid">
-                                <div class="row">
-                                    <i class="ui food icon big"></i>
-                                </div>
-
-                                <div class="row">
-                                    <span class="ui sub header centered">Mess Management</span>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    {% endif %}
 
                     {% if request.session.moduleAccessRights.visitor_hostel %}
 

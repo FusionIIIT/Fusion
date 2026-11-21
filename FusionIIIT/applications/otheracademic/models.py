@@ -269,8 +269,6 @@ class NoDues(models.Model):
     library_notclear = models.BooleanField(default=False)
     hostel_clear = models.BooleanField(default=False)
     hostel_notclear = models.BooleanField(default=False)
-    mess_clear = models.BooleanField(default=False)
-    mess_notclear = models.BooleanField(default=False)
     ece_clear = models.BooleanField(default=False)
     ece_notclear = models.BooleanField(default=False)
     physics_lab_clear = models.BooleanField(default=False)
@@ -317,7 +315,6 @@ class NoDues(models.Model):
     ece_credential =  models.CharField(max_length=100)
     library_credential =  models.CharField(max_length=100)
     me_credential =  models.CharField(max_length=100)
-    mess_credential =  models.CharField(max_length=100)
     physics_credential =  models.CharField(max_length=100)
     discipline_credential =  models.CharField(max_length=100)
 
@@ -325,4 +322,3 @@ class NoDues(models.Model):
 
     class Meta:
         db_table = 'NoDues'
-

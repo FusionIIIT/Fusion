@@ -46,7 +46,6 @@ class FeeStructureCertificateTestCase(TestCase):
                 {'head': 'Tuition Fee', 'general': 71750, 'concession': 'NIL'},
                 {'head': 'Hostel Fees', 'general': 11000, 'concession': 11000},
             ],
-            mess_advance_per_semester=Decimal(15000),
         )
 
         self.student = self._student('26BCS1234', category='GEN', semester=1)
@@ -79,9 +78,10 @@ class RowBuildingTests(FeeStructureCertificateTestCase):
 
     def test_the_admission_semester_matches_the_published_circular(self):
         rows = fsc.build_structure_rows(self.student, self.structure, 1)
-        self.assertEqual(fsc._column_total(rows, 'sem1'), Decimal('120750.00'))
-        self.assertEqual(fsc._column_total(rows, 'sem2'), Decimal('105250.00'))
-        self.assertEqual(fsc._column_total(rows, 'total'), Decimal('226000.00'))
+        self.assertEqual(fsc._column_total(rows, 'sem1'), Decimal('105750.00'))
+        self.assertEqual(fsc._column_total(rows, 'sem2'), Decimal('90250.00'))
+        self.assertEqual(fsc._column_total(rows, 'total'), Decimal('196000.00'))
+        self.assertNotIn('Mess Advance', [row['label'] for row in rows])
 
     def test_a_later_session_carries_no_one_time_heads(self):
         rows = fsc.build_structure_rows(self.student, self.structure, 3)

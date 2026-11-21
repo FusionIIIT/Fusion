@@ -6,7 +6,7 @@ from ..academic_procedures.models import (BranchChange, CoursesMtech, FinalRegis
                      Constants, FeePayments, TeachingCreditRegistration, SemesterMarks,
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
                      PhDProgressExamination,CourseRequested, course_registration, course_replacement,
-                     MessDue, Assistantship_status , backlog_course,)
+                     Assistantship_status , backlog_course,)
 
 from applications.programme_curriculum.models import(Course,CourseSlot,Batch,Semester)
 from django.http import HttpResponse, JsonResponse

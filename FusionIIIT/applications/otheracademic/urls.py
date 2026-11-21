@@ -61,7 +61,6 @@ urlpatterns = [
       url(r'^hostel_nodues/$', views.hostel_nodues, name='hostel_nodues'),
       url(r'^ME_nodues/$', views.ME_nodues, name='ME_nodues'),
       url(r'^library_nodues/$', views.library_nodues, name='library_nodues'),
-      url(r'^mess_nodues/$', views.mess_nodues, name='mess_nodues'),
       url(r'^Physics_nodues/$', views.Physics_nodues, name='Physics_nodues'),
       url(r'^discipline_nodues/$', views.discipline_nodues, name='discipline_nodues'),
 
@@ -127,8 +126,6 @@ urlpatterns = [
     url(r'^approve_mecha(?P<no_dues_id>\d+)/$', views.approve_mecha, name='approve_mecha'),
     url(r'^reject_mecha(?P<no_dues_id>\d+)/$', views.reject_mecha, name='reject_mecha'),
 
-    url(r'^approve_mess(?P<no_dues_id>\d+)/$', views.approve_mess, name='approve_mess'),
-    url(r'^reject_mess(?P<no_dues_id>\d+)/$', views.reject_mess, name='reject_mess'),
     
     url(r'^approve_physics(?P<no_dues_id>\d+)/$', views.approve_physics, name='approve_physics'),
     url(r'^reject_physics(?P<no_dues_id>\d+)/$', views.reject_physics, name='reject_physics'),
@@ -154,7 +151,6 @@ urlpatterns = [
     url(r'^approve_library_not(?P<no_dues_id>\d+)/$', views.approve_library_not, name='approve_library_not'),
     url(r'^approve_workshop_not(?P<no_dues_id>\d+)/$', views.approve_workshop_not, name='approve_workshop_not'),
     url(r'^approve_mecha_not(?P<no_dues_id>\d+)/$', views.approve_mecha_not, name='approve_mecha_not'),
-    url(r'^approve_mess_not(?P<no_dues_id>\d+)/$', views.approve_mess_not, name='approve_mess_not'),
     url(r'^approve_physics_not(?P<no_dues_id>\d+)/$', views.approve_physics_not, name='approve_physics_not'),
     
             
@@ -168,7 +164,6 @@ urlpatterns = [
     url(r'^hostel_nodues_not/$', views.hostel_nodues_not, name='hostel_nodues_not'),
     url(r'^ME_nodues_not/$', views.ME_nodues_not, name='ME_nodues_not'),
     url(r'^library_nodues_not/$', views.library_nodues_not, name='library_nodues_not'),
-    url(r'^mess_nodues_not/$', views.mess_nodues_not, name='mess_nodues_not'),
     url(r'^Physics_nodues_not/$', views.Physics_nodues_not, name='Physics_nodues_not'),
     url(r'^discipline_nodues_not/$', views.discipline_nodues_not, name='discipline_nodues_not'),
     
@@ -210,4 +205,3 @@ urlpatterns = [
 
 
 ]
-

@@ -96,10 +96,10 @@ def _serialise(structure):
     grand_total = [
         {
             'semester': semester,
-            # A+B+C as the circular prints it; mess is section D on its own.
-            'general': str(structure.semester_amount('general', semester, False)),
+            # A+B+C as the circular prints it.
+            'general': str(structure.semester_amount('general', semester)),
             'concession': str(
-                structure.semester_amount('concession', semester, False)),
+                structure.semester_amount('concession', semester)),
         }
         for semester in range(1, structure.semester_count + 1)
     ]
@@ -114,7 +114,6 @@ def _serialise(structure):
         'semester_count': structure.semester_count,
         'general_label': structure.general_label,
         'concession_label': structure.concession_label,
-        'mess_advance_per_semester': str(structure.mess_advance_per_semester),
         'notes': structure.notes,
         'is_active': structure.is_active,
         **sections,
@@ -152,8 +151,6 @@ def _apply(structure, data):
                                or 'Gen/OBC/EWS').strip()[:40]
     structure.concession_label = (data.get('concession_label')
                                   or 'PWD/SC/ST').strip()[:40]
-    structure.mess_advance_per_semester = _clean_amount(
-        data.get('mess_advance_per_semester') or 0) or 0
     structure.notes = [str(note).strip() for note in (data.get('notes') or [])
                        if str(note).strip()]
     structure.is_active = bool(data.get('is_active', True))
@@ -264,10 +261,7 @@ def fee_structure_template(request):
         'semester_count': DEFAULT_SEMESTERS.get(category, 8),
         'general_label': 'Gen/OBC/EWS',
         'concession_label': 'PWD/SC/ST',
-        'mess_advance_per_semester': '',
         'notes': [
-            'The above fee structure includes Mess Advance Fee of Rs. ____/- '
-            '(per semester).',
             '*Note: The above fee structure etc. may be changed any time by '
             'the Institute',
         ],
@@ -278,7 +272,6 @@ def fee_structure_template(request):
 def _serialise_bank_accounts(accounts):
     return {
         'academic_fee_account': accounts.academic_fee_account,
-        'mess_fee_account': accounts.mess_fee_account,
         'updated_at': accounts.updated_at.strftime('%d.%m.%Y'),
     }
 
@@ -292,7 +285,5 @@ def demand_letter_bank_accounts(request):
     if request.method == 'PUT':
         accounts.academic_fee_account = _clean_bank_account(
             request.data.get('academic_fee_account'))
-        accounts.mess_fee_account = _clean_bank_account(
-            request.data.get('mess_fee_account'))
         accounts.save()
     return Response(_serialise_bank_accounts(accounts))

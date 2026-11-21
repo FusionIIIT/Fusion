@@ -306,7 +306,6 @@ class MarkSubmissionCheck(models.Model):
 
 class Dues(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    mess_due = models.IntegerField()
     hostel_due = models.IntegerField()
     library_due = models.IntegerField()
     placement_cell_due = models.IntegerField()
@@ -314,37 +313,6 @@ class Dues(models.Model):
 
     class Meta:
         db_table = 'Dues'
-
-
-class MessDue(models.Model):
-    Month_Choices = [
-        ('Jan', 'January'),
-        ('Feb', 'Febuary'),
-        ('Mar', 'March'),
-        ('Apr', 'April'),
-        ('May', 'May'),
-        ('Jun', 'June'),
-        ('Jul', 'July'),
-        ('Aug', 'August'),
-        ('Sep', 'September'),
-        ('Oct', 'October'),
-        ('Nov', 'November'),
-        ('Dec', 'December'),
-
-    ]
-
-    paid_choice = [
-        ('Stu_paid', 'Paid'),
-        ('Stu_due' , 'Due')
-    ]
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    month = models.CharField(max_length=10, choices=Month_Choices, null=False , blank=False)
-    year = models.IntegerField(choices=Year_Choices)
-    description = models.CharField(max_length=15,choices=paid_choice)
-    amount = models.IntegerField()
-    remaining_amount = models.IntegerField()
-    
-
 
 
 class Bonafide(models.Model):
@@ -407,8 +375,8 @@ class FeeStructure(models.Model):
 
     Stored as the heads the institute publishes rather than as per-semester
     totals, because the totals are derived from them: the first semester adds
-    the one-time heads, every semester carries the academic and tuition heads,
-    and mess is added on top. Keeping the heads means the certificate can show
+    the one-time heads and every semester carries the academic and tuition heads.
+    Keeping the heads means the certificate can show
     a figure the office can reconcile against its own circular.
     """
 
@@ -426,10 +394,6 @@ class FeeStructure(models.Model):
     one_time_heads = models.JSONField(default=list, blank=True)
     semester_heads = models.JSONField(default=list, blank=True)
     tuition_hostel_heads = models.JSONField(default=list, blank=True)
-    #: Never part of the grand total; added to every semester on the certificate.
-    mess_advance_per_semester = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0)
-
     #: Data, not a constant, so a change of programme length needs no deploy.
     semester_count = models.PositiveSmallIntegerField(default=8)
     #: The two column headings the circular prints.
@@ -473,18 +437,12 @@ class FeeStructure(models.Model):
         return sum((self._amount(head, column, semester) for head in heads or []),
                    Decimal('0'))
 
-    def semester_amount(self, column, semester, with_mess=True):
-        """What this semester costs: A only in the first, then B and C.
-
-        The circular's Grand Total stops there; the certificate adds mess, so
-        the screen and the certificate ask for different answers.
-        """
+    def semester_amount(self, column, semester):
+        """What this semester costs: A only in the first, then B and C."""
         amount = (self._sum(self.semester_heads, column, semester)
                   + self._sum(self.tuition_hostel_heads, column, semester))
         if semester == 1:
             amount += self._sum(self.one_time_heads, column, semester)
-        if with_mess:
-            amount += Decimal(self.mess_advance_per_semester or 0)
         return amount
 
     def section_total(self, section, column, semester=1):
@@ -497,7 +455,6 @@ class FeeStructure(models.Model):
 
 class DemandLetterBankAccounts(models.Model):
     academic_fee_account = models.JSONField(default=dict, blank=True)
-    mess_fee_account = models.JSONField(default=dict, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
