@@ -2675,6 +2675,106 @@ def database_branch_wise_student_count(request):
     ]})
 
 
+def _batch_students(request):
+    """The students a batch report covers, and an error response if its filters
+    are wrong.
+
+    ``batch`` (a year) is required. ``programme_type`` (UG, PG or PHD) narrows it
+    to that kind of programme and ``batch_id`` to one programme and discipline of
+    that year. Scoped to the programmes the user may see.
+    """
+    from applications.examination.api.views import PROGRAMME_TYPE_BUCKETS
+    from applications.globals.programme_scope import scopes_for, scope_students
+
+    year = (request.query_params.get('batch') or '').strip()
+    programme_type = (request.query_params.get('programme_type') or '').strip().upper()
+    batch_id = (request.query_params.get('batch_id') or '').strip()
+    if not year:
+        return None, Response({'detail': 'Required: batch.'}, status=400)
+    if not year.isdigit():
+        return None, Response({'detail': f"Batch '{year}' is not a year."}, status=400)
+    if programme_type and programme_type not in PROGRAMME_TYPE_BUCKETS:
+        return None, Response(
+            {'detail': f"Programme '{programme_type}' is not UG, PG or PHD."}, status=400)
+
+    students = Student.objects.filter(batch=int(year))
+    if programme_type:
+        students = students.filter(programme__in=PROGRAMME_TYPE_BUCKETS[programme_type])
+    if batch_id:
+        batch = Batch.objects.filter(
+            id=batch_id if batch_id.isdigit() else None, year=int(year)).first()
+        if not batch:
+            return None, Response(
+                {'detail': f"No discipline batch '{batch_id}' in {year}."}, status=400)
+        students = students.filter(batch_id=batch)
+    return scope_students(students, scopes_for(request.user)), None
+
+
+def _discipline_label(student):
+    """"B.Tech CSE": the programme and discipline of the student's batch."""
+    if student.batch_id_id:
+        return f'{student.batch_id.name} {student.batch_id.discipline.acronym}'
+    return student.programme
+
+
+# Gender as ExtraInfo.sex stores it, trimmed: some rows carry "F " or nothing.
+GENDERS = {'M': 'Male', 'F': 'Female', 'O': 'Other'}
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_category_wise_student_count(request):
+    """Students of a batch in each category, one row per programme and discipline.
+
+    Filters as the SPI and CPI report (``batch`` required, ``programme_type`` and
+    ``batch_id`` optional), and ``gender`` (M, F or O) optionally.
+
+    EWS is a flag on a student rather than a category, so a student with it is
+    counted under EWS only, and General, OBC, SC and ST count the rest: the five
+    add up to the total, with any other stored category under ``other``. PwD
+    is counted across all categories. ``no_gender`` is how many students of the
+    selection, before any gender filter, have no gender recorded.
+    """
+    from collections import OrderedDict
+    from django.db.models.functions import Trim, Upper
+
+    gender = (request.query_params.get('gender') or '').strip().upper()
+    if gender and gender not in GENDERS:
+        return Response({'detail': f"Gender '{gender}' is not M, F or O."}, status=400)
+
+    students, error = _batch_students(request)
+    if error:
+        return error
+    students = students.annotate(gender=Upper(Trim('id__sex')))
+    no_gender = students.filter(Q(gender='') | Q(gender__isnull=True)).count()
+    if gender:
+        students = students.filter(gender=gender)
+
+    rows = OrderedDict()
+    for student in (students.select_related('batch_id__discipline')
+                    .order_by('batch_id__name', 'batch_id__discipline__acronym',
+                              'programme', 'id_id')):
+        label = _discipline_label(student)
+        row = rows.setdefault(label, {
+            'discipline': label, 'gen': 0, 'ews': 0, 'obc': 0, 'sc': 0, 'st': 0,
+            'other': 0, 'total': 0, 'pwd': 0})
+        if student.is_ews:
+            row['ews'] += 1
+        else:
+            category = (student.category or '').strip().lower()
+            row[category if category in ('gen', 'obc', 'sc', 'st') else 'other'] += 1
+        row['pwd'] += 1 if student.is_pwd else 0
+        row['total'] += 1
+
+    return Response({
+        'rows': list(rows.values()),
+        'students': sum(r['total'] for r in rows.values()),
+        'no_gender': no_gender,
+    })
+
+
 def _semester_term(terms, semester_no):
     """The semester type of ``semester_no`` among a student's graded (semester,
     type) terms: the Odd or Even one its number implies, or the only other one
@@ -2717,37 +2817,18 @@ def database_spi_cpi(request):
         calculate_cpi_for_student, calculate_spi_for_student,
         format_semester_display,
     )
-    from applications.globals.programme_scope import scopes_for, scope_students
     from applications.examination.models import Student_grades
 
-    year = (request.query_params.get('batch') or '').strip()
-    programme_type = (request.query_params.get('programme_type') or '').strip().upper()
-    batch_id = (request.query_params.get('batch_id') or '').strip()
+    students, error = _batch_students(request)
+    if error:
+        return error
     semester = (request.query_params.get('semester') or '').strip()
-    if not year:
-        return Response({'detail': 'Required: batch.'}, status=400)
-    if not year.isdigit():
-        return Response({'detail': f"Batch '{year}' is not a year."}, status=400)
     if semester and not (semester.isdigit() and int(semester) > 0):
         return Response({'detail': f"Semester '{semester}' is not a semester number."},
                         status=400)
-    if programme_type and programme_type not in PROGRAMME_TYPE_BUCKETS:
-        return Response({'detail': f"Programme '{programme_type}' is not UG, PG or PHD."},
-                        status=400)
     semester_no = int(semester) if semester else None
-
-    students = Student.objects.filter(batch=int(year))
-    if programme_type:
-        students = students.filter(programme__in=PROGRAMME_TYPE_BUCKETS[programme_type])
-    if batch_id:
-        batch = Batch.objects.filter(
-            id=batch_id if batch_id.isdigit() else None, year=int(year)).first()
-        if not batch:
-            return Response({'detail': f"No discipline batch '{batch_id}' in {year}."},
-                            status=400)
-        students = students.filter(batch_id=batch)
-    students = list(scope_students(students, scopes_for(request.user))
-                    .select_related('id__user', 'batch_id__discipline').order_by('id_id'))
+    students = list(students.select_related('id__user', 'batch_id__discipline')
+                    .order_by('id_id'))
 
     rolls = [s.id_id for s in students]
     terms, summers = defaultdict(set), defaultdict(set)
@@ -2812,8 +2893,7 @@ def database_spi_cpi(request):
         row = {
             'roll_no': student.id_id,
             'student_name': f'{user.first_name} {user.last_name}'.strip(),
-            'discipline': (f'{student.batch_id.name} {student.batch_id.discipline.acronym}'
-                           if student.batch_id_id else student.programme),
+            'discipline': _discipline_label(student),
             'semester': label if semester_type else None,
             'spi': None,
             'cpi': None,
