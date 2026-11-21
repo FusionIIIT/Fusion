@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('academic_procedures', '0061_alter_bonafidecertificate_certificate_type'),
+        ('academic_procedures', '0063_teaching_credit_per_entry'),
         ('globals', '0013_remove_central_mess'),
     ]
 
