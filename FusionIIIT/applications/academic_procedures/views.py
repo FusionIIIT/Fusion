@@ -1,4 +1,4 @@
-from asyncio.log import logger
+﻿from asyncio.log import logger
 import traceback
 from ctypes import Union
 import json
@@ -30,7 +30,6 @@ from notification.views import AssistantshipClaim_notify,AssistantshipClaim_acad
 from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance)
                                                       
-from applications.central_mess.models import(Monthly_bill, Payments)
 from applications.online_cms.models import (Student_grades)
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester , CourseInstructor)
 from applications.globals.models import (DepartmentInfo, Designation,

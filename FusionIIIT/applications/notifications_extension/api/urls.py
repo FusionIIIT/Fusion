@@ -1,4 +1,4 @@
-# urls.py
+﻿# urls.py
 #
 # NOTE (as of 2026-07-31): none of these routes are called by the Fusion React
 # frontend - see `applications/notifications_extension/apps.py` for details. The
@@ -9,7 +9,6 @@ from .views import (
     PlacementCellNotificationAPIView,
     AcademicsModuleNotificationAPIView,
     OfficeModuleNotificationAPIView,
-    CentralMessNotificationAPIView,
     VisitorsHostelNotificationAPIView,
     HealthcareCenterNotificationAPIView,
     FileTrackingNotificationAPIView,
@@ -38,7 +37,6 @@ urlpatterns = [
     path('placement_cell_notification/', PlacementCellNotificationAPIView.as_view(), name='placement_cell_notification'),
     path('academics_module_notification/', AcademicsModuleNotificationAPIView.as_view(), name='academics_module_notification'),
     path('office_module_notification/', OfficeModuleNotificationAPIView.as_view(), name='office_module_notification'),
-    path('central_mess_notification/', CentralMessNotificationAPIView.as_view(), name='central_mess_notification'),
     path('visitors_hostel_notification/', VisitorsHostelNotificationAPIView.as_view(), name='visitors_hostel_notification'),
     path('healthcare_center_notification/', HealthcareCenterNotificationAPIView.as_view(), name='healthcare_center_notification'),
     path('file_tracking_notification/', FileTrackingNotificationAPIView.as_view(), name='file_tracking_notification'),

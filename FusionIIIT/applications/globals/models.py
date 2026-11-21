@@ -1,4 +1,4 @@
-import datetime
+﻿import datetime
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -30,7 +30,6 @@ class Constants:
 
     MODULES = (
         ("academic_information", "Academic"),
-        ("central_mess", "Central Mess"),
         ("complaint_system", "Complaint System"),
         ("eis", "Employee Imformation System"),
         ("file_tracking", "File Tracking System"),
@@ -354,7 +353,7 @@ class PasswordResetTracker(models.Model):
 class PasswordResetOTP(models.Model):
     """
     Stores a single active OTP record per username.
-    - otp_hash         : HMAC-SHA256(SECRET_KEY, otp) — never stores plaintext OTP
+    - otp_hash         : HMAC-SHA256(SECRET_KEY, otp) â€” never stores plaintext OTP
     - attempts         : failed verify attempts; locked after OTP_MAX_ATTEMPTS
     - send_count       : OTPs sent in the current rate-limit window
     - window_start     : start of the current hour-long rate-limit window
