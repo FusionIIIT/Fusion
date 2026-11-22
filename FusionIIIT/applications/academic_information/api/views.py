@@ -35,6 +35,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from applications.globals.decorators import role_required
+from applications.globals.programme_scope import ALL_ACAD_ROLES
 from applications.globals.api.views import resolve_audience_recipients
 from applications.globals.programme_scope import PROGRAMME_NAMES_BY_SCOPE
 from notifications.signals import notify
@@ -2922,3 +2923,100 @@ def database_spi_cpi(request):
         'with_grades': sum(1 for r in rows if r['spi'] is not None),
         'rows': rows,
     })
+
+
+# --- Student status: withdraw and re-admit --------------------------------
+
+def _status_student(request, roll_no):
+    """The student named by ``roll_no`` if the user's programmes cover them."""
+    from applications.globals.programme_scope import scopes_for, student_in_scope
+
+    student = (Student.objects
+               .select_related('id__user', 'batch_id__discipline',
+                               'batch_id__curriculum__programme')
+               .filter(id_id=(roll_no or '').strip().upper()).first())
+    if student is None or not student_in_scope(student, scopes_for(request.user)):
+        return None
+    return student
+
+
+def _status_body(student):
+    from applications.academic_information.models import StudentStatusHistory
+    from applications.academic_information.student_status import normalise_status
+    from applications.academic_information.withdrawal import withdrawal_blockers
+
+    user = student.id.user
+    history = (StudentStatusHistory.objects.filter(student=student)
+               .select_related('performed_by'))
+    return {
+        'roll_no': student.id_id,
+        'name': f'{user.first_name} {user.last_name}'.strip(),
+        'discipline': _discipline_label(student),
+        'batch': student.batch,
+        'semester': student.curr_semester_no,
+        'status': normalise_status(student.id.user_status) or 'PRESENT',
+        'blockers': withdrawal_blockers(student),
+        'history': [{
+            'action': h.action,
+            'previous_status': h.previous_status,
+            'new_status': h.new_status,
+            'reason': h.reason,
+            'semester_no': h.semester_no,
+            'performed_by': h.performed_by.username if h.performed_by_id else None,
+            'created_at': h.created_at.isoformat(),
+        } for h in history],
+    }
+
+
+def _not_found():
+    return Response({'detail': 'No student with that roll number in your programmes.'},
+                    status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(list(ALL_ACAD_ROLES))
+def student_status(request):
+    """A student's status, what blocks a withdrawal, and its history."""
+    student = _status_student(request, request.query_params.get('roll_no'))
+    if student is None:
+        return _not_found()
+    return Response(_status_body(student))
+
+
+def _change_status(request, change):
+    from applications.academic_information.withdrawal import WithdrawalRefused
+
+    student = _status_student(request, request.data.get('roll_no'))
+    if student is None:
+        return _not_found()
+    try:
+        change(student, request.data.get('reason'), request.user)
+    except WithdrawalRefused as refused:
+        body = {'detail': str(refused.detail)}
+        if refused.blockers:
+            body['blockers'] = refused.blockers
+        return Response(body, status=status.HTTP_400_BAD_REQUEST)
+    student.id.refresh_from_db()
+    return Response(_status_body(student))
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(list(ALL_ACAD_ROLES))
+def withdraw_student(request):
+    """Withdraw a student: read-only from now on, records kept."""
+    from applications.academic_information.withdrawal import withdraw
+    return _change_status(request, withdraw)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(list(ALL_ACAD_ROLES))
+def readmit_student(request):
+    """Re-admit a student withdrawn by mistake."""
+    from applications.academic_information.withdrawal import readmit
+    return _change_status(request, readmit)

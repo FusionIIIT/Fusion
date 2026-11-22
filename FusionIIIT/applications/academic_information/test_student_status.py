@@ -74,3 +74,12 @@ class LockHelperTests(TestCase):
         make_student('21BCS002', status='PRESENT')
         rolls = list(Student.objects.filter(unlocked_q('id__')).values_list('id_id', flat=True))
         self.assertEqual(rolls, ['21BCS002'])
+
+    def test_a_withdrawn_student_is_sent_to_re_admission(self):
+        make_student('23BEC020', status='WITHDRAWN')
+        with self.assertRaises(StudentLocked) as caught:
+            assert_unlocked(['23BEC020'])
+        self.assertEqual(
+            str(caught.exception.detail),
+            '23BEC020 is Withdrawn; their records cannot be changed. '
+            'Re-admit them on the Student Status page first.')

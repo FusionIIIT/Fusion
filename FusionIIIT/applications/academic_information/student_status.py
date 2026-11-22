@@ -76,6 +76,17 @@ def unlocked_q(prefix: str) -> Q:
     return ~Q(**{prefix + 'user_status__iregex': _LOCKED_PATTERN})
 
 
+def has_academic_records(roll_no: Optional[str]) -> bool:
+    """Whether the student has any course registration or grade."""
+    if not roll_no:
+        return False
+    from applications.academic_procedures.models import course_registration
+    from applications.examination.models import Student_grades
+
+    return (course_registration.objects.filter(student_id_id=roll_no).exists()
+            or Student_grades.objects.filter(roll_no=roll_no).exists())
+
+
 class StudentLocked(APIException):
     status_code = status.HTTP_409_CONFLICT
     default_code = 'student_locked'
@@ -88,7 +99,16 @@ def assert_unlocked(roll_nos: Iterable[str]) -> None:
     if not locked:
         return
     rolls = sorted(locked)
-    tail = ' Restore them in System Administrator first.'
+    # Withdrawn students are re-admitted in Fusion; the others are restored
+    # in the System Administrator.
+    withdrawn = {r for r in rolls if locked[r] == 'WITHDRAWN'}
+    if len(withdrawn) == len(rolls):
+        tail = ' Re-admit them on the Student Status page first.'
+    elif withdrawn:
+        tail = (' Re-admit the withdrawn ones on the Student Status page, and restore'
+                ' the others in System Administrator, first.')
+    else:
+        tail = ' Restore them in System Administrator first.'
     if len(rolls) == 1:
         roll = rolls[0]
         raise StudentLocked(

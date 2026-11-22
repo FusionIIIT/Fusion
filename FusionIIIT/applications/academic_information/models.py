@@ -211,6 +211,32 @@ class Student(models.Model):
         
 
 
+class StudentStatusHistory(models.Model):
+    """Each withdrawal and re-admission of a student: who, when, why.
+
+    Written for a student who is (about to be) locked, so it is exempt from
+    the student lock (see student_lock.py)."""
+    ACTIONS = (('withdraw', 'Withdrawn'), ('readmit', 'Re-admitted'))
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE,
+                                related_name='status_history')
+    action = models.CharField(max_length=16, choices=ACTIONS)
+    previous_status = models.CharField(max_length=50)
+    new_status = models.CharField(max_length=50)
+    reason = models.TextField()
+    # The student's current semester (curr_semester_no) when the change was made.
+    semester_no = models.IntegerField(null=True, blank=True)
+    performed_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL,
+                                     related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-created_at', '-id')
+
+    def __str__(self):
+        return f'{self.student_id} {self.action}'
+
+
 class Course(models.Model):
    
     course_name = models.CharField(max_length=600)
