@@ -116,3 +116,19 @@ class DroppedSemesterBacklogTests(TestCase):
                                     format='json')
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(self.type_of(self.core5), 'Backlog')
+
+    def test_allot_courses_takes_a_summer_row_of_a_dropped_even_semester(self):
+        # Summer 3 is filed under semester 6; dropping semester 6 is not
+        # dropping its summer term.
+        sem6 = Semester.objects.create(curriculum=self.batch.curriculum, semester_no=6)
+        slot6 = CourseSlot.objects.create(semester=sem6, name='EC6', type='Core')
+        summer = course('EC6001')
+        slot6.courses.add(summer)
+        record_drop(self.student, 6, '2025-26', 'Medical leave', make_staff('office2'))
+        response = self.client.post('/academic-procedures/api/acad/allot_courses', {
+            'batch': str(self.batch.pk), 'semester': '6', 'semester_type': 'Summer Semester',
+            'academic_year': '2025-26',
+            'allotedCourses': self.sheet([('23BEC030', 'EC6', 'EC6001')]),
+        }, format='multipart')
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(self.type_of(summer), 'Regular')

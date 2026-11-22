@@ -64,6 +64,7 @@ from applications.academic_information.student_status import (
 )
 from applications.academic_information.semester_drop import (
     dropped_semester_course, dropped_semester_response, live_drop_semesters,
+    next_open_semester,
 )
 from applications.examination.models import Student_grades
 
@@ -2533,7 +2534,8 @@ def allot_courses(request):
                         raise ValueError(
                             f"{roll_no} is {status_label(student.id.user_status)}; "
                             "their records cannot be changed.")
-                    if sem_no in live_drop_semesters(student):
+                    if (sem_type != 'Summer Semester'
+                            and sem_no in live_drop_semesters(student)):
                         raise ValueError(
                             f"{roll_no} dropped semester {sem_no}; add its courses one by one "
                             "with Add course, where they are recorded as Backlog.")
@@ -3068,13 +3070,14 @@ def pre_registration_target_semester(student):
 
     Continuing students choose courses for the semester after the one they are
     in. A newly admitted batch has nothing registered in its first semester yet,
-    so it registers into that semester rather than skipping past it.
+    so it registers into that semester rather than skipping past it. A semester
+    the student dropped is stepped over.
     """
     current = student.curr_semester_no or 0
     if current <= 1 and not course_registration.objects.filter(
             student_id=student, semester_id__semester_no=current).exists():
-        return current
-    return current + 1
+        return next_open_semester(student, current)
+    return next_open_semester(student, current + 1)
 
 
 def get_pre_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
@@ -3118,10 +3121,12 @@ def pg_registration_semester(student, now=None):
     """
     now = now or datetime.datetime.now()
     current = student.curr_semester_no or 0
+    # Current and next, stepping over semesters the student dropped.
+    reachable = {next_open_semester(student, current), next_open_semester(student, current + 1)}
     windows = []
     for event in Calendar.objects.filter(description__startswith='PG Registration '):
         match = _PG_REGISTRATION_EVENT.match(event.description)
-        if not match or int(match.group(2)) != now.year or int(match.group(1)) not in (current, current + 1):
+        if not match or int(match.group(2)) != now.year or int(match.group(1)) not in reachable:
             continue
         start, end = _calendar_window_bounds(event)
         windows.append((int(match.group(1)), start, end))
@@ -3258,9 +3263,6 @@ def get_preregistration_data(request):
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
         next_sem_no = pre_registration_target_semester(student)
-        dropped = dropped_semester_response(student, next_sem_no)
-        if dropped:
-            return dropped
         try:
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
@@ -3400,9 +3402,6 @@ def submit_preregistration(request):
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
         next_sem_no = pre_registration_target_semester(student)
-        dropped = dropped_semester_response(student, next_sem_no)
-        if dropped:
-            return dropped
         try:
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
@@ -5511,6 +5510,7 @@ def allocate_all(request):
 
             old_course = old_reg.course_id
             semester_id = old_reg.semester_id
+            old_registration_type = old_reg.registration_type
             old_reg.delete()
 
             working_year, _ = parse_academic_year(cr.academic_year, cr.semester_type)
@@ -5521,7 +5521,10 @@ def allocate_all(request):
                 session=cr.academic_year,
                 semester_type=cr.semester_type,
                 semester_id=semester_id,
-                working_year=working_year
+                working_year=working_year,
+                # A replacement is the same kind of registration as the one
+                # it replaces (a Backlog stays Backlog).
+                registration_type=old_registration_type,
             )
             by_course[course].remove(cr)
 

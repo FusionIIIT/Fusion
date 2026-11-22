@@ -78,3 +78,23 @@ class DroppedSemesterReportTests(TestCase):
         cells = {str(c.value) for row in book.active.iter_rows() for c in row}
         self.assertIn('23BEC031', cells)
         self.assertNotIn('23BEC030', cells)
+
+    def test_summer_result_sheet_of_a_dropped_even_semester_keeps_the_student(self):
+        from io import BytesIO
+
+        import openpyxl
+
+        from applications.examination.models import Student_grades
+        record_drop(self.dropped, 6, '2025-26', 'Medical leave', make_staff('office2'))
+        course = Course.objects.create(code='EC3001', name='Circuits', credit=4,
+                                       syllabus='', ref_books='')
+        Student_grades.objects.create(
+            course_id=course, semester=6, year=2026, roll_no='23BEC030', grade='C',
+            batch=2023, academic_year='2025-26', semester_type='Summer Semester',
+            verified=True)
+        response = self.client.post('/examination/api/generate_result/', {
+            'batch': self.batch.id, 'semester': 6, 'semester_type': 'Summer Semester'},
+            format='json')
+        self.assertEqual(response.status_code, 200, response.content[:300])
+        book = openpyxl.load_workbook(BytesIO(response.content))
+        self.assertIn('23BEC030', {str(c.value) for row in book.active.iter_rows() for c in row})

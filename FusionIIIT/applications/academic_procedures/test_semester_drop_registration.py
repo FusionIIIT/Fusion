@@ -47,18 +47,19 @@ class DroppedSemesterClosedTests(TestCase):
             course_slot_id=self.slot5, registration_type=registration_type,
             semester_type='Odd Semester', session='2026-27')
 
-    def test_pre_registration_page_says_the_semester_was_dropped(self):
+    def test_pre_registration_steps_over_the_dropped_semester(self):
+        # In semester 4 with 5 dropped, the student pre-registers for 6.
         response = self.client.get('/academic-procedures/api/stu/preregistration/')
-        self.assertEqual((response.status_code, response.json()), (400, {'error': DROPPED}))
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(response.json()['expected_event'].startswith('Pre Registration 6 '))
 
-    def test_pre_registration_submit_is_refused(self):
-        response = self.client.post('/academic-procedures/api/stu/preregistration/submit/',
-                                    {'registrations': [{'slot_id': self.slot5.id,
-                                                        'course_id': self.course.id,
-                                                        'priority': 1}]},
-                                    format='json')
-        self.assertEqual((response.status_code, response.json()), (400, {'error': DROPPED}))
-        self.assertFalse(InitialRegistration.objects.exists())
+    def test_pre_registration_submit_writes_nothing_for_the_dropped_semester(self):
+        self.client.post('/academic-procedures/api/stu/preregistration/submit/',
+                         {'registrations': [{'slot_id': self.slot5.id,
+                                             'course_id': self.course.id,
+                                             'priority': 1}]},
+                         format='json')
+        self.assertFalse(InitialRegistration.objects.filter(semester_id=self.sem5).exists())
 
     def test_add_request_is_refused_while_in_the_dropped_semester(self):
         self.student.curr_semester_no = 5

@@ -69,18 +69,35 @@ class SemesterDropTests(TestCase):
         self.assertEqual(caught.exception.blockers['registrations'], ['EC5001'])
         self.assertFalse(SemesterDrop.objects.exists())
 
-    def test_pre_and_final_registration_of_that_semester_block(self):
+    def test_pending_pre_and_final_registration_of_that_semester_block(self):
+        InitialRegistration.objects.create(
+            student_id=self.student, semester_id=self.sem5, course_id=self.course,
+            course_slot_id=self.slot, priority=1)
+        # Choices not yet allotted are pending.
+        self.assertTrue(drop_blockers(self.student, 5)['pre_registration'])
+        FinalRegistration.objects.create(
+            student_id=self.student, semester_id=self.sem5, course_id=self.course,
+            course_slot_id=self.slot)
+        # Allotted but not verified: the final registration is pending.
+        blockers = drop_blockers(self.student, 5)
+        self.assertEqual((blockers['pre_registration'], blockers['final_registration']),
+                         (False, True))
+        with self.assertRaises(DropRefused):
+            self.drop()
+
+    def test_a_registered_semester_whose_courses_were_dropped_can_be_dropped(self):
+        # Mid-semester: registered and verified, then the office dropped every
+        # course. The verified final registration and the choices are history.
         InitialRegistration.objects.create(
             student_id=self.student, semester_id=self.sem5, course_id=self.course,
             course_slot_id=self.slot, priority=1)
         FinalRegistration.objects.create(
             student_id=self.student, semester_id=self.sem5, course_id=self.course,
-            course_slot_id=self.slot)
-        blockers = drop_blockers(self.student, 5)
-        self.assertEqual((blockers['pre_registration'], blockers['final_registration']),
-                         (True, True))
-        with self.assertRaises(DropRefused):
-            self.drop()
+            course_slot_id=self.slot, verified=True)
+        self.assertEqual(drop_blockers(self.student, 5),
+                         {'registrations': [], 'pre_registration': False,
+                          'final_registration': False})
+        self.drop()
 
     def test_other_semesters_do_not_block(self):
         course_registration.objects.create(

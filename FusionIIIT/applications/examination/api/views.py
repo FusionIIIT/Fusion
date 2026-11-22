@@ -1427,7 +1427,9 @@ class GenerateResultAPI(APIView):
                 students = Student.objects.filter(batch_id=batch_id, specialization=branch).order_by('id')
             else:
                 students = Student.objects.filter(batch_id=batch_id).order_by('id')
-            students = students.filter(not_dropped_q('', semester))
+            if semester_type != 'Summer Semester':
+                # The summer term filed under an even semester is not dropped with it.
+                students = students.filter(not_dropped_q('', semester))
 
             # Fetch course_ids for which the grade is not empty.
             student_roll_nos = students.values_list('id_id', flat=True)

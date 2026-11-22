@@ -52,18 +52,32 @@ def not_dropped_q(prefix: str, semester_no) -> Q:
 
 
 def drop_blockers(student, semester_no) -> Dict:
-    """What the semester still holds: course registrations (any), and
-    pre-registration or final registration rows."""
+    """What the semester still holds: course registrations (any), and pending
+    pre-registration (choices not yet allotted) or final registration (not yet
+    verified). A verified final registration and its choices are history once
+    the office has dropped the courses; no tool removes them."""
     from applications.academic_procedures.models import (
         FinalRegistration, InitialRegistration, course_registration,
     )
     in_semester = dict(student_id=student, semester_id__semester_no=semester_no)
+    allotted = FinalRegistration.objects.filter(**in_semester).exists()
     return {
         'registrations': sorted(set(course_registration.objects.filter(**in_semester)
                                     .values_list('course_id__code', flat=True))),
-        'pre_registration': InitialRegistration.objects.filter(**in_semester).exists(),
-        'final_registration': FinalRegistration.objects.filter(**in_semester).exists(),
+        'pre_registration': (not allotted
+                             and InitialRegistration.objects.filter(**in_semester).exists()),
+        'final_registration': FinalRegistration.objects.filter(
+            verified=False, **in_semester).exists(),
     }
+
+
+def next_open_semester(student, semester_no):
+    """``semester_no``, or the first semester after it the student has not
+    dropped: after a dropped semester they register for the one after it."""
+    dropped = live_drop_semesters(student)
+    while semester_no in dropped:
+        semester_no += 1
+    return semester_no
 
 
 def _reason(reason):
@@ -148,7 +162,9 @@ def _refuse_registration(sender, instance, **kwargs):
     if semester_no is None or instance.student_id_id is None:
         return
     if (sender.__name__ == 'course_registration'
-            and (instance.registration_type or 'Regular') != 'Regular'):
+            and ((instance.registration_type or 'Regular') != 'Regular'
+                 # The summer term filed under an even semester is not dropped with it.
+                 or instance.semester_type == 'Summer Semester')):
         return
     if not live_drops().filter(student_id=instance.student_id_id,
                                semester_no=semester_no).exists():
