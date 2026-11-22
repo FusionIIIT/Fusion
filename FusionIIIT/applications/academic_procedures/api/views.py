@@ -62,7 +62,9 @@ from applications.academic_information.student_lock import assert_record_unlocke
 from applications.academic_information.student_status import (
     assert_unlocked, is_locked_status, locked_roll_nos, normalise_status, status_label,
 )
-from applications.academic_information.semester_drop import dropped_semester_response
+from applications.academic_information.semester_drop import (
+    dropped_semester_course, dropped_semester_response, live_drop_semesters,
+)
 from applications.examination.models import Student_grades
 
 from applications.academic_procedures.helpers import (get_user_semester, get_acad_year,
@@ -2040,6 +2042,11 @@ def acad_add_course(request):
     reg_type = data["registration_type"]
     old_id   = data.get("old_course")
     sem_type = data["semester_type"]
+    # A course of a semester the student dropped is made up later as Backlog.
+    dropped_from = (dropped_semester_course(student, course, slot)
+                    if reg_type == "Regular" else None)
+    if dropped_from:
+        reg_type = "Backlog"
     working_year = parse_academic_year(academic_year=session, semester_type=sem_type)[0]
 
     # Resolve the offering (section). Prefer the chosen section, else the student's
@@ -2097,6 +2104,9 @@ def acad_add_course(request):
                     new_course_registration = cr,
                 )
 
+    if dropped_from:
+        return Response({"message": f"Course added as Backlog: {student.id_id} dropped "
+                                    f"semester {dropped_from}."}, status=status.HTTP_200_OK)
     return Response({ "message": "Course added successfully" }, status=status.HTTP_200_OK)
 
 
@@ -2523,6 +2533,10 @@ def allot_courses(request):
                         raise ValueError(
                             f"{roll_no} is {status_label(student.id.user_status)}; "
                             "their records cannot be changed.")
+                    if sem_no in live_drop_semesters(student):
+                        raise ValueError(
+                            f"{roll_no} dropped semester {sem_no}; add its courses one by one "
+                            "with Add course, where they are recorded as Backlog.")
                     try:
                         slot = CourseSlot.objects.get(name=slot_name, semester=sem)
                     except Exception:
@@ -6313,6 +6327,9 @@ def approve_add_requests(request):
                             registration_type = 'Improvement'
                 except Exception as grade_error:
                     logger.warning(f"Could not determine registration type for request {req_id}: {str(grade_error)}")
+                if registration_type == 'Regular' and dropped_semester_course(
+                        add_request.student, add_request.course, add_request.course_slot):
+                    registration_type = 'Backlog'
 
                 try:
                     reg = course_registration(
@@ -12419,6 +12436,9 @@ def phd_admin_process_requests(request):
         registration_type = registration_type_for_grade(_sg.grade if _sg else None)
         if registration_type == 'Regular' and req.registration_type:
             registration_type = req.registration_type
+        if registration_type == 'Regular' and dropped_semester_course(
+                req.student, req.course, req.course_slot):
+            registration_type = 'Backlog'
 
         # The prior registration of the cleared course (the low attempt) is the one being replaced.
         old_reg = course_registration.objects.filter(

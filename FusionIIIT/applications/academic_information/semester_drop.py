@@ -163,3 +163,26 @@ def connect_semester_drop_guard():
     for model in (InitialRegistration, FinalRegistration, course_registration):
         pre_save.connect(_refuse_registration, sender=model,
                          dispatch_uid='semester_drop_guard_%s' % model.__name__)
+
+
+def dropped_semester_course(student, course, slot=None) -> Optional[int]:
+    """The dropped semester whose course this is, else None.
+
+    A course is a dropped semester's course when a slot of that semester in the
+    student's curriculum (core or elective) lists it, so the office's later add
+    of it is recorded as Backlog. An elective offered in a later semester too,
+    added through that semester's own slot, is that semester's course instead.
+    """
+    from applications.programme_curriculum.models import CourseSlot
+
+    dropped = live_drop_semesters(student)
+    if not dropped or not student.batch_id_id:
+        return None
+    if (slot is not None and slot.semester.semester_no not in dropped
+            and slot.courses.filter(pk=course.pk).exists()):
+        return None
+    return (CourseSlot.objects
+            .filter(semester__curriculum=student.batch_id.curriculum,
+                    semester__semester_no__in=dropped, courses=course)
+            .order_by('semester__semester_no')
+            .values_list('semester__semester_no', flat=True).first())
