@@ -91,7 +91,12 @@ def assert_record_unlocked(instance) -> None:
 
 
 def _exempt(instance) -> bool:
-    return (type(instance)._meta.label == 'academic_procedures.BonafideCertificate'
+    label = type(instance)._meta.label
+    # The record of withdrawing and re-admitting is written for a student
+    # who is (about to be) locked.
+    if label == 'academic_information.StudentStatusHistory':
+        return True
+    return (label == 'academic_procedures.BonafideCertificate'
             and instance.certificate_type in KEPT_CERTIFICATE_TYPES)
 
 
