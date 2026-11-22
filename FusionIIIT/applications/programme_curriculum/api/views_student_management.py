@@ -4000,12 +4000,27 @@ def update_student(request, student_id):
                     'message': f'Institute Email {institute_email} already exists for another student'
                 }, status=400)
 
-        new_reported = data.get('reportedStatus')
-        if (new_reported and student.reported_status == 'REPORTED'
-                and new_reported != 'REPORTED'):
-            refusal = _records_refusal(student.roll_number)
-            if refusal:
-                return refusal
+        # Status and roll number: a student with registrations or grades
+        # keeps both (Withdraw on the Student Status page instead).
+        if 'reportedStatus' in data:
+            new_reported = data['reportedStatus']
+            if new_reported not in ('REPORTED', 'NOT_REPORTED', 'WITHDRAWAL', 'PENDING'):
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid reportedStatus. Must be REPORTED, NOT_REPORTED, '
+                               'WITHDRAWAL, or PENDING',
+                }, status=400)
+            if student.reported_status == 'REPORTED' and new_reported != 'REPORTED':
+                refusal = _records_refusal(student.roll_number)
+                if refusal:
+                    return refusal
+        if 'rollNumber' in data and (data['rollNumber'] or None) != student.roll_number:
+            if has_academic_records(student.roll_number):
+                return JsonResponse({
+                    'success': False,
+                    'message': (f'{student.roll_number} has course registrations or grades; '
+                                'its roll number cannot be changed here. Nothing was changed.'),
+                }, status=400)
 
         for frontend_field, backend_field in field_mapping.items():
             if frontend_field in data:

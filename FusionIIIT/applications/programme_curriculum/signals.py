@@ -39,11 +39,17 @@ def handle_withdrawal_status(sender, instance, created, **kwargs):
     from applications.academic_information.student_status import has_academic_records
 
     # Only a student who never joined loses their login here; one with
-    # registrations or grades is withdrawn on the Student Status page.
-    if instance.reported_status == 'WITHDRAWAL' and not has_academic_records(instance.roll_number):
-        if instance.user:
-            instance.user.is_active = False
-            instance.user.save()
+    # registrations or grades is withdrawn on the Student Status page. Both the
+    # roll number and the linked account are checked, since either can be
+    # edited on the admission row.
+    if instance.reported_status != 'WITHDRAWAL':
+        return
+    rolls = {instance.roll_number, instance.user.username if instance.user else None}
+    if any(has_academic_records(roll) for roll in rolls):
+        return
+    if instance.user:
+        instance.user.is_active = False
+        instance.user.save()
 
 
 def create_django_user(student_upload):

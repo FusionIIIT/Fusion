@@ -82,6 +82,33 @@ class AdmissionWithdrawalGuardTests(TestCase):
         self.assertEqual(response.json()['message'], REFUSED)
         self.assert_untouched()
 
+    def test_edit_form_cannot_blank_the_status(self):
+        for value in ('', None, 'nonsense'):
+            response = self.client.put(API + f'student/{self.upload.id}/update/',
+                                       json.dumps({'reportedStatus': value}),
+                                       content_type='application/json')
+            self.assertEqual(response.status_code, 400, (value, response.content))
+        self.assert_untouched()
+
+    def test_edit_form_cannot_move_a_student_with_records_to_another_roll(self):
+        response = self.client.put(API + f'student/{self.upload.id}/update/',
+                                   json.dumps({'rollNumber': '23BEC999'}),
+                                   content_type='application/json')
+        self.assertEqual(response.status_code, 400, response.content)
+        self.upload.refresh_from_db()
+        self.assertEqual(self.upload.roll_number, '23BEC020')
+
+    def test_withdrawal_signal_checks_the_account_too(self):
+        # A changed roll number on the admission row must not hide the
+        # account's records.
+        user = self.student.id.user
+        StudentBatchUpload.objects.filter(pk=self.upload.pk).update(
+            user=user, roll_number='23BEC999', reported_status='WITHDRAWAL')
+        self.upload.refresh_from_db()
+        self.upload.save()
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+
     def test_edit_form_saving_the_same_status_is_fine(self):
         response = self.client.put(API + f'student/{self.upload.id}/update/',
                                    json.dumps({'reportedStatus': 'REPORTED', 'address': 'New'}),
