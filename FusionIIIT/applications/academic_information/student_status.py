@@ -58,6 +58,17 @@ def exclude_locked(students):
 _LOCKED_PATTERN = r'^\s*(%s)\s*$' % '|'.join(sorted(LOCKED_STATUSES))
 
 
+def status_in_q(prefix: str, statuses: Iterable[str]) -> Q:
+    """A Q matching students whose status is one of ``statuses``, ignoring
+    case and surrounding spaces; ``prefix`` as for ``unlocked_q``."""
+    pattern = r'^\s*(%s)\s*$' % '|'.join(sorted(normalise_status(s) for s in statuses))
+    return Q(**{prefix + 'user_status__iregex': pattern})
+
+
+# Spec: alumni and withdrawn students can still be issued these two.
+CERTIFICATE_STATUSES = frozenset({'PRESENT', 'ALUMNI', 'WITHDRAWN'})
+
+
 def unlocked_q(prefix: str) -> Q:
     """A Q leaving out locked students; ``prefix`` leads from the queried
     model to ``ExtraInfo`` (``'id__'`` on Student, ``'student_id__id__'`` on

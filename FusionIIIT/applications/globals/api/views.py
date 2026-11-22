@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from applications.academic_information.student_status import is_locked_status, normalise_status
 from applications.academic_information.models import Student
 from applications.globals.models_profile import (Achievement, Course, Education,
                                                  Experience, Has, Patent,
@@ -94,6 +95,10 @@ def logout(request):
                         status=status.HTTP_200_OK)
     return iam_bridge.clear_session(response)
 
+# The modules a locked student keeps: Academics (their courses) and Examination (results).
+LOCKED_STUDENT_MODULES = frozenset({'course_registration', 'examinations'})
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -148,8 +153,21 @@ def auth_view(request):
     except Exception:
         must_complete_profile = False
 
+    # A locked student (alumni, withdrawn, ...) keeps only their courses and
+    # results; the client also hides every other student page.
+    student_status = (normalise_status(extra_info.user_status) or 'PRESENT'
+                      if extra_info.user_type == 'student' else None)
+    if is_locked_status(student_status):
+        accessible_modules = {
+            designation: {code: allowed for code, allowed in modules.items()
+                          if code in LOCKED_STUDENT_MODULES}
+            for designation, modules in accessible_modules.items()
+        }
+        plugged_nav = {}
+
     resp={
         'designation_info' : designation_info,
+        'student_status': student_status,
         'name': name,
         'roll_no': roll_no,
         'accessible_modules': accessible_modules,

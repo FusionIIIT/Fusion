@@ -5,6 +5,7 @@ import logging
 import time
 import zipfile
 import pandas as pd
+from applications.academic_information.student_status import status_label
 from io import BytesIO
 from xlsxwriter.workbook import Workbook
 from django.contrib.auth import get_user_model
@@ -2899,6 +2900,7 @@ def database_spi_cpi(request):
             'cpi': None,
             'tu': None,
             'tp': None,
+            'status': status_label(student.id.user_status) or 'Present',
         }
         if semester_type:
             spi, _, _ = calculate_spi_for_student(student, number, semester_type)

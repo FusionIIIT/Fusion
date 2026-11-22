@@ -78,7 +78,13 @@ class DatabaseSpiCpiTests(TestCase):
             'discipline': 'B.Tech CSE', 'semester': 2, 'spi': 8.0, 'cpi': 8.4,
             # TU and TP are the CPI's totals, as on the result sheet: 4 credits at A (0.9),
             # 4 at B (0.7) and 2 at O (1.0) are 10 credits and 8.4 points, so TP 84.
-            'tu': 10.0, 'tp': 84.0})
+            'tu': 10.0, 'tp': 84.0, 'status': 'Present'})
+
+    def test_each_row_says_whether_the_student_is_alumni(self):
+        ExtraInfo.objects.filter(pk='24BCS002').update(user_status='ALUMNI')
+        rows = self.report(batch=2024)
+        self.assertEqual(rows['24BCS002']['status'], 'Alumni')
+        self.assertEqual(rows['24BEC001']['status'], 'Present')
 
     def test_a_chosen_semester_gives_that_semesters_figures(self):
         rows = self.report(batch=2024, semester=1)
