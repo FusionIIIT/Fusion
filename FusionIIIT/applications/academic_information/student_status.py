@@ -53,6 +53,18 @@ def exclude_locked(students):
     ).exclude(Q(_status_norm__in=LOCKED_STATUSES))
 
 
+# The same set as a case-insensitive pattern that ignores surrounding
+# spaces, for filters that cross relations (where an annotation is awkward).
+_LOCKED_PATTERN = r'^\s*(%s)\s*$' % '|'.join(sorted(LOCKED_STATUSES))
+
+
+def unlocked_q(prefix: str) -> Q:
+    """A Q leaving out locked students; ``prefix`` leads from the queried
+    model to ``ExtraInfo`` (``'id__'`` on Student, ``'student_id__id__'`` on
+    a registration)."""
+    return ~Q(**{prefix + 'user_status__iregex': _LOCKED_PATTERN})
+
+
 class StudentLocked(APIException):
     status_code = status.HTTP_409_CONFLICT
     default_code = 'student_locked'

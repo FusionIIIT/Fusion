@@ -9,6 +9,7 @@ from applications.academic_information.student_status import (
     exclude_locked,
     is_locked_status,
     locked_roll_nos,
+    unlocked_q,
 )
 
 
@@ -67,3 +68,9 @@ class LockHelperTests(TestCase):
         make_student('21BCS001', status='PRESENT')
         assert_unlocked(['21BCS001'])
         assert_unlocked([])
+
+    def test_unlocked_q_across_a_relation(self):
+        make_student('21BCS001', status=' Alumni')
+        make_student('21BCS002', status='PRESENT')
+        rolls = list(Student.objects.filter(unlocked_q('id__')).values_list('id_id', flat=True))
+        self.assertEqual(rolls, ['21BCS002'])

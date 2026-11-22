@@ -1,16 +1,18 @@
 """Refuse any save or delete of a locked student's academic records.
 
-Every model with a ForeignKey/OneToOneField to ``Student`` is guarded (found
-by introspection, so a new model is covered without a change here), plus
-``Student`` itself and ``Student_grades``, which links by its ``roll_no``
-text field. The lock is read from the database on every call, so a Restore
+Guarded: ``Student`` itself, ``Student_grades`` (linked by its ``roll_no``
+text field), every model with a ForeignKey/OneToOneField to ``Student``, and
+every model that reaches one of those through up to two more ForeignKeys (a
+replacement through its registrations, a thesis grade through its thesis
+registration). They are found by introspection, so a new model is covered
+without a change here. The lock is read from the database on every call, so a Restore
 in the System Administrator takes effect at once.
 
 Bulk writes that skip model save (``QuerySet.update``, ``bulk_create``,
 ``bulk_update``) are not seen here; their callers check with
 ``student_status.assert_unlocked`` themselves.
 """
-from typing import List, Type
+from typing import Dict, List, Tuple, Type
 
 from django.apps import apps
 from django.db.models import ForeignKey, Model, OneToOneField
@@ -27,22 +29,38 @@ def _student_model():
     return apps.get_model('academic_information', 'Student')
 
 
-def _student_fields(model) -> List[str]:
-    """attnames of the fields on ``model`` that point at ``Student``."""
+# Student -> registration -> replacement / evaluation -> score.
+_LINKS = 3
+_owners = None
+
+
+def _owner_fields() -> Dict[Type[Model], List[Tuple[str, Type[Model]]]]:
+    """For each guarded model, its (attname, target model) fields that lead
+    to the student, built once after the apps are loaded."""
+    global _owners
+    if _owners is not None:
+        return _owners
     student = _student_model()
-    return [
-        f.attname for f in model._meta.concrete_fields
-        if isinstance(f, (ForeignKey, OneToOneField)) and f.related_model is student
-    ]
+    grades = apps.get_model('examination', 'Student_grades')
+    owners = {student: [], grades: []}
+    frontier = {student, grades}
+    for _ in range(_LINKS):
+        reached = set()
+        for model in apps.get_models():
+            for f in model._meta.concrete_fields:
+                if (isinstance(f, (ForeignKey, OneToOneField))
+                        and f.related_model in frontier and f.related_model is not model):
+                    fields = owners.setdefault(model, [])
+                    if (f.attname, f.related_model) not in fields:
+                        fields.append((f.attname, f.related_model))
+                        reached.add(model)
+        frontier = reached - {student, grades}
+    _owners = owners
+    return owners
 
 
 def guarded_models() -> List[Type[Model]]:
-    student = _student_model()
-    found = [student, apps.get_model('examination', 'Student_grades')]
-    for model in apps.get_models():
-        if model not in found and _student_fields(model):
-            found.append(model)
-    return found
+    return list(_owner_fields())
 
 
 def rolls_for(instance) -> List[str]:
@@ -52,8 +70,24 @@ def rolls_for(instance) -> List[str]:
         return [instance.pk] if instance.pk else []
     if model._meta.label == 'examination.Student_grades':
         return [(instance.roll_no or '').strip()]
-    return [getattr(instance, name) for name in _student_fields(model)
-            if getattr(instance, name)]
+    rolls = []
+    for attname, target in _owner_fields().get(model, []):
+        value = getattr(instance, attname)
+        if value is None:
+            continue
+        if target is _student_model():
+            rolls.append(value)
+        else:
+            parent = target._default_manager.filter(pk=value).first()
+            if parent is not None:
+                rolls.extend(rolls_for(parent))
+    return rolls
+
+
+def assert_record_unlocked(instance) -> None:
+    """For a view about to bulk-update rows hanging off ``instance``: raise
+    ``StudentLocked`` first if ``instance`` belongs to a locked student."""
+    assert_unlocked(rolls_for(instance))
 
 
 def _exempt(instance) -> bool:

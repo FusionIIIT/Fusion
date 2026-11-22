@@ -1,4 +1,5 @@
 from django.db.models.query_utils import Q
+from applications.academic_information.student_status import assert_unlocked
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -3801,6 +3802,10 @@ class PublishResultSelectedAPI(APIView):
         selected = [r for r in roll_numbers if r in valid_rolls]
 
         with transaction.atomic():
+            # Who sees the result is part of a student's record: a locked
+            # student's visibility can be neither added nor taken away.
+            current = set(ann.published_students.values_list('roll_no', flat=True))
+            assert_unlocked(current.symmetric_difference(selected))
             ann.published_students.all().delete()
             PublishedResultStudent.objects.bulk_create(
                 [PublishedResultStudent(announcement=ann, roll_no=r) for r in selected]

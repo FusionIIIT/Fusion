@@ -6,11 +6,11 @@ from applications.academic_information.models import Student
 from applications.academic_information.status_test_utils import (
     make_batch, make_staff, make_student, set_status, token_for,
 )
-from applications.academic_information.student_lock import guarded_models
+from applications.academic_information.student_lock import assert_record_unlocked, guarded_models
 from applications.academic_information.student_status import StudentLocked
 from applications.academic_procedures.models import (
     BonafideCertificate, CourseAddRequest, FinalRegistration, InitialRegistration,
-    ThesisTopic, backlog_course, course_registration, course_replacement,
+    ThesisEvaluation, ThesisTopic, backlog_course, course_registration, course_replacement,
 )
 from applications.examination.models import Student_grades
 from applications.programme_curriculum.models import Course, CourseSlot, Semester
@@ -107,6 +107,13 @@ class StudentLockTests(TestCase):
         with self.assertRaises(StudentLocked):
             self.register(self.alumnus)
 
+    def test_assert_record_unlocked_follows_links(self):
+        old = self.register(self.present)
+        assert_record_unlocked(old)
+        set_status(self.present, 'ALUMNI')
+        with self.assertRaises(StudentLocked):
+            assert_record_unlocked(old)
+
     def test_guarded_models_cover_known(self):
         guarded = set(guarded_models())
         for model in (Student, course_registration, FinalRegistration, InitialRegistration,
@@ -114,7 +121,28 @@ class StudentLockTests(TestCase):
                       BonafideCertificate):
             self.assertIn(model, guarded, model.__name__)
         # Linked through a registration, not to the student directly.
-        self.assertNotIn(course_replacement, guarded)
+        self.assertIn(course_replacement, guarded)
+        self.assertIn(ThesisEvaluation, guarded)
+
+    def test_record_linked_through_a_registration_refused(self):
+        old = self.register(self.present)
+        new = course_registration.objects.create(
+            student_id=self.present, semester_id=self.semester, course_id=self.course,
+            course_slot_id=self.slot, registration_type='Backlog',
+            semester_type='Even Semester', session='2025-26')
+        set_status(self.present, 'ALUMNI')
+        with self.assertRaises(StudentLocked):
+            course_replacement.objects.create(old_course_registration=old,
+                                              new_course_registration=new)
+
+    def test_record_linked_through_a_registration_allowed_for_present(self):
+        old = self.register(self.present)
+        new = course_registration.objects.create(
+            student_id=self.present, semester_id=self.semester, course_id=self.course,
+            course_slot_id=self.slot, registration_type='Backlog',
+            semester_type='Even Semester', session='2025-26')
+        course_replacement.objects.create(old_course_registration=old,
+                                          new_course_registration=new)
 
 
 class StudentLockApiTests(TransactionTestCase):
