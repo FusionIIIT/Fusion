@@ -41,8 +41,14 @@ class AuthStatusTests(TestCase):
                          {'student': {'course_registration': True, 'examinations': True}})
         self.assertEqual(data['plugged_navigation'], {})
 
+    def test_auth_me_gives_a_students_discipline_and_batch(self):
+        self.assertEqual(self.me()['student_info'],
+                         {'discipline': 'B.Tech CSE', 'batch': 2021})
+
     def test_faculty_status_null(self):
         staff = make_staff()
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION='Token ' + token_for(staff))
-        self.assertIsNone(client.get('/api/auth/me').json()['student_status'])
+        data = client.get('/api/auth/me').json()
+        self.assertIsNone(data['student_status'])
+        self.assertIsNone(data['student_info'])

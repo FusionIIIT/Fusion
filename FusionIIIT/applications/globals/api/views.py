@@ -165,9 +165,22 @@ def auth_view(request):
         }
         plugged_nav = {}
 
+    # What the Alumni page shows: "B.Tech CSE", batch 2021.
+    student_info = None
+    if extra_info.user_type == 'student':
+        student = (Student.objects.select_related('batch_id__discipline')
+                   .filter(id=extra_info).first())
+        if student is not None:
+            student_info = {
+                'discipline': (f'{student.batch_id.name} {student.batch_id.discipline.acronym}'
+                               if student.batch_id_id else student.programme),
+                'batch': student.batch,
+            }
+
     resp={
         'designation_info' : designation_info,
         'student_status': student_status,
+        'student_info': student_info,
         'name': name,
         'roll_no': roll_no,
         'accessible_modules': accessible_modules,
