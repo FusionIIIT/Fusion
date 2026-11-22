@@ -44,7 +44,8 @@ class AuthStatusTests(TestCase):
 
     def test_auth_me_gives_a_students_discipline_and_batch(self):
         self.assertEqual(self.me()['student_info'],
-                         {'discipline': 'B.Tech CSE', 'batch': 2021})
+                         {'discipline': 'B.Tech CSE', 'batch': 2021,
+                          'dropped_semesters': []})
 
     def pending_profile(self):
         StudentBatchUpload.objects.create(

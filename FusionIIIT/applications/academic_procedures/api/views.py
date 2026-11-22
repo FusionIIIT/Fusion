@@ -62,6 +62,10 @@ from applications.academic_information.student_lock import assert_record_unlocke
 from applications.academic_information.student_status import (
     assert_unlocked, is_locked_status, locked_roll_nos, normalise_status, status_label,
 )
+from applications.academic_information.semester_drop import (
+    dropped_semester_course, dropped_semester_response, live_drop_semesters,
+    next_open_semester,
+)
 from applications.examination.models import Student_grades
 
 from applications.academic_procedures.helpers import (get_user_semester, get_acad_year,
@@ -262,6 +266,9 @@ def add_course(request):
             id__user=request.user
         )
 
+        dropped = dropped_semester_response(student, student.curr_semester_no)
+        if dropped:
+            return dropped
         eligibility_resp = get_add_registration_eligibility(
             timezone.now().date(), 
             student.curr_semester_no, 
@@ -413,6 +420,9 @@ def get_student_add_course_slots(request):
                 'error': 'Student information not found'
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        dropped = dropped_semester_response(student, student.curr_semester_no)
+        if dropped:
+            return dropped
         eligibility_resp = get_add_registration_eligibility(
             timezone.now().date(), 
             student.curr_semester_no, 
@@ -806,6 +816,9 @@ def final_registration(request):
             student = Student.objects.filter(id=extra_info).first()
 
             sem_id = Semester.objects.get(id=request.data.get('semester'))
+            dropped = dropped_semester_response(student, sem_id.semester_no)
+            if dropped:
+                return dropped
 
             mode = str(request.data.get('mode'))
             transaction_id = str(request.data.get('transaction_id'))
@@ -860,6 +873,9 @@ def student_final_registration(request):
 
         # these details we need from the body of the request fot doing final registration
         sem_id_instance = Semester.objects.get(id = request.data.get('semester'))
+        dropped = dropped_semester_response(current_user_instance, sem_id_instance.semester_no)
+        if dropped:
+            return dropped
         sem_id = serializers.SemesterSerializer(sem_id_instance).data["id"]
         registration_status = StudentRegistrationChecks.objects.filter(student_id = current_user["id"], semester_id = sem_id)
         registration_status = serializers.StudentRegistrationChecksSerializer(registration_status , many = True ).data
@@ -2027,6 +2043,11 @@ def acad_add_course(request):
     reg_type = data["registration_type"]
     old_id   = data.get("old_course")
     sem_type = data["semester_type"]
+    # A course of a semester the student dropped is made up later as Backlog.
+    dropped_from = (dropped_semester_course(student, course, slot)
+                    if reg_type == "Regular" else None)
+    if dropped_from:
+        reg_type = "Backlog"
     working_year = parse_academic_year(academic_year=session, semester_type=sem_type)[0]
 
     # Resolve the offering (section). Prefer the chosen section, else the student's
@@ -2084,6 +2105,9 @@ def acad_add_course(request):
                     new_course_registration = cr,
                 )
 
+    if dropped_from:
+        return Response({"message": f"Course added as Backlog: {student.id_id} dropped "
+                                    f"semester {dropped_from}."}, status=status.HTTP_200_OK)
     return Response({ "message": "Course added successfully" }, status=status.HTTP_200_OK)
 
 
@@ -2510,6 +2534,11 @@ def allot_courses(request):
                         raise ValueError(
                             f"{roll_no} is {status_label(student.id.user_status)}; "
                             "their records cannot be changed.")
+                    if (sem_type != 'Summer Semester'
+                            and sem_no in live_drop_semesters(student)):
+                        raise ValueError(
+                            f"{roll_no} dropped semester {sem_no}; add its courses one by one "
+                            "with Add course, where they are recorded as Backlog.")
                     try:
                         slot = CourseSlot.objects.get(name=slot_name, semester=sem)
                     except Exception:
@@ -3041,13 +3070,14 @@ def pre_registration_target_semester(student):
 
     Continuing students choose courses for the semester after the one they are
     in. A newly admitted batch has nothing registered in its first semester yet,
-    so it registers into that semester rather than skipping past it.
+    so it registers into that semester rather than skipping past it. A semester
+    the student dropped is stepped over.
     """
     current = student.curr_semester_no or 0
     if current <= 1 and not course_registration.objects.filter(
             student_id=student, semester_id__semester_no=current).exists():
-        return current
-    return current + 1
+        return next_open_semester(student, current)
+    return next_open_semester(student, current + 1)
 
 
 def get_pre_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
@@ -3091,10 +3121,12 @@ def pg_registration_semester(student, now=None):
     """
     now = now or datetime.datetime.now()
     current = student.curr_semester_no or 0
+    # Current and next, stepping over semesters the student dropped.
+    reachable = {next_open_semester(student, current), next_open_semester(student, current + 1)}
     windows = []
     for event in Calendar.objects.filter(description__startswith='PG Registration '):
         match = _PG_REGISTRATION_EVENT.match(event.description)
-        if not match or int(match.group(2)) != now.year or int(match.group(1)) not in (current, current + 1):
+        if not match or int(match.group(2)) != now.year or int(match.group(1)) not in reachable:
             continue
         start, end = _calendar_window_bounds(event)
         windows.append((int(match.group(1)), start, end))
@@ -3122,10 +3154,13 @@ def registration_semester(student, now=None):
     into the semester it is in, under that term's PhD window."""
     category = _student_programme_category(student)
     if category == 'PG':
-        return pg_registration_semester(student, now)
-    now = now or datetime.datetime.now()
-    return student.curr_semester_no, get_pg_phd_registration_eligibility(
-        now.date(), category or 'PHD', student.curr_semester_no, now.year)
+        semester_no, refusal = pg_registration_semester(student, now)
+    else:
+        now = now or datetime.datetime.now()
+        semester_no, refusal = student.curr_semester_no, get_pg_phd_registration_eligibility(
+            now.date(), category or 'PHD', student.curr_semester_no, now.year)
+    # A dropped semester has no registration, whatever the calendar says.
+    return semester_no, dropped_semester_response(student, semester_no) or refusal
 
 
 def pg_registration_term(semester_no, today=None):
@@ -3554,6 +3589,9 @@ def get_swayam_registration_data(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
+        dropped = dropped_semester_response(student, semester_no)
+        if dropped:
+            return dropped
         try:
             current_semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum, 
@@ -3637,6 +3675,9 @@ def submit_swayam_registration(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
+        dropped = dropped_semester_response(student, semester_no)
+        if dropped:
+            return dropped
         try:
             semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum, 
@@ -3748,6 +3789,9 @@ def swayam_replace_check(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
+        dropped = dropped_semester_response(student, semester_no)
+        if dropped:
+            return dropped
         
         try:
             current_semester = Semester.objects.get(
@@ -5466,6 +5510,7 @@ def allocate_all(request):
 
             old_course = old_reg.course_id
             semester_id = old_reg.semester_id
+            old_registration_type = old_reg.registration_type
             old_reg.delete()
 
             working_year, _ = parse_academic_year(cr.academic_year, cr.semester_type)
@@ -5476,7 +5521,10 @@ def allocate_all(request):
                 session=cr.academic_year,
                 semester_type=cr.semester_type,
                 semester_id=semester_id,
-                working_year=working_year
+                working_year=working_year,
+                # A replacement is the same kind of registration as the one
+                # it replaces (a Backlog stays Backlog).
+                registration_type=old_registration_type,
             )
             by_course[course].remove(cr)
 
@@ -6282,6 +6330,9 @@ def approve_add_requests(request):
                             registration_type = 'Improvement'
                 except Exception as grade_error:
                     logger.warning(f"Could not determine registration type for request {req_id}: {str(grade_error)}")
+                if registration_type == 'Regular' and dropped_semester_course(
+                        add_request.student, add_request.course, add_request.course_slot):
+                    registration_type = 'Backlog'
 
                 try:
                     reg = course_registration(
@@ -12388,6 +12439,9 @@ def phd_admin_process_requests(request):
         registration_type = registration_type_for_grade(_sg.grade if _sg else None)
         if registration_type == 'Regular' and req.registration_type:
             registration_type = req.registration_type
+        if registration_type == 'Regular' and dropped_semester_course(
+                req.student, req.course, req.course_slot):
+            registration_type = 'Backlog'
 
         # The prior registration of the cleared course (the low attempt) is the one being replaced.
         old_reg = course_registration.objects.filter(
