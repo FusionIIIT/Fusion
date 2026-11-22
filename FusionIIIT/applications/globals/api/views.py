@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from applications.academic_information.student_status import is_locked_status, normalise_status
+from applications.academic_information.semester_drop import live_drop_semesters
 from applications.academic_information.models import Student
 from applications.globals.models_profile import (Achievement, Course, Education,
                                                  Experience, Has, Patent,
@@ -178,6 +179,8 @@ def auth_view(request):
                 'discipline': (f'{student.batch_id.name} {student.batch_id.discipline.acronym}'
                                if student.batch_id_id else student.programme),
                 'batch': student.batch,
+                # Semesters the student dropped (no registration for them).
+                'dropped_semesters': sorted(live_drop_semesters(student)),
             }
 
     resp={

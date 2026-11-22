@@ -118,3 +118,48 @@ def cancel_drop(student, drop_id, reason, user) -> SemesterDrop:
     drop.cancelled_by, drop.cancelled_at, drop.cancel_reason = user, timezone.now(), reason
     drop.save(update_fields=['cancelled_by', 'cancelled_at', 'cancel_reason'])
     return drop
+
+
+def dropped_semester_response(student, semester_no):
+    """The student's own refusal for a semester they dropped, else None."""
+    from django.http import JsonResponse
+
+    drop = live_drops().filter(student=student, semester_no=semester_no).first()
+    if drop is None:
+        return None
+    return JsonResponse(
+        {'error': 'You dropped semester %s (%s); there is no registration for it.'
+                  % (drop.semester_no, drop.academic_year)},
+        status=400)
+
+
+# --- Guard: nothing is registered into a dropped semester ------------------
+# Pre-registration and final registration rows are refused outright. A course
+# registration is refused only when Regular: the office's later adds of the
+# semester's courses are Backlog (dropped_semester_course). Bulk writes
+# (bulk_create, update) are not seen here; their callers check themselves.
+
+def _refuse_registration(sender, instance, **kwargs):
+    semester_no = getattr(getattr(instance, 'semester_id', None), 'semester_no', None)
+    if semester_no is None or instance.student_id_id is None:
+        return
+    if (sender.__name__ == 'course_registration'
+            and (instance.registration_type or 'Regular') != 'Regular'):
+        return
+    if not live_drops().filter(student_id=instance.student_id_id,
+                               semester_no=semester_no).exists():
+        return
+    hint = ('; add its courses as Backlog' if sender.__name__ == 'course_registration'
+            else '; there is no registration for it')
+    raise DropRefused('%s dropped semester %s%s.' % (instance.student_id_id, semester_no, hint))
+
+
+def connect_semester_drop_guard():
+    from django.db.models.signals import pre_save
+
+    from applications.academic_procedures.models import (
+        FinalRegistration, InitialRegistration, course_registration,
+    )
+    for model in (InitialRegistration, FinalRegistration, course_registration):
+        pre_save.connect(_refuse_registration, sender=model,
+                         dispatch_uid='semester_drop_guard_%s' % model.__name__)

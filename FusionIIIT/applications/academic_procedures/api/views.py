@@ -62,6 +62,7 @@ from applications.academic_information.student_lock import assert_record_unlocke
 from applications.academic_information.student_status import (
     assert_unlocked, is_locked_status, locked_roll_nos, normalise_status, status_label,
 )
+from applications.academic_information.semester_drop import dropped_semester_response
 from applications.examination.models import Student_grades
 
 from applications.academic_procedures.helpers import (get_user_semester, get_acad_year,
@@ -262,6 +263,9 @@ def add_course(request):
             id__user=request.user
         )
 
+        dropped = dropped_semester_response(student, student.curr_semester_no)
+        if dropped:
+            return dropped
         eligibility_resp = get_add_registration_eligibility(
             timezone.now().date(), 
             student.curr_semester_no, 
@@ -413,6 +417,9 @@ def get_student_add_course_slots(request):
                 'error': 'Student information not found'
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        dropped = dropped_semester_response(student, student.curr_semester_no)
+        if dropped:
+            return dropped
         eligibility_resp = get_add_registration_eligibility(
             timezone.now().date(), 
             student.curr_semester_no, 
@@ -806,6 +813,9 @@ def final_registration(request):
             student = Student.objects.filter(id=extra_info).first()
 
             sem_id = Semester.objects.get(id=request.data.get('semester'))
+            dropped = dropped_semester_response(student, sem_id.semester_no)
+            if dropped:
+                return dropped
 
             mode = str(request.data.get('mode'))
             transaction_id = str(request.data.get('transaction_id'))
@@ -860,6 +870,9 @@ def student_final_registration(request):
 
         # these details we need from the body of the request fot doing final registration
         sem_id_instance = Semester.objects.get(id = request.data.get('semester'))
+        dropped = dropped_semester_response(current_user_instance, sem_id_instance.semester_no)
+        if dropped:
+            return dropped
         sem_id = serializers.SemesterSerializer(sem_id_instance).data["id"]
         registration_status = StudentRegistrationChecks.objects.filter(student_id = current_user["id"], semester_id = sem_id)
         registration_status = serializers.StudentRegistrationChecksSerializer(registration_status , many = True ).data
@@ -3122,10 +3135,13 @@ def registration_semester(student, now=None):
     into the semester it is in, under that term's PhD window."""
     category = _student_programme_category(student)
     if category == 'PG':
-        return pg_registration_semester(student, now)
-    now = now or datetime.datetime.now()
-    return student.curr_semester_no, get_pg_phd_registration_eligibility(
-        now.date(), category or 'PHD', student.curr_semester_no, now.year)
+        semester_no, refusal = pg_registration_semester(student, now)
+    else:
+        now = now or datetime.datetime.now()
+        semester_no, refusal = student.curr_semester_no, get_pg_phd_registration_eligibility(
+            now.date(), category or 'PHD', student.curr_semester_no, now.year)
+    # A dropped semester has no registration, whatever the calendar says.
+    return semester_no, dropped_semester_response(student, semester_no) or refusal
 
 
 def pg_registration_term(semester_no, today=None):
@@ -3228,6 +3244,9 @@ def get_preregistration_data(request):
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
         next_sem_no = pre_registration_target_semester(student)
+        dropped = dropped_semester_response(student, next_sem_no)
+        if dropped:
+            return dropped
         try:
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
@@ -3367,6 +3386,9 @@ def submit_preregistration(request):
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
         next_sem_no = pre_registration_target_semester(student)
+        dropped = dropped_semester_response(student, next_sem_no)
+        if dropped:
+            return dropped
         try:
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
@@ -3554,6 +3576,9 @@ def get_swayam_registration_data(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
+        dropped = dropped_semester_response(student, semester_no)
+        if dropped:
+            return dropped
         try:
             current_semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum, 
@@ -3637,6 +3662,9 @@ def submit_swayam_registration(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
+        dropped = dropped_semester_response(student, semester_no)
+        if dropped:
+            return dropped
         try:
             semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum, 
@@ -3748,6 +3776,9 @@ def swayam_replace_check(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
+        dropped = dropped_semester_response(student, semester_no)
+        if dropped:
+            return dropped
         
         try:
             current_semester = Semester.objects.get(
