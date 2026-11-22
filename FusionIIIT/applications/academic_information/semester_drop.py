@@ -42,7 +42,11 @@ def live_drop_semesters(student) -> Set[int]:
 def not_dropped_q(prefix: str, semester_no) -> Q:
     """Rows whose student has no live drop for ``semester_no``. ``prefix``
     leads to the Student: ``'student_id__'`` from a registration, ``''`` from
-    Student itself."""
+    Student itself. A value that is not a semester number filters nothing."""
+    try:
+        semester_no = int(semester_no)
+    except (TypeError, ValueError):
+        return Q()
     dropped = live_drops().filter(semester_no=semester_no).values('student_id')
     return ~Q(**{prefix + 'pk__in': dropped})
 

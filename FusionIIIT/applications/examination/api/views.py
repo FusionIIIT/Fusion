@@ -1,5 +1,6 @@
 from django.db.models.query_utils import Q
 from applications.academic_information.student_status import assert_unlocked, locked_roll_nos
+from applications.academic_information.semester_drop import not_dropped_q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -1421,11 +1422,12 @@ class GenerateResultAPI(APIView):
             if not batch_obj:
                 return Response({"error": "Batch not found."}, status=404)
 
-            # Fetch all students for this Batch.
+            # Fetch all students for this Batch, but not those who dropped the semester.
             if branch:
                 students = Student.objects.filter(batch_id=batch_id, specialization=branch).order_by('id')
             else:
                 students = Student.objects.filter(batch_id=batch_id).order_by('id')
+            students = students.filter(not_dropped_q('', semester))
 
             # Fetch course_ids for which the grade is not empty.
             student_roll_nos = students.values_list('id_id', flat=True)
@@ -4708,6 +4710,8 @@ class GenerateGradeSheetForm(APIView):
                 batch_id=batch, specialization=specialization).order_by('id')
         else:
             students = Student.objects.filter(batch_id=batch).order_by('id')
+        # Not those who dropped the semester.
+        students = students.filter(not_dropped_q('', semester))
 
         return Response({
             "students": list(students.values()),

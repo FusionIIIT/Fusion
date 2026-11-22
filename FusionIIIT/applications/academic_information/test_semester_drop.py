@@ -127,3 +127,4 @@ class SemesterDropTests(TestCase):
             not_dropped_q('', n), batch=2023).values_list('id_id', flat=True))
         self.assertEqual(rolls(5), {other.id_id})
         self.assertEqual(rolls(6), {other.id_id, '23BEC030'})
+        self.assertEqual(rolls('Summer'), {other.id_id, '23BEC030'})

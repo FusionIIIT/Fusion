@@ -5,7 +5,10 @@ import logging
 import time
 import zipfile
 import pandas as pd
-from applications.academic_information.student_status import locked_roll_nos, status_label
+from applications.academic_information.student_status import (
+    locked_roll_nos, status_label, unlocked_q,
+)
+from applications.academic_information.semester_drop import not_dropped_q
 from io import BytesIO
 from xlsxwriter.workbook import Workbook
 from django.contrib.auth import get_user_model
@@ -1098,7 +1101,10 @@ def generate_preregistration_report(request):
         for stu in obj:
             registered_students.add(stu.student_id)
 
-        students = Student.objects.filter(batch_id = batch_id)
+        # Locked students and those who dropped this semester are not expected
+        # to pre-register for it.
+        students = Student.objects.filter(
+            unlocked_q('id__'), not_dropped_q('', sem), batch_id=batch_id)
 
         for stu in students:
             if stu not in registered_students:
@@ -2835,6 +2841,9 @@ def database_spi_cpi(request):
         return Response({'detail': f"Semester '{semester}' is not a semester number."},
                         status=400)
     semester_no = int(semester) if semester else None
+    if semester_no:
+        # A student who dropped the chosen semester has no figures for it.
+        students = students.filter(not_dropped_q('', semester_no))
     students = list(students.select_related('id__user', 'batch_id__discipline')
                     .order_by('id_id'))
 
@@ -2945,9 +2954,15 @@ def _status_body(student):
     from applications.academic_information.student_status import normalise_status
     from applications.academic_information.withdrawal import withdrawal_blockers
 
+    from applications.academic_information.models import SemesterDrop
+    from applications.programme_curriculum.models import Semester
+
     user = student.id.user
     history = (StudentStatusHistory.objects.filter(student=student)
                .select_related('performed_by'))
+    drops = (SemesterDrop.objects.filter(student=student)
+             .select_related('recorded_by', 'cancelled_by'))
+    username = lambda u: u.username if u is not None else None  # noqa: E731
     return {
         'roll_no': student.id_id,
         'name': f'{user.first_name} {user.last_name}'.strip(),
@@ -2965,6 +2980,21 @@ def _status_body(student):
             'performed_by': h.performed_by.username if h.performed_by_id else None,
             'created_at': h.created_at.isoformat(),
         } for h in history],
+        # The semesters a drop can be recorded for, and the drops (live and cancelled).
+        'semesters': sorted(Semester.objects.filter(curriculum_id=student.batch_id.curriculum_id)
+                            .values_list('semester_no', flat=True))
+                     if student.batch_id_id else [],
+        'drops': [{
+            'id': d.id,
+            'semester_no': d.semester_no,
+            'academic_year': d.academic_year,
+            'reason': d.reason,
+            'recorded_by': username(d.recorded_by),
+            'recorded_at': d.recorded_at.isoformat(),
+            'cancelled_by': username(d.cancelled_by),
+            'cancelled_at': d.cancelled_at.isoformat() if d.cancelled_at else None,
+            'cancel_reason': d.cancel_reason,
+        } for d in drops],
     }
 
 
@@ -3020,3 +3050,44 @@ def readmit_student(request):
     """Re-admit a student withdrawn by mistake."""
     from applications.academic_information.withdrawal import readmit
     return _change_status(request, readmit)
+
+
+def _change_drop(request, change):
+    from applications.academic_information.semester_drop import DropRefused
+
+    student = _status_student(request, request.data.get('roll_no'))
+    if student is None:
+        return _not_found()
+    try:
+        change(student)
+    except DropRefused as refused:
+        body = {'detail': str(refused.detail)}
+        if refused.blockers:
+            body['blockers'] = refused.blockers
+        return Response(body, status=status.HTTP_400_BAD_REQUEST)
+    return Response(_status_body(student))
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(list(ALL_ACAD_ROLES))
+def record_semester_drop(request):
+    """Record that a student dropped a semester."""
+    from applications.academic_information.semester_drop import record_drop
+    data = request.data
+    return _change_drop(request, lambda student: record_drop(
+        student, data.get('semester_no'), data.get('academic_year'), data.get('reason'),
+        request.user))
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(list(ALL_ACAD_ROLES))
+def cancel_semester_drop(request):
+    """Cancel a drop recorded by mistake; it is kept as cancelled."""
+    from applications.academic_information.semester_drop import cancel_drop
+    data = request.data
+    return _change_drop(request, lambda student: cancel_drop(
+        student, data.get('drop_id'), data.get('reason'), request.user))
