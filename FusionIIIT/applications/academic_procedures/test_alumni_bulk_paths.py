@@ -16,7 +16,10 @@ from applications.academic_information.utils import (
 from applications.academic_procedures.models import (
     FinalRegistration, InitialRegistration, TeachingCreditRegistration, course_registration,
 )
-from applications.examination.models import PublishedResultStudent, ResultAnnouncement
+from applications.examination.api.views import reset_resubmit_for_roster
+from applications.examination.models import (
+    PublishedResultStudent, ResultAnnouncement, Student_grades,
+)
 from applications.programme_curriculum.models import (
     Course, CourseSlot, Semester, TeachingCreditSlot,
 )
@@ -159,3 +162,28 @@ class AlumniBulkPathTests(TestCase):
         self.assertEqual(response.status_code, 409, response.content)
         registration.refresh_from_db()
         self.assertEqual(registration.status, 'pending')
+
+    # Section assignment and grade upload -----------------------------------
+
+    def test_assign_section_skips_alumni(self):
+        response = self.client.post('/aims/api/section/assign/',
+                                    {'roll_numbers': ['21BCS001', '21BCS002'], 'section': 'B'},
+                                    format='json')
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()['skipped'], ['21BCS001'])
+        self.assertIsNone(Student.objects.get(pk='21BCS001').section)
+        self.assertEqual(Student.objects.get(pk='21BCS002').section, 'B')
+
+    def test_grade_upload_reset_leaves_alumni_rows(self):
+        set_status(self.alumnus, 'PRESENT')
+        for roll in ('21BCS001', '21BCS002'):
+            Student_grades.objects.create(
+                course_id=self.course, semester=5, year=2023, roll_no=roll, grade='B',
+                batch=2021, academic_year='2023-24', semester_type='Odd Semester',
+                reSubmit=True)
+        set_status(self.alumnus, 'ALUMNI')
+        reset_resubmit_for_roster(self.course.id, '2023-24', 'Odd Semester',
+                                  ['21BCS001', '21BCS002'])
+        self.assertEqual(
+            dict(Student_grades.objects.values_list('roll_no', 'reSubmit')),
+            {'21BCS001': True, '21BCS002': False})

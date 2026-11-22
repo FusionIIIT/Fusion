@@ -158,6 +158,9 @@ def auth_view(request):
     student_status = (normalise_status(extra_info.user_status) or 'PRESENT'
                       if extra_info.user_type == 'student' else None)
     if is_locked_status(student_status):
+        # The profile form's submit is refused for a read-only account, so it
+        # must never hold a locked student back from their courses and results.
+        must_complete_profile = False
         accessible_modules = {
             designation: {code: allowed for code, allowed in modules.items()
                           if code in LOCKED_STUDENT_MODULES}
