@@ -1,4 +1,8 @@
 """A locked student's own requests that would change data are refused."""
+from importlib import import_module
+
+from django.conf import settings
+from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, SESSION_KEY
 from django.test import TestCase
 from rest_framework.test import APIClient
 
@@ -26,6 +30,10 @@ class LockedStudentMiddlewareTests(TestCase):
         for method in (self.client.put, self.client.patch, self.client.delete):
             response = method('/api/profile_update/', {}, format='json')
             self.assertEqual(response.status_code, 403, method)
+
+    def test_other_methods_refused(self):
+        response = self.client.generic('PROPFIND', '/api/profile_update/')
+        self.assertEqual(response.status_code, 403)
 
     def test_alumnus_get_allowed(self):
         response = self.client.get('/api/auth/me')
@@ -71,6 +79,32 @@ class LockedStudentMiddlewareTests(TestCase):
         client.credentials(HTTP_AUTHORIZATION='Token nope')
         response = client.post('/academic-procedures/api/stu/preregistration/submit/', {})
         self.assertEqual(response.status_code, 401)
+
+    @staticmethod
+    def log_in_by_session(client, user):
+        # Built by hand: force_login fires a project login signal that needs
+        # a real request.
+        store = import_module(settings.SESSION_ENGINE).SessionStore()
+        store[SESSION_KEY] = str(user.pk)
+        store[BACKEND_SESSION_KEY] = 'django.contrib.auth.backends.ModelBackend'
+        store[HASH_SESSION_KEY] = user.get_session_auth_hash()
+        store.save()
+        client.cookies[settings.SESSION_COOKIE_NAME] = store.session_key
+
+    def test_session_alumnus_with_a_junk_token_refused(self):
+        client = APIClient()
+        self.log_in_by_session(client, self.alumnus.id.user)
+        client.credentials(HTTP_AUTHORIZATION='Token junk')
+        response = client.post('/api/profile_update/', {}, format='json')
+        self.assertEqual(response.status_code, 403)
+
+    def test_session_alumnus_with_a_present_students_token_refused(self):
+        other = make_student('21BCS009')
+        client = APIClient()
+        self.log_in_by_session(client, self.alumnus.id.user)
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token_for(other.id.user))
+        response = client.post('/api/profile_update/', {}, format='json')
+        self.assertEqual(response.status_code, 403)
 
     def test_unknown_url_not_500(self):
         response = self.client.post('/no/such/path/', {})

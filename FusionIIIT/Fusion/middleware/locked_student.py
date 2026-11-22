@@ -1,6 +1,6 @@
 """A locked student's account (alumni, withdrawn, ...) is read-only.
 
-Any request of theirs that could change data (POST, PUT, PATCH, DELETE) is
+Any request of theirs other than a read (GET, HEAD, OPTIONS, TRACE) is
 refused with 403, except the few views that only sign in or out, reset a
 password, switch the selected role, handle notifications, or fetch results
 (the result page asks with POST). Reading is never refused here.
@@ -11,7 +11,7 @@ from rest_framework.authtoken.models import Token
 
 from applications.academic_information.student_status import is_locked_status, status_label
 
-UNSAFE_METHODS = frozenset({'POST', 'PUT', 'PATCH', 'DELETE'})
+SAFE_METHODS = frozenset({'GET', 'HEAD', 'OPTIONS', 'TRACE'})
 
 # (module, view name) of every view a locked student may still POST to.
 ALLOWED_VIEWS = frozenset({
@@ -34,14 +34,26 @@ def _view_key(func):
     return view.__module__, view.__name__
 
 
-def _request_user(request):
-    header = request.META.get('HTTP_AUTHORIZATION', '')
-    parts = header.split()
+def _request_users(request):
+    """Every user the request could act as: the token's and the session's.
+    A view may authenticate by either, so both are checked."""
+    users = []
+    parts = request.META.get('HTTP_AUTHORIZATION', '').split()
     if len(parts) == 2 and parts[0].lower() == 'token':
         token = Token.objects.select_related('user__extrainfo').filter(key=parts[1]).first()
-        return token.user if token else None
-    user = getattr(request, 'user', None)
-    return user if user is not None and user.is_authenticated else None
+        if token is not None:
+            users.append(token.user)
+    session_user = getattr(request, 'user', None)
+    if session_user is not None and session_user.is_authenticated:
+        users.append(session_user)
+    return users
+
+
+def _locked_extra(user):
+    extra = getattr(user, 'extrainfo', None)
+    if extra is not None and extra.user_type == 'student' and is_locked_status(extra.user_status):
+        return extra
+    return None
 
 
 class LockedStudentMiddleware:
@@ -54,12 +66,12 @@ class LockedStudentMiddleware:
 
     @staticmethod
     def refusal(request):
-        if request.method not in UNSAFE_METHODS:
+        if request.method in SAFE_METHODS:
             return None
-        user = _request_user(request)
-        extra = getattr(user, 'extrainfo', None) if user is not None else None
-        if extra is None or extra.user_type != 'student' or not is_locked_status(extra.user_status):
+        locked = [e for e in map(_locked_extra, _request_users(request)) if e is not None]
+        if not locked:
             return None
+        extra = locked[0]
         try:
             match = resolve(request.path_info)
         except Resolver404:
