@@ -27,6 +27,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from applications.academic_information.models import Student as AcademicStudent
+from applications.academic_information.student_status import has_academic_records
 from applications.globals.models import ExtraInfo, Designation, HoldsDesignation
 from applications.globals.access import IsAcadAdminOrDean, require_designation
 from applications.globals.access import IsProgrammeAcadAdmin
@@ -276,6 +277,20 @@ from applications.globals.programme_scope import (
 # The programme roles administer these student/admission screens for their own
 # level; every view below narrows its rows to that level.
 STUDENT_ADMIN_ROLES = ("acadadmin", "Dean Academic") + SCOPED_ACAD_ROLES
+
+
+def _records_refusal(roll_no):
+    """Admission Withdrawal / Not reported / Pending and delete remove the
+    academic record (or switch login off). That is only for a student who
+    never joined: once they have registrations or grades, they are withdrawn
+    on the Student Status page instead, which keeps everything."""
+    if not has_academic_records(roll_no):
+        return None
+    return JsonResponse({
+        'success': False,
+        'message': (f'{roll_no} has course registrations or grades. Use Withdraw on '
+                    'the Student Status page instead; nothing was changed.'),
+    }, status=400)
 
 
 def _out_of_scope(what="record"):
@@ -1805,6 +1820,10 @@ def update_student_status(request):
         old_status = student.reported_status
         if not admission_record_in_scope(student, scopes_for(request.user)):
             return _out_of_scope('student')
+        if old_status == 'REPORTED' and reported_status != 'REPORTED':
+            refusal = _records_refusal(student.roll_number)
+            if refusal:
+                return refusal
         student.reported_status = reported_status
         student.save()
         
@@ -3162,6 +3181,10 @@ def update_student_status_crud(request, student_id):
             }, status=404)
         
         old_status = student.reported_status
+        if old_status == 'REPORTED' and reported_status != 'REPORTED':
+            refusal = _records_refusal(student.roll_number)
+            if refusal:
+                return refusal
         student.reported_status = reported_status
         student.save()
 
@@ -4225,6 +4248,9 @@ def delete_student(request, student_id):
         if not admission_record_in_scope(student, scopes_for(request.user)):
             return _out_of_scope('student')
         student_roll = student.roll_number
+        refusal = _records_refusal(student_roll)
+        if refusal:
+            return refusal
 
         deletion_info = {
             'id': student.id,
