@@ -21,6 +21,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from applications.academic_information.models import Student
+from applications.academic_information.student_status import CERTIFICATE_STATUSES, status_in_q
 from applications.academic_procedures.models import BonafideCertificate
 from applications.globals.decorators import role_required
 from applications.globals.programme_scope import (
@@ -278,8 +279,8 @@ def pointer_conversion_student(request):
 
     try:
         student = _student_queryset().get(
-            id__user__username=roll_number,
-            id__user__is_active=True, id__user_status='PRESENT')
+            status_in_q('id__', CERTIFICATE_STATUSES),
+            id__user__username=roll_number, id__user__is_active=True)
     except Student.DoesNotExist:
         return Response(
             {'error': f"No student found with roll number '{roll_number}'."},
@@ -316,8 +317,8 @@ def generate_pointer_conversion_pdf(request):
         return Response({'error': 'student_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
     student = get_object_or_404(
-        _student_queryset(), pk=student_id,
-        id__user__is_active=True, id__user_status='PRESENT')
+        _student_queryset(), status_in_q('id__', CERTIFICATE_STATUSES),
+        pk=student_id, id__user__is_active=True)
     context = build_pointer_conversion_context(student)
     if not context['is_ready']:
         return Response({

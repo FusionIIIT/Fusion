@@ -131,7 +131,8 @@ INSTALLED_APPS = [
     'notifications',
     'applications.academic_procedures',
     'applications.examination',
-    'applications.academic_information',
+    # The full AppConfig path, so its ready() connects the student lock.
+    'applications.academic_information.apps.AcademicInformationConfig',
     'applications.globals',
     'applications.programme_curriculum',
     'applications.scholarships',
@@ -156,6 +157,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # Alumni and other stopped students: their own writes are refused.
+    'Fusion.middleware.locked_student.LockedStudentMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'Fusion.middleware.custom_middleware.user_logged_in_middleware',

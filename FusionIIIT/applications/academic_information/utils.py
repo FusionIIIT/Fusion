@@ -12,12 +12,18 @@ from applications.programme_curriculum.models import(Course,CourseSlot,Batch,Sem
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.core import serializers
+from applications.academic_information.student_status import unlocked_q
 from django.db.models import Q, Count
 import datetime
 import random
 from django.db import transaction
 time = timezone.now()
 
+
+
+# Locked students (alumni, withdrawn, ...) take no part in allocation: their
+# choices are neither allotted, counted as pending, nor published.
+UNLOCKED = unlocked_q('student_id__id__')
 
 def validate_course_slots(batch, sem, programme_type, skip_course_ids=None):
     """
@@ -33,6 +39,7 @@ def validate_course_slots(batch, sem, programme_type, skip_course_ids=None):
         Q(semester_id__semester_no=sem)
         & Q(student_id__batch=batch)
         & Q(student_id__batch_id__curriculum__programme__category=programme_type)
+        & UNLOCKED
     )
     already_allocated = set(
         FinalRegistration.objects.filter(scope)
@@ -102,6 +109,7 @@ def allocation_progress(batch, sem, programme_type):
         Q(semester_id__semester_no=sem)
         & Q(student_id__batch=batch)
         & Q(student_id__batch_id__curriculum__programme__category=programme_type)
+        & UNLOCKED
     )
     requested = set(
         InitialRegistration.objects.filter(scope)
@@ -243,6 +251,7 @@ def publish_allocations(batch, sem, year, programme_type):
         Q(semester_id__semester_no=sem)
         & Q(student_id__batch=batch)
         & Q(student_id__batch_id__curriculum__programme__category=programme_type)
+        & UNLOCKED
     )
     allocations = list(
         FinalRegistration.objects.filter(allocation_filter).select_related(
@@ -261,6 +270,7 @@ def publish_allocations(batch, sem, year, programme_type):
         {row.course_id_id for row in allocations}, working_year, semester_type)
 
     existing_rows = list(course_registration.objects.filter(
+        UNLOCKED,
         student_id__batch=batch,
         semester_id__semester_no=sem,
         student_id__batch_id__curriculum__programme__category=programme_type,
@@ -328,6 +338,7 @@ def publish_allocations(batch, sem, year, programme_type):
         (row.student_id_id, row.course_id_id, row.semester_id_id,
          row.registration_type): row
         for row in course_registration.objects.filter(
+            UNLOCKED,
             student_id__batch=batch,
             semester_id__semester_no=sem,
             student_id__batch_id__curriculum__programme__category=programme_type,
@@ -366,8 +377,8 @@ def random_algo(batch,sem,year,slot_ids, programme_type, skip_course_ids=None) :
     # zero seats makes the "slot full" branch below push these students to
     # their next priority, so skipping reuses the existing fall-through
     skip_course_ids = {int(c) for c in (skip_course_ids or [])}
-    unique_course = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(course_slot_id__in=slot_ids) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)).values_list('course_id',flat=True).distinct()
-    slot_filter = (Q(semester_id__semester_no = sem) & Q(course_slot_id__in=slot_ids) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type))
+    unique_course = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(course_slot_id__in=slot_ids) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type) & UNLOCKED).values_list('course_id',flat=True).distinct()
+    slot_filter = (Q(semester_id__semester_no = sem) & Q(course_slot_id__in=slot_ids) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type) & UNLOCKED)
     already_allocated_students = set(FinalRegistration.objects.filter(
         Q(semester_id__semester_no=sem)
         & Q(course_slot_id__in=slot_ids)
@@ -487,7 +498,8 @@ def allocate(request):
         }, status=409)
 
     scope = (Q(semester_id__semester_no=sem) & Q(student_id__batch=batch)
-             & Q(student_id__batch_id__curriculum__programme__category=programme_type))
+             & Q(student_id__batch_id__curriculum__programme__category=programme_type)
+             & UNLOCKED)
     # A choice loses its slot when the slot is deleted after students picked
     # it (on_delete=SET_NULL). There is nothing to allot it into, so it is
     # left out and named in the result instead of stopping the whole batch.
@@ -535,6 +547,7 @@ def allocate(request):
                         Q(semester_id__semester_no=sem) &
                         Q(course_slot_id=course_slot_object) &
                         Q(student_id__batch=batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)
+                        & UNLOCKED
                     ).exclude(student_id_id__in=already_allocated_students)
                     .values_list('student_id_id', 'course_id_id', 'registration_type',
                                   'old_course_registration_id'))

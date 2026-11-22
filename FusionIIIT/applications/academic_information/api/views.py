@@ -5,6 +5,7 @@ import logging
 import time
 import zipfile
 import pandas as pd
+from applications.academic_information.student_status import locked_roll_nos, status_label
 from io import BytesIO
 from xlsxwriter.workbook import Workbook
 from django.contrib.auth import get_user_model
@@ -2610,11 +2611,17 @@ def assign_section(request):
         return Response({'detail': 'section must be up to 8 letters or digits.'},
                         status=status.HTTP_400_BAD_REQUEST)
 
+    # A locked student's (alumni, ...) section stays as it is.
+    skipped = sorted(locked_roll_nos(roll_numbers))
     updated = (Student.objects
-               .filter(id_id__in=roll_numbers)
+               .filter(id_id__in=[r for r in roll_numbers if r not in skipped])
                .update(section=section or None))
-    return Response({'detail': f'Section updated for {updated} student(s).',
+    detail = f'Section updated for {updated} student(s).'
+    if skipped:
+        detail += f' {len(skipped)} alumni or stopped student(s) left unchanged.'
+    return Response({'detail': detail,
                      'updated': updated,
+                     'skipped': skipped,
                      'section': section or None})
 
 # Counts start from the 2020 batch. Gender is recorded reliably only from the
@@ -2899,6 +2906,7 @@ def database_spi_cpi(request):
             'cpi': None,
             'tu': None,
             'tp': None,
+            'status': status_label(student.id.user_status) or 'Present',
         }
         if semester_type:
             spi, _, _ = calculate_spi_for_student(student, number, semester_type)

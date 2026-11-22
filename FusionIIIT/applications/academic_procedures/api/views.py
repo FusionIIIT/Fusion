@@ -58,6 +58,10 @@ from applications.academic_procedures.models import ( MTechGraduateSeminarReport
                                                      session_working_year)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
+from applications.academic_information.student_lock import assert_record_unlocked
+from applications.academic_information.student_status import (
+    assert_unlocked, is_locked_status, locked_roll_nos, normalise_status, status_label,
+)
 from applications.examination.models import Student_grades
 
 from applications.academic_procedures.helpers import (get_user_semester, get_acad_year,
@@ -1166,6 +1170,8 @@ def get_next_sem_courses(request):
 @role_required(list(ALL_ACAD_ROLES))
 def verify_registration(request):
     data = json.loads(request.body)
+    # Accepting or rejecting changes the student's registrations.
+    assert_unlocked([data.get('student_id')])
     if data.get('status_req') == "accept" :
         student_id = data.get('student_id')
         student = Student.objects.get(id = student_id)
@@ -2500,6 +2506,10 @@ def allot_courses(request):
                         student = Student.objects.get(id__user__username=roll_no)
                     except Exception:
                         raise ValueError(f"No student with roll number {roll_no}.")
+                    if is_locked_status(student.id.user_status):
+                        raise ValueError(
+                            f"{roll_no} is {status_label(student.id.user_status)}; "
+                            "their records cannot be changed.")
                     try:
                         slot = CourseSlot.objects.get(name=slot_name, semester=sem)
                     except Exception:
@@ -6997,6 +7007,7 @@ def list_students_in_batch_semester_promotion(request):
             "discipline": (st.batch_id.discipline.acronym
                            if st.batch_id and st.batch_id.discipline_id else ''),
             "current_semester_no": st.curr_semester_no,
+            "status": normalise_status(st.id.user_status) or "PRESENT",
         })
     return Response(result)
 
@@ -7007,6 +7018,7 @@ def apply_promotion(request):
     data = request.data  # list of student IDs
     user = request.user
     errors = []
+    locked = locked_roll_nos(str(sid) for sid in data)
     with transaction.atomic():
         for idx, sid in enumerate(data):
             try:
@@ -7016,6 +7028,10 @@ def apply_promotion(request):
                     continue
             except Student.DoesNotExist:
                 errors.append({"index": idx, "detail": f"Student {sid} not found."})
+                continue
+            if student.id_id in locked:
+                errors.append({"index": idx, "detail":
+                               f"{student.id_id} is {status_label(locked[student.id_id])}; not promoted."})
                 continue
             old_sem = student.curr_semester_no
             new_sem = old_sem + 1
@@ -7082,6 +7098,7 @@ def apply_demotion(request):
     """
     data = request.data  # list of student IDs
     errors = []
+    locked = locked_roll_nos(str(sid) for sid in data)
     with transaction.atomic():
         for idx, sid in enumerate(data):
             try:
@@ -7091,6 +7108,10 @@ def apply_demotion(request):
                     continue
             except Student.DoesNotExist:
                 errors.append({"index": idx, "detail": f"Student {sid} not found."})
+                continue
+            if student.id_id in locked:
+                errors.append({"index": idx, "detail":
+                               f"{student.id_id} is {status_label(locked[student.id_id])}; not moved back."})
                 continue
             old_sem = student.curr_semester_no
             if old_sem is None or old_sem <= 1:
@@ -9226,6 +9247,8 @@ def rpc_consent(request, pk):
         field in data and getattr(seminar, field) != data[field]
         for field in panel_fields
     )
+    # Checked before the reset: the seminar's own save comes after it.
+    assert_record_unlocked(seminar)
     if changed:
         ProgressSeminarConsent.objects.filter(seminar=seminar).update(consented=False)
 
@@ -10717,6 +10740,8 @@ def admin_reject_enrollments(request):
     if not ids:
         return JsonResponse({'error': 'No registration IDs provided'}, status=400)
 
+    assert_unlocked(ThesisRegistration.objects.filter(id__in=ids, status='pending')
+                    .values_list('student_id', flat=True))
     updated = ThesisRegistration.objects.filter(id__in=ids, status='pending').update(
         status='rejected',
         remarks=remarks,
@@ -11551,6 +11576,7 @@ def admin_reject_progress_seminar_enrollments(request):
         return JsonResponse({'error': 'No registration IDs provided'}, status=400)
 
     pending_qs = ProgressSeminarRegistration.objects.filter(id__in=ids, status='pending')
+    assert_unlocked(pending_qs.values_list('student_id', flat=True))
     to_notify = list(pending_qs.select_related('student__id__user'))
     updated = pending_qs.update(status='rejected', remarks=remarks)
     for reg in to_notify:
@@ -11770,6 +11796,8 @@ def admin_verify_teaching_credit_enrollments(request):
     if not ids:
         return JsonResponse({'error': 'No registration IDs provided'}, status=400)
 
+    assert_unlocked(TeachingCreditRegistration.objects.filter(id__in=ids, status='pending')
+                    .values_list('student_id', flat=True))
     updated = TeachingCreditRegistration.objects.filter(id__in=ids, status='pending').update(
         status='verified',
     )
@@ -11790,6 +11818,8 @@ def admin_reject_teaching_credit_enrollments(request):
     if not ids:
         return JsonResponse({'error': 'No registration IDs provided'}, status=400)
 
+    assert_unlocked(TeachingCreditRegistration.objects.filter(id__in=ids, status='pending')
+                    .values_list('student_id', flat=True))
     updated = TeachingCreditRegistration.objects.filter(id__in=ids, status='pending').update(
         status='rejected',
         remarks=remarks,
@@ -12917,6 +12947,7 @@ def supervisor_bulk_submit_all_thesis_grades(request):
 
     # Batch update all at once
     if evaluations_to_update:
+        assert_unlocked(e.registration.student_id for e in evaluations_to_update)
         ThesisEvaluation.objects.bulk_update(
             evaluations_to_update,
             fields=['grade', 'remarks', 'submitted_by', 'submitted_at'],
@@ -13700,6 +13731,8 @@ def rpc_comprehensive_exam_consent(request, attempt_pk):
             changed = True
     if request.FILES.get('milestone_plan'):
         changed = True
+    # Checked before the reset: the attempt's own save comes after it.
+    assert_record_unlocked(attempt)
     if changed:
         ComprehensiveExamConsent.objects.filter(attempt=attempt).update(consented=False)
 
@@ -14669,6 +14702,8 @@ def rpc_open_seminar_consent(request, attempt_pk):
         field in data and getattr(attempt, field) != data[field]
         for field in panel_fields
     )
+    # Checked before the reset: the attempt's own save comes after it.
+    assert_record_unlocked(attempt)
     if changed:
         OpenSeminarConsent.objects.filter(attempt=attempt).update(consented=False)
 

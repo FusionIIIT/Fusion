@@ -21,6 +21,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from applications.academic_information.models import Student
+from applications.academic_information.student_status import CERTIFICATE_STATUSES, status_in_q
 from applications.academic_procedures.models import BonafideCertificate
 from applications.globals.decorators import role_required
 
@@ -172,9 +173,9 @@ def medium_of_instruction_student(request):
 
     student = get_object_or_404(
         _student_queryset(),
+        status_in_q('id__', CERTIFICATE_STATUSES),
         pk=roll_number,
         id__user__is_active=True,
-        id__user_status='PRESENT',
     )
     context = medium_of_instruction_context(student)
     issued_on = timezone.now().date()
@@ -207,7 +208,8 @@ def generate_medium_of_instruction_pdf(request):
     if not student_id:
         return Response({'error': 'student_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    student = get_object_or_404(_student_queryset(), pk=student_id)
+    student = get_object_or_404(
+        _student_queryset(), status_in_q('id__', CERTIFICATE_STATUSES), pk=student_id)
     context = medium_of_instruction_context(student)
     if not context['is_ready']:
         return Response(

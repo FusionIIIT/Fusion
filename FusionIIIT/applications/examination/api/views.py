@@ -1,4 +1,5 @@
 from django.db.models.query_utils import Q
+from applications.academic_information.student_status import assert_unlocked, locked_roll_nos
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -1954,6 +1955,18 @@ class SubmitGradesProfAPI(APIView):
         )
 
 
+
+def reset_resubmit_for_roster(course_id, academic_year, semester_type, roll_nos):
+    """Clear reSubmit on the roster's grades for this course and term before an
+    upload. A locked student's (alumni, ...) grade rows are left as they are."""
+    locked = locked_roll_nos(roll_nos)
+    Student_grades.objects.filter(
+        course_id_id=course_id,
+        academic_year=academic_year,
+        semester_type=semester_type,
+        roll_no__in=[r for r in roll_nos if r not in locked],
+    ).update(reSubmit=False)
+
 class UploadGradesProfAPI(APIView):
     """
     Upload grades CSV by the assigned instructor.
@@ -2194,13 +2207,8 @@ class UploadGradesProfAPI(APIView):
             with transaction.atomic():
                 # Reset reSubmit only for this submission's roster (already scoped
                 # to the section + programme above), never course-wide.
-                reset_query = Student_grades.objects.filter(
-                    course_id_id=course_id,
-                    academic_year=academic_year,
-                    semester_type=semester_type,
-                    roll_no__in=[reg.student_id_id for reg in regs],
-                )
-                reset_query.update(reSubmit=False)
+                reset_resubmit_for_roster(course_id, academic_year, semester_type,
+                                          [reg.student_id_id for reg in regs])
 
                 # ─── Process each CSV row ───
                 for idx, row in enumerate(reader, start=1):
@@ -3801,6 +3809,10 @@ class PublishResultSelectedAPI(APIView):
         selected = [r for r in roll_numbers if r in valid_rolls]
 
         with transaction.atomic():
+            # Who sees the result is part of a student's record: a locked
+            # student's visibility can be neither added nor taken away.
+            current = set(ann.published_students.values_list('roll_no', flat=True))
+            assert_unlocked(current.symmetric_difference(selected))
             ann.published_students.all().delete()
             PublishedResultStudent.objects.bulk_create(
                 [PublishedResultStudent(announcement=ann, roll_no=r) for r in selected]

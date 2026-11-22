@@ -1,0 +1,72 @@
+"""auth/me tells the client a student's status and, for a locked student,
+offers only the modules they can still use."""
+from django.test import TestCase
+from django.utils import timezone
+from rest_framework.test import APIClient
+
+from applications.academic_information.status_test_utils import (
+    make_staff, make_student, set_status, token_for,
+)
+from applications.globals.models import Designation, HoldsDesignation, ModuleAccess
+from applications.programme_curriculum.models_student_management import StudentBatchUpload
+
+
+class AuthStatusTests(TestCase):
+    def setUp(self):
+        self.student = make_student('21BCS001')
+        user = self.student.id.user
+        HoldsDesignation.objects.create(
+            user=user, working=user, held_at=timezone.now(),
+            designation=Designation.objects.get_or_create(name='student')[0])
+        ModuleAccess.objects.create(designation='student', course_registration=True,
+                                    examinations=True, program_and_curriculum=True,
+                                    thesis_research=True, placement_cell=True)
+        self.client = APIClient()
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token_for(user))
+
+    def me(self):
+        response = self.client.get('/api/auth/me')
+        self.assertEqual(response.status_code, 200, response.content)
+        return response.json()
+
+    def test_auth_me_status_present(self):
+        data = self.me()
+        self.assertEqual(data['student_status'], 'PRESENT')
+        self.assertTrue(data['accessible_modules']['student']['thesis_research'])
+
+    def test_auth_me_alumni_trims_modules(self):
+        set_status(self.student, ' alumni')
+        data = self.me()
+        self.assertEqual(data['student_status'], 'ALUMNI')
+        self.assertEqual(data['accessible_modules'],
+                         {'student': {'course_registration': True, 'examinations': True}})
+        self.assertEqual(data['plugged_navigation'], {})
+
+    def test_auth_me_gives_a_students_discipline_and_batch(self):
+        self.assertEqual(self.me()['student_info'],
+                         {'discipline': 'B.Tech CSE', 'batch': 2021})
+
+    def pending_profile(self):
+        StudentBatchUpload.objects.create(
+            name='Asha Rao', father_name='F', mother_name='M', gender='Male', category='GEN',
+            address='Somewhere', branch='Computer Science and Engineering', programme_type='ug',
+            roll_number='21BCS001', user=self.student.id.user, profile_completed=False)
+
+    def test_present_student_must_finish_their_profile(self):
+        self.pending_profile()
+        self.assertTrue(self.me()['must_complete_profile'])
+
+    def test_alumnus_is_never_held_at_the_profile_form(self):
+        # Its submit is refused for a read-only account, so the form would
+        # shut them out of everything.
+        self.pending_profile()
+        set_status(self.student, 'ALUMNI')
+        self.assertFalse(self.me()['must_complete_profile'])
+
+    def test_faculty_status_null(self):
+        staff = make_staff()
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token_for(staff))
+        data = client.get('/api/auth/me').json()
+        self.assertIsNone(data['student_status'])
+        self.assertIsNone(data['student_info'])
