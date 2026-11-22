@@ -131,7 +131,8 @@ INSTALLED_APPS = [
     'notifications',
     'applications.academic_procedures',
     'applications.examination',
-    'applications.academic_information',
+    # The full AppConfig path, so its ready() connects the student lock.
+    'applications.academic_information.apps.AcademicInformationConfig',
     'applications.globals',
     'applications.programme_curriculum',
     'applications.scholarships',

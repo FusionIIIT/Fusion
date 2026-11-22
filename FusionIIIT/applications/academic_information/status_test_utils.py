@@ -24,10 +24,16 @@ def make_student(roll, status='PRESENT', batch=None, semester=8):
     batch = batch or make_batch()
     user = User.objects.create_user(username=roll, password='x')
     extra = ExtraInfo.objects.create(id=roll, user=user, user_type='student',
-                                     user_status=status, sex='M')
-    return Student.objects.create(id=extra, programme='B.Tech', batch=batch.year,
-                                  batch_id=batch, category='GEN',
-                                  curr_semester_no=semester)
+                                     user_status='PRESENT', sex='M')
+    student = Student.objects.create(id=extra, programme='B.Tech', batch=batch.year,
+                                     batch_id=batch, category='GEN',
+                                     curr_semester_no=semester)
+    # Marked afterwards, the way sysadmin does it: a locked student's
+    # records (Student included) cannot be created through the models.
+    if status != 'PRESENT':
+        set_status(student, status)
+        student.id.user_status = status
+    return student
 
 
 def make_staff(username='status_admin', designation='acadadmin'):
