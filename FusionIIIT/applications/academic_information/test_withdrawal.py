@@ -35,10 +35,11 @@ class WithdrawalTests(TestCase):
             course_slot_id=self.slot, registration_type='Regular',
             semester_type=sem_type, session=session)
 
-    def grade(self, academic_year='2024-25', sem_type='Even Semester'):
+    def grade(self, academic_year='2024-25', sem_type='Even Semester', verified=True):
         Student_grades.objects.create(
             course_id=self.course, semester=4, year=2025, roll_no='23BEC020', grade='B',
-            batch=2023, academic_year=academic_year, semester_type=sem_type)
+            batch=2023, academic_year=academic_year, semester_type=sem_type,
+            verified=verified)
 
     def test_withdraw_locks_the_student_and_records_it(self):
         entry = withdraw(self.student, 'Left for a job', self.office)
@@ -85,7 +86,8 @@ class WithdrawalTests(TestCase):
         FinalRegistration.objects.create(student_id=self.student, semester_id=self.sem5,
                                          course_id=self.course)
         self.assertEqual(withdrawal_blockers(self.student),
-                         {'ungraded': [], 'pre_registration': [5], 'final_registration': [5]})
+                         {'ungraded': [], 'unverified': [], 'pre_registration': [5],
+                          'final_registration': [5]})
 
     def test_readmit_restores_and_records_it(self):
         withdraw(self.student, 'Left', self.office)
@@ -104,3 +106,21 @@ class WithdrawalTests(TestCase):
         set_status(self.student, 'ALUMNI')
         with self.assertRaises(WithdrawalRefused):
             readmit(self.student, 'x', self.office)
+
+    def test_a_grade_not_yet_verified_blocks(self):
+        # Verification saves every row of the course; a locked student's row
+        # would stop it for the whole class.
+        self.register(self.sem4)
+        self.grade(verified=False)
+        blockers = withdrawal_blockers(self.student)
+        self.assertEqual((blockers['ungraded'], blockers['unverified']), ([], ['EC4001']))
+
+    def test_current_semester_choices_block_before_registration(self):
+        # A first-semester student (or PG registering into the semester they
+        # are in) chooses courses for their current semester.
+        InitialRegistration.objects.create(student_id=self.student, semester_id=self.sem4,
+                                           course_id=self.course, priority=1)
+        self.assertEqual(withdrawal_blockers(self.student)['pre_registration'], [4])
+        self.register(self.sem4)
+        self.grade()
+        self.assertEqual(withdrawal_blockers(self.student)['pre_registration'], [])

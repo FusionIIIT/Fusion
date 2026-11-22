@@ -99,7 +99,16 @@ def assert_unlocked(roll_nos: Iterable[str]) -> None:
     if not locked:
         return
     rolls = sorted(locked)
-    tail = ' Restore them in System Administrator first.'
+    # Withdrawn students are re-admitted in Fusion; the others are restored
+    # in the System Administrator.
+    withdrawn = {r for r in rolls if locked[r] == 'WITHDRAWN'}
+    if len(withdrawn) == len(rolls):
+        tail = ' Re-admit them on the Student Status page first.'
+    elif withdrawn:
+        tail = (' Re-admit the withdrawn ones on the Student Status page, and restore'
+                ' the others in System Administrator, first.')
+    else:
+        tail = ' Restore them in System Administrator first.'
     if len(rolls) == 1:
         roll = rolls[0]
         raise StudentLocked(

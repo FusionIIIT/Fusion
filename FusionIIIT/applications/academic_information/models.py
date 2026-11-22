@@ -224,7 +224,7 @@ class StudentStatusHistory(models.Model):
     previous_status = models.CharField(max_length=50)
     new_status = models.CharField(max_length=50)
     reason = models.TextField()
-    # The semester the student was in: the last one they studied.
+    # The student's current semester (curr_semester_no) when the change was made.
     semester_no = models.IntegerField(null=True, blank=True)
     performed_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL,
                                      related_name='+')

@@ -4000,6 +4000,13 @@ def update_student(request, student_id):
                     'message': f'Institute Email {institute_email} already exists for another student'
                 }, status=400)
 
+        new_reported = data.get('reportedStatus')
+        if (new_reported and student.reported_status == 'REPORTED'
+                and new_reported != 'REPORTED'):
+            refusal = _records_refusal(student.roll_number)
+            if refusal:
+                return refusal
+
         for frontend_field, backend_field in field_mapping.items():
             if frontend_field in data:
                 value = data[frontend_field]

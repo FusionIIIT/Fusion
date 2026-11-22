@@ -32,7 +32,8 @@ class StudentStatusApiTests(TestCase):
             {'roll_no': '23BEC020', 'discipline': 'B.Tech ECE', 'batch': 2023,
              'semester': 4, 'status': 'PRESENT'})
         self.assertEqual(data['blockers'],
-                         {'ungraded': [], 'pre_registration': [], 'final_registration': []})
+                         {'ungraded': [], 'unverified': [], 'pre_registration': [],
+                          'final_registration': []})
         self.assertEqual(data['history'], [])
 
     def test_withdraw_then_readmit(self):

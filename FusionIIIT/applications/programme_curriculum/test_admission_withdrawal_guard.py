@@ -13,6 +13,9 @@ from applications.academic_information.status_test_utils import (
 from applications.academic_procedures.models import course_registration
 from applications.programme_curriculum.models import Course, CourseSlot, Semester
 from applications.programme_curriculum.models_student_management import StudentBatchUpload
+# The admission signals connect on first import, which production reaches
+# through the reporting flow; import them so the withdrawal signal runs here.
+import applications.programme_curriculum.signals  # noqa: E402,F401
 
 API = '/programme_curriculum/api/'
 REFUSED = ('23BEC020 has course registrations or grades. Use Withdraw on the Student '
@@ -59,7 +62,9 @@ class AdmissionWithdrawalGuardTests(TestCase):
         response = self.client.post(API + 'bulk_update_student_status/',
                                     {'student_ids': [self.upload.id],
                                      'reported_status': 'NOT_REPORTED'}, format='json')
-        self.assertIn(REFUSED, response.content.decode())
+        self.assertEqual(response.status_code, 200, response.content)
+        rows = response.json()['data']['individual_results']
+        self.assertEqual([(r['status'], r['message']) for r in rows], [('error', REFUSED)])
         self.assert_untouched()
 
     def test_crud_update_refused(self):
@@ -68,6 +73,30 @@ class AdmissionWithdrawalGuardTests(TestCase):
                                    content_type='application/json')
         self.assertEqual(response.status_code, 400, response.content)
         self.assert_untouched()
+
+    def test_edit_form_cannot_change_the_status(self):
+        response = self.client.put(API + f'student/{self.upload.id}/update/',
+                                   json.dumps({'reportedStatus': 'WITHDRAWAL'}),
+                                   content_type='application/json')
+        self.assertEqual(response.status_code, 400, response.content)
+        self.assertEqual(response.json()['message'], REFUSED)
+        self.assert_untouched()
+
+    def test_edit_form_saving_the_same_status_is_fine(self):
+        response = self.client.put(API + f'student/{self.upload.id}/update/',
+                                   json.dumps({'reportedStatus': 'REPORTED', 'address': 'New'}),
+                                   content_type='application/json')
+        self.assertEqual(response.status_code, 200, response.content)
+
+    def test_withdrawal_signal_keeps_login_when_there_are_records(self):
+        user = self.student.id.user
+        self.upload.user = user
+        self.upload.save()
+        StudentBatchUpload.objects.filter(pk=self.upload.pk).update(reported_status='WITHDRAWAL')
+        self.upload.refresh_from_db()
+        self.upload.save()
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
 
     def test_delete_refused(self):
         response = self.client.post(API + f'student/{self.upload.id}/delete/')
