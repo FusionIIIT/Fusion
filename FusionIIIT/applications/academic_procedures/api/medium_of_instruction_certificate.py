@@ -21,7 +21,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from applications.academic_information.models import Student
-from applications.academic_information.student_status import CERTIFICATE_STATUSES, status_in_q
+from applications.academic_information.student_status import (
+    CERTIFICATE_STATUSES, normalise_status, status_in_q,
+)
 from applications.academic_procedures.models import BonafideCertificate
 from applications.globals.decorators import role_required
 
@@ -38,6 +40,10 @@ from .bonafide_certificate import (
 
 CERTIFICATE_TYPE = 'medium_of_instruction'
 
+# Alumni and withdrawn students are no longer studying: their certificate
+# says "was a student of".
+_FORMER_STUDENT_STATUSES = frozenset({'ALUMNI', 'WITHDRAWN'})
+
 
 def medium_of_instruction_context(student):
     """The bonafide context, worded as the Medium of Instruction format has it:
@@ -49,7 +55,27 @@ def medium_of_instruction_context(student):
     context['programme_short'] = (
         f'{programme}.' if '.' in programme and not programme.endswith('.')
         else programme)
+    context['verb'] = (
+        'was' if normalise_status(student.id.user_status) in _FORMER_STUDENT_STATUSES
+        else 'is')
     return context
+
+
+def medium_of_instruction_text(context):
+    """The certificate's paragraph, worded as the Academic section's Medium
+    of Instruction format."""
+    return (
+        'This is to certify that '
+        f'<b>{escape(context["salutation"])} {escape(context["name"])}</b> '
+        f'(Roll No. {escape(context["roll_number"])}), '
+        f'{escape(context["relation"])} Mr. {escape(context["father_name"])}, '
+        f'{context["verb"]} a student of {superscript_ordinal(context["year_ordinal"])} Year '
+        f'({superscript_ordinal(context["semester_ordinal"])} Semester) '
+        f'<b>{escape(context["programme_short"])}</b> programme from '
+        f'<b>{escape(context["discipline"])}</b> discipline. '
+        'Institute provides education mode of instruction to the students '
+        'in English only.'
+    )
 
 
 def render_medium_of_instruction_pdf(context, reference_number, issued_on):
@@ -109,19 +135,7 @@ def render_medium_of_instruction_pdf(context, reference_number, issued_on):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
     ]))
 
-    # Worded as the Academic section's Medium of Instruction format.
-    first_text = (
-        'This is to certify that '
-        f'<b>{escape(context["salutation"])} {escape(context["name"])}</b> '
-        f'(Roll No. {escape(context["roll_number"])}), '
-        f'{escape(context["relation"])} Mr. {escape(context["father_name"])}, '
-        f'is a student of {superscript_ordinal(context["year_ordinal"])} Year '
-        f'({superscript_ordinal(context["semester_ordinal"])} Semester) '
-        f'<b>{escape(context["programme_short"])}</b> programme from '
-        f'<b>{escape(context["discipline"])}</b> discipline. '
-        'Institute provides education mode of instruction to the students '
-        'in English only.'
-    )
+    first_text = medium_of_instruction_text(context)
 
     story = [
         header,
