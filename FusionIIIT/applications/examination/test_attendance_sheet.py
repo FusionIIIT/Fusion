@@ -1,5 +1,7 @@
 from django.db import IntegrityError, transaction
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 
 from django.contrib.auth.models import User
 
@@ -190,3 +192,39 @@ class RollListTests(TestCase):
             {'id': other.id, 'code': 'CS1001', 'name': 'Intro', 'plans': []},
             {'id': self.course.id, 'code': 'CS8004',
              'name': 'Deep Learning and Applications', 'plans': ['MID']}])
+
+    def test_a_student_without_a_category_is_out_of_scope(self):
+        self.register(self.student('23BCS001'))
+        orphan = self.student('23BCS002')
+        Student.objects.filter(pk=orphan.pk).update(batch_id=None)
+        orphan = Student.objects.get(pk=orphan.pk)
+        self.register(orphan)
+        ug = frozenset({'UG'})
+        self.assertFalse(course_in_scope(self.course, *TERM, ug))
+        self.assertTrue(course_in_scope(self.course, *TERM, None))
+        self.assertEqual(courses_for('2026-27', ODD, ug), [])
+        self.assertEqual(len(courses_for('2026-27', ODD, None)), 1)
+
+    def test_courses_for_refuses_summer(self):
+        with self.assertRaises(ValueError):
+            courses_for('2026-27', 'Summer Semester', None)
+        with self.assertRaises(ValueError):
+            courses_for('2026', ODD, frozenset({'UG'}))
+
+    def test_courses_for_query_count_does_not_grow_with_courses(self):
+        def count():
+            with CaptureQueriesContext(connection) as ctx:
+                courses_for('2026-27', ODD, frozenset({'UG'}))
+            return len(ctx)
+
+        self.register(self.student('23BCS001'))
+        other = Course.objects.create(
+            code='CS1001', name='Intro', credit=3, syllabus='', ref_books='')
+        self.register(self.student('23BCS002'), course=other)
+        two = count()
+        for i in range(3):
+            extra = Course.objects.create(
+                code='CS20%02d' % i, name='X%d' % i, credit=3,
+                syllabus='', ref_books='')
+            self.register(self.student('23BCS01%d' % i), course=extra)
+        self.assertEqual(count(), two)

@@ -110,30 +110,55 @@ def instructor_names(course, academic_year, semester_type) -> Dict:
     return {'by_section': by_section, 'all': everyone}
 
 
-def programme_categories(course, academic_year, semester_type) -> Set[str]:
-    categories = set()
-    for student, _ in _live_students(course, academic_year, semester_type):
-        batch = student.batch_id
-        if batch and batch.curriculum and batch.curriculum.programme:
-            categories.add(batch.curriculum.programme.category)
-    return categories
+def _category(batch):
+    """Upper-cased programme category, or None when it cannot be resolved."""
+    try:
+        return batch.curriculum.programme.category.upper()
+    except AttributeError:
+        return None
+
+
+def programme_categories(course, academic_year, semester_type) -> Set[Optional[str]]:
+    """Categories of the live roll; None stands for a student with no category."""
+    return {_category(student.batch_id) for student, _ in
+            _live_students(course, academic_year, semester_type)}
+
+
+def _in_scope(categories, scopes) -> bool:
+    """Every student must have a resolvable category inside the scopes."""
+    if scopes is None:
+        return True
+    allowed = {scope.upper() for scope in scopes}
+    return bool(categories) and all(c in allowed for c in categories)
 
 
 def course_in_scope(course, academic_year, semester_type,
                     scopes: Optional[FrozenSet[str]]) -> bool:
     if scopes is None:
         return True
-    categories = programme_categories(course, academic_year, semester_type)
-    return bool(categories) and categories <= set(scopes)
+    return _in_scope(
+        programme_categories(course, academic_year, semester_type), scopes)
 
 
 def courses_for(academic_year, semester_type, scopes) -> List[dict]:
     from applications.examination.models import ExamAttendancePlan
     from applications.programme_curriculum.models import Course
 
-    course_ids = (course_registration.objects
-                  .filter(session=academic_year, semester_type=semester_type)
-                  .values_list('course_id', flat=True).distinct())
+    term_year(academic_year, semester_type)  # refuses Summer / bad sessions
+    term_regs = course_registration.objects.filter(
+        session=academic_year, semester_type=semester_type)
+    course_ids = set(term_regs.values_list('course_id', flat=True).distinct())
+    categories = {}  # type: Dict[int, Set[Optional[str]]]
+    if scopes is not None:
+        pairs = (term_regs
+                 .exclude(student_id__id__user_status__iexact='WITHDRAWN')
+                 .values_list(
+                     'course_id',
+                     'student_id__batch_id__curriculum__programme__category')
+                 .distinct())
+        for course_id, category in pairs:
+            categories.setdefault(course_id, set()).add(
+                category.upper() if category else None)
     plans = {}
     for plan in ExamAttendancePlan.objects.filter(
             academic_year=academic_year, semester_type=semester_type,
@@ -141,7 +166,7 @@ def courses_for(academic_year, semester_type, scopes) -> List[dict]:
         plans.setdefault(plan.course_id, set()).add(plan.exam)
     result = []
     for course in Course.objects.filter(id__in=course_ids).order_by('code'):
-        if not course_in_scope(course, academic_year, semester_type, scopes):
+        if not _in_scope(categories.get(course.id, set()), scopes):
             continue
         result.append({
             'id': course.id, 'code': course.code, 'name': course.name,
