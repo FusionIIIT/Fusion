@@ -5,7 +5,7 @@ from applications.academic_information.status_test_utils import (
     make_batch, make_staff, make_student, set_status,
 )
 from applications.academic_information.withdrawal import (
-    WithdrawalRefused, readmit, withdraw, withdrawal_blockers,
+    WithdrawalRefused, readmit, withdraw, withdrawal_blockers, withdrawal_cleanup,
 )
 from applications.academic_procedures.models import (
     FinalRegistration, InitialRegistration, course_registration,
@@ -62,10 +62,11 @@ class WithdrawalTests(TestCase):
 
     def test_ungraded_registration_of_the_current_semester_blocks(self):
         self.register(self.sem4)
-        self.assertEqual(withdrawal_blockers(self.student)['ungraded'], ['EC4001'])
+        pending = [{'code': 'EC4001', 'semester': 4, 'session': '2024-25'}]
+        self.assertEqual(withdrawal_blockers(self.student)['ungraded'], pending)
         with self.assertRaises(WithdrawalRefused) as caught:
             withdraw(self.student, 'x', self.office)
-        self.assertEqual(caught.exception.blockers['ungraded'], ['EC4001'])
+        self.assertEqual(caught.exception.blockers['ungraded'], pending)
         self.assertEqual(self.status(), 'PRESENT')
 
     def test_a_graded_registration_does_not_block_whatever_the_term_type(self):
@@ -80,14 +81,49 @@ class WithdrawalTests(TestCase):
         self.register(self.sem4)
         self.assertEqual(withdrawal_blockers(self.student)['ungraded'], [])
 
-    def test_pending_pre_and_final_registration_block(self):
+    def pending_semester5(self):
         InitialRegistration.objects.create(student_id=self.student, semester_id=self.sem5,
                                            course_id=self.course, priority=1)
         FinalRegistration.objects.create(student_id=self.student, semester_id=self.sem5,
                                          course_id=self.course)
-        self.assertEqual(withdrawal_blockers(self.student),
-                         {'ungraded': [], 'unverified': [], 'pre_registration': [5],
-                          'final_registration': [5]})
+
+    def test_pending_pre_and_final_registration_do_not_block(self):
+        # No screen removes an allotment that was never verified, so the
+        # withdrawal removes it (and its choices) itself.
+        self.pending_semester5()
+        self.assertEqual(withdrawal_blockers(self.student), {'ungraded': [], 'unverified': []})
+        self.assertEqual(withdrawal_cleanup(self.student),
+                         {'pre_registration': [5], 'final_registration': [5]})
+
+    def test_withdraw_removes_pending_pre_and_final_registration_and_says_so(self):
+        self.pending_semester5()
+        entry = withdraw(self.student, 'Stopped attending', self.office)
+        self.assertEqual(self.status(), 'WITHDRAWN')
+        self.assertFalse(FinalRegistration.objects.filter(student_id=self.student).exists())
+        self.assertFalse(InitialRegistration.objects.filter(student_id=self.student).exists())
+        self.assertEqual(entry.reason,
+                         'Stopped attending\nRemoved: pre-registration choices for semester 5;'
+                         ' course allotment not verified for semester 5.')
+
+    def test_a_refused_withdrawal_removes_nothing(self):
+        self.pending_semester5()
+        self.register(self.sem4)
+        with self.assertRaises(WithdrawalRefused):
+            withdraw(self.student, 'x', self.office)
+        self.assertTrue(FinalRegistration.objects.filter(student_id=self.student).exists())
+        self.assertTrue(InitialRegistration.objects.filter(student_id=self.student).exists())
+
+    def test_verified_allotments_and_finished_choices_are_kept(self):
+        InitialRegistration.objects.create(student_id=self.student, semester_id=self.sem4,
+                                           course_id=self.course, priority=1)
+        FinalRegistration.objects.create(student_id=self.student, semester_id=self.sem4,
+                                         course_id=self.course, verified=True)
+        self.register(self.sem4)
+        self.grade()
+        entry = withdraw(self.student, 'Left', self.office)
+        self.assertEqual(entry.reason, 'Left')
+        self.assertEqual(FinalRegistration.objects.filter(student_id=self.student).count(), 1)
+        self.assertEqual(InitialRegistration.objects.filter(student_id=self.student).count(), 1)
 
     def test_readmit_restores_and_records_it(self):
         withdraw(self.student, 'Left', self.office)
@@ -113,14 +149,15 @@ class WithdrawalTests(TestCase):
         self.register(self.sem4)
         self.grade(verified=False)
         blockers = withdrawal_blockers(self.student)
-        self.assertEqual((blockers['ungraded'], blockers['unverified']), ([], ['EC4001']))
+        self.assertEqual((blockers['ungraded'], blockers['unverified']),
+                         ([], [{'code': 'EC4001', 'semester': 4, 'session': '2024-25'}]))
 
     def test_current_semester_choices_block_before_registration(self):
         # A first-semester student (or PG registering into the semester they
         # are in) chooses courses for their current semester.
         InitialRegistration.objects.create(student_id=self.student, semester_id=self.sem4,
                                            course_id=self.course, priority=1)
-        self.assertEqual(withdrawal_blockers(self.student)['pre_registration'], [4])
+        self.assertEqual(withdrawal_cleanup(self.student)['pre_registration'], [4])
         self.register(self.sem4)
         self.grade()
-        self.assertEqual(withdrawal_blockers(self.student)['pre_registration'], [])
+        self.assertEqual(withdrawal_cleanup(self.student)['pre_registration'], [])
