@@ -19,6 +19,7 @@ from applications.programme_curriculum.models import (
     Programme, Semester)
 from applications.examination.models import ExamAttendancePlan, ExamAttendanceRoom
 import datetime
+from unittest import mock
 
 
 def make_course():
@@ -334,3 +335,34 @@ class PlanSaveTests(TestCase):
         self.assertEqual(body['updated_by'], 'exam')
         self.assertEqual(body['rooms'][0]['date'], '2026-09-22')
         self.assertEqual(body['rooms'][0]['start_time'], '15:00')
+
+    def rival(self, exam):
+        return ExamAttendancePlan.objects.create(
+            course=self.course, academic_year='2026-27', semester_type=ODD,
+            exam=exam, roll_count=45)
+
+    def first_unaware_of(self, exam):
+        """QuerySet.first that cannot see the rival's plan, as in a race."""
+        from django.db.models import QuerySet
+        real_first = QuerySet.first
+
+        def first(qs):
+            row = real_first(qs)
+            return None if row is not None and row.exam == exam else row
+        return mock.patch.object(QuerySet, 'first', first)
+
+    def test_a_racing_first_save_is_a_conflict_not_a_crash(self):
+        self.rival('MID')
+        with self.first_unaware_of('MID'):
+            with self.assertRaises(PlanChanged):
+                self.save([self.room(1, 45)])
+        self.assertEqual(ExamAttendancePlan.objects.count(), 1)
+
+    def test_a_racing_first_copy_is_a_conflict_not_a_crash(self):
+        self.save([self.room(1, 45)])
+        self.rival('END')
+        with self.first_unaware_of('END'):
+            with self.assertRaises(PlanChanged):
+                copy_plan(self.course, '2026-27', ODD, 'MID', 'END',
+                          self.user, False)
+        self.assertEqual(ExamAttendancePlan.objects.filter(exam='END').count(), 1)

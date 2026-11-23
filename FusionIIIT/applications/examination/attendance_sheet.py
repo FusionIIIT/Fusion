@@ -3,7 +3,7 @@ import datetime
 import re
 from typing import Dict, FrozenSet, List, Optional, Set
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from rest_framework.exceptions import APIException
 
 from applications.academic_procedures.models import course_registration
@@ -281,7 +281,12 @@ def save_plan(course, academic_year, semester_type, exam, raw_rooms, user,
                           'Reload it, then make your changes again.')
     plan.roll_count = roll_count
     plan.updated_by = user
-    plan.save()
+    try:
+        with transaction.atomic():
+            plan.save()
+    except IntegrityError:
+        raise PlanChanged('Someone else saved this plan after you opened it. '
+                          'Reload it, then make your changes again.')
     _write_rooms(plan, rooms)
     return plan
 
@@ -308,7 +313,12 @@ def copy_plan(course, academic_year, semester_type, from_exam, to_exam, user,
         target = ExamAttendancePlan(exam=to_exam, **scope)
     target.roll_count = source.roll_count
     target.updated_by = user
-    target.save()
+    try:
+        with transaction.atomic():
+            target.save()
+    except IntegrityError:
+        raise PlanChanged('An %s plan already exists. Replace it?'
+                          % EXAM_NAMES.get(to_exam, to_exam))
     _write_rooms(target, [{
         'from_sno': r.from_sno, 'to_sno': r.to_sno, 'room': r.room,
         'date': r.date, 'start_time': r.start_time, 'end_time': r.end_time,
