@@ -31,9 +31,9 @@ class StudentStatusApiTests(TestCase):
             {k: data[k] for k in ('roll_no', 'discipline', 'batch', 'semester', 'status')},
             {'roll_no': '23BEC020', 'discipline': 'B.Tech ECE', 'batch': 2023,
              'semester': 4, 'status': 'PRESENT'})
-        self.assertEqual(data['blockers'],
-                         {'ungraded': [], 'unverified': [], 'pre_registration': [],
-                          'final_registration': []})
+        self.assertEqual(data['blockers'], {'ungraded': [], 'unverified': []})
+        self.assertEqual(data['withdrawal_removes'],
+                         {'pre_registration': [], 'final_registration': []})
         self.assertEqual(data['history'], [])
 
     def test_withdraw_then_readmit(self):
@@ -64,7 +64,8 @@ class StudentStatusApiTests(TestCase):
         response = self.office.post(URL + 'withdraw/',
                                     {'roll_no': '23BEC020', 'reason': 'Left'}, format='json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()['blockers']['ungraded'], ['EC4001'])
+        self.assertEqual(response.json()['blockers']['ungraded'],
+                         [{'code': 'EC4001', 'semester': 4, 'session': '2024-25'}])
         self.assertIn('still has an open semester', response.json()['detail'])
         self.assertEqual(ExtraInfo.objects.get(pk='23BEC020').user_status, 'PRESENT')
 

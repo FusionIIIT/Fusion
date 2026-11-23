@@ -2952,7 +2952,9 @@ def _status_student(request, roll_no):
 def _status_body(student):
     from applications.academic_information.models import StudentStatusHistory
     from applications.academic_information.student_status import normalise_status
-    from applications.academic_information.withdrawal import withdrawal_blockers
+    from applications.academic_information.withdrawal import (
+        withdrawal_blockers, withdrawal_cleanup,
+    )
 
     from applications.academic_information.models import SemesterDrop
     from applications.programme_curriculum.models import Semester
@@ -2971,6 +2973,8 @@ def _status_body(student):
         'semester': student.curr_semester_no,
         'status': normalise_status(student.id.user_status) or 'PRESENT',
         'blockers': withdrawal_blockers(student),
+        # Left over from a semester never entered; withdrawing removes these.
+        'withdrawal_removes': withdrawal_cleanup(student),
         'history': [{
             'action': h.action,
             'previous_status': h.previous_status,
