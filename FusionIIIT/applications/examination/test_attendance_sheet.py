@@ -11,8 +11,8 @@ from applications.academic_information.status_test_utils import (
 from applications.academic_procedures.models import course_registration
 from applications.examination.attendance_sheet import (
     PlanChanged, PlanRefused, copy_plan, course_in_scope, courses_for,
-    instructor_names, plan_body, roll_list, save_plan, section_wise,
-    term_year)
+    instructor_names, overview, plan_body, roll_list, save_plan,
+    section_wise, term_year)
 from applications.globals.models import ExtraInfo, Faculty
 from applications.programme_curriculum.models import (
     Batch, Course, CourseInstructor, CourseSlot, Curriculum, Discipline,
@@ -380,3 +380,137 @@ class PlanSaveTests(TestCase):
                 copy_plan(self.course, '2026-27', ODD, 'MID', 'END',
                           self.user, False)
         self.assertEqual(ExamAttendancePlan.objects.filter(exam='END').count(), 1)
+
+
+class OverviewTests(TestCase):
+    """Every saved room of a term's exam, the unplanned courses, and rooms
+    two courses have at the same time."""
+
+    def setUp(self):
+        self.batch = make_batch(2023)
+        self.semester = Semester.objects.create(
+            curriculum=self.batch.curriculum, semester_no=5)
+        self.slot = CourseSlot.objects.create(
+            semester=self.semester, name='EL', type='Core')
+        self.user = User.objects.create_user('exam', password='x')
+        self.dl = make_course()
+        self.intro = self.course('CS1001', 'Intro')
+        self.vlsi = self.course('EC2002', 'VLSI')
+        self.enrol(self.dl, ['23BCS%03d' % n for n in range(1, 5)])
+        self.enrol(self.intro, ['23BCS%03d' % n for n in range(11, 14)])
+        self.enrol(self.vlsi, ['23BEC%03d' % n for n in range(1, 3)])
+
+    def course(self, code, name):
+        return Course.objects.create(
+            code=code, name=name, credit=3, syllabus='', ref_books='')
+
+    def enrol(self, course, rolls, batch=None, programme='B.Tech'):
+        for roll in rolls:
+            student = Student.objects.filter(id_id=roll).first()
+            if student is None:
+                student = make_student(roll, batch=batch or self.batch)
+                student.programme = programme
+                student.save()
+            course_registration.objects.create(
+                student_id=student, semester_id=self.semester,
+                course_id=course, course_slot_id=self.slot,
+                registration_type='Regular', semester_type=ODD,
+                session='2026-27')
+
+    @staticmethod
+    def room(a, b, name, date='2026-09-22', start='09:00', end='11:00',
+             instructor=''):
+        return {'from_sno': a, 'to_sno': b, 'room': name, 'date': date,
+                'start_time': start, 'end_time': end,
+                'instructor_text': instructor}
+
+    def plan(self, course, rooms, exam='MID'):
+        save_plan(course, '2026-27', ODD, exam, rooms, self.user, None)
+
+    def test_rooms_by_date_and_time_and_the_unplanned_courses(self):
+        self.plan(self.dl, [
+            self.room(1, 2, 'L201', date='2026-09-23', instructor='PROF. A'),
+            self.room(3, 4, 'L202', start='15:00', end='17:00')])
+        self.plan(self.intro, [self.room(1, 3, 'L105')])
+        self.plan(self.vlsi, [self.room(1, 2, 'L301')], exam='END')
+
+        data = overview('2026-27', ODD, 'MID', None)
+
+        self.assertEqual((data['courses'], data['planned']), (3, 2))
+        self.assertEqual(data['unplanned'], [
+            {'id': self.vlsi.id, 'code': 'EC2002', 'name': 'VLSI'}])
+        self.assertEqual(
+            [(r['room'], r['course']['code'], r['students'])
+             for r in data['rooms']],
+            [('L105', 'CS1001', 3), ('L202', 'CS8004', 2),
+             ('L201', 'CS8004', 2)])
+        self.assertEqual(data['rooms'][2], {
+            'course': {'id': self.dl.id, 'code': 'CS8004',
+                       'name': 'Deep Learning and Applications'},
+            'room': 'L201', 'date': '2026-09-23',
+            'start_time': '09:00', 'end_time': '11:00',
+            'from_sno': 1, 'to_sno': 2, 'students': 2,
+            'instructor_text': 'PROF. A', 'roll_changed': False,
+            'shares_with': []})
+
+    def test_a_room_two_courses_hold_at_overlapping_times(self):
+        self.plan(self.dl, [self.room(1, 4, 'L201')])
+        self.plan(self.intro, [self.room(1, 3, ' l201', start='10:00',
+                                         end='12:00')])
+        # Back to back is not a clash; another day is not either.
+        self.plan(self.vlsi, [
+            self.room(1, 1, 'L201', start='11:00', end='13:00'),
+            self.room(2, 2, 'L201', date='2026-09-23')])
+
+        rows = {(r['course']['code'], r['date'], r['start_time']):
+                r['shares_with']
+                for r in overview('2026-27', ODD, 'MID', None)['rooms']}
+
+        self.assertEqual(rows, {
+            ('CS8004', '2026-09-22', '09:00'): ['CS1001'],
+            ('CS1001', '2026-09-22', '10:00'): ['CS8004', 'EC2002'],
+            ('EC2002', '2026-09-22', '11:00'): ['CS1001'],
+            ('EC2002', '2026-09-23', '09:00'): []})
+
+    def test_marks_a_plan_whose_roll_list_changed_since_saving(self):
+        self.plan(self.dl, [self.room(1, 4, 'L201')])
+        self.plan(self.intro, [self.room(1, 3, 'L105')])
+        self.enrol(self.dl, ['23BCS099'])
+        set_status(Student.objects.get(id_id='23BCS011'), 'WITHDRAWN')
+
+        rows = {r['course']['code']: r['roll_changed']
+                for r in overview('2026-27', ODD, 'MID', None)['rooms']}
+
+        self.assertEqual(rows, {'CS8004': True, 'CS1001': True})
+
+    def test_a_programme_admin_sees_only_their_courses(self):
+        pg = make_pg_batch(2026, 'CSE', 'PG', 'M.Tech')
+        thesis = self.course('CS6001', 'Research Methods')
+        self.enrol(thesis, ['26MCSA01'], batch=pg, programme='M.Tech')
+        self.plan(thesis, [self.room(1, 1, 'L201')])
+        self.plan(self.dl, [self.room(1, 4, 'L201')])
+
+        data = overview('2026-27', ODD, 'MID', frozenset({'UG'}))
+
+        self.assertEqual((data['courses'], data['planned']), (3, 1))
+        self.assertEqual([r['course']['code'] for r in data['rooms']],
+                         ['CS8004'])
+        # The room is still shown as taken by the other programme's course.
+        self.assertEqual(data['rooms'][0]['shares_with'], ['CS6001'])
+
+    def test_query_count_does_not_grow_with_plans(self):
+        def count():
+            with CaptureQueriesContext(connection) as ctx:
+                overview('2026-27', ODD, 'MID', frozenset({'UG'}))
+            return len(ctx)
+
+        self.plan(self.dl, [self.room(1, 4, 'L201')])
+        one = count()
+        self.plan(self.intro, [self.room(1, 1, 'L105'),
+                               self.room(2, 3, 'L106')])
+        self.plan(self.vlsi, [self.room(1, 2, 'L301')])
+        self.assertEqual(count(), one)
+
+    def test_refuses_summer(self):
+        with self.assertRaises(ValueError):
+            overview('2026-27', 'Summer Semester', 'MID', None)

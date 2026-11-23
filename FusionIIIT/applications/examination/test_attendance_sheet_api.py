@@ -183,6 +183,41 @@ class AttendanceSheetApiTests(TestCase):
         self.assertEqual(ug.get(BASE, self.query).status_code, 200)
         self.assertEqual(pg.get(BASE, self.query).status_code, 404)
 
+    def test_overview_lists_saved_rooms_and_unplanned_courses(self):
+        self.enrol_ug()
+        self.admin.post(BASE + 'save/', self.body(), format='json')
+        term = {'academic_year': YEAR, 'semester_type': ODD}
+        response = self.admin.get(BASE + 'overview/', dict(term, exam='MID'))
+        self.assertEqual(response.status_code, 200, response.content)
+        data = response.json()
+        self.assertEqual((data['courses'], data['planned']), (1, 1))
+        self.assertEqual(data['unplanned'], [])
+        self.assertEqual([(r['room'], r['students']) for r in data['rooms']],
+                         [('L201', 4)])
+        data = self.admin.get(BASE + 'overview/', dict(term, exam='END')).json()
+        self.assertEqual((data['planned'], data['rooms']), (0, []))
+        self.assertEqual([c['code'] for c in data['unplanned']], ['CS8004'])
+
+    def test_overview_refuses_bad_input_and_other_roles(self):
+        term = {'academic_year': YEAR, 'semester_type': ODD}
+        for query in (term, dict(term, exam='FINAL'),
+                      dict(term, exam='MID', semester_type='Summer Semester'),
+                      dict(term, exam='MID', academic_year='2026')):
+            self.assertEqual(
+                self.admin.get(BASE + 'overview/', query).status_code, 400,
+                query)
+        faculty = client_for(make_staff('fac1', 'Associate Professor'))
+        self.assertEqual(faculty.get(
+            BASE + 'overview/', dict(term, exam='MID')).status_code, 403)
+
+    def test_overview_for_a_programme_admin_leaves_out_mixed_courses(self):
+        self.enrol('23BCS001')
+        self.enrol('26MCSA01', batch=self.pg_batch, programme='M.Tech')
+        ug = client_for(make_staff('ug_admin', 'Acad UG'))
+        data = ug.get(BASE + 'overview/', {
+            'academic_year': YEAR, 'semester_type': ODD, 'exam': 'MID'}).json()
+        self.assertEqual((data['courses'], data['unplanned']), (0, []))
+
     def test_other_roles_are_refused(self):
         student = make_student('23BCS099', batch=self.ug_batch)
         response = client_for(student.id.user).get(BASE, self.query)

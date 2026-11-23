@@ -4,6 +4,7 @@ import re
 from typing import Dict, FrozenSet, List, Optional, Set
 
 from django.db import IntegrityError, transaction
+from django.db.models import Count
 from rest_framework.exceptions import APIException
 
 from applications.academic_procedures.models import course_registration
@@ -348,4 +349,70 @@ def plan_body(plan) -> dict:
             'end_time': r.end_time.strftime('%H:%M'),
             'instructor_text': r.instructor_text,
         } for r in plan.rooms.all()],
+    }
+
+
+def _room_key(name):
+    """'l201 ' and 'L201' are the same room."""
+    return ' '.join((name or '').split()).upper()
+
+
+def overview(academic_year, semester_type, exam, scopes) -> dict:
+    """Every saved room of the term's exam for the user's courses, by date and
+    time; the courses with no plan for it; and, per room, the other courses
+    holding the same room at an overlapping time (any programme's)."""
+    from applications.examination.models import ExamAttendanceRoom
+
+    courses = courses_for(academic_year, semester_type, scopes)
+    reach = {c['id'] for c in courses}
+    live = dict(
+        course_registration.objects
+        .filter(session=academic_year, semester_type=semester_type,
+                course_id__in=reach)
+        .exclude(student_id__id__user_status__iexact='WITHDRAWN')
+        .values('course_id')
+        .annotate(n=Count('student_id', distinct=True))
+        .values_list('course_id', 'n'))
+    rooms = list(
+        ExamAttendanceRoom.objects
+        .filter(plan__academic_year=academic_year,
+                plan__semester_type=semester_type, plan__exam=exam)
+        .select_related('plan__course'))
+    by_place = {}  # type: Dict[tuple, list]
+    for r in rooms:
+        by_place.setdefault((_room_key(r.room), r.date), []).append(r)
+
+    rows = []
+    for r in rooms:
+        plan = r.plan
+        if plan.course_id not in reach:
+            continue
+        shares = sorted({
+            o.plan.course.code for o in by_place[(_room_key(r.room), r.date)]
+            if o.plan.course_id != plan.course_id
+            and o.start_time < r.end_time and r.start_time < o.end_time})
+        rows.append({
+            'course': {'id': plan.course.id, 'code': plan.course.code,
+                       'name': plan.course.name},
+            'room': r.room,
+            'date': r.date.isoformat(),
+            'start_time': r.start_time.strftime('%H:%M'),
+            'end_time': r.end_time.strftime('%H:%M'),
+            'from_sno': r.from_sno,
+            'to_sno': r.to_sno,
+            'students': r.to_sno - r.from_sno + 1,
+            'instructor_text': r.instructor_text,
+            'roll_changed': live.get(plan.course_id, 0) != plan.roll_count,
+            'shares_with': shares,
+        })
+    rows.sort(key=lambda row: (row['date'], row['start_time'],
+                               _room_key(row['room']), row['course']['code'],
+                               row['from_sno']))
+    planned = [c for c in courses if exam in c['plans']]
+    return {
+        'courses': len(courses),
+        'planned': len(planned),
+        'rooms': rows,
+        'unplanned': [{'id': c['id'], 'code': c['code'], 'name': c['name']}
+                      for c in courses if exam not in c['plans']],
     }
