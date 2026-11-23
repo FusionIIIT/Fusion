@@ -291,6 +291,20 @@ class PlanSaveTests(TestCase):
         self.assertIn('Room 1: room, date, start and end time are required.',
                       self.errors([self.room(1, 45, start='soon')]))
 
+    def test_save_refuses_a_room_name_or_instructor_text_too_long(self):
+        long_name = self.room(1, 45, name='L' * 31)
+        self.assertIn('Room 1: room name must be at most 30 characters.',
+                      self.errors([long_name]))
+        long_text = dict(self.room(1, 45), instructor_text='P' * 501)
+        self.assertIn(
+            'Room 1: instructor text must be at most 500 characters.',
+            self.errors([long_text]))
+        at_limit = dict(self.room(1, 45, name='L' * 30),
+                        instructor_text='P' * 500)
+        plan = self.save([at_limit])
+        room = plan.rooms.get()
+        self.assertEqual((len(room.room), len(room.instructor_text)), (30, 500))
+
     def test_gaps_are_allowed(self):
         plan = self.save([self.room(1, 20), self.room(30, 45)])
         self.assertEqual(plan.rooms.count(), 2)

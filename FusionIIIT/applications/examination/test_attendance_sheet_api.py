@@ -100,6 +100,19 @@ class AttendanceSheetApiTests(TestCase):
             'detail': 'Fix these, then save.',
             'errors': ['Rooms 1 and 2 overlap.']})
 
+    def test_too_long_room_name_and_instructor_text_are_400(self):
+        self.enrol_ug()
+        rooms = [dict(room(1, 2, 'L' * 31)),
+                 dict(room(3, 4, 'L202'), instructor_text='P' * 501)]
+        response = self.admin.post(BASE + 'save/', self.body(rooms=rooms),
+                                   format='json')
+        self.assertEqual(response.status_code, 400, response.content)
+        self.assertEqual(response.json(), {
+            'detail': 'Fix these, then save.',
+            'errors': [
+                'Room 1: room name must be at most 30 characters.',
+                'Room 2: instructor text must be at most 500 characters.']})
+
     def test_stale_save_is_a_conflict_without_exists(self):
         self.enrol_ug()
         self.admin.post(BASE + 'save/', self.body(), format='json')

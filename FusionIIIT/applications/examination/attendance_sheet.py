@@ -181,6 +181,9 @@ def courses_for(academic_year, semester_type, scopes) -> List[dict]:
 
 EXAM_NAMES = {'MID': 'Mid Sem', 'END': 'End Sem'}
 _ROOM_REQUIRED = 'Room %d: room, date, start and end time are required.'
+# ExamAttendanceRoom.room and .instructor_text column sizes.
+ROOM_MAX = 30
+INSTRUCTOR_TEXT_MAX = 500
 
 
 class PlanRefused(APIException):
@@ -210,6 +213,12 @@ def validate_rooms(rooms: List[dict], roll_count: int) -> List[str]:
             errors.append(_ROOM_REQUIRED % n)
         elif r['end_time'] <= r['start_time']:
             errors.append('Room %d: the exam must end after it starts.' % n)
+        if len(r.get('room') or '') > ROOM_MAX:
+            errors.append('Room %d: room name must be at most %d characters.'
+                          % (n, ROOM_MAX))
+        if len(r.get('instructor_text') or '') > INSTRUCTOR_TEXT_MAX:
+            errors.append('Room %d: instructor text must be at most %d '
+                          'characters.' % (n, INSTRUCTOR_TEXT_MAX))
         a, b = r.get('from_sno'), r.get('to_sno')
         if a is None or b is None or a < 1 or b < 1 or a > roll_count \
                 or b > roll_count:
