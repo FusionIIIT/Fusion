@@ -10,7 +10,8 @@ from applications.academic_information.status_test_utils import (
     make_batch, make_student, set_status)
 from applications.academic_procedures.models import course_registration
 from applications.examination.attendance_sheet import (
-    course_in_scope, courses_for, instructor_names, roll_list, section_wise,
+    PlanChanged, PlanRefused, copy_plan, course_in_scope, courses_for,
+    instructor_names, plan_body, roll_list, save_plan, section_wise,
     term_year)
 from applications.globals.models import ExtraInfo, Faculty
 from applications.programme_curriculum.models import (
@@ -228,3 +229,108 @@ class RollListTests(TestCase):
                 syllabus='', ref_books='')
             self.register(self.student('23BCS01%d' % i), course=extra)
         self.assertEqual(count(), two)
+
+
+class PlanSaveTests(TestCase):
+    def setUp(self):
+        self.course = make_course()
+        batch = make_batch(2023)
+        semester = Semester.objects.create(
+            curriculum=batch.curriculum, semester_no=5)
+        slot = CourseSlot.objects.create(
+            semester=semester, name='EL', type='Core')
+        for n in range(1, 46):
+            student = make_student('23BCS%03d' % n, batch=batch)
+            course_registration.objects.create(
+                student_id=student, semester_id=semester,
+                course_id=self.course, course_slot_id=slot,
+                registration_type='Regular', semester_type=ODD,
+                session='2026-27')
+        self.user = User.objects.create_user('exam', password='x')
+
+    def room(self, a, b, name='L201', start='15:00', end='17:00'):
+        return {'from_sno': a, 'to_sno': b, 'room': name,
+                'date': '2026-09-22', 'start_time': start, 'end_time': end,
+                'instructor_text': ''}
+
+    def save(self, rooms, exam='MID', updated_at=None):
+        return save_plan(self.course, '2026-27', ODD, exam, rooms,
+                         self.user, updated_at)
+
+    def errors(self, rooms):
+        with self.assertRaises(PlanRefused) as ctx:
+            self.save(rooms)
+        return ctx.exception.errors
+
+    def test_save_then_update_replaces_rooms(self):
+        plan = self.save([self.room(1, 20), self.room(21, 45, 'L104')])
+        self.assertEqual(plan.rooms.count(), 2)
+        self.assertEqual(plan.roll_count, 45)
+        plan = self.save([self.room(1, 45)], updated_at=plan.updated_at.isoformat())
+        self.assertEqual(plan.rooms.count(), 1)
+
+    def test_save_refuses_a_range_past_the_end(self):
+        self.assertIn('Room 1: S.No must be between 1 and 45.',
+                      self.errors([self.room(1, 46)]))
+
+    def test_save_refuses_overlap(self):
+        self.assertIn('Rooms 1 and 2 overlap.',
+                      self.errors([self.room(1, 20), self.room(20, 45)]))
+
+    def test_save_refuses_end_not_after_start(self):
+        self.assertIn('Room 1: the exam must end after it starts.',
+                      self.errors([self.room(1, 45, end='15:00')]))
+
+    def test_save_refuses_empty_and_reversed_and_missing(self):
+        self.assertEqual(self.errors([]), ['Add at least one room.'])
+        self.assertIn('Room 1: from S.No must not be after to S.No.',
+                      self.errors([self.room(20, 10)]))
+        self.assertIn('Room 1: room, date, start and end time are required.',
+                      self.errors([self.room(1, 45, name='')]))
+        self.assertIn('Room 1: room, date, start and end time are required.',
+                      self.errors([self.room(1, 45, start='soon')]))
+
+    def test_gaps_are_allowed(self):
+        plan = self.save([self.room(1, 20), self.room(30, 45)])
+        self.assertEqual(plan.rooms.count(), 2)
+
+    def test_a_stale_save_is_refused(self):
+        plan = self.save([self.room(1, 20), self.room(21, 45)])
+        with self.assertRaises(PlanChanged):
+            self.save([self.room(1, 45)],
+                      updated_at='2000-01-01T00:00:00+00:00')
+        self.assertEqual(plan.rooms.count(), 2)
+
+    def test_copy_mid_to_end(self):
+        self.save([self.room(1, 20), self.room(21, 45, 'L104')])
+        copy_plan(self.course, '2026-27', ODD, 'MID', 'END', self.user, False)
+        mid = ExamAttendancePlan.objects.get(exam='MID')
+        end = ExamAttendancePlan.objects.get(exam='END')
+        self.assertEqual(plan_body(end)['rooms'], plan_body(mid)['rooms'])
+        self.assertEqual(mid.rooms.count(), 2)
+        self.assertEqual(end.roll_count, 45)
+
+    def test_copy_asks_before_replacing(self):
+        self.save([self.room(1, 20), self.room(21, 45, 'L104')])
+        self.save([self.room(1, 45)], exam='END')
+        with self.assertRaises(PlanChanged):
+            copy_plan(self.course, '2026-27', ODD, 'MID', 'END', self.user, False)
+        copy_plan(self.course, '2026-27', ODD, 'MID', 'END', self.user, True)
+        mid = ExamAttendancePlan.objects.get(exam='MID')
+        end = ExamAttendancePlan.objects.get(exam='END')
+        self.assertEqual(plan_body(end)['rooms'], plan_body(mid)['rooms'])
+
+    def test_copy_without_a_source_is_refused(self):
+        with self.assertRaises(PlanRefused):
+            copy_plan(self.course, '2026-27', ODD, 'MID', 'END', self.user, False)
+
+    def test_copy_onto_itself_is_refused(self):
+        self.save([self.room(1, 45)])
+        with self.assertRaises(PlanRefused):
+            copy_plan(self.course, '2026-27', ODD, 'MID', 'MID', self.user, True)
+
+    def test_plan_body_shape(self):
+        body = plan_body(self.save([self.room(1, 45)]))
+        self.assertEqual(body['updated_by'], 'exam')
+        self.assertEqual(body['rooms'][0]['date'], '2026-09-22')
+        self.assertEqual(body['rooms'][0]['start_time'], '15:00')

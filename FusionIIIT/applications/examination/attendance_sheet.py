@@ -1,6 +1,10 @@
 """Exam attendance sheet: the live roll list, instructors and programme scope."""
+import datetime
 import re
 from typing import Dict, FrozenSet, List, Optional, Set
+
+from django.db import transaction
+from rest_framework.exceptions import APIException
 
 from applications.academic_procedures.models import course_registration
 from applications.globals.programme_scope import canonical_programme_name
@@ -173,3 +177,156 @@ def courses_for(academic_year, semester_type, scopes) -> List[dict]:
             'plans': [e for e in ('MID', 'END') if e in plans.get(course.id, ())],
         })
     return result
+
+
+EXAM_NAMES = {'MID': 'Mid Sem', 'END': 'End Sem'}
+_ROOM_REQUIRED = 'Room %d: room, date, start and end time are required.'
+
+
+class PlanRefused(APIException):
+    status_code = 400
+    default_detail = 'Fix these, then save.'
+
+    def __init__(self, errors):
+        if isinstance(errors, str):
+            errors = [errors]
+        self.errors = list(errors)
+        super().__init__('; '.join(self.errors))
+
+
+class PlanChanged(APIException):
+    status_code = 409
+    default_detail = 'This plan changed.'
+
+
+def validate_rooms(rooms: List[dict], roll_count: int) -> List[str]:
+    if not rooms:
+        return ['Add at least one room.']
+    errors = []  # type: List[str]
+    in_range = []  # (number, from, to) for rooms whose range is usable
+    for n, r in enumerate(rooms, 1):
+        if not (r.get('room') or '').strip() or not r.get('date') \
+                or not r.get('start_time') or not r.get('end_time'):
+            errors.append(_ROOM_REQUIRED % n)
+        elif r['end_time'] <= r['start_time']:
+            errors.append('Room %d: the exam must end after it starts.' % n)
+        a, b = r.get('from_sno'), r.get('to_sno')
+        if a is None or b is None or a < 1 or b < 1 or a > roll_count \
+                or b > roll_count:
+            errors.append('Room %d: S.No must be between 1 and %d.'
+                          % (n, roll_count))
+        elif a > b:
+            errors.append('Room %d: from S.No must not be after to S.No.' % n)
+        else:
+            in_range.append((n, a, b))
+    for i, (n, a, b) in enumerate(in_range):
+        for m, c, d in in_range[i + 1:]:
+            if a <= d and c <= b:
+                errors.append('Rooms %d and %d overlap.' % (n, m))
+    return errors
+
+
+def parse_rooms(raw: List[dict]) -> List[dict]:
+    rooms = []
+    errors = []  # type: List[str]
+    for n, item in enumerate(raw or [], 1):
+        try:
+            rooms.append({
+                'from_sno': int(item['from_sno']),
+                'to_sno': int(item['to_sno']),
+                'room': str(item.get('room') or '').strip(),
+                'date': datetime.date.fromisoformat(item['date']),
+                'start_time': datetime.time.fromisoformat(item['start_time']),
+                'end_time': datetime.time.fromisoformat(item['end_time']),
+                'instructor_text': str(item.get('instructor_text') or '').strip(),
+            })
+        except (KeyError, TypeError, ValueError, AttributeError):
+            errors.append(_ROOM_REQUIRED % n)
+    if errors:
+        raise PlanRefused(errors)
+    return rooms
+
+
+def _write_rooms(plan, rooms: List[dict]) -> None:
+    from applications.examination.models import ExamAttendanceRoom
+
+    plan.rooms.all().delete()
+    ExamAttendanceRoom.objects.bulk_create([
+        ExamAttendanceRoom(
+            plan=plan, position=n, from_sno=r['from_sno'], to_sno=r['to_sno'],
+            room=r['room'], date=r['date'], start_time=r['start_time'],
+            end_time=r['end_time'], instructor_text=r['instructor_text'])
+        for n, r in enumerate(rooms, 1)])
+
+
+@transaction.atomic
+def save_plan(course, academic_year, semester_type, exam, raw_rooms, user,
+              updated_at: Optional[str]):
+    from applications.examination.models import ExamAttendancePlan
+
+    roll_count = len(roll_list(course, academic_year, semester_type))
+    rooms = parse_rooms(raw_rooms)
+    errors = validate_rooms(rooms, roll_count)
+    if errors:
+        raise PlanRefused(errors)
+    plan = (ExamAttendancePlan.objects.select_for_update()
+            .filter(course=course, academic_year=academic_year,
+                    semester_type=semester_type, exam=exam).first())
+    if plan is None:
+        plan = ExamAttendancePlan(
+            course=course, academic_year=academic_year,
+            semester_type=semester_type, exam=exam)
+    elif updated_at != plan.updated_at.isoformat():
+        raise PlanChanged('Someone else saved this plan after you opened it. '
+                          'Reload it, then make your changes again.')
+    plan.roll_count = roll_count
+    plan.updated_by = user
+    plan.save()
+    _write_rooms(plan, rooms)
+    return plan
+
+
+@transaction.atomic
+def copy_plan(course, academic_year, semester_type, from_exam, to_exam, user,
+              replace: bool):
+    from applications.examination.models import ExamAttendancePlan
+
+    if from_exam == to_exam:
+        raise PlanRefused('Choose a different exam to copy to.')
+    scope = dict(course=course, academic_year=academic_year,
+                 semester_type=semester_type)
+    source = ExamAttendancePlan.objects.filter(exam=from_exam, **scope).first()
+    if source is None:
+        raise PlanRefused('There is no %s plan to copy.'
+                          % EXAM_NAMES.get(from_exam, from_exam))
+    target = (ExamAttendancePlan.objects.select_for_update()
+              .filter(exam=to_exam, **scope).first())
+    if target is not None and not replace:
+        raise PlanChanged('An %s plan already exists. Replace it?'
+                          % EXAM_NAMES.get(to_exam, to_exam))
+    if target is None:
+        target = ExamAttendancePlan(exam=to_exam, **scope)
+    target.roll_count = source.roll_count
+    target.updated_by = user
+    target.save()
+    _write_rooms(target, [{
+        'from_sno': r.from_sno, 'to_sno': r.to_sno, 'room': r.room,
+        'date': r.date, 'start_time': r.start_time, 'end_time': r.end_time,
+        'instructor_text': r.instructor_text} for r in source.rooms.all()])
+    return target
+
+
+def plan_body(plan) -> dict:
+    return {
+        'exam': plan.exam,
+        'roll_count': plan.roll_count,
+        'updated_at': plan.updated_at.isoformat(),
+        'updated_by': plan.updated_by.username if plan.updated_by else None,
+        'rooms': [{
+            'from_sno': r.from_sno, 'to_sno': r.to_sno, 'room': r.room,
+            'date': r.date.isoformat(),
+            'start_time': r.start_time.strftime('%H:%M'),
+            'end_time': r.end_time.strftime('%H:%M'),
+            'instructor_text': r.instructor_text,
+        } for r in plan.rooms.all()],
+    }
