@@ -129,3 +129,41 @@ class Student_grades(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.pk, self.course_id)
+
+
+EXAM_CHOICES = (('MID', 'Mid Sem'), ('END', 'End Sem'))
+
+
+class ExamAttendancePlan(models.Model):
+    """Room plan for one course's exam in one academic term."""
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    academic_year = models.CharField(max_length=9)
+    semester_type = models.CharField(
+        max_length=20, choices=(('Odd Semester', 'Odd Semester'), ('Even Semester', 'Even Semester')))
+    exam = models.CharField(max_length=3, choices=EXAM_CHOICES)
+    roll_count = models.PositiveIntegerField()
+    updated_by = models.ForeignKey(
+        'auth.User', null=True, blank=True, on_delete=models.SET_NULL)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('course', 'academic_year', 'semester_type', 'exam')
+
+    def __str__(self):
+        return '{} {} {} {}'.format(self.course_id, self.academic_year, self.semester_type, self.exam)
+
+
+class ExamAttendanceRoom(models.Model):
+    """One room's serial-number range, date and time within a plan."""
+    plan = models.ForeignKey(ExamAttendancePlan, on_delete=models.CASCADE, related_name='rooms')
+    position = models.PositiveSmallIntegerField()
+    from_sno = models.PositiveIntegerField()
+    to_sno = models.PositiveIntegerField()
+    room = models.CharField(max_length=30)
+    date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    instructor_text = models.CharField(max_length=500, blank=True, default='')
+
+    class Meta:
+        ordering = ('position',)
