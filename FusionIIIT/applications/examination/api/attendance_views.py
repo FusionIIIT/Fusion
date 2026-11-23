@@ -8,8 +8,8 @@ from rest_framework.response import Response
 
 from applications.examination.attendance_sheet import (
     PlanChanged, PlanRefused, copy_plan, course_in_scope, courses_for,
-    instructor_names, plan_body, roll_list, save_plan, section_wise,
-    term_year)
+    instructor_names, overview, plan_body, roll_list, save_plan,
+    section_wise, term_year)
 from applications.examination.models import ExamAttendancePlan
 from applications.globals.decorators import role_required
 from applications.globals.programme_scope import scopes_for
@@ -103,6 +103,20 @@ def attendance_courses(request):
         return _bad(str(bad))
     return Response(courses_for(
         academic_year, semester_type, scopes_for(request.user)))
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(ROLES)
+def attendance_overview(request):
+    try:
+        academic_year, semester_type = _term(request.query_params)
+        exam = _exam(request.query_params)
+    except BadInput as bad:
+        return _bad(str(bad))
+    return Response(overview(
+        academic_year, semester_type, exam, scopes_for(request.user)))
 
 
 @api_view(['GET'])
