@@ -44,6 +44,7 @@ markdown2>=2.4.2
 numpy>=1.22.3
 oauthlib>=3.1.0
 openpyxl>=3.0.7
+ortools>=9.0.0
 Pillow>=8.1.0
 prompt-toolkit>=3.0.10
 psycopg2-binary>=2.8.6
@@ -75,5 +76,3 @@ django-crontab>=0.7.1
 zipfile2>=0.0.12
 pandas>=2.0.3
 PyYAML>=5.4.1
-
-
