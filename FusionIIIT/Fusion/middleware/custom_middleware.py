@@ -14,41 +14,37 @@ def user_logged_in_middleware(get_response):
             # For example, if your User model has a field named 'custom_field', you can access it like:
             if user.is_authenticated:
                 desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = request.user).values_list('designation'))
-                print(desig)
                 b = [i for sub in desig for i in sub]
                 design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
 
-                designation=[]
-                if str(user.extrainfo.user_type) == "student":
-                    designation.append(str(user.extrainfo.user_type))
+                designation = []
+                has_extrainfo = hasattr(user, 'extrainfo')
+                user_type_str = str(user.extrainfo.user_type) if has_extrainfo else "superuser"
 
+                if has_extrainfo and user_type_str == "student":
+                    designation.append(user_type_str)
 
                 for i in design:
-                    if str(i.designation) != str(user.extrainfo.user_type):
-                        print('-------')
-                        print(i.designation)
-                        print(user.extrainfo.user_type)
-                        print('')
+                    if not has_extrainfo or str(i.designation) != user_type_str:
                         designation.append(str(i.designation))
 
-                for i in designation:
-                    print(i)
-
-                request.session['currentDesignationSelected'] = designation[0]
-                request.session['allDesignations'] = designation 
-                first_designation = designation[0]
-                module_access = ModuleAccess.objects.filter(designation=first_designation).first()
-                
-                if module_access:
+                if designation:
+                    request.session['currentDesignationSelected'] = designation[0]
+                    request.session['allDesignations'] = designation
+                    first_designation = designation[0]
+                    module_access = ModuleAccess.objects.filter(designation=first_designation).first()
+                    
                     access_rights = {}
-    
-                    field_names = [field.name for field in ModuleAccess._meta.get_fields() if field.name not in ['id', 'designation']]
-    
-                    for field_name in field_names:
-                        access_rights[field_name] = getattr(module_access, field_name)
-    
-                request.session['moduleAccessRights'] = access_rights           
-                print("logged iN")
+                    if module_access:
+                        field_names = [field.name for field in ModuleAccess._meta.get_fields() if field.name not in ['id', 'designation']]
+                        for field_name in field_names:
+                            access_rights[field_name] = getattr(module_access, field_name)
+        
+                    request.session['moduleAccessRights'] = access_rights
+                else:
+                    request.session['currentDesignationSelected'] = "admin" if user.is_superuser else "unknown"
+                    request.session['allDesignations'] = [request.session['currentDesignationSelected']]
+                    request.session['moduleAccessRights'] = {}           
                 
             # Set the flag in the session to indicate that the function has bee+n executed
             request.session['function_executed'] = True
