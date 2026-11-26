@@ -2411,7 +2411,7 @@ class ComprehensiveExam(models.Model):
     ]
 
     MAX_ATTEMPTS = 2
-    MIN_CPI = Decimal('7.00')
+    MIN_CPI = Decimal('6.50')
 
     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='comprehensive_exam')
     supervisor = models.ForeignKey(Faculty, related_name='comprehensive_exams_supervised', on_delete=models.CASCADE)

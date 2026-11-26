@@ -6,6 +6,7 @@ import re
 from collections import defaultdict, deque, OrderedDict
 from functools import wraps
 from datetime import date
+from decimal import Decimal
 from django.utils import timezone
 from django.conf import settings
 logger = logging.getLogger(__name__)
@@ -9400,6 +9401,13 @@ def thesis_submit(request):
             {'error': 'Open Seminar must be completed satisfactorily before final thesis submission.'},
             status=403,
         )
+    deadline = _thesis_submission_deadline(student)
+    if deadline is not None and timezone.now() > deadline:
+        return Response(
+            {'error': f'The {THESIS_SUBMISSION_WINDOW_DAYS}-day window to submit the thesis after '
+                      f'Open Seminar approval ended on {deadline.date().isoformat()}.'},
+            status=403,
+        )
     syn   = request.FILES.get('synopsis')
     rpt   = request.FILES.get('thesis_report')
     if not all([syn, rpt]):
@@ -9434,14 +9442,23 @@ def thesis_submission_status(request):
     except Student.DoesNotExist:
         return Response({'error': 'Student record not found.'}, status=404)
 
+    deadline = _thesis_submission_deadline(student)
+    deadline_info = {
+        'deadline': deadline.isoformat() if deadline else None,
+        'days_remaining': (
+            max((deadline - timezone.now()).days, 0) if deadline else None
+        ),
+        'expired': bool(deadline and timezone.now() > deadline),
+    }
+
     thesis = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
     if thesis is None:
-        return Response({'submission': None}, status=200)
+        return Response({'submission': None, **deadline_info}, status=200)
 
     try:
         sub = thesis.submission
     except ThesisSubmission.DoesNotExist:
-        return Response({'submission': None}, status=200)
+        return Response({'submission': None, **deadline_info}, status=200)
 
     current_round = sub.revision_rounds.order_by('-round_number').first()
     return Response({
@@ -13139,14 +13156,18 @@ def _student_completed_credits(student):
     return total or 0
 
 
-def _progress_seminar_credits_completed(student):
+def _progress_seminar_credits_completed(student, after=None):
     """Sum of each of the student's rpc_approved ProgressSeminarEntry records at its
     own catalog credit value (see resolve_progress_seminar_credit -- do not hardcode
-    this number, it varies by the Seminar catalog row)."""
+    this number, it varies by the Seminar catalog row). `after`, if given, counts
+    only entries created on/after that datetime (Open Seminar's "Progress Seminar
+    after Comprehensive" requirement)."""
     thesis_topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
     if not thesis_topic:
         return 0
     approved_seminars = thesis_topic.seminars.filter(status='rpc_approved')
+    if after is not None:
+        approved_seminars = approved_seminars.filter(created_at__gte=after)
     return sum(
         resolve_progress_seminar_credit(student, s.semester) for s in approved_seminars
     )
@@ -13195,6 +13216,47 @@ def _student_current_cpi(student):
     return cpi
 
 
+_ENTRY_QUALIFICATION_REQUIRED_CREDITS = {'masters': 16, 'bachelors': 40}
+
+
+def _comprehensive_exam_eligibility_errors(student, entry_qualification):
+    """Hard preconditions for sitting the Comprehensive Exam: coursework credits
+    for the entry qualification completed AND CPI >= ComprehensiveExam.MIN_CPI.
+    Returns a list of human-readable failures (empty means eligible)."""
+    errors = []
+    required = _ENTRY_QUALIFICATION_REQUIRED_CREDITS[entry_qualification]
+    credits = _student_total_credits_completed(student)
+    if credits < required:
+        errors.append(
+            f'Credits completed ({credits}) are below the {required} required '
+            f'for this entry qualification.'
+        )
+    cpi = _student_current_cpi(student)
+    if cpi is None or cpi < ComprehensiveExam.MIN_CPI:
+        errors.append(
+            f'Current CPI ({cpi}) is below the required minimum of '
+            f'{ComprehensiveExam.MIN_CPI}.'
+        )
+    return errors
+
+
+THESIS_SUBMISSION_WINDOW_DAYS = 90
+
+
+def _thesis_submission_deadline(student):
+    """Final thesis must be submitted within THESIS_SUBMISSION_WINDOW_DAYS (90) of
+    the Open Seminar report's approval -- the Dean Academic's final approval of the
+    satisfactory attempt (OpenSeminarAttempt.dean_approved_at). Returns a datetime,
+    or None if the Open Seminar isn't satisfactorily approved yet."""
+    attempt = OpenSeminarAttempt.objects.filter(
+        open_seminar__student=student, status='satisfactory',
+        dean_approved_at__isnull=False,
+    ).order_by('-dean_approved_at').first()
+    if attempt is None:
+        return None
+    return attempt.dean_approved_at + datetime.timedelta(days=THESIS_SUBMISSION_WINDOW_DAYS)
+
+
 def comprehensive_exam_to_dict(exam):
     """Serialize a ComprehensiveExam (with RPC committee & attempts) for JSON responses."""
     return {
@@ -13227,6 +13289,7 @@ def comprehensive_exam_to_dict(exam):
         ),
         'entry_qualification': exam.entry_qualification,
         'required_credits': exam.required_credits,
+        'min_cpi': str(ComprehensiveExam.MIN_CPI),
         'credits_completed': exam.credits_completed,
         'current_cpi': str(exam.current_cpi) if exam.current_cpi is not None else None,
         'research_methodology_completed': exam.research_methodology_completed,
@@ -13298,9 +13361,14 @@ def supervisor_student_academic_info(request, roll_no):
     except Student.DoesNotExist:
         return JsonResponse({'error': 'Student not found'}, status=404)
 
+    credits_completed = _student_total_credits_completed(student)
+    current_cpi = _student_current_cpi(student)
     return JsonResponse({
-        'credits_completed': _student_total_credits_completed(student),
-        'current_cpi': str(_student_current_cpi(student)),
+        'credits_completed': credits_completed,
+        'current_cpi': str(current_cpi),
+        'min_cpi': str(ComprehensiveExam.MIN_CPI),
+        'required_credits': _ENTRY_QUALIFICATION_REQUIRED_CREDITS,
+        'cpi_ok': current_cpi is not None and current_cpi >= ComprehensiveExam.MIN_CPI,
     }, status=200)
 
 
@@ -13341,6 +13409,13 @@ def supervisor_propose_comprehensive_exam(request):
     entry_qualification = data.get('entry_qualification')
     if entry_qualification not in dict(ComprehensiveExam.ENTRY_QUALIFICATION_CHOICES):
         return JsonResponse({'error': 'Invalid entry_qualification'}, status=400)
+
+    eligibility_errors = _comprehensive_exam_eligibility_errors(student, entry_qualification)
+    if eligibility_errors:
+        return JsonResponse({
+            'error': 'Student is not eligible for the Comprehensive Exam: '
+                     + ' '.join(eligibility_errors),
+        }, status=400)
 
     exam = ComprehensiveExam.objects.create(
         student=student,
@@ -14074,6 +14149,58 @@ def _is_seminar_supervisor_co_or_rpc_member(request, seminar):
     return _exam_rpc_committee(seminar.student).filter(member=faculty).exists()
 
 
+def _comprehensive_exam_passed_at(student):
+    """When the student's Comprehensive Exam was passed (Dean Academic's final
+    approval of the passed attempt), or None if not passed / no record."""
+    attempt = ComprehensiveExamAttempt.objects.filter(
+        exam__student=student, status='passed', dean_approved_at__isnull=False,
+    ).order_by('-dean_approved_at').first()
+    return attempt.dean_approved_at if attempt else None
+
+
+# Minimum requirements to be eligible for Open Seminar (full time), keyed by
+# the entry qualification recorded on the student's ComprehensiveExam.
+OPEN_SEMINAR_MIN_CPI = Decimal('7.00')
+OPEN_SEMINAR_MIN_CREDITS = {
+    'masters': {'course_work': 9, 'thesis_research': 36, 'progress_seminar': 4, 'teaching': 2},
+    'bachelors': {'course_work': 24, 'thesis_research': 36, 'progress_seminar': 4, 'teaching': 2},
+}
+
+
+def _open_seminar_requirements(student):
+    """Required credit minimums for this student, or None if the Comprehensive
+    Exam record (which holds entry_qualification) doesn't exist."""
+    exam = ComprehensiveExam.objects.filter(student=student).first()
+    if exam is None:
+        return None
+    return OPEN_SEMINAR_MIN_CREDITS[exam.entry_qualification]
+
+
+def _open_seminar_eligibility_errors(student, eligibility, has_draft):
+    """Hard preconditions for proposing the Open Seminar beyond 'compre passed'
+    and 'RPC recommended': credit minimums, CPI >= OPEN_SEMINAR_MIN_CPI, and the
+    draft thesis uploaded. Returns a list of failures (empty means eligible)."""
+    errors = []
+    if not ComprehensiveExam.objects.filter(student=student, status='passed').exists():
+        return ['Comprehensive Examination must be passed before Open Seminar.']
+    req = _open_seminar_requirements(student)
+    checks = [
+        ('Course work credits', eligibility['course_work_credits'], req['course_work']),
+        ('Thesis research credits', eligibility['thesis_research_credits'], req['thesis_research']),
+        ('Progress Seminar credits (after Comprehensive)', eligibility['progress_seminar_credits'], req['progress_seminar']),
+        ('Teaching credits', eligibility['teaching_credits'], req['teaching']),
+    ]
+    for label, actual, needed in checks:
+        if actual < needed:
+            errors.append(f'{label} ({actual}) are below the {needed} required.')
+    cpi = _student_current_cpi(student)
+    if cpi is None or cpi < OPEN_SEMINAR_MIN_CPI:
+        errors.append(f'Current CPI ({cpi}) is below the required minimum of {OPEN_SEMINAR_MIN_CPI}.')
+    if not has_draft:
+        errors.append('The 1st draft of the thesis must be uploaded.')
+    return errors
+
+
 def _compute_open_seminar_eligibility(student):
     """Auto-derive the Constitution form's credit breakdown + RPC recommendation.
 
@@ -14084,7 +14211,9 @@ def _compute_open_seminar_eligibility(student):
     rec_open field.
     """
     course_work_credits = _student_completed_credits(student)
-    progress_seminar_credits = _progress_seminar_credits_completed(student)
+    progress_seminar_credits = _progress_seminar_credits_completed(
+        student, after=_comprehensive_exam_passed_at(student),
+    )
     thesis_research_credits = _thesis_research_credits_completed(student)
     teaching_credits = _teaching_credits_completed(student)
 
@@ -14220,7 +14349,17 @@ def open_seminar_eligibility_preview(request, roll_no):
     except Student.DoesNotExist:
         return JsonResponse({'error': 'Student not found'}, status=404)
 
-    return JsonResponse(_compute_open_seminar_eligibility(student), status=200)
+    eligibility = _compute_open_seminar_eligibility(student)
+    req = _open_seminar_requirements(student)
+    cpi = _student_current_cpi(student)
+    return JsonResponse({
+        **eligibility,
+        'current_cpi': str(cpi),
+        'min_cpi': str(OPEN_SEMINAR_MIN_CPI),
+        'required_credits': req,
+        # Draft upload isn't known yet at preview time; checked on submit.
+        'errors': _open_seminar_eligibility_errors(student, eligibility, has_draft=True),
+    }, status=200)
 
 
 # 1. Student
@@ -14302,6 +14441,14 @@ def supervisor_propose_open_seminar(request):
             status=403,
         )
 
+    errors = _open_seminar_eligibility_errors(
+        student, eligibility, has_draft=bool(request.FILES.get('first_draft_document')),
+    )
+    if errors:
+        return JsonResponse({
+            'error': 'Student is not eligible for Open Seminar: ' + ' '.join(errors),
+        }, status=400)
+
     seminar = OpenSeminar.objects.create(
         student=student,
         supervisor=faculty,
@@ -14367,6 +14514,13 @@ def supervisor_resubmit_open_seminar(request, pk):
             {'error': 'The RPC has not recommended this student for Open Seminar yet.'},
             status=403,
         )
+    errors = _open_seminar_eligibility_errors(
+        seminar.student, eligibility, has_draft=bool(seminar.first_draft_document),
+    )
+    if errors:
+        return JsonResponse({
+            'error': 'Student is not eligible for Open Seminar: ' + ' '.join(errors),
+        }, status=400)
     for field, value in eligibility.items():
         setattr(seminar, field, value)
 
