@@ -139,76 +139,91 @@ class ClubMemberDeleteAPIView(APIView):
 #             print(f"Serializer errors: {serializer.errors}")
 #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class ChangeHeadAPIView(APIView):
     def post(self, request):
-        club = request.data.get("club_name")
-        co_ordinator = request.data.get('co_ordinator')
-        co_coordinator = request.data.get('co_coordinator')
+        club_name = request.data.get("club_name")
+        coordinator_roll = request.data.get("co_ordinator")
+        co_coordinator_roll = request.data.get("co_coordinator")
 
-        if not club or (not co_ordinator and not co_coordinator):
-            return JsonResponse({'status': 'error', 'message': 'Invalid request parameters'})
+        if not club_name or (not coordinator_roll and not co_coordinator_roll):
+            return Response(
+                {"status": "error", "message": "Invalid request parameters"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
-            club_info = Club_info.objects.get(club_name=club)
+            club_info = Club_info.objects.get(club_name=club_name)
         except Club_info.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Club not found'})
+            return Response(
+                {"status": "error", "message": "Club not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-        message = ""
+        try:
+            coordinator_student = None
+            co_coordinator_student = None
 
-        if co_ordinator:
-            if not Club_member.objects.filter(club_id=club, member_id=co_ordinator).exists():
-                return JsonResponse({'status': 'error', 'message': 'Selected student is not a member of the club'})
-            
-            try:
-                co_ordinator_student = Student.objects.get(id_id=co_ordinator)
-                old_co_ordinator = club_info.co_ordinator_id
-                club_info.co_ordinator_id = co_ordinator_student
-                
-                new_co_ordinator = HoldsDesignation(
-                    user=User.objects.get(username=co_ordinator),
-                    working=User.objects.get(username=co_ordinator),
-                    designation=Designation.objects.get(name="co-ordinator")
+            if coordinator_roll:
+                coordinator_student = Student.objects.get(id_id=coordinator_roll)
+
+                if not Club_member.objects.filter(
+                    club=club_info, member=coordinator_student
+                ).exists():
+                    return Response(
+                        {"status": "error",
+                         "message": "Selected coordinator is not a member of the club"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            if co_coordinator_roll:
+                co_coordinator_student = Student.objects.get(
+                    id_id=co_coordinator_roll
                 )
-                new_co_ordinator.save()
 
-                HoldsDesignation.objects.filter(
-                    user__username=old_co_ordinator,
-                    designation=Designation.objects.get(name="co-ordinator")
-                ).delete()
+                if not Club_member.objects.filter(
+                    club=club_info, member=co_coordinator_student
+                ).exists():
+                    return Response(
+                        {"status": "error",
+                         "message": "Selected co-coordinator is not a member of the club"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-                message += "Successfully changed co-ordinator !!!"
-            except Student.DoesNotExist:
-                return JsonResponse({'status': 'error', 'message': 'Selected student not found'})
+            with transaction.atomic():
+                if coordinator_roll:
+                    club_info.co_ordinator = coordinator_student
 
-        if co_coordinator:
-            if not Club_member.objects.filter(club_id=club, member_id=co_coordinator).exists():
-                return JsonResponse({'status': 'error', 'message': 'Selected student is not a member of the club'})
+                if co_coordinator_roll:
+                    club_info.co_coordinator = co_coordinator_student
 
-            try:
-                co_coordinator_student = Student.objects.get(id_id=co_coordinator)
-                old_co_coordinator = club_info.co_coordinator_id
-                club_info.co_coordinator_id = co_coordinator_student
-                
-                new_co_coordinator = HoldsDesignation(
-                    user=User.objects.get(username=co_coordinator),
-                    working=User.objects.get(username=co_coordinator),
-                    designation=Designation.objects.get(name="co co-ordinator")
-                )
-                new_co_coordinator.save()
+                club_info.head_changed_on = timezone.localdate()
+                club_info.save()
 
-                HoldsDesignation.objects.filter(
-                    user__username=old_co_coordinator,
-                    designation=Designation.objects.get(name="co co-ordinator")
-                ).delete()
+            if coordinator_roll and co_coordinator_roll:
+                message = "Successfully changed coordinator and co-coordinator!"
+            elif coordinator_roll:
+                message = "Successfully changed coordinator!"
+            else:
+                message = "Successfully changed co-coordinator!"
 
-                message += "Successfully changed co-coordinator !!!"
-            except Student.DoesNotExist:
-                return JsonResponse({'status': 'error', 'message': 'Selected student not found'})
+            return Response(
+                {"status": "success", "message": message},
+                status=status.HTTP_200_OK
+            )
 
-        club_info.head_changed_on = timezone.now()
-        club_info.save()
+        except Student.DoesNotExist:
+            return Response(
+                {"status": "error", "message": "Selected student not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception:
+            logger.exception("Error while changing club heads")
+            return Response(
+                {"status": "error", "message": "An internal error occurred"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-        return JsonResponse({'status': "success", 'message': message})
 class AddMemberToClub(APIView):
     def post(self, request):
         serializer = Club_memberSerializer(data=request.data)
