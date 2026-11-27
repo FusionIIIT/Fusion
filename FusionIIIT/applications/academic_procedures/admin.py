@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from django.urls import reverse
 from django.utils import timezone
 
 from .models import (BranchChange, CoursesMtech, FeePayments, FinalRegistration, InitialRegistration,StudentRegistrationChecks,
@@ -8,6 +7,7 @@ from .models import (BranchChange, CoursesMtech, FeePayments, FinalRegistration,
                      ThesisTopicProcess, FeePayment, TeachingCreditRegistration,
                      SemesterMarks, MarkSubmissionCheck,Dues,MTechGraduateSeminarReport,PhDProgressExamination,AssistantshipClaim,MessDue,Assistantship_status, course_registration,
                      ThesisSubmission, ReviewInvitation)
+from .utils import invitation_response_url, review_form_url
 
 class RegisterAdmin(admin.ModelAdmin):
     model = Register
@@ -121,24 +121,20 @@ class ReviewInvitationAdmin(admin.ModelAdmin):
         return '-'
     is_expired_badge.short_description = 'Expiry Status'
     
+    # The same links the examiner is emailed (utils.send_invitation_email /
+    # send_review_form_email): pages of the React app.
     def get_accept_url(self, obj):
-        from django.conf import settings
-        url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
-        url += reverse('procedures:invitation_action', args=[obj.token, 'accept'])
+        url = invitation_response_url(obj, 'accept')
         return format_html('<a href="{}" target="_blank">{}</a>', url, url)
     get_accept_url.short_description = 'Accept URL'
     
     def get_reject_url(self, obj):
-        from django.conf import settings
-        url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
-        url += reverse('procedures:invitation_action', args=[obj.token, 'reject'])
+        url = invitation_response_url(obj, 'reject')
         return format_html('<a href="{}" target="_blank">{}</a>', url, url)
     get_reject_url.short_description = 'Reject URL'
     
     def get_review_url(self, obj):
-        from django.conf import settings
-        url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
-        url += reverse('procedures:review_detail', args=[obj.token])
+        url = review_form_url(obj)
         return format_html('<a href="{}" target="_blank">{}</a>', url, url)
     get_review_url.short_description = 'Review Form URL'
     

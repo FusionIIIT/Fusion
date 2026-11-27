@@ -12,12 +12,25 @@ from applications.programme_curriculum.models import(Course,CourseSlot,Batch,Sem
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.core import serializers
+from applications.academic_information.student_status import unlocked_q
+from applications.academic_information.semester_drop import not_dropped_q
 from django.db.models import Q, Count
 import datetime
 import random
 from django.db import transaction
 time = timezone.now()
 
+
+
+# Locked students (alumni, withdrawn, ...) take no part in allocation: their
+# choices are neither allotted, counted as pending, nor published.
+UNLOCKED = unlocked_q('student_id__id__')
+
+
+def taking_part(sem):
+    """Students who take part in allocating semester ``sem``: not locked, and
+    not dropping that semester."""
+    return UNLOCKED & not_dropped_q('student_id__', sem)
 
 def validate_course_slots(batch, sem, programme_type, skip_course_ids=None):
     """
@@ -33,6 +46,7 @@ def validate_course_slots(batch, sem, programme_type, skip_course_ids=None):
         Q(semester_id__semester_no=sem)
         & Q(student_id__batch=batch)
         & Q(student_id__batch_id__curriculum__programme__category=programme_type)
+        & taking_part(sem)
     )
     already_allocated = set(
         FinalRegistration.objects.filter(scope)
@@ -102,6 +116,7 @@ def allocation_progress(batch, sem, programme_type):
         Q(semester_id__semester_no=sem)
         & Q(student_id__batch=batch)
         & Q(student_id__batch_id__curriculum__programme__category=programme_type)
+        & taking_part(sem)
     )
     requested = set(
         InitialRegistration.objects.filter(scope)
@@ -125,10 +140,30 @@ def allocation_progress(batch, sem, programme_type):
     }
 
 
+def pre_registration_window(sem, year):
+    """The Pre Registration calendar entry for semester ``sem`` of the term that
+    runs in calendar year ``year``.
+
+    Entries are named after the year the window was set up, so the January
+    2027 semester's is "Pre Registration 6 2026". Of the entries for the term
+    year and the year before, this takes the latest one that opened within
+    the eight months before the term starts (or its first two months).
+    """
+    year = int(year)
+    term_start = datetime.date(year, 1 if int(sem) % 2 == 0 else 8, 1)
+    earliest = term_start - datetime.timedelta(days=240)
+    latest = term_start + datetime.timedelta(days=60)
+    return (Calendar.objects
+            .filter(description__in=[f"Pre Registration {sem} {year}",
+                                     f"Pre Registration {sem} {year - 1}"],
+                    from_date__gte=earliest, from_date__lte=latest)
+            .order_by('-from_date').first())
+
+
 def check_for_registration_complete(batch, sem, year, programme_type):
     date = datetime.date.today()
     try:
-        pre_registration_date = Calendar.objects.filter(description=f"Pre Registration {sem} {year}").first()
+        pre_registration_date = pre_registration_window(sem, year)
         if not pre_registration_date:
             return {"status": -3, "message": "No such registration found"}
         
@@ -170,6 +205,29 @@ def check_for_registration_complete(batch, sem, year, programme_type):
         return {"status": -3, "message": f"Internal Server Error: {str(e)}"}
 
 
+def expected_allocation_year(batch, sem, programme_type):
+    """The calendar year semester ``sem`` of a UG or PG batch runs in.
+
+    UG and PG batches start in August, so semester n of batch B runs in
+    B + n // 2: an Odd semester from August of that year, an Even semester
+    from January of the next. Returns None for PhD, whose batches have more
+    than one intake.
+    """
+    if (programme_type or '').upper() not in ('UG', 'PG'):
+        return None
+    return int(batch) + int(sem) // 2
+
+
+def allocation_year_problem(batch, sem, year, programme_type):
+    """The refusal message when ``year`` is not the year the semester runs in."""
+    expected = expected_allocation_year(batch, sem, programme_type)
+    if expected is None or int(year) == expected:
+        return None
+    _, semester_type, session = _allocation_term(expected, sem)
+    return (f"Semester {sem} of Batch {batch} is the {semester_type} of {session}, "
+            f"which runs in {expected}. Choose Year {expected}.")
+
+
 def _allocation_term(year, sem):
     """Return the canonical course-registration values for an allocation term."""
     working_year = int(year)
@@ -200,6 +258,7 @@ def publish_allocations(batch, sem, year, programme_type):
         Q(semester_id__semester_no=sem)
         & Q(student_id__batch=batch)
         & Q(student_id__batch_id__curriculum__programme__category=programme_type)
+        & taking_part(sem)
     )
     allocations = list(
         FinalRegistration.objects.filter(allocation_filter).select_related(
@@ -218,6 +277,7 @@ def publish_allocations(batch, sem, year, programme_type):
         {row.course_id_id for row in allocations}, working_year, semester_type)
 
     existing_rows = list(course_registration.objects.filter(
+        taking_part(sem),
         student_id__batch=batch,
         semester_id__semester_no=sem,
         student_id__batch_id__curriculum__programme__category=programme_type,
@@ -285,6 +345,7 @@ def publish_allocations(batch, sem, year, programme_type):
         (row.student_id_id, row.course_id_id, row.semester_id_id,
          row.registration_type): row
         for row in course_registration.objects.filter(
+            taking_part(sem),
             student_id__batch=batch,
             semester_id__semester_no=sem,
             student_id__batch_id__curriculum__programme__category=programme_type,
@@ -312,15 +373,22 @@ def publish_allocations(batch, sem, year, programme_type):
     }
 
 @transaction.atomic
-def random_algo(batch,sem,year,course_slot, programme_type, skip_course_ids=None) :
+def random_algo(batch,sem,year,slot_ids, programme_type, skip_course_ids=None) :
+    """Allot the choices made in the slots ``slot_ids`` by priority.
+
+    A first choice gets its course while seats last; otherwise the student
+    falls through to their next choice. ``slot_ids`` are the slots of one
+    name across curricula (OE13 of every discipline), allotted together so
+    they share the courses' seats.
+    """
     # zero seats makes the "slot full" branch below push these students to
     # their next priority, so skipping reuses the existing fall-through
     skip_course_ids = {int(c) for c in (skip_course_ids or [])}
-    unique_course = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q( course_slot_id__name = course_slot ) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)).values_list('course_id',flat=True).distinct()
-    slot_filter = (Q(semester_id__semester_no = sem) & Q( course_slot_id__name = course_slot ) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type))
+    unique_course = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(course_slot_id__in=slot_ids) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type) & taking_part(sem)).values_list('course_id',flat=True).distinct()
+    slot_filter = (Q(semester_id__semester_no = sem) & Q(course_slot_id__in=slot_ids) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type) & taking_part(sem))
     already_allocated_students = set(FinalRegistration.objects.filter(
         Q(semester_id__semester_no=sem)
-        & Q(course_slot_id__name=course_slot)
+        & Q(course_slot_id__in=slot_ids)
         & Q(student_id__batch=batch)
         & Q(student_id__batch_id__curriculum__programme__category=programme_type)
     ).values_list('student_id_id', flat=True))
@@ -408,6 +476,18 @@ def random_algo(batch,sem,year,course_slot, programme_type, skip_course_ids=None
     return 1
 
 @transaction.atomic
+def unslotted_preregistration_choices(scope):
+    """Pre-registration choices in ``scope`` whose course slot was deleted, per course."""
+    rows = (InitialRegistration.objects.filter(scope, course_slot_id__isnull=True)
+            .exclude(course_id__isnull=True)
+            .values('course_id', 'course_id__code', 'course_id__name')
+            .annotate(students=Count('student_id', distinct=True))
+            .order_by('course_id__code'))
+    return [{'course_id': r['course_id'], 'course_code': r['course_id__code'],
+             'course_name': r['course_id__name'], 'students': r['students']}
+            for r in rows]
+
+
 def allocate(request):
     batch = request.POST.get('batch')
     sem = request.POST.get('sem')
@@ -424,19 +504,45 @@ def allocate(request):
             'needs_action': problems,
         }, status=409)
 
-    unique_course_slot = InitialRegistration.objects.filter(
-        Q(semester_id__semester_no=sem) & Q(student_id__batch=batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)
-    ).values('course_slot_id').distinct()
+    scope = (Q(semester_id__semester_no=sem) & Q(student_id__batch=batch)
+             & Q(student_id__batch_id__curriculum__programme__category=programme_type)
+             & taking_part(sem))
+    # A choice loses its slot when the slot is deleted after students picked
+    # it (on_delete=SET_NULL). There is nothing to allot it into, so it is
+    # left out and named in the result instead of stopping the whole batch.
+    unslotted_choices = unslotted_preregistration_choices(scope)
+    unique_course_slot = (InitialRegistration.objects.filter(scope)
+                          .exclude(course_slot_id__isnull=True)
+                          .values('course_slot_id').distinct())
+    slots = CourseSlot.objects.in_bulk([e['course_slot_id'] for e in unique_course_slot])
 
-    unique_course_name = []
+    # Slots of one name are one set of courses across curricula (OE13 of
+    # every discipline). When any of them is an Open Elective, all of them
+    # are allotted together by priority (random_algo): curricula do not
+    # always type their copy Open Elective. In batch 2023 semester 8
+    # "Project" was an Open Elective for CSE but typed "Project" by ECE and
+    # SM and named "PROJECT" by ME, and every student there was allotted all
+    # three ranked courses. Any other slot gives a student every course they
+    # chose (PC4). This comes from the curriculum only, never from what
+    # students submitted: the form makes every student rank the courses of
+    # every slot, PC4 included.
+    def slot_group(slot):
+        return slot.name.strip().casefold()
+
+    elective_groups = {slot_group(slot) for slot in slots.values()
+                       if slot.type == "Open Elective"}
+    # Only a group allotted by priority is marked done, so a slot allotted in
+    # full never skips an elective slot of the same name.
+    allotted_groups = set()
     skipped_students = 0
 
     try:
         with transaction.atomic():
             for entry in unique_course_slot:
-                course_slot_object = CourseSlot.objects.get(id=entry['course_slot_id'])
+                course_slot_object = slots[entry['course_slot_id']]
 
-                if course_slot_object.type != "Open Elective":
+                group = slot_group(course_slot_object)
+                if group not in elective_groups:
                     already_allocated_students = FinalRegistration.objects.filter(
                         semester_id__semester_no=sem,
                         course_slot_id=course_slot_object,
@@ -448,6 +554,7 @@ def allocate(request):
                         Q(semester_id__semester_no=sem) &
                         Q(course_slot_id=course_slot_object) &
                         Q(student_id__batch=batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)
+                        & taking_part(sem)
                     ).exclude(student_id_id__in=already_allocated_students)
                     .values_list('student_id_id', 'course_id_id', 'registration_type',
                                   'old_course_registration_id'))
@@ -478,15 +585,14 @@ def allocate(request):
                     FinalRegistration.objects.bulk_create(
                         slot_rows, ignore_conflicts=True)
 
-                    unique_course_name.append(course_slot_object.name)
-
-                elif course_slot_object.type == "Open Elective":
-                    if course_slot_object.name not in unique_course_name:
-                        stat = random_algo(batch, sem, year, course_slot_object.name,
-                                           programme_type, skip_course_ids)
-                        unique_course_name.append(course_slot_object.name)
-                        if stat == -1:
-                            raise Exception(f"Seats not enough for course_slot {course_slot_object.name}")
+                elif group not in allotted_groups:
+                    allotted_groups.add(group)
+                    same_group = [slot_id for slot_id, slot in slots.items()
+                                  if slot_group(slot) == group]
+                    stat = random_algo(batch, sem, year, same_group,
+                                       programme_type, skip_course_ids)
+                    if stat == -1:
+                        raise Exception(f"Seats not enough for course_slot {course_slot_object.name}")
 
             publication = publish_allocations(
                 batch, sem, year, programme_type)
@@ -503,25 +609,16 @@ def allocate(request):
         if skip_course_ids:
             message += (f" ({len(skip_course_ids)} course(s) skipped"
                         f"; {skipped_students} student(s) left without a course in a single-choice slot)")
+        if unslotted_choices:
+            listed = ", ".join(f"{c['course_code']} {c['course_name']} ({c['students']} student(s))"
+                               for c in unslotted_choices)
+            message += (". Not allotted because the course slot they were chosen in "
+                        f"no longer exists: {listed}")
         return JsonResponse({'status': 1, 'message': message,
+                             'unslotted_choices': unslotted_choices,
                              'skipped_course_ids': sorted(skip_course_ids),
                              'publication': publication,
                              'progress': progress})
 
     except Exception as e:
         return JsonResponse({'status': -1, 'message': str(e) or "Allocation failed"})
-
-def view_alloted_course(request) : 
-    batch = request.POST.get('batch')
-    sem = request.POST.get('sem')
-    verified = request.POST.get('year')
-    course = request.POST.get('course')
-
-    registrations = FinalRegistration.objects.filter(Q(student_id__batch = batch) &  Q(semester_id__semester_no = sem) & Q(course_id__code = course))
-    return_list = []
-    for registration in registrations:
-        obj = {
-            'student':registration.student_id.id.id
-        }
-        return_list.append(obj)
-    return JsonResponse({'status':1 , 'student_list':return_list })

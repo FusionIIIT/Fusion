@@ -1,5 +1,5 @@
 """
-Test settings for the placement_cell test suite (and any other app tests).
+Test settings for the app test suites.
 
 Why this file exists
 --------------------
@@ -15,15 +15,12 @@ model state. This is a standard, well-supported pattern and is also much faster.
 
 It does NOT touch the production settings (common/development/production.py).
 
-Run the placement suite (list the modules explicitly -- ``applications`` has no
-``__init__.py`` so unittest package discovery cannot introspect it)::
+Run a suite by listing its modules explicitly (``applications`` has no
+``__init__.py``, so unittest package discovery cannot introspect it)::
 
     python manage.py test \
-        applications.placement_cell.tests.test_placement_api \
-        applications.placement_cell.tests.test_use_cases \
-        applications.placement_cell.tests.test_business_rules \
-        applications.placement_cell.tests.test_workflows \
-        applications.placement_cell.tests.test_module \
+        applications.globals.test_profile_delete \
+        applications.examination.tests \
         --settings=test_settings
 """
 

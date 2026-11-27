@@ -5,6 +5,10 @@ import logging
 import time
 import zipfile
 import pandas as pd
+from applications.academic_information.student_status import (
+    locked_roll_nos, status_label, unlocked_q,
+)
+from applications.academic_information.semester_drop import not_dropped_q
 from io import BytesIO
 from xlsxwriter.workbook import Workbook
 from django.contrib.auth import get_user_model
@@ -12,7 +16,8 @@ from django.contrib.auth.decorators import login_required
 import xlsxwriter
 from applications.academic_procedures.models import course_registration
 from applications.academic_information.utils import (
-    allocate, check_for_registration_complete, publish_allocations,
+    allocate, allocation_year_problem, check_for_registration_complete,
+    publish_allocations,
 )
 from applications.globals.models import (HoldsDesignation,Designation)
 from django.shortcuts import get_object_or_404
@@ -33,6 +38,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from applications.globals.decorators import role_required
+from applications.globals.programme_scope import ALL_ACAD_ROLES
 from applications.globals.api.views import resolve_audience_recipients
 from applications.globals.programme_scope import PROGRAMME_NAMES_BY_SCOPE
 from notifications.signals import notify
@@ -299,11 +305,17 @@ def check_allocation_api(request):
         try:
             batch = int(batch)
             sem = int(sem)
+            int(year)
         except ValueError:
             return Response(
-                {"status": -3, "message": "Invalid batch or semester value"},
+                {"status": -3, "message": "Invalid batch, semester or year value"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        problem = allocation_year_problem(batch, sem, year, programme_type)
+        if problem:
+            return Response({"status": -3, "message": problem},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         result = check_for_registration_complete(batch, sem, year, programme_type)
 
@@ -351,8 +363,16 @@ def start_allocation_api(request):
         if not batch or not semester or not year:
             return JsonResponse({"error": "Missing required fields"}, status=400)
 
-        batch = int(batch)
-        semester = int(semester)
+        try:
+            batch = int(batch)
+            semester = int(semester)
+            int(year)
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "Batch, semester and year must be numbers"}, status=400)
+
+        problem = allocation_year_problem(batch, semester, year, programme_type)
+        if problem:
+            return JsonResponse({"error": problem}, status=400)
 
         skip_course_ids = data.get("skip_course_ids") or []
         if not isinstance(skip_course_ids, list):
@@ -1081,7 +1101,10 @@ def generate_preregistration_report(request):
         for stu in obj:
             registered_students.add(stu.student_id)
 
-        students = Student.objects.filter(batch_id = batch_id)
+        # Locked students and those who dropped this semester are not expected
+        # to pre-register for it.
+        students = Student.objects.filter(
+            unlocked_q('id__'), not_dropped_q('', sem), batch_id=batch_id)
 
         for stu in students:
             if stu not in registered_students:
@@ -1469,6 +1492,11 @@ def available_courses(request):
 DATABASE_REPORT_ROLES = ['acadadmin', 'Dean Academic', 'Acad UG', 'Acad PG', 'Acad Ph.D.']
 
 
+def _branch(student):
+    """The student's branch as recorded on their batch, not read off the roll number."""
+    return student.batch_id.discipline.acronym if student.batch_id_id else ''
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -1499,7 +1527,37 @@ def database_report_filters(request):
         'batches': batches,
         'semesters': semesters,
         'programme_categories': categories,
+        'ug_batches': _ug_curriculum_batches() if 'UG' in categories else [],
+        'discipline_batches': _curriculum_batches(Batch.objects.filter(
+            curriculum__programme__category__in=categories)),
     })
+
+
+UG_BATCH_NAMES = ('B.Tech', 'B.Des')
+
+
+def _ug_curriculum_batches():
+    return _curriculum_batches(Batch.objects.filter(name__in=UG_BATCH_NAMES))
+
+
+def _curriculum_batches(batches):
+    """Each of ``batches`` that has a curriculum, labelled by programme and
+    discipline, for picking one discipline of a year. The curriculum is named
+    only when a discipline has more than one batch that year."""
+    from collections import Counter
+    batches = list(batches.filter(
+        curriculum__isnull=False,
+    ).select_related('discipline', 'curriculum__programme').order_by('-year', 'name', 'discipline__acronym'))
+    seen = Counter((b.year, b.name, b.discipline.acronym) for b in batches)
+    options = []
+    for b in batches:
+        label = f'{b.name} {b.discipline.acronym}'
+        if seen[(b.year, b.name, b.discipline.acronym)] > 1:
+            label += f' ({b.curriculum})'
+        # UG, PG or PHD, so a report can offer only the disciplines of a chosen programme.
+        category = (b.curriculum.programme.category or '').upper()
+        options.append({'id': b.id, 'year': b.year, 'label': label, 'category': category})
+    return options
 
 
 @api_view(['GET'])
@@ -1529,7 +1587,8 @@ def database_course_registrations(request):
             student_id__batch=batch_year),
         scopes_for(request.user), 'student_id',
     ).select_related(
-        'student_id__id__user', 'course_id', 'course_slot_id'
+        'student_id__id__user', 'student_id__batch_id__discipline',
+        'course_id', 'course_slot_id'
     ).order_by('student_id__id_id', 'course_slot_id__name', 'course_id__code')
 
     rows = []
@@ -1539,6 +1598,7 @@ def database_course_registrations(request):
         rows.append({
             'roll_no': student.id_id,
             'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'branch': _branch(student),
             'batch': student.batch,
             'programme': student.programme,
             'course_slot': reg.course_slot_id.name if reg.course_slot_id else '',
@@ -1578,7 +1638,8 @@ def database_backlog_registrations(request):
             course_slot_id__name__startswith='BL'),
         scopes_for(request.user), 'student_id',
     ).select_related(
-        'student_id__id__user', 'course_id', 'course_slot_id', 'semester_id')
+        'student_id__id__user', 'student_id__batch_id__discipline',
+        'course_id', 'course_slot_id', 'semester_id')
 
     rows = []
     for reg in regs:
@@ -1586,6 +1647,7 @@ def database_backlog_registrations(request):
         rows.append({
             'roll_no': reg.student_id_id,
             'name': f'{user.first_name} {user.last_name}'.strip(),
+            'branch': _branch(reg.student_id),
             'semester': reg.semester_id.semester_no if reg.semester_id else '',
             'course_slot': reg.course_slot_id.name if reg.course_slot_id else '',
             'course_code': reg.course_id.code,
@@ -1632,6 +1694,7 @@ def database_student_credit_totals(request):
         'student_id__id_id',
         'student_id__id__user__first_name',
         'student_id__id__user__last_name',
+        'student_id__batch_id__discipline__acronym',
     ).annotate(
         total_credits=Sum('course_id__credit')
     ).order_by('student_id__id_id')
@@ -1641,6 +1704,7 @@ def database_student_credit_totals(request):
         'student_name': '{} {}'.format(
             row['student_id__id__user__first_name'],
             row['student_id__id__user__last_name']).strip(),
+        'branch': row['student_id__batch_id__discipline__acronym'] or '',
         'total_credits': row['total_credits'] or 0,
     } for row in totals]
 
@@ -1750,7 +1814,8 @@ def database_swayam_registrations(request):
         ).filter(Q(semester_type=semester_type) | Q(slot_parity=parity))
 
     regs = regs.select_related(
-        'student_id__id__user', 'course_id', 'course_slot_id__semester')
+        'student_id__id__user', 'student_id__batch_id__discipline',
+        'course_id', 'course_slot_id__semester')
 
     rows = []
     for reg in regs:
@@ -1759,6 +1824,7 @@ def database_swayam_registrations(request):
         rows.append({
             'roll_no': reg.student_id_id,
             'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'branch': _branch(reg.student_id),
             'course_code': reg.course_id.code,
             'course_name': reg.course_id.name,
             'semester_no': slot.semester.semester_no if slot else None,
@@ -1802,7 +1868,8 @@ def database_semester_registrations(request):
         course_registration.objects.filter(
             student_id__batch=batch_year, semester_id__semester_no=semester_no),
         scopes_for(request.user), 'student_id',
-    ).select_related('student_id__id__user', 'course_id', 'semester_id')
+    ).select_related('student_id__id__user', 'student_id__batch_id__discipline',
+                     'course_id', 'semester_id')
 
     rows = []
     for reg in regs:
@@ -1812,6 +1879,7 @@ def database_semester_registrations(request):
             'roll_no': reg.student_id_id,
             'semester': reg.semester_id.semester_no,
             'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'branch': _branch(reg.student_id),
             'course_code': reg.course_id.code,
             'course_name': reg.course_id.name,
             'credit': reg.course_id.credit,
@@ -1882,6 +1950,7 @@ def _credits_earned_row(student):
             return {
                 'roll_no': student.id_id,
                 'student_name': f'{user.first_name} {user.last_name}'.strip(),
+                'branch': _branch(student),
                 'regular_credits': regular,
                 'backlog_improvement_credits': backlog_imp,
                 'swayam_credits': swayam,
@@ -1902,6 +1971,7 @@ def _credits_earned_row(student):
             return {
                 'roll_no': student.id_id,
                 'student_name': student_name,
+                'branch': _branch(student),
                 'regular_credits': 0.0,
                 'backlog_improvement_credits': 0.0,
                 'swayam_credits': 0.0,
@@ -1912,6 +1982,96 @@ def _credits_earned_row(student):
         connection.close()
 
 
+def _bulk_credits_earned_rows(students):
+    """_credits_earned_row for many students from a handful of batch-wide
+    queries instead of ~26 per student. Only for students without PG/PhD
+    thesis or seminar credits, which _build_grade_validation_semesters adds."""
+    from collections import defaultdict
+    from applications.academic_procedures.models import course_replacement
+    from applications.examination.api.views import (
+        grade_conversion, superseded_course_codes,
+    )
+    from applications.examination.models import Student_grades
+
+    NON_EARN = {"F", "I", "X", "AU", "CD", "—", ""}
+    FAILING_GRADES = {"F", "I", "X", "AU", "CD"}
+    rolls = [s.id_id for s in students]
+
+    grades_by_roll = defaultdict(list)
+    for g in Student_grades.objects.filter(
+            roll_no__in=rolls).select_related('course_id'):
+        grades_by_roll[g.roll_no].append(g)
+
+    replacements_by_roll = defaultdict(list)
+    for rep in course_replacement.objects.filter(
+        Q(old_course_registration__student_id__in=rolls) |
+        Q(new_course_registration__student_id__in=rolls)
+    ).select_related('old_course_registration__course_id',
+                     'new_course_registration__course_id'):
+        for roll in {rep.old_course_registration.student_id_id,
+                     rep.new_course_registration.student_id_id}:
+            replacements_by_roll[roll].append(rep)
+
+    def history_order(g):
+        # Semester by semester, summer after the regular term of the same
+        # number, as _build_grade_validation_semesters walks the history. A
+        # repeat can be filed under the same semester as the original, so the
+        # year decides which attempt came first.
+        s_type = g.semester_type or ''
+        return (g.semester or 0, 'summer' in s_type.lower(),
+                g.semester_type is None, s_type, g.course_id.code or '',
+                g.year, g.id)
+
+    rows = []
+    for student in students:
+        grades = sorted(grades_by_roll[student.id_id], key=history_order)
+        superseded = superseded_course_codes(
+            student, {(g.course_id.code or '').strip() for g in grades},
+            replacements=replacements_by_roll[student.id_id])
+
+        first_grade, best_by_code = {}, {}
+        for g in grades:
+            grade = (g.grade or '').strip()
+            if g.course_id_id in first_grade:
+                prev = first_grade[g.course_id_id]
+                remark = 'Backlog' if prev in FAILING_GRADES else 'Improvement'
+            else:
+                remark = 'Regular'
+                first_grade[g.course_id_id] = g.grade or ''
+
+            code = (g.course_id.code or '').strip()
+            if not code or code in superseded or grade in NON_EARN:
+                continue
+            code = code.upper()
+            prev = best_by_code.get(code)
+            if prev is None or (grade_conversion.get(grade, -1)
+                                > grade_conversion.get(prev[0], -1)):
+                credit = g.course_id.credit
+                best_by_code[code] = (
+                    grade, float(credit) if credit is not None else 0.0, remark)
+
+        regular = backlog_imp = swayam = 0.0
+        for code, (grade, credit, remark) in best_by_code.items():
+            if code.startswith('SW'):
+                swayam += credit
+            elif remark in ('Backlog', 'Improvement'):
+                backlog_imp += credit
+            else:
+                regular += credit
+
+        user = student.id.user
+        rows.append({
+            'roll_no': student.id_id,
+            'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'branch': _branch(student),
+            'regular_credits': regular,
+            'backlog_improvement_credits': backlog_imp,
+            'swayam_credits': swayam,
+            'total_credits_earned': regular + backlog_imp + swayam,
+        })
+    return rows
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -1919,6 +2079,7 @@ def _credits_earned_row(student):
 def database_credits_earned(request):
     """Each student's earned credits to date, split regular / backlog-improvement / swayam."""
     from concurrent.futures import ThreadPoolExecutor
+    from applications.examination.api.views import PROGRAMME_TYPE_BUCKETS
     from applications.globals.programme_scope import scopes_for, scope_students
 
     batch = (request.query_params.get('batch') or '').strip()
@@ -1932,15 +2093,244 @@ def database_credits_earned(request):
     students = list(scope_students(
         Student.objects.filter(batch=batch_year),
         scopes_for(request.user),
-    ).select_related('id__user').order_by('id_id'))
+    ).select_related('id__user', 'batch_id__discipline').order_by('id_id'))
 
-    with ThreadPoolExecutor(max_workers=16) as pool:
-        rows = list(pool.map(_credits_earned_row, students))
+    # PG/PhD students also earn thesis and seminar credits, which only the full
+    # per-student history adds, so they keep the slow path; there are few.
+    thesis_programmes = set(PROGRAMME_TYPE_BUCKETS['PHD'] + PROGRAMME_TYPE_BUCKETS['PG'])
+    with_thesis = [s for s in students if s.programme in thesis_programmes]
+    rows = _bulk_credits_earned_rows(
+        [s for s in students if s.programme not in thesis_programmes])
+    if with_thesis:
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            rows += list(pool.map(_credits_earned_row, with_thesis))
+    rows.sort(key=lambda r: str(r['roll_no']))
 
     return Response({
         'count': len(rows),
         'students': len(rows),
         'credits': sum(r['total_credits_earned'] for r in rows),
+        'rows': rows,
+    })
+
+
+def _picked_courses(raw):
+    """The ``courses`` query parameter, comma-separated course codes, as report
+    columns in the order given. Versions of a code share one column. Returns
+    the columns and the codes no course has."""
+    from django.db.models.functions import Upper
+    wanted = []
+    for part in raw.split(','):
+        code = part.strip().upper()
+        if code and code not in wanted:
+            wanted.append(code)
+    known = {}
+    for course in Courses.objects.annotate(code_upper=Upper('code')).filter(
+            code_upper__in=wanted).order_by('-version', 'id'):
+        known.setdefault(course.code_upper, course)
+    columns = {code: {'key': f'grade_{code}', 'code': known[code].code.strip(),
+                      'name': known[code].name}
+               for code in wanted if code in known}
+    return columns, [code for code in wanted if code not in known]
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_course_grades(request):
+    """Credits earned by each student of a batch, with their best grade in each
+    course of ``courses`` (comma-separated codes), one column per course in the
+    order given.
+
+    ``batch_id`` narrows it to one discipline; otherwise every undergraduate
+    discipline of the ``batch`` year is listed. Serves both the common-courses
+    and the remaining-core-courses reports, which differ only in the courses
+    the user picks.
+    """
+    from applications.examination.api.views import grade_conversion
+    from applications.globals.programme_scope import scopes_for, scope_students
+    from applications.examination.models import Student_grades
+
+    batch_id = (request.query_params.get('batch_id') or '').strip()
+    year = (request.query_params.get('batch') or '').strip()
+    batches = Batch.objects.filter(
+        name__in=UG_BATCH_NAMES, curriculum__isnull=False,
+    ).select_related('discipline')
+    if batch_id:
+        batches = list(batches.filter(id=batch_id if batch_id.isdigit() else None))
+        if not batches:
+            return Response({'detail': f"No undergraduate batch '{batch_id}'."}, status=400)
+        b = batches[0]
+        label = f'{b.name} {b.discipline.acronym} {b.year}'
+    elif year:
+        if not year.isdigit():
+            return Response({'detail': f"Batch '{year}' is not a year."}, status=400)
+        batches = list(batches.filter(year=int(year)))
+        if not batches:
+            return Response({'detail': f"No undergraduate batches in {year}."}, status=400)
+        label = f'All disciplines {year}'
+    else:
+        return Response({'detail': 'Required: batch or batch_id.'}, status=400)
+
+    courses, unknown = _picked_courses(request.query_params.get('courses') or '')
+    if unknown:
+        return Response({'detail': f"No course with code {', '.join(unknown)}."},
+                        status=400)
+    if not courses:
+        return Response({'detail': 'Pick at least one course.'}, status=400)
+
+    students = list(scope_students(
+        Student.objects.filter(batch_id__in=batches), scopes_for(request.user),
+    ).select_related('id__user', 'batch_id__discipline').order_by('id_id'))
+    rows = _bulk_credits_earned_rows(students)
+
+    # The best attempt at each course, the latest one when attempts tie.
+    best = {}
+    for g in Student_grades.objects.filter(
+        roll_no__in=[s.id_id for s in students],
+    ).select_related('course_id').order_by('semester', 'year', 'id'):
+        code = (g.course_id.code or '').strip().upper()
+        if code not in courses:
+            continue
+        grade = (g.grade or '').strip()
+        key = (g.roll_no, code)
+        if key not in best or (grade_conversion.get(grade, -1)
+                               >= grade_conversion.get(best[key], -1)):
+            best[key] = grade
+
+    for row in rows:
+        for code, course in courses.items():
+            row[course['key']] = best.get((row['roll_no'], code)) or '-'
+
+    return Response({
+        'count': len(rows),
+        'students': len(rows),
+        'batch': label,
+        'courses': list(courses.values()),
+        'rows': rows,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_report_courses(request):
+    """Every course code, for picking a grade report's columns. Versions of a
+    code are one entry, named as its latest version."""
+    seen = {}
+    for course in Courses.objects.order_by('-version', 'id'):
+        code = (course.code or '').strip()
+        if code and code.upper() not in seen:
+            seen[code.upper()] = {'code': code, 'name': course.name}
+    return Response({'courses': sorted(seen.values(), key=lambda c: c['code'].upper())})
+
+
+def _instructor_name(faculty):
+    user = faculty.id.user
+    return f'{user.first_name} {user.last_name}'.strip() or str(faculty.id_id)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_active_backlogs(request):
+    """Courses a student failed and has not cleared since, across the whole programme.
+
+    A course stays a backlog until some attempt at that code earns a passing
+    grade, or a graded replacement supersedes it. Each row describes the first
+    failed attempt: its semester, grade and the instructor who taught it.
+    """
+    from collections import defaultdict
+    from applications.academic_information.models import pick_offering
+    from applications.examination.api.views import (
+        REMARK_KIND_BY_GRADE, grade_conversion, superseded_course_codes,
+    )
+    from applications.globals.programme_scope import scopes_for, scope_students
+    from applications.examination.models import Student_grades
+
+    batch = (request.query_params.get('batch') or '').strip()
+    students = Student.objects.all()
+    if batch and batch.upper() != 'ALL':
+        try:
+            students = students.filter(batch=int(batch))
+        except ValueError:
+            return Response({'detail': f"Batch '{batch}' is not a year."}, status=400)
+    students = scope_students(students, scopes_for(request.user))
+    students_by_roll = {
+        s.id_id: s for s in students.select_related('id__user', 'batch_id__discipline')}
+
+    backlog_grades = {g for g, kind in REMARK_KIND_BY_GRADE.items() if kind == 'BL'}
+    grades = Student_grades.objects.filter(
+        roll_no__in=list(students_by_roll),
+    ).select_related(
+        'course_id', 'course_instructor__instructor_id__id__user',
+    ).order_by('roll_no', 'semester', 'year', 'id')
+
+    attempts = defaultdict(lambda: defaultdict(list))  # roll -> code -> grades
+    for g in grades:
+        code = (g.course_id.code or '').strip().upper()
+        attempts[g.roll_no][code].append(g)
+
+    offerings_cache = {}
+
+    def instructor_for(student, g):
+        if g.course_instructor:
+            return _instructor_name(g.course_instructor.instructor_id)
+        key = (g.course_id_id, g.year, g.semester_type)
+        if key not in offerings_cache:
+            offerings_cache[key] = list(CourseInstructor.objects.filter(
+                course_id_id=g.course_id_id, year=g.year,
+                semester_type=g.semester_type,
+            ).select_related('instructor_id__id__user'))
+        offerings = offerings_cache[key]
+        offering = pick_offering(student, offerings)
+        if offering:
+            return _instructor_name(offering.instructor_id)
+        # Ambiguous offerings: name everyone who taught it that term. Terms
+        # before offerings were recorded have none at all.
+        return ', '.join(dict.fromkeys(
+            _instructor_name(o.instructor_id) for o in offerings)) or 'Not recorded'
+
+    rows = []
+    for roll_no, by_code in attempts.items():
+        failed = {}
+        for code, tries in by_code.items():
+            graded = [(t.grade or '').strip() for t in tries]
+            if any(gr in grade_conversion and gr not in backlog_grades for gr in graded):
+                continue
+            first_fail = next((t for t, gr in zip(tries, graded) if gr in backlog_grades), None)
+            if first_fail:
+                failed[code] = first_fail
+        if not failed:
+            continue
+
+        student = students_by_roll[roll_no]
+        superseded = {c.upper() for c in superseded_course_codes(student, {
+            (t.course_id.code or '').strip() for tries in by_code.values() for t in tries})}
+        user = student.id.user
+        for code, g in failed.items():
+            if code in superseded:
+                continue
+            rows.append({
+                'batch': student.batch,
+                'roll_no': roll_no,
+                'student_name': f'{user.first_name} {user.last_name}'.strip(),
+                'branch': _branch(student),
+                'semester': g.semester,
+                'course_code': g.course_id.code,
+                'course_name': g.course_id.name,
+                'grade': (g.grade or '').strip(),
+                'instructor': instructor_for(student, g),
+            })
+    rows.sort(key=lambda r: (r['batch'] or 0, str(r['roll_no']),
+                             r['semester'], r['course_code']))
+
+    return Response({
+        'count': len(rows),
+        'students': len({r['roll_no'] for r in rows}),
         'rows': rows,
     })
 
@@ -2228,9 +2618,480 @@ def assign_section(request):
         return Response({'detail': 'section must be up to 8 letters or digits.'},
                         status=status.HTTP_400_BAD_REQUEST)
 
+    # A locked student's (alumni, ...) section stays as it is.
+    skipped = sorted(locked_roll_nos(roll_numbers))
     updated = (Student.objects
-               .filter(id_id__in=roll_numbers)
+               .filter(id_id__in=[r for r in roll_numbers if r not in skipped])
                .update(section=section or None))
-    return Response({'detail': f'Section updated for {updated} student(s).',
+    detail = f'Section updated for {updated} student(s).'
+    if skipped:
+        detail += f' {len(skipped)} alumni or stopped student(s) left unchanged.'
+    return Response({'detail': detail,
                      'updated': updated,
+                     'skipped': skipped,
                      'section': section or None})
+
+# Counts start from the 2020 batch. Gender is recorded reliably only from the
+# 2025 batch on, so earlier batches show their total alone.
+STUDENT_COUNT_FROM_BATCH = 2020
+GENDER_COUNTED_FROM_BATCH = 2025
+
+
+def _student_counts(request, group_by):
+    """Students per group, with male and female counts for batches whose gender
+    data can be trusted. Scoped to the programmes the user may see."""
+    from django.db.models import Count, Q
+    from applications.globals.programme_scope import scopes_for, scope_students
+
+    students = scope_students(
+        Student.objects.filter(batch__gte=STUDENT_COUNT_FROM_BATCH),
+        scopes_for(request.user),
+    )
+    rows = []
+    for count in students.values(*group_by).annotate(
+        male=Count('id', filter=Q(id__sex='M')),
+        female=Count('id', filter=Q(id__sex='F')),
+        total=Count('id'),
+    ).order_by(*group_by):
+        if count['batch'] < GENDER_COUNTED_FROM_BATCH:
+            count['male'] = count['female'] = None
+        rows.append(count)
+    return rows
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_batch_wise_student_count(request):
+    """Students in each batch, with male and female counts from the 2025 batch on."""
+    return Response({'rows': [
+        {'batch': c['batch'], 'male': c['male'], 'female': c['female'],
+         'total': c['total']}
+        for c in _student_counts(request, ('batch',))
+    ]})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_branch_wise_student_count(request):
+    """Students in each programme and discipline of every batch, with male and
+    female counts from the 2025 batch on."""
+    return Response({'rows': [
+        {'batch': c['batch'],
+         'branch': f"{c['programme'] or 'Unknown'} "
+                   f"{c['batch_id__discipline__acronym'] or 'General'}",
+         'male': c['male'], 'female': c['female'], 'total': c['total']}
+        for c in _student_counts(
+            request, ('batch', 'programme', 'batch_id__discipline__acronym'))
+    ]})
+
+
+def _batch_students(request):
+    """The students a batch report covers, and an error response if its filters
+    are wrong.
+
+    ``batch`` (a year) is required. ``programme_type`` (UG, PG or PHD) narrows it
+    to that kind of programme and ``batch_id`` to one programme and discipline of
+    that year. Scoped to the programmes the user may see.
+    """
+    from applications.examination.api.views import PROGRAMME_TYPE_BUCKETS
+    from applications.globals.programme_scope import scopes_for, scope_students
+
+    year = (request.query_params.get('batch') or '').strip()
+    programme_type = (request.query_params.get('programme_type') or '').strip().upper()
+    batch_id = (request.query_params.get('batch_id') or '').strip()
+    if not year:
+        return None, Response({'detail': 'Required: batch.'}, status=400)
+    if not year.isdigit():
+        return None, Response({'detail': f"Batch '{year}' is not a year."}, status=400)
+    if programme_type and programme_type not in PROGRAMME_TYPE_BUCKETS:
+        return None, Response(
+            {'detail': f"Programme '{programme_type}' is not UG, PG or PHD."}, status=400)
+
+    students = Student.objects.filter(batch=int(year))
+    if programme_type:
+        students = students.filter(programme__in=PROGRAMME_TYPE_BUCKETS[programme_type])
+    if batch_id:
+        batch = Batch.objects.filter(
+            id=batch_id if batch_id.isdigit() else None, year=int(year)).first()
+        if not batch:
+            return None, Response(
+                {'detail': f"No discipline batch '{batch_id}' in {year}."}, status=400)
+        students = students.filter(batch_id=batch)
+    return scope_students(students, scopes_for(request.user)), None
+
+
+def _discipline_label(student):
+    """"B.Tech CSE": the programme and discipline of the student's batch."""
+    if student.batch_id_id:
+        return f'{student.batch_id.name} {student.batch_id.discipline.acronym}'
+    return student.programme
+
+
+# Gender as ExtraInfo.sex stores it, trimmed: some rows carry "F " or nothing.
+GENDERS = {'M': 'Male', 'F': 'Female', 'O': 'Other'}
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_category_wise_student_count(request):
+    """Students of a batch in each category, one row per programme and discipline.
+
+    Filters as the SPI and CPI report (``batch`` required, ``programme_type`` and
+    ``batch_id`` optional), and ``gender`` (M, F or O) optionally.
+
+    EWS is a flag on a student rather than a category, so a student with it is
+    counted under EWS only, and General, OBC, SC and ST count the rest: the five
+    add up to the total, with any other stored category under ``other``. PwD
+    is counted across all categories. ``no_gender`` is how many students of the
+    selection, before any gender filter, have no gender recorded.
+    """
+    from collections import OrderedDict
+    from django.db.models.functions import Trim, Upper
+
+    gender = (request.query_params.get('gender') or '').strip().upper()
+    if gender and gender not in GENDERS:
+        return Response({'detail': f"Gender '{gender}' is not M, F or O."}, status=400)
+
+    students, error = _batch_students(request)
+    if error:
+        return error
+    students = students.annotate(gender=Upper(Trim('id__sex')))
+    no_gender = students.filter(Q(gender='') | Q(gender__isnull=True)).count()
+    if gender:
+        students = students.filter(gender=gender)
+
+    rows = OrderedDict()
+    for student in (students.select_related('batch_id__discipline')
+                    .order_by('batch_id__name', 'batch_id__discipline__acronym',
+                              'programme', 'id_id')):
+        label = _discipline_label(student)
+        row = rows.setdefault(label, {
+            'discipline': label, 'gen': 0, 'ews': 0, 'obc': 0, 'sc': 0, 'st': 0,
+            'other': 0, 'total': 0, 'pwd': 0})
+        if student.is_ews:
+            row['ews'] += 1
+        else:
+            category = (student.category or '').strip().lower()
+            row[category if category in ('gen', 'obc', 'sc', 'st') else 'other'] += 1
+        row['pwd'] += 1 if student.is_pwd else 0
+        row['total'] += 1
+
+    return Response({
+        'rows': list(rows.values()),
+        'students': sum(r['total'] for r in rows.values()),
+        'no_gender': no_gender,
+    })
+
+
+def _semester_term(terms, semester_no):
+    """The semester type of ``semester_no`` among a student's graded (semester,
+    type) terms: the Odd or Even one its number implies, or the only other one
+    when grades were filed under that."""
+    types = sorted(t for n, t in terms if n == semester_no)
+    expected = 'Odd Semester' if semester_no % 2 else 'Even Semester'
+    if expected in types:
+        return expected
+    return types[0] if types else None
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(DATABASE_REPORT_ROLES)
+def database_spi_cpi(request):
+    """Each student's SPI and CPI for one semester, from the same calculation
+    the transcript uses.
+
+    ``batch`` (a year) is required. ``programme_type`` (UG, PG or PHD)
+    narrows it to that kind of programme, and ``batch_id`` to one programme
+    and discipline of that year. ``semester`` picks the semester; without it,
+    each student's latest graded term is used, as the transcript's last row:
+    a summer term graded after the latest semester is that term, labelled as
+    the transcript labels it ("Summer 2"). A chosen semester gives the figures
+    at the end of that semester, before any summer term. A PG or PhD semester
+    graded only through its thesis, progress seminar or teaching credit counts
+    as a semester with grades.
+
+    TU and TP are the total credits and total points behind the CPI, as the
+    examination result sheet shows them (calculate_cpi_for_student).
+    """
+    from collections import defaultdict
+    from applications.academic_procedures.models import (
+        ProgressSeminarEntry, TeachingCreditAllocation, ThesisRegistration,
+        course_replacement,
+    )
+    from applications.examination.api.views import (
+        PROGRAMME_TYPE_BUCKETS, _phd_extra_records,
+        calculate_cpi_for_student, calculate_spi_for_student,
+        format_semester_display,
+    )
+    from applications.examination.models import Student_grades
+
+    students, error = _batch_students(request)
+    if error:
+        return error
+    semester = (request.query_params.get('semester') or '').strip()
+    if semester and not (semester.isdigit() and int(semester) > 0):
+        return Response({'detail': f"Semester '{semester}' is not a semester number."},
+                        status=400)
+    semester_no = int(semester) if semester else None
+    if semester_no:
+        # A student who dropped the chosen semester has no figures for it.
+        students = students.filter(not_dropped_q('', semester_no))
+    students = list(students.select_related('id__user', 'batch_id__discipline')
+                    .order_by('id_id'))
+
+    rolls = [s.id_id for s in students]
+    terms, summers = defaultdict(set), defaultdict(set)
+    for roll, number, semester_type in (
+            Student_grades.objects
+            .filter(roll_no__in=rolls, semester__isnull=False)
+            .values_list('roll_no', 'semester', 'semester_type').distinct()):
+        if semester_type == 'Summer Semester':
+            summers[roll].add(number)
+        else:
+            terms[roll].add((number, semester_type))
+
+    # A PG or PhD semester can be graded only through its thesis, progress
+    # seminar or teaching credit; the transcript gives such a semester its own
+    # row, so it counts here too, typed by its number as the transcript types
+    # it. Candidate semesters come from three queries for the whole batch, and
+    # _phd_extra_records keeps those with a grade, as the transcript does.
+    thesis_students = {s.id_id: s for s in students if s.programme in
+                       PROGRAMME_TYPE_BUCKETS['PHD'] + PROGRAMME_TYPE_BUCKETS['PG']}
+    if thesis_students:
+        candidates = defaultdict(set)
+        for queryset, roll_field in (
+            (ThesisRegistration.objects.filter(student__in=list(thesis_students)), 'student'),
+            (ProgressSeminarEntry.objects.filter(thesis__student__in=list(thesis_students)),
+             'thesis__student'),
+            (TeachingCreditAllocation.objects.filter(student__in=list(thesis_students)), 'student'),
+        ):
+            for roll, number in queryset.values_list(roll_field, 'semester__semester_no'):
+                if number is not None:
+                    candidates[roll].add(number)
+        for roll, numbers in candidates.items():
+            graded = {n for n, _ in terms[roll]}
+            for number in sorted(numbers - graded):
+                if _phd_extra_records(thesis_students[roll], number):
+                    terms[roll].add(
+                        (number, 'Odd Semester' if number % 2 else 'Even Semester'))
+
+    # Loaded once for the batch instead of once per student's CPI.
+    replacements = defaultdict(list)
+    for rep in course_replacement.objects.filter(
+        Q(old_course_registration__student_id__in=rolls) |
+        Q(new_course_registration__student_id__in=rolls)
+    ).select_related('old_course_registration__course_id',
+                     'new_course_registration__course_id'):
+        for roll in {rep.old_course_registration.student_id_id,
+                     rep.new_course_registration.student_id_id}:
+            replacements[roll].append(rep)
+
+    rows = []
+    for student in students:
+        own = terms.get(student.id_id, set())
+        number = semester_no or max((n for n, _ in own), default=None)
+        semester_type = _semester_term(own, number) if number else None
+        label = number
+        # A summer term comes after the regular semester of its number, so
+        # when it is the latest graded term it is the one shown, with its CPI.
+        summer = max(summers.get(student.id_id, ()), default=None)
+        if not semester_no and summer is not None and (number is None or summer >= number):
+            number, semester_type = summer, 'Summer Semester'
+            label = format_semester_display(number, semester_type)
+        user = student.id.user
+        row = {
+            'roll_no': student.id_id,
+            'student_name': f'{user.first_name} {user.last_name}'.strip(),
+            'discipline': _discipline_label(student),
+            'semester': label if semester_type else None,
+            'spi': None,
+            'cpi': None,
+            'tu': None,
+            'tp': None,
+            'status': status_label(student.id.user_status) or 'Present',
+        }
+        if semester_type:
+            spi, _, _ = calculate_spi_for_student(student, number, semester_type)
+            cpi, tu, tp = calculate_cpi_for_student(
+                student, number, semester_type, replacements=replacements[student.id_id])
+            row['spi'], row['cpi'] = float(spi), float(cpi)
+            row['tu'], row['tp'] = float(tu), float(tp)
+        rows.append(row)
+
+    return Response({
+        'count': len(rows),
+        'students': len(rows),
+        'with_grades': sum(1 for r in rows if r['spi'] is not None),
+        'rows': rows,
+    })
+
+
+# --- Student status: withdraw and re-admit --------------------------------
+
+def _status_student(request, roll_no):
+    """The student named by ``roll_no`` if the user's programmes cover them."""
+    from applications.globals.programme_scope import scopes_for, student_in_scope
+
+    student = (Student.objects
+               .select_related('id__user', 'batch_id__discipline',
+                               'batch_id__curriculum__programme')
+               .filter(id_id=(roll_no or '').strip().upper()).first())
+    if student is None or not student_in_scope(student, scopes_for(request.user)):
+        return None
+    return student
+
+
+def _status_body(student):
+    from applications.academic_information.models import StudentStatusHistory
+    from applications.academic_information.student_status import normalise_status
+    from applications.academic_information.withdrawal import (
+        withdrawal_blockers, withdrawal_cleanup,
+    )
+
+    from applications.academic_information.models import SemesterDrop
+    from applications.programme_curriculum.models import Semester
+
+    user = student.id.user
+    history = (StudentStatusHistory.objects.filter(student=student)
+               .select_related('performed_by'))
+    drops = (SemesterDrop.objects.filter(student=student)
+             .select_related('recorded_by', 'cancelled_by'))
+    username = lambda u: u.username if u is not None else None  # noqa: E731
+    return {
+        'roll_no': student.id_id,
+        'name': f'{user.first_name} {user.last_name}'.strip(),
+        'discipline': _discipline_label(student),
+        'batch': student.batch,
+        'semester': student.curr_semester_no,
+        'status': normalise_status(student.id.user_status) or 'PRESENT',
+        'blockers': withdrawal_blockers(student),
+        # Left over from a semester never entered; withdrawing removes these.
+        'withdrawal_removes': withdrawal_cleanup(student),
+        'history': [{
+            'action': h.action,
+            'previous_status': h.previous_status,
+            'new_status': h.new_status,
+            'reason': h.reason,
+            'semester_no': h.semester_no,
+            'performed_by': h.performed_by.username if h.performed_by_id else None,
+            'created_at': h.created_at.isoformat(),
+        } for h in history],
+        # The semesters a drop can be recorded for, and the drops (live and cancelled).
+        'semesters': sorted(Semester.objects.filter(curriculum_id=student.batch_id.curriculum_id)
+                            .values_list('semester_no', flat=True))
+                     if student.batch_id_id else [],
+        'drops': [{
+            'id': d.id,
+            'semester_no': d.semester_no,
+            'academic_year': d.academic_year,
+            'reason': d.reason,
+            'recorded_by': username(d.recorded_by),
+            'recorded_at': d.recorded_at.isoformat(),
+            'cancelled_by': username(d.cancelled_by),
+            'cancelled_at': d.cancelled_at.isoformat() if d.cancelled_at else None,
+            'cancel_reason': d.cancel_reason,
+        } for d in drops],
+    }
+
+
+def _not_found():
+    return Response({'detail': 'No student with that roll number in your programmes.'},
+                    status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(list(ALL_ACAD_ROLES))
+def student_status(request):
+    """A student's status, what blocks a withdrawal, and its history."""
+    student = _status_student(request, request.query_params.get('roll_no'))
+    if student is None:
+        return _not_found()
+    return Response(_status_body(student))
+
+
+def _change_status(request, change):
+    from applications.academic_information.withdrawal import WithdrawalRefused
+
+    student = _status_student(request, request.data.get('roll_no'))
+    if student is None:
+        return _not_found()
+    try:
+        change(student, request.data.get('reason'), request.user)
+    except WithdrawalRefused as refused:
+        body = {'detail': str(refused.detail)}
+        if refused.blockers:
+            body['blockers'] = refused.blockers
+        return Response(body, status=status.HTTP_400_BAD_REQUEST)
+    student.id.refresh_from_db()
+    return Response(_status_body(student))
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(list(ALL_ACAD_ROLES))
+def withdraw_student(request):
+    """Withdraw a student: read-only from now on, records kept."""
+    from applications.academic_information.withdrawal import withdraw
+    return _change_status(request, withdraw)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(list(ALL_ACAD_ROLES))
+def readmit_student(request):
+    """Re-admit a student withdrawn by mistake."""
+    from applications.academic_information.withdrawal import readmit
+    return _change_status(request, readmit)
+
+
+def _change_drop(request, change):
+    from applications.academic_information.semester_drop import DropRefused
+
+    student = _status_student(request, request.data.get('roll_no'))
+    if student is None:
+        return _not_found()
+    try:
+        change(student)
+    except DropRefused as refused:
+        body = {'detail': str(refused.detail)}
+        if refused.blockers:
+            body['blockers'] = refused.blockers
+        return Response(body, status=status.HTTP_400_BAD_REQUEST)
+    return Response(_status_body(student))
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(list(ALL_ACAD_ROLES))
+def record_semester_drop(request):
+    """Record that a student dropped a semester."""
+    from applications.academic_information.semester_drop import record_drop
+    data = request.data
+    return _change_drop(request, lambda student: record_drop(
+        student, data.get('semester_no'), data.get('academic_year'), data.get('reason'),
+        request.user))
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(list(ALL_ACAD_ROLES))
+def cancel_semester_drop(request):
+    """Cancel a drop recorded by mistake; it is kept as cancelled."""
+    from applications.academic_information.semester_drop import cancel_drop
+    data = request.data
+    return _change_drop(request, lambda student: cancel_drop(
+        student, data.get('drop_id'), data.get('reason'), request.user))

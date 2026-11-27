@@ -1,4 +1,5 @@
 import datetime
+import re
 from decimal import Decimal
 
 from django.db import models
@@ -387,15 +388,12 @@ class BonafideCertificate(models.Model):
         ('fee', 'Paid / Unpaid Fee Certificate'),
         ('demand', 'Demand Letter'),
         ('fee_structure', 'Fee Structure Certificate'),
-        ('medium_instruction', 'Medium of Instruction Certificate'),
+        ('medium_of_instruction', 'Medium of Instruction Certificate'),
+        ('pointer_conv', 'Pointer Conversion Certificate'),
     )
 
     certificate_type = models.CharField(
-        max_length=24,
-        choices=TYPE_CHOICES,
-        default='bonafide',
-        db_index=True
-    )
+        max_length=32, choices=TYPE_CHOICES, default='bonafide', db_index=True)
     #: The semester rows exactly as printed, so a reissue matches the original.
     fee_rows = models.JSONField(default=list, blank=True)
 
@@ -726,6 +724,29 @@ class StudentRegistrationChecks(models.Model):
         db_table = 'StudentRegistrationChecks'
 
 
+def session_working_year(session, semester_type):
+    """The calendar year a term runs in, from its session ("2026-27") and type.
+
+    An Odd semester runs from August of the session's first year; Even and
+    Summer semesters run in its second year. None when the session or the
+    semester type is missing or cannot be read.
+    """
+    match = re.match(r'^\s*(\d{4})\s*-\s*\d{2,4}\s*$', str(session or ''))
+    semester_type = str(semester_type or '').strip()
+    if not match or not semester_type:
+        return None
+    start = int(match.group(1))
+    return start if semester_type.startswith('Odd') else start + 1
+
+
+class CourseRegistrationQuerySet(models.QuerySet):
+    def bulk_create(self, objs, *args, **kwargs):
+        objs = list(objs)
+        for obj in objs:
+            obj.fill_working_year()
+        return super().bulk_create(objs, *args, **kwargs)
+
+
 class course_registration(models.Model):
     '''
             Current Purpose : stores information regarding the process of registration of a student for a course 
@@ -778,6 +799,23 @@ class course_registration(models.Model):
     )
     # grade = models.CharField(max_length=10)
     #course_registration_year = models.IntegerField()
+
+    # save() and bulk_create() fill in the working year from the session, so
+    # no view has to remember to. QuerySet.update() and raw SQL do not.
+    objects = CourseRegistrationQuerySet.as_manager()
+
+    def fill_working_year(self):
+        if self.working_year is None:
+            self.working_year = session_working_year(self.session, self.semester_type)
+
+    def save(self, *args, **kwargs):
+        had_year = self.working_year is not None
+        self.fill_working_year()
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None and not had_year and self.working_year is not None:
+            kwargs['update_fields'] = {*update_fields, 'working_year'}
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return str(self.semester_id.semester_no)
     class Meta:
@@ -1953,8 +1991,19 @@ class TeachingCreditRegistration(models.Model):
     remarks               = models.CharField(max_length=500, blank=True)
 
     class Meta:
-        unique_together = ('student', 'semester')
         db_table = 'TeachingCreditRegistration'
+        # One enrollment per semester, unless each names its catalogue entry
+        # (a semester can carry both Teaching Work I and II).
+        constraints = [
+            models.UniqueConstraint(
+                fields=['student', 'semester'],
+                condition=models.Q(teaching_credit__isnull=True),
+                name='tc_registration_one_per_semester'),
+            models.UniqueConstraint(
+                fields=['student', 'semester', 'teaching_credit'],
+                condition=models.Q(teaching_credit__isnull=False),
+                name='tc_registration_one_per_entry'),
+        ]
 
     def __str__(self):
         return f"{self.student} — {self.teaching_credit_slot.name} ({self.semester})"
@@ -2243,10 +2292,14 @@ def resolve_teaching_credit_catalog_entry(student, semester):
     ).select_related('teaching_credit_slot').prefetch_related(
         'teaching_credit_slot__teaching_credits'
     ).first()
-    if not reg or not reg.teaching_credit_slot:
+    if not reg:
+        return None
+    if reg.teaching_credit_id:
+        return reg.teaching_credit
+    if not reg.teaching_credit_slot:
         return None
     discipline = getattr(getattr(student, 'batch_id', None), 'discipline', None)
-    manager = reg.teaching_credit_slot.teaching_credits
+    manager = reg.teaching_credit_slot.teaching_credits.order_by('-latest_version', '-version')
     entry = (manager.filter(discipline=discipline).first() if discipline else None) or manager.first()
     return entry
 
@@ -2256,6 +2309,18 @@ def resolve_teaching_credit_credit(student, semester):
     via resolve_teaching_credit_catalog_entry(), falling back to
     DEFAULT_TEACHING_CREDIT only when no catalog entry can be found."""
     entry = resolve_teaching_credit_catalog_entry(student, semester)
+    return entry.credit if entry and entry.credit else DEFAULT_TEACHING_CREDIT
+
+
+def allocation_teaching_credit(alloc):
+    """The catalogue entry a TeachingCreditAllocation's result is for: its own
+    teaching_credit when set, else the semester's registration."""
+    return alloc.teaching_credit or resolve_teaching_credit_catalog_entry(alloc.student, alloc.semester)
+
+
+def allocation_teaching_credit_credit(alloc):
+    """Credit one TeachingCreditAllocation is worth, from its catalogue entry."""
+    entry = allocation_teaching_credit(alloc)
     return entry.credit if entry and entry.credit else DEFAULT_TEACHING_CREDIT
 
 
@@ -2699,8 +2764,18 @@ class TeachingCreditAllocation(models.Model):
 
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='teaching_credit_allocations')
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    # The catalogue entry this result is for. Set when it is known directly
+    # (results entered from the grade sheets); otherwise it is resolved from
+    # the semester's TeachingCreditRegistration.
+    teaching_credit = models.ForeignKey(
+        TeachingCredit, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='allocations',
+    )
 
-    choice_1 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice1')
+    # Optional only for results entered from the grade sheets, which do not
+    # record the course taught; the student-facing registration requires it.
+    choice_1 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice1',
+                                 null=True, blank=True)
     choice_2 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice2', null=True, blank=True)
     choice_3 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice3', null=True, blank=True)
     choice_4 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice4', null=True, blank=True)
@@ -2728,7 +2803,16 @@ class TeachingCreditAllocation(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('student', 'semester')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['student', 'semester'],
+                condition=models.Q(teaching_credit__isnull=True),
+                name='tc_allocation_one_per_semester'),
+            models.UniqueConstraint(
+                fields=['student', 'semester', 'teaching_credit'],
+                condition=models.Q(teaching_credit__isnull=False),
+                name='tc_allocation_one_per_entry'),
+        ]
 
     def __str__(self):
         return f"Teaching Credit — {self.student.id.user.get_full_name()} ({self.semester})"

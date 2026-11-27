@@ -7,7 +7,6 @@ from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, 
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
-from applications.filetracking.sdk.methods import *
 from django.db.models import Q
 from datetime import datetime
 from django.db.models import Max
@@ -528,6 +527,7 @@ class TeachingCreditForm(ModelForm):
         widgets = {
             'code': forms.TextInput(attrs={'placeholder': 'Teaching Credit Code (e.g., CS897)', 'max_length': 10}),
             'name': forms.TextInput(attrs={'placeholder': 'Teaching Credit Name', 'max_length': 100}),
+            'version': forms.NumberInput(attrs={'placeholder': 'Version', 'step': '0.1'}),
             'credit': forms.NumberInput(attrs={'placeholder': 'Credits'}),
             'discipline': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
             'programme_type': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),

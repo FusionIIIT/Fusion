@@ -1,9 +1,15 @@
 
 from django.conf.urls import url
-from . import views
+from . import attendance_views, views
 
 
 urlpatterns = [
+
+    url(r'^attendance-sheet/courses/$', attendance_views.attendance_courses, name='attendance_sheet_courses'),
+    url(r'^attendance-sheet/overview/$', attendance_views.attendance_overview, name='attendance_sheet_overview'),
+    url(r'^attendance-sheet/save/$', attendance_views.attendance_save, name='attendance_sheet_save'),
+    url(r'^attendance-sheet/copy/$', attendance_views.attendance_copy, name='attendance_sheet_copy'),
+    url(r'^attendance-sheet/$', attendance_views.attendance_sheet, name='attendance_sheet'),
 
     url(r'^exam_view/', views.exam_view, name='exam_view'),
     url(r'^download_template/', views.download_template, name='download_template'),

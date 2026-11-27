@@ -1,4 +1,6 @@
 from django.db.models.query_utils import Q
+from applications.academic_information.student_status import assert_unlocked, locked_roll_nos
+from applications.academic_information.semester_drop import not_dropped_q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -9,6 +11,7 @@ from applications.academic_procedures.models import(
     ThesisRegistration, ThesisEvaluation, ThesisTopic,
     ProgressSeminarRegistration, ProgressSeminarEntry, TeachingCreditAllocation,
     resolve_progress_seminar_catalog_entry, DEFAULT_PROGRESS_SEMINAR_CREDIT,
+    allocation_teaching_credit, DEFAULT_TEACHING_CREDIT,
 )
 from applications.programme_curriculum.models import Course as Courses ,  Batch, CourseInstructor, Semester
 from applications.examination.models import(hidden_grades , ResultAnnouncement, authentication, PublishedResultStudent)
@@ -27,7 +30,7 @@ from applications.globals.programme_scope import (
     programme_display_name,
 )
 from applications.academic_information.models import(Student)
-from applications.online_cms.models import(Student_grades)
+from applications.examination.models import(Student_grades)
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view,permission_classes
@@ -223,15 +226,24 @@ def _phd_extra_records(student, semester_no, require_announced=False):
 
     for alloc in TeachingCreditAllocation.objects.filter(
         student=student, semester__semester_no=semester_no
-    ).select_related('allocated_course'):
-        if not (alloc.allocated_course and alloc.result):
+    ).select_related('allocated_course', 'teaching_credit', 'semester'):
+        if not alloc.result:
+            continue
+        # The teaching-credit catalogue entry (code, name and its own credit);
+        # the course taught is only a fallback for results without one.
+        entry = allocation_teaching_credit(alloc)
+        if entry:
+            code, name, credit = entry.code, entry.name, entry.credit or DEFAULT_TEACHING_CREDIT
+        elif alloc.allocated_course:
+            course = alloc.allocated_course
+            code, name, credit = course.code, f"{course.name} (Teaching Credit)", course.credit
+        else:
             continue
         grade = 'S' if alloc.result == 'satisfactory' else 'X'
-        credit = alloc.allocated_course.credit
         records.append({
             "key": f"teaching_credit_{alloc.id}",
-            "code": alloc.allocated_course.code,
-            "name": f"{alloc.allocated_course.name} (Teaching Credit)",
+            "code": code,
+            "name": name,
             "display_credit": credit,
             "display_grade": grade,
             "grade_items": [(Decimal(str(credit)), grade)],
@@ -322,18 +334,20 @@ def trace_registration(reg_id, mapping):
         reg_id = mapping[reg_id]
     return reg_id
 
-def superseded_course_codes(student, graded_codes):
+def superseded_course_codes(student, graded_codes, replacements=None):
     """Elective codes a graded replacement/swayam course has superseded.
 
     A replaced elective stops counting once its replacement is graded; each
     distinct replacement counts on its own. Shared by the CPI helper and the
-    semester-history builder so both apply one rule.
+    semester-history builder so both apply one rule. Batch callers pass the
+    student's ``replacements`` already loaded to skip the per-student query.
     """
-    replacements = course_replacement.objects.filter(
-        Q(old_course_registration__student_id=student) |
-        Q(new_course_registration__student_id=student)
-    ).select_related('old_course_registration__course_id',
-                     'new_course_registration__course_id')
+    if replacements is None:
+        replacements = course_replacement.objects.filter(
+            Q(old_course_registration__student_id=student) |
+            Q(new_course_registration__student_id=student)
+        ).select_related('old_course_registration__course_id',
+                         'new_course_registration__course_id')
     code_replacement_map = {}   # replacement/swayam course code -> replaced elective code
     for rep in replacements:
         old_code = (rep.old_course_registration.course_id.code or '').strip()
@@ -385,7 +399,10 @@ def previous_term_cpi(student, before_semester):
     return None
 
 
-def calculate_cpi_for_student(student, selected_semester, semester_type, require_announced=False):
+def calculate_cpi_for_student(student, selected_semester, semester_type, require_announced=False,
+                              replacements=None):
+    # replacements: the student's course_replacement rows, for callers that
+    # load them for many students at once (see superseded_course_codes).
     total_unit = Decimal('0')
     if selected_semester % 2 == 0 and semester_type == 'Summer Semester':
         grades = (
@@ -418,7 +435,7 @@ def calculate_cpi_for_student(student, selected_semester, semester_type, require
                             > grade_conversion.get((prev.grade or '').strip(), -1)):
             best_by_code[code] = g
 
-    superseded_codes = superseded_course_codes(student, best_by_code.keys())
+    superseded_codes = superseded_course_codes(student, best_by_code.keys(), replacements=replacements)
 
     totals = {'points': Decimal('0'), 'credits': Decimal('0'), 'earned': Decimal('0')}
     for code, best_record in best_by_code.items():
@@ -1405,11 +1422,14 @@ class GenerateResultAPI(APIView):
             if not batch_obj:
                 return Response({"error": "Batch not found."}, status=404)
 
-            # Fetch all students for this Batch.
+            # Fetch all students for this Batch, but not those who dropped the semester.
             if branch:
                 students = Student.objects.filter(batch_id=batch_id, specialization=branch).order_by('id')
             else:
                 students = Student.objects.filter(batch_id=batch_id).order_by('id')
+            if semester_type != 'Summer Semester':
+                # The summer term filed under an even semester is not dropped with it.
+                students = students.filter(not_dropped_q('', semester))
 
             # Fetch course_ids for which the grade is not empty.
             student_roll_nos = students.values_list('id_id', flat=True)
@@ -1939,6 +1959,18 @@ class SubmitGradesProfAPI(APIView):
         )
 
 
+
+def reset_resubmit_for_roster(course_id, academic_year, semester_type, roll_nos):
+    """Clear reSubmit on the roster's grades for this course and term before an
+    upload. A locked student's (alumni, ...) grade rows are left as they are."""
+    locked = locked_roll_nos(roll_nos)
+    Student_grades.objects.filter(
+        course_id_id=course_id,
+        academic_year=academic_year,
+        semester_type=semester_type,
+        roll_no__in=[r for r in roll_nos if r not in locked],
+    ).update(reSubmit=False)
+
 class UploadGradesProfAPI(APIView):
     """
     Upload grades CSV by the assigned instructor.
@@ -2179,13 +2211,8 @@ class UploadGradesProfAPI(APIView):
             with transaction.atomic():
                 # Reset reSubmit only for this submission's roster (already scoped
                 # to the section + programme above), never course-wide.
-                reset_query = Student_grades.objects.filter(
-                    course_id_id=course_id,
-                    academic_year=academic_year,
-                    semester_type=semester_type,
-                    roll_no__in=[reg.student_id_id for reg in regs],
-                )
-                reset_query.update(reSubmit=False)
+                reset_resubmit_for_roster(course_id, academic_year, semester_type,
+                                          [reg.student_id_id for reg in regs])
 
                 # ─── Process each CSV row ───
                 for idx, row in enumerate(reader, start=1):
@@ -3786,6 +3813,10 @@ class PublishResultSelectedAPI(APIView):
         selected = [r for r in roll_numbers if r in valid_rolls]
 
         with transaction.atomic():
+            # Who sees the result is part of a student's record: a locked
+            # student's visibility can be neither added nor taken away.
+            current = set(ann.published_students.values_list('roll_no', flat=True))
+            assert_unlocked(current.symmetric_difference(selected))
             ann.published_students.all().delete()
             PublishedResultStudent.objects.bulk_create(
                 [PublishedResultStudent(announcement=ann, roll_no=r) for r in selected]
@@ -4681,6 +4712,8 @@ class GenerateGradeSheetForm(APIView):
                 batch_id=batch, specialization=specialization).order_by('id')
         else:
             students = Student.objects.filter(batch_id=batch).order_by('id')
+        # Not those who dropped the semester.
+        students = students.filter(not_dropped_q('', semester))
 
         return Response({
             "students": list(students.values()),
@@ -4813,7 +4846,7 @@ class GradeSummaryAPI(APIView):
                         COUNT(CASE WHEN sg.grade = 'X' THEN 1 END) as grade_x,
                         COUNT(sg.id) as total_students
                     FROM 
-                        online_cms_student_grades sg
+                        examination_student_grades sg
                         INNER JOIN programme_curriculum_course pc ON sg.course_id_id = pc.id
                         LEFT JOIN programme_curriculum_courseinstructor ci ON (
                             ci.course_id_id = pc.id 

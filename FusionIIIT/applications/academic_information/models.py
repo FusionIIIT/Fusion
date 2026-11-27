@@ -211,6 +211,62 @@ class Student(models.Model):
         
 
 
+class StudentStatusHistory(models.Model):
+    """Each withdrawal and re-admission of a student: who, when, why.
+
+    Written for a student who is (about to be) locked, so it is exempt from
+    the student lock (see student_lock.py)."""
+    ACTIONS = (('withdraw', 'Withdrawn'), ('readmit', 'Re-admitted'))
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE,
+                                related_name='status_history')
+    action = models.CharField(max_length=16, choices=ACTIONS)
+    previous_status = models.CharField(max_length=50)
+    new_status = models.CharField(max_length=50)
+    reason = models.TextField()
+    # The student's current semester (curr_semester_no) when the change was made.
+    semester_no = models.IntegerField(null=True, blank=True)
+    performed_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL,
+                                     related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-created_at', '-id')
+
+    def __str__(self):
+        return f'{self.student_id} {self.action}'
+
+
+class SemesterDrop(models.Model):
+    """A semester the student dropped: for it they take part in nothing
+    (semester_drop.py). Live until cancelled; a cancelled drop is kept with
+    who cancelled it, when and why."""
+    student = models.ForeignKey(Student, on_delete=models.CASCADE,
+                                related_name='semester_drops')
+    semester_no = models.PositiveIntegerField()
+    academic_year = models.CharField(max_length=9)
+    reason = models.TextField()
+    recorded_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL,
+                                    related_name='+')
+    recorded_at = models.DateTimeField(auto_now_add=True)
+    cancelled_by = models.ForeignKey(User, null=True, blank=True,
+                                     on_delete=models.SET_NULL, related_name='+')
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    cancel_reason = models.TextField(blank=True, default='')
+
+    class Meta:
+        ordering = ('semester_no', '-recorded_at', '-id')
+        constraints = [
+            models.UniqueConstraint(
+                fields=('student', 'semester_no'),
+                condition=models.Q(cancelled_at__isnull=True),
+                name='one_live_drop_per_semester'),
+        ]
+
+    def __str__(self):
+        return f'{self.student_id} drops semester {self.semester_no}'
+
+
 class Course(models.Model):
    
     course_name = models.CharField(max_length=600)

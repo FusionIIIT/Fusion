@@ -36,10 +36,20 @@ def log_status_change(sender, instance, **kwargs):
 @receiver(post_save, sender=StudentBatchUpload)
 def handle_withdrawal_status(sender, instance, created, **kwargs):
     """Handle when student status is changed to WITHDRAWAL"""
-    if instance.reported_status == 'WITHDRAWAL':
-        if instance.user:
-            instance.user.is_active = False
-            instance.user.save()
+    from applications.academic_information.student_status import has_academic_records
+
+    # Only a student who never joined loses their login here; one with
+    # registrations or grades is withdrawn on the Student Status page. Both the
+    # roll number and the linked account are checked, since either can be
+    # edited on the admission row.
+    if instance.reported_status != 'WITHDRAWAL':
+        return
+    rolls = {instance.roll_number, instance.user.username if instance.user else None}
+    if any(has_academic_records(roll) for roll in rolls):
+        return
+    if instance.user:
+        instance.user.is_active = False
+        instance.user.save()
 
 
 def create_django_user(student_upload):

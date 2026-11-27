@@ -65,9 +65,16 @@ class Constants:
         ('academic', 'Academic Designation'),
         ('administrative', 'Administrative Designation'),
     )
+    # ALUMNI, ARCHIVED and LEFT are written by the System Administrator;
+    # WITHDRAWN by the academic office. All four lock the student (see
+    # academic_information.student_status).
     USER_STATUS = (
         ("NEW", "NEW"),
         ("PRESENT", "PRESENT"),
+        ("ALUMNI", "ALUMNI"),
+        ("WITHDRAWN", "WITHDRAWN"),
+        ("ARCHIVED", "ARCHIVED"),
+        ("LEFT", "LEFT"),
     )
 
 
@@ -429,3 +436,10 @@ class Announcement(models.Model):
 
     def __str__(self):
         return self.title
+
+
+# Student profile records (moved from placement_cell); see models_profile.py.
+from .models_profile import (  # noqa: E402,F401
+    Achievement, Course, Education, Experience, Has, Patent, Project,
+    Publication, Skill, StudentBankDetails,
+)
